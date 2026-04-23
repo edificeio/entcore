@@ -1,7 +1,7 @@
 package org.entcore.communication.mapper;
 
 import io.vertx.core.json.JsonObject;
-import org.entcore.communication.dto.rest.BusUserDTO;
+import org.entcore.communication.dto.bus.BusUserDTO;
 
 public class BusUserDtoMapper {
 

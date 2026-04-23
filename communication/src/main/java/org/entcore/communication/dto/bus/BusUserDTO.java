@@ -1,4 +1,4 @@
-package org.entcore.communication.dto.rest;
+package org.entcore.communication.dto.bus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

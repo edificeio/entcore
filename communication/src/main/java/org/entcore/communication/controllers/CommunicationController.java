@@ -36,7 +36,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
@@ -44,13 +43,21 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.communication.dto.rest.CommunicationBusDTO;
+import org.entcore.communication.dto.bus.CommunicationBusDTO;
+import org.entcore.communication.dto.rest.DiscoverModifyGroupUsersDTO;
+import org.entcore.communication.dto.rest.DiscoverVisibleGroupBodyDTO;
+import org.entcore.communication.dto.rest.DiscoverVisibleFilterDTO;
 import org.entcore.communication.dto.rest.CountResultDTO;
+import org.entcore.communication.dto.rest.IdentifiableDTO;
 import org.entcore.communication.dto.rest.InitDefaultRulesDTO;
-import org.entcore.communication.dto.rest.SearchVisibleBusDTO;
-import org.entcore.communication.dto.rest.SearchVisibleRestDTO;
+import org.entcore.communication.dto.bus.SearchVisibleBusDTO;
+import org.entcore.communication.dto.rest.SearchVisibleRequestDTO;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
+import org.entcore.communication.mapper.AddLinkDirectionsDtoMapper;
+import org.entcore.communication.mapper.DiscoverVisibleStructureDtoMapper;
 import org.entcore.communication.mapper.GroupDtoMapper;
+import org.entcore.communication.mapper.RemoveRelationsResultDtoMapper;
+import org.entcore.communication.mapper.VerifyResultDtoMapper;
 import org.entcore.communication.mapper.SearchVisibleDtoMapper;
 import org.entcore.communication.mapper.UserDtoMapper;
 import org.entcore.communication.services.CommunicationService;
@@ -213,7 +220,7 @@ public class CommunicationController extends BaseController {
 	@Post("/visible")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchVisible(HttpServerRequest request) {
-		RequestUtils.bodyToClass(request, SearchVisibleRestDTO.class).onSuccess(filter -> UserUtils.getUserInfos(eb, request, user -> {
+		RequestUtils.bodyToClass(request, SearchVisibleRequestDTO.class).onSuccess(filter -> UserUtils.getUserInfos(eb, request, user -> {
 			// override some value for this canal
 			filter.setItSelf(true)
 				.setMyGroup(true)
@@ -455,7 +462,9 @@ public class CommunicationController extends BaseController {
 	@SecuredAction("communication.remove.rules")
 	public void removeCommunicationRules(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
-		communicationService.removeRules(structureId, defaultResponseHandler(request));
+		communicationService.removeRules(structureId)
+				.onSuccess(v -> Renders.ok(request))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	public void setCommunicationService(CommunicationService communicationService) {
@@ -523,14 +532,9 @@ public class CommunicationController extends BaseController {
     public void safelyAddLinksWithUsers(HttpServerRequest request) {
         String groupId = getGroupId(request);
         if (groupId == null) return;
-        communicationService.addLinkWithUsers(groupId, CommunicationService.Direction.BOTH, event -> {
-            if (event.isRight()) {
-                Renders.renderJson(request, new JsonObject().put("users", CommunicationService.Direction.BOTH), 200);
-            } else {
-                JsonObject error = new JsonObject().put("error", event.left().getValue());
-                Renders.renderJson(request, error, 400);
-            }
-        });
+        communicationService.addLinkWithUsers(groupId, CommunicationService.Direction.BOTH)
+                .onSuccess(v -> Renders.renderJson(request, new JsonObject().put("users", CommunicationService.Direction.BOTH), 200))
+                .onFailure(th -> renderJson(request, new JsonObject().put("error", th.getMessage()), 400));
     }
 
     @Delete("/group/:groupId/users")
@@ -539,18 +543,12 @@ public class CommunicationController extends BaseController {
     public void safelyRemoveLinksWithUsers(HttpServerRequest request) {
         String groupId = getGroupId(request);
         if (groupId == null) return;
-        communicationService.safelyRemoveLinkWithUsers(groupId, event -> {
-            if (event.isLeft()) {
-                String error = event.left().getValue();
-                if (error.equals(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION)) {
-                    Renders.renderJson(request, new JsonObject().put("error", error), 409);
-                } else {
-                    Renders.renderJson(request, new JsonObject().put("error", error), 500);
-                }
-            } else {
-                Renders.renderJson(request, event.right().getValue(), 200);
-            }
-        });
+        communicationService.safelyRemoveLinkWithUsers(groupId)
+                .onSuccess(result -> Renders.renderJson(request, result, 200))
+                .onFailure(th -> {
+                    int status = CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION.equals(th.getMessage()) ? 409 : 500;
+                    renderJson(request, new JsonObject().put("error", th.getMessage()), status);
+                });
     }
 
     @Get("/v2/group/:startGroupId/communique/:endGroupId/check")
@@ -561,20 +559,13 @@ public class CommunicationController extends BaseController {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
 
-		UserUtils.getUserInfos(eb, request, user -> {
-			communicationService.addLinkCheckOnly(params.getStartGroupId(), params.getEndGroupId(), user, event -> {
-				if (event.isLeft()) {
-					String error = event.left().getValue();
-					if (CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION.equals(error)) {
-						Renders.renderJson(request, new JsonObject().put("error", error), 409);
-					} else {
-						Renders.renderJson(request, new JsonObject().put("error", error), 500);
-					}
-				} else {
-					Renders.renderJson(request, event.right().getValue(), 200);
-				}
-			});
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.compose(user -> communicationService.addLinkCheckOnly(params.getStartGroupId(), params.getEndGroupId(), user))
+				.onSuccess(result -> Renders.renderJson(request, result, 200))
+				.onFailure(th -> {
+					int status = CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION.equals(th.getMessage()) ? 409 : 500;
+					renderJson(request, new JsonObject().put("error", th.getMessage()), status);
+				});
 	}
 
 	@Post("/v2/group/:startGroupId/communique/:endGroupId")
@@ -585,19 +576,10 @@ public class CommunicationController extends BaseController {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
 
-		communicationService.addLink(params.getStartGroupId(), params.getEndGroupId(), event -> {
-			if (event.isLeft()) {
-				Renders.renderJson(request, new JsonObject().put("error", event.left().getValue()), 500);
-			} else {
-				communicationService.processChangeDirectionAfterAddingLink(params.getStartGroupId(), params.getEndGroupId(), eventChange -> {
-					if (event.isLeft()) {
-						Renders.renderJson(request, new JsonObject().put("error", event.left().getValue()), 500);
-					} else {
-						Renders.renderJson(request, eventChange.right().getValue(), 200);
-					}
-				});
-			}
-		});
+		communicationService.addLink(params.getStartGroupId(), params.getEndGroupId())
+				.compose(v -> communicationService.processChangeDirectionAfterAddingLink(params.getStartGroupId(), params.getEndGroupId()))
+				.onSuccess(result -> render(request, AddLinkDirectionsDtoMapper.map(result)))
+				.onFailure(th -> renderJson(request, new JsonObject().put("error", th.getMessage()), 500));
 	}
     
 	@Delete("/group/:startGroupId/relations/:endGroupId")
@@ -606,7 +588,9 @@ public class CommunicationController extends BaseController {
 	public void removeRelations(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
-		communicationService.removeRelations(params.getStartGroupId(), params.getEndGroupId(), notEmptyResponseHandler(request));
+		communicationService.removeRelations(params.getStartGroupId(), params.getEndGroupId())
+				.onSuccess(result -> render(request, RemoveRelationsResultDtoMapper.map(result)))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -631,7 +615,9 @@ public class CommunicationController extends BaseController {
 			badRequest(request, "invalid.parameter");
 			return;
 		}
-		communicationService.verify(from, to, notEmptyResponseHandler(request));
+		communicationService.verify(from, to)
+				.onSuccess(result -> render(request, VerifyResultDtoMapper.map(result)))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -648,13 +634,14 @@ public class CommunicationController extends BaseController {
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void getDiscoverVisibleUsers(HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, filter -> UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null) {
-				badRequest(request, "invalid.user");
-				return;
-			}
-			communicationService.getDiscoverVisibleUsers( user.getUserId(), filter, arrayResponseHandler(request));
-		}));
+		RequestUtils.bodyToClass(request, DiscoverVisibleFilterDTO.class)
+				.compose(filter -> UserUtils.getAuthenticatedUserInfos(eb, request)
+						.compose(user -> communicationService.getDiscoverVisibleUsers(user.getUserId(), filter)))
+				.onSuccess(results -> render(request, results.stream()
+						.map(JsonObject.class::cast)
+						.map(UserDtoMapper::mapDiscoverVisible)
+						.collect(Collectors.toList())))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -663,13 +650,10 @@ public class CommunicationController extends BaseController {
 	@Get("/discover/visible/profiles")
 	@SecuredAction(value= "", type = ActionType.AUTHENTICATED)
 	public void getDiscoverVisibleAcceptedProfile(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null) {
-				badRequest(request, "invalid.user");
-				return;
-			}
-			communicationService.getDiscoverVisibleAcceptedProfile(user, arrayResponseHandler(request));
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.compose(user -> communicationService.getDiscoverVisibleAcceptedProfile(user))
+				.onSuccess(results -> render(request, results.getList()))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -679,13 +663,13 @@ public class CommunicationController extends BaseController {
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void getDiscoverVisibleStructures(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null) {
-				badRequest(request, "invalid.user");
-				return;
-			}
-			communicationService.getDiscoverVisibleStructures(arrayResponseHandler(request));
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.compose(user -> communicationService.getDiscoverVisibleStructures())
+				.onSuccess(results -> render(request, results.stream()
+						.map(JsonObject.class::cast)
+						.map(DiscoverVisibleStructureDtoMapper::map)
+						.collect(Collectors.toList())))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -704,14 +688,10 @@ public class CommunicationController extends BaseController {
 			badRequest(request, "invalid.parameter");
 			return;
 		}
-
-		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null) {
-				badRequest(request, "invalid.user");
-				return;
-			}
-			communicationService.discoverVisibleAddCommuteUsers(user, receiverId, request, notEmptyResponseHandler(request));
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.compose(user -> communicationService.discoverVisibleAddCommuteUsers(user, receiverId, request))
+				.onSuccess(result -> render(request, new CountResultDTO(result.getInteger("number"))))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -726,14 +706,10 @@ public class CommunicationController extends BaseController {
 			badRequest(request, "invalid.parameter");
 			return;
 		}
-
-		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null) {
-				badRequest(request, "invalid.user");
-				return;
-			}
-			communicationService.discoverVisibleRemoveCommuteUsers(user.getUserId(), receiverId, notEmptyResponseHandler(request));
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.compose(user -> communicationService.discoverVisibleRemoveCommuteUsers(user.getUserId(), receiverId))
+				.onSuccess(result -> render(request, new CountResultDTO(result.getInteger("number"))))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -743,13 +719,13 @@ public class CommunicationController extends BaseController {
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void discoverVisibleGetGroups(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null) {
-				badRequest(request, "invalid.user");
-				return;
-			}
-			communicationService.discoverVisibleGetGroups(user.getUserId(), arrayResponseHandler(request));
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.compose(user -> communicationService.discoverVisibleGetGroups(user.getUserId()))
+				.onSuccess(results -> render(request, results.stream()
+						.map(JsonObject.class::cast)
+						.map(GroupDtoMapper::map)
+						.collect(Collectors.toList())))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -766,13 +742,13 @@ public class CommunicationController extends BaseController {
 
 		String groupId = request.params().get("groupId");
 
-		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null) {
-				badRequest(request, "invalid.user");
-				return;
-			}
-			communicationService.discoverVisibleGetUsersInGroup(user.getUserId(), groupId, arrayResponseHandler(request));
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.compose(user -> communicationService.discoverVisibleGetUsersInGroup(user.getUserId(), groupId))
+				.onSuccess(results -> render(request, results.stream()
+						.map(JsonObject.class::cast)
+						.map(UserDtoMapper::mapDiscoverVisibleGroupUser)
+						.collect(Collectors.toList())))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 
 	}
 
@@ -787,15 +763,15 @@ public class CommunicationController extends BaseController {
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void createDiscoverVisibleGroup(HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, body -> {
-			UserUtils.getUserInfos(eb, request, user -> {
-				if(user == null) {
-					badRequest(request, "invalid.user");
-					return;
-				}
-				communicationService.createDiscoverVisibleGroup(user.getUserId(), body, notEmptyResponseHandler(request));
-			});
-		});
+		RequestUtils.bodyToClass(request, DiscoverVisibleGroupBodyDTO.class).compose(body -> {
+			if (body.getName() == null || body.getName().trim().isEmpty()) {
+				return Future.failedFuture("invalid.name");
+			}
+			return UserUtils.getAuthenticatedUserInfos(eb, request)
+					.compose(user -> communicationService.createDiscoverVisibleGroup(user.getUserId(), body));
+		})
+				.onSuccess(result -> render(request, new IdentifiableDTO(result.getString("id"), null)))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -815,15 +791,15 @@ public class CommunicationController extends BaseController {
 			badRequest(request, "invalid.parameter");
 			return;
 		}
-		RequestUtils.bodyToJson(request, body -> {
-			UserUtils.getUserInfos(eb, request, user -> {
-				if(user == null) {
-					badRequest(request, "invalid.user");
-					return;
-				}
-				communicationService.updateDiscoverVisibleGroup(user.getUserId(), groupId, body, notEmptyResponseHandler(request));
-			});
-		});
+		RequestUtils.bodyToClass(request, DiscoverVisibleGroupBodyDTO.class)
+				.compose(body -> {
+			if (body.getName() == null || body.getName().trim().isEmpty()) {
+				return Future.failedFuture("invalid.name");
+			}
+			return UserUtils.getAuthenticatedUserInfos(eb, request)
+					.compose(user -> communicationService.updateDiscoverVisibleGroup(user.getUserId(), groupId, body));
+		}).onSuccess(result -> render(request, new IdentifiableDTO(result.getString("id"), null)))
+		  .onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**
@@ -845,15 +821,18 @@ public class CommunicationController extends BaseController {
 			return;
 		}
 
-		RequestUtils.bodyToJson(request, body -> {
-			UserUtils.getUserInfos(eb, request, user -> {
-				if(user == null) {
-					badRequest(request, "invalid.user");
-					return;
-				}
-				communicationService.addDiscoverVisibleGroupUsers(user, groupId, body, request, defaultResponseHandler(request));
-			});
-		});
+		RequestUtils.bodyToClass(request, DiscoverModifyGroupUsersDTO.class).compose(body -> {
+					if (body.getNewUsers() == null || body.getNewUsers().isEmpty()) {
+						return Future.failedFuture("invalid.users");
+					}
+					if (body.getNewUsers().size() > 100) {
+						return Future.failedFuture("too.many.users");
+					}
+					return UserUtils.getAuthenticatedUserInfos(eb, request)
+							.compose(user -> communicationService.addDiscoverVisibleGroupUsers(user, groupId, body, request));
+				})
+				.onSuccess(v -> Renders.ok(request))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	/**

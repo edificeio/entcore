@@ -1,9 +1,11 @@
 package org.entcore.communication.dto.rest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.Lists;
 
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class GroupDTO extends IdentifiableDTO {
 
     private String filter;
@@ -12,7 +14,7 @@ public class GroupDTO extends IdentifiableDTO {
     private String groupDisplayName;
     private InternalCommunicationRule internalCommunicationRule;
     private List<IdentifiableDTO> classes = Lists.newArrayList();
-    private List<IdentifiableDTO> structures = Lists.newArrayList();
+    private List<IdentifiableDTO> structures = Lists.newArrayList();;
     private String type;
     private String groupType;
     private String subType;
