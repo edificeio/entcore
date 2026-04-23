@@ -7,7 +7,6 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
-import { Suspense } from 'react';
 import { useLoaderData, useLocation, useParams } from 'react-router-dom';
 import { Config, existingActions } from '~/config';
 import {
@@ -26,7 +25,6 @@ import {
   folderQueryOptions,
 } from '~/services/queries';
 import { useActionsStore } from '~/store/actions';
-import MessageOnboardingModal from './components/MessageOnboardingModal';
 import { ScrollableOutlet } from './components/ScrollableOutlet';
 import './index.css';
 
@@ -92,10 +90,6 @@ export function Component() {
             <Breadcrumb app={currentApp!} />
           </AppHeader>
         </div>
-
-        <Suspense fallback={<LoadingScreen />}>
-          <MessageOnboardingModal />
-        </Suspense>
 
         {!lg && (
           <div className="d-flex flex-column mx-n16 overflow-hidden ">
