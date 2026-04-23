@@ -58,6 +58,7 @@ import org.entcore.communication.mapper.DiscoverVisibleStructureDtoMapper;
 import org.entcore.communication.mapper.GroupDtoMapper;
 import org.entcore.communication.mapper.RemoveRelationsResultDtoMapper;
 import org.entcore.communication.mapper.VerifyResultDtoMapper;
+import org.entcore.communication.mapper.SearchVisibleContactDtoMapper;
 import org.entcore.communication.mapper.SearchVisibleDtoMapper;
 import org.entcore.communication.mapper.UserDtoMapper;
 import org.entcore.communication.services.CommunicationService;
@@ -851,7 +852,10 @@ public class CommunicationController extends BaseController {
 			final String mode = request.params().get("mode");
 			final boolean includeHidden = "true".equalsIgnoreCase(request.params().get("includeHidden"));
 			communicationService.searchVisibles(userInfos, query, mode, I18n.acceptLanguage(request), includeHidden)
-				.onSuccess(visibles -> renderJson(request, visibles))
+				.onSuccess(visibles -> render(request, visibles.stream()
+						.map(JsonObject.class::cast)
+						.map(SearchVisibleContactDtoMapper::map)
+						.collect(Collectors.toList())))
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 		});
 	}
