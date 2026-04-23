@@ -35,6 +35,7 @@ bower_components
 **/rev-manifest.json
 node_modules
 auth/src/main/resources/view/*
+auth/src/main/resources/public/wayfv2
 auth/src/main/resources/public/js
 auth/src/main/resources/public/temp
 workspace/src/main/resources/view/*
