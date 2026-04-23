@@ -2,15 +2,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  This is a starter file and can be deleted.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ Delete this file and get started with your project!
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-.placeholder {
-  background: var(--primitives-gray-400) !important;
-  border-radius: var(--primitives-border-radius);
-}
-
-#root {
-  z-index: 0;
-  position: relative;
-}
+export const baseUrl = '/app';

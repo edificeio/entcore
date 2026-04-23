@@ -2,15 +2,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  This is a starter file and can be deleted.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ This folder should contain all config and constants
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-
-.placeholder {
-  background: var(--primitives-gray-400) !important;
-  border-radius: var(--primitives-border-radius);
-}
-
-#root {
-  z-index: 0;
-  position: relative;
-}

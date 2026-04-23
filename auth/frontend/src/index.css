@@ -4,13 +4,3 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-
-.placeholder {
-  background: var(--primitives-gray-400) !important;
-  border-radius: var(--primitives-border-radius);
-}
-
-#root {
-  z-index: 0;
-  position: relative;
-}

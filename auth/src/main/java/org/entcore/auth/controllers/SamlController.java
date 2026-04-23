@@ -236,13 +236,39 @@ public class SamlController extends AbstractFederateController {
 
 			final String userAgent = request.getHeader("User-Agent");
 			final String xRequestedWith = request.getHeader("X-Requested-With");
-			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
+
+			// Flag the mobile-app context so the WAYF v2 front intercepts non-provider
+			// links and hands them back to the native app (ENABLING-901).
+			final boolean isMobile =
+					(userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
 					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
-					("true".equals(request.params().get("mobile")))) {
-				renderView(request, swmf, "wayf-mobile.html", null);
-			} else {
-				renderView(request, swmf, "wayf.html", null);
+					("true".equals(request.params().get("mobile")));
+			if (swmf != null) {
+				swmf.put("mobile", isMobile);
 			}
+
+			// FIXME: REMOVE the next line and uncomment the following block to switch between old and new WAYF
+			renderView(request, swmf, "wayfv2.html", null);
+
+			// // FIXME: Remplacer par la solution choisie pour l'activation de la WAYF
+			// // Check wayf-beta cookie to switch between old and new WAYF
+			// final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
+			// final boolean wayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
+			// if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
+			// 		(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
+			// 		("true".equals(request.params().get("mobile")))) {
+			// 	if(wayfBeta) {
+			// 		renderView(request, swmf, "wayfv2.html", null);
+			// 	} else {
+			// 		renderView(request, swmf, "wayf-mobile.html", null);
+			// 	}
+			// } else {
+			// 	if(wayfBeta) {
+			// 		renderView(request, swmf, "wayfv2.html", null);
+			// 	} else {
+			// 		renderView(request, swmf, "wayf.html", null);
+			// 	}
+			// }
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
 					.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
