@@ -31,7 +31,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.communication.dto.rest.SearchVisibleRestDTO;
+import org.entcore.communication.dto.rest.DiscoverModifyGroupUsersDTO;
+import org.entcore.communication.dto.rest.DiscoverVisibleGroupBodyDTO;
+import org.entcore.communication.dto.rest.DiscoverVisibleFilterDTO;
+import org.entcore.communication.dto.rest.SearchVisibleRequestDTO;
 
 public interface CommunicationService {
 	String IMPOSSIBLE_TO_CHANGE_DIRECTION = "impossible to change direction";
@@ -148,7 +151,7 @@ public interface CommunicationService {
 
 	Future<JsonObject> applyRules(String groupId);
 
-	void removeRules(String structureId, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> removeRules(String structureId);
 
 	void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
 					  boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
@@ -163,7 +166,7 @@ public interface CommunicationService {
 			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
 			String userProfile, boolean reverseUnion);
 
-	Future<JsonArray> visibleUsers(UserInfos userInfos, SearchVisibleRestDTO searchVisibleDto);
+	Future<JsonArray> visibleUsers(UserInfos userInfos, SearchVisibleRequestDTO searchVisibleDto);
 
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);
 
@@ -186,15 +189,15 @@ public interface CommunicationService {
 
 	Future<JsonArray> getIncomingRelations(String id);
 
-	void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> safelyRemoveLinkWithUsers(String groupId);
 
 	void getDirections(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
 	
-	void addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos);
 	
-	void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId);
 	
-	void removeRelations(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> removeRelations(String startGroupId, String endGroupId);
 
 	/**
 	 * Indicates if a sender (user) can communicate to a receiver (user or group) on using
@@ -207,27 +210,27 @@ public interface CommunicationService {
 	 * @param recipientId id of the recipient
 	 * @param handler     final handler
 	 */
-	void verify(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> verify(String senderId, String recipientId);
 
-	void getDiscoverVisibleUsers(String userId, JsonObject filter, final Handler<Either<String, JsonArray>> handler);
+	Future<JsonArray> getDiscoverVisibleUsers(String userId, DiscoverVisibleFilterDTO filter);
 
-	void getDiscoverVisibleStructures(final Handler<Either<String, JsonArray>> handler);
+	Future<JsonArray> getDiscoverVisibleStructures();
 
-	void discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, HttpServerRequest request);
 
-	void discoverVisibleRemoveCommuteUsers(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> discoverVisibleRemoveCommuteUsers(String senderId, String recipientId);
 
-	void discoverVisibleGetGroups(String userId, Handler<Either<String, JsonArray>> handler);
+	Future<JsonArray> discoverVisibleGetGroups(String userId);
 
-	void discoverVisibleGetUsersInGroup(String userId, String groupId,  Handler<Either<String, JsonArray>> handler);
+	Future<JsonArray> discoverVisibleGetUsersInGroup(String userId, String groupId);
 
-	void createDiscoverVisibleGroup(String userId, JsonObject body, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> createDiscoverVisibleGroup(String userId, DiscoverVisibleGroupBodyDTO body);
 
-	void updateDiscoverVisibleGroup(String userId, String groupId, JsonObject body, Handler<Either<String, JsonObject>> handler);
+	Future<JsonObject> updateDiscoverVisibleGroup(String userId, String groupId, DiscoverVisibleGroupBodyDTO body);
 
-	void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
+	Future<Void> addDiscoverVisibleGroupUsers(UserInfos user, String groupId, DiscoverModifyGroupUsersDTO body, HttpServerRequest request);
 
-	void getDiscoverVisibleAcceptedProfile(UserInfos user, Handler<Either<String, JsonArray>> handler);
+	Future<JsonArray> getDiscoverVisibleAcceptedProfile(UserInfos user);
 
 
 	/**

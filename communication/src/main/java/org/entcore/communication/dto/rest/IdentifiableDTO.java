@@ -1,5 +1,8 @@
 package org.entcore.communication.dto.rest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class IdentifiableDTO {
 
     private String id;

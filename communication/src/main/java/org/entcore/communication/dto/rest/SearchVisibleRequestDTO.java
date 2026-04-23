@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SearchVisibleRestDTO {
+public class SearchVisibleRequestDTO {
 
     private List<String> structures;
     private List<String> classes;
@@ -24,7 +24,7 @@ public class SearchVisibleRestDTO {
         return structures;
     }
 
-    public SearchVisibleRestDTO setStructures(List<String> structures) {
+    public SearchVisibleRequestDTO setStructures(List<String> structures) {
         this.structures = structures;
         return this;
     }
@@ -33,7 +33,7 @@ public class SearchVisibleRestDTO {
         return classes;
     }
 
-    public SearchVisibleRestDTO setClasses(List<String> classes) {
+    public SearchVisibleRequestDTO setClasses(List<String> classes) {
         this.classes = classes;
         return this;
     }
@@ -42,7 +42,7 @@ public class SearchVisibleRestDTO {
         return profiles;
     }
 
-    public SearchVisibleRestDTO setProfiles(List<String> profiles) {
+    public SearchVisibleRequestDTO setProfiles(List<String> profiles) {
         this.profiles = profiles;
         return this;
     }
@@ -51,7 +51,7 @@ public class SearchVisibleRestDTO {
         return functions;
     }
 
-    public SearchVisibleRestDTO setFunctions(List<String> functions) {
+    public SearchVisibleRequestDTO setFunctions(List<String> functions) {
         this.functions = functions;
         return this;
     }
@@ -60,7 +60,7 @@ public class SearchVisibleRestDTO {
         return positions;
     }
 
-    public SearchVisibleRestDTO setPositions(List<String> positions) {
+    public SearchVisibleRequestDTO setPositions(List<String> positions) {
         this.positions = positions;
         return this;
     }
@@ -69,7 +69,7 @@ public class SearchVisibleRestDTO {
         return search;
     }
 
-    public SearchVisibleRestDTO setSearch(String search) {
+    public SearchVisibleRequestDTO setSearch(String search) {
         this.search = search;
         return this;
     }
@@ -78,7 +78,7 @@ public class SearchVisibleRestDTO {
         return types;
     }
 
-    public SearchVisibleRestDTO setTypes(List<String> types) {
+    public SearchVisibleRequestDTO setTypes(List<String> types) {
         this.types = types;
         return this;
     }
@@ -87,7 +87,7 @@ public class SearchVisibleRestDTO {
         return nbUsersInGroups;
     }
 
-    public SearchVisibleRestDTO setNbUsersInGroups(Boolean nbUsersInGroups) {
+    public SearchVisibleRequestDTO setNbUsersInGroups(Boolean nbUsersInGroups) {
         this.nbUsersInGroups = nbUsersInGroups;
         return this;
     }
@@ -96,7 +96,7 @@ public class SearchVisibleRestDTO {
         return groupType;
     }
 
-    public SearchVisibleRestDTO setGroupType(Boolean groupType) {
+    public SearchVisibleRequestDTO setGroupType(Boolean groupType) {
         this.groupType = groupType;
         return this;
     }
@@ -105,7 +105,7 @@ public class SearchVisibleRestDTO {
         return itSelf;
     }
 
-    public SearchVisibleRestDTO setItSelf(boolean itSelf) {
+    public SearchVisibleRequestDTO setItSelf(boolean itSelf) {
         this.itSelf = itSelf;
         return this;
     }
@@ -114,7 +114,7 @@ public class SearchVisibleRestDTO {
         return myGroup;
     }
 
-    public SearchVisibleRestDTO setMyGroup(boolean myGroup) {
+    public SearchVisibleRequestDTO setMyGroup(boolean myGroup) {
         this.myGroup = myGroup;
         return this;
     }
@@ -123,7 +123,7 @@ public class SearchVisibleRestDTO {
         return profile;
     }
 
-    public SearchVisibleRestDTO setProfile(boolean profile) {
+    public SearchVisibleRequestDTO setProfile(boolean profile) {
         this.profile = profile;
         return this;
     }
