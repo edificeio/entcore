@@ -21,6 +21,7 @@ import org.entcore.common.user.UserUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static fr.wseduc.webutils.DefaultAsyncResult.handleAsyncError;
 import static fr.wseduc.webutils.DefaultAsyncResult.handleAsyncResult;
@@ -265,7 +266,7 @@ public class PostgresEmailSender implements EmailSender {
         }
     }
 
-    public Future<Void> sendEmails(List<PostgresEmailDto> mails) {
+    public Future<MassCreateResults> sendEmails(List<PostgresEmailDto> mails) {
         for ( PostgresEmailDto mail : mails) {
             mail.setPriority(priority);
             final String moduleName = BaseServer.getModuleName();
@@ -308,5 +309,20 @@ public class PostgresEmailSender implements EmailSender {
             future.complete(mail);
         }
         return future.future();
+    }
+
+    public static class MassCreateResults {
+
+        private final AtomicInteger success =  new AtomicInteger(0);
+        private final AtomicInteger failure =  new AtomicInteger(0);
+
+        public AtomicInteger getSuccess() {
+            return success;
+        }
+
+        public AtomicInteger getFailure() {
+            return failure;
+        }
+
     }
 }

@@ -164,8 +164,9 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
     }
 
     @Override
-    public Future<Void> massCreate(List<PostgresEmailDto> mails) {
-        Future<Void> futureTransaction = Future.succeededFuture();
+    public Future<PostgresEmailSender.MassCreateResults> massCreate(List<PostgresEmailDto> mails) {
+        Future<PostgresEmailSender.MassCreateResults> futureTransaction = Future.succeededFuture();
+        PostgresEmailSender.MassCreateResults result = new PostgresEmailSender.MassCreateResults();
         List<List<PostgresEmailDto>> list = Lists.partition(mails, 250);
 
         LocalDateTime now = LocalDateTime.now();
@@ -224,7 +225,10 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                     final List<Future<?>> futures = new ArrayList<>();
                     futures.add(sqlConnection.preparedQuery(queryMail.toString()).execute(tuple).onComplete(sqlResult -> {
                         if (sqlResult.failed()) {
-                            log.error("Failed to create attachment: ", sqlResult.cause());
+                            log.error("Failed to create query: ", sqlResult.cause());
+                            result.getFailure().addAndGet(partitionedMail.size());
+                        } else {
+                            result.getSuccess().addAndGet(partitionedMail.size());
                         }
                     }));
                     if (attachmentTuple.size() > 0) {
@@ -239,7 +243,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 }));
             }
         }
-        return futureTransaction;
+        return futureTransaction.transform(ar -> Future.succeededFuture(result));
     }
 
 }

@@ -59,7 +59,7 @@ public interface PostgresEmailHelper {
         }
     }
 
-    default Future<Void> massCreate(List<PostgresEmailDto> mails) {
+    default Future<PostgresEmailSender.MassCreateResults> massCreate(List<PostgresEmailDto> mails) {
         throw new NotImplementedException();
     }
 
