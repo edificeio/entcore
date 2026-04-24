@@ -2157,4 +2157,26 @@ public class AuthController extends BaseController {
 		});
 
 	}
+
+	/**
+	 * Allows an admin to verify a TOTP code against a user's enrolled secret.
+	 * POST body: { "userId": "...", "code": "123456" }
+	 * Response: { "state": "valid" | "invalid" | "not.enrolled" }
+	 */
+	@Post("/user/totp/verify")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void verifyUserTotp(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, payload -> {
+			final String userId = payload.getString("userId");
+			final String code = payload.getString("code");
+			if (userId == null || userId.trim().isEmpty() || code == null || code.trim().isEmpty()) {
+				badRequest(request);
+				return;
+			}
+			mfaSvc.verifyTotpForUser(userId, code)
+				.onSuccess(result -> renderJson(request, result))
+				.onFailure(e -> renderError(request, new JsonObject().put("error", e.getMessage())));
+		});
+	}
 }

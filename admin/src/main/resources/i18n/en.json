@@ -28,5 +28,21 @@
     "services.widget.bibliocollege.rss.deleted": "RSS feed deleted.",
     "services.widget.bibliocollege.rss.deleted.title": "Deleted",
     "services.widget.bibliocollege.rss.alreadyAdded": "This RSS feed is already in the list.",
-    "services.widget.bibliocollege.rss.alreadyAdded.title": "Duplicate"
+    "services.widget.bibliocollege.rss.alreadyAdded.title": "Duplicate",
+    "totp.secret": "TOTP secret key",
+    "totp.enrolled": "Configured",
+    "totp.not.enrolled": "Not configured",
+    "totp.enroll": "Configure",
+    "totp.remove": "Remove",
+    "totp.saved": "TOTP key saved",
+    "totp.removed": "TOTP key removed",
+    "totp.error": "Error while updating the TOTP key",
+    "totp.format.error": "The secret must be in Base32 format (characters A-Z and 2-7)",
+    "totp.code.format.error": "The code must be exactly 6 digits",
+    "totp.verify": "Verify",
+    "totp.verify.confirm": "Validate code",
+    "totp.verify.success": "TOTP code is valid, authentication will work",
+    "totp.verify.failure": "Invalid TOTP code",
+    "totp.verify.not.enrolled": "No TOTP secret configured for this user",
+    "totp.verify.error": "Error while verifying the TOTP code"
 }

@@ -357,6 +357,31 @@ public class DefaultMfaService implements MfaService {
         }
     }
 
+    @Override
+    public Future<JsonObject> verifyTotpForUser(final String userId, final String code) {
+        final Promise<JsonObject> promise = Promise.promise();
+        final String query =
+            "MATCH (u:User {id:{id}}) RETURN u.totp as totp";
+        Neo4j.getInstance().execute(query, new JsonObject().put("id", userId), res -> {
+            if (!"ok".equals(res.body().getString("status"))) {
+                promise.fail(res.body().getString("message", "neo4j.error"));
+                return;
+            }
+            final JsonArray results = res.body().getJsonArray("result");
+            if (results == null || results.isEmpty()) {
+                promise.fail("user.not.found");
+                return;
+            }
+            final String totpSecret = results.getJsonObject(0).getString("totp");
+            if (StringUtils.isEmpty(totpSecret)) {
+                promise.complete(new JsonObject().put("state", "not.enrolled"));
+                return;
+            }
+            verifyTotp(totpSecret, code).onComplete(promise);
+        });
+        return promise.future();
+    }
+
 	public DefaultMfaService setEventStore(EventStore eventStore) {
 		this.mfaField.eventStore = eventStore;
         this.mfaField.sms = SmsSenderFactory.getInstance().newInstance(eventStore );

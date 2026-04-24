@@ -58,6 +58,12 @@ export class UserConnectionSectionComponent
   isTotpSaved: boolean = false;
   showTotpInput: boolean = false;
   tempTotp: string = "";
+  showTotpVerify: boolean = false;
+  tempTotpCode: string = "";
+  // Base32 alphabet: A-Z and 2-7, with optional padding
+  readonly totpBase32Pattern = /^[A-Za-z2-7]+(={0,6})?$/;
+  // TOTP code: exactly 6 digits
+  readonly totpCodePattern = /^[0-9]{6}$/;
 
   @Input() structure: StructureModel;
   
@@ -409,9 +415,34 @@ export class UserConnectionSectionComponent
     this.showTotpInput = true;
   }
 
+  /** Converts a Base32-encoded TOTP secret to Base64 for storage in the backend. */
+  private base32ToBase64(base32: string): string {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    const input = base32.toUpperCase().replace(/\s/g, '').replace(/=+$/, '');
+    let bits = 0;
+    let value = 0;
+    const bytes: number[] = [];
+    for (const char of input) {
+      const idx = alphabet.indexOf(char);
+      if (idx === -1) throw new Error(`Invalid Base32 character: ${char}`);
+      value = (value << 5) | idx;
+      bits += 5;
+      if (bits >= 8) {
+        bytes.push((value >>> (bits - 8)) & 0xff);
+        bits -= 8;
+      }
+    }
+    return btoa(bytes.map(b => String.fromCharCode(b)).join(''));
+  }
+
   saveAndCloseTotpInput() {
     if (!this.tempTotp) return;
-    this.details.totp = this.tempTotp;
+    try {
+      this.details.totp = this.base32ToBase64(this.tempTotp);
+    } catch (e) {
+      this.ns.error('totp.format.error');
+      return;
+    }
     this.spinner.perform('portal-content', this.details.updateTotp())
     .then(() => {
       this.details.hasTotp = true;
@@ -433,12 +464,38 @@ export class UserConnectionSectionComponent
     .then(() => {
       this.details.hasTotp = false;
       this.showTotpInput = false;
+      this.showTotpVerify = false;
       this.ns.success('totp.removed');
       this.userInfoService.setState(this.details);
       this.cdRef.markForCheck();
     })
     .catch(err => {
       this.ns.error('totp.error', '', err);
+    });
+  }
+
+  openTotpVerify() {
+    this.tempTotpCode = "";
+    this.showTotpVerify = true;
+  }
+
+  verifyTotpCode() {
+    if (!this.tempTotpCode) return;
+    this.spinner.perform('portal-content',
+      this.http.post('/auth/user/totp/verify', { userId: this.details.id, code: this.tempTotpCode }).toPromise()
+    ).then((result: any) => {
+      if (result && result.state === 'valid') {
+        this.ns.success('totp.verify.success');
+      } else if (result && result.state === 'not.enrolled') {
+        this.ns.error('totp.verify.not.enrolled');
+      } else {
+        this.ns.error('totp.verify.failure');
+      }
+      this.showTotpVerify = false;
+      this.tempTotpCode = "";
+      this.cdRef.markForCheck();
+    }).catch(err => {
+      this.ns.error('totp.verify.error', '', err);
     });
   }
 
