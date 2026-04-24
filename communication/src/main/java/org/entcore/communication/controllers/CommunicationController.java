@@ -54,6 +54,7 @@ import org.entcore.communication.dto.bus.SearchVisibleBusDTO;
 import org.entcore.communication.dto.rest.SearchVisibleRequestDTO;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
 import org.entcore.communication.mapper.AddLinkDirectionsDtoMapper;
+import org.entcore.communication.mapper.CommuniqueWithDtoMapper;
 import org.entcore.communication.mapper.DiscoverVisibleStructureDtoMapper;
 import org.entcore.communication.mapper.GroupDtoMapper;
 import org.entcore.communication.mapper.RemoveRelationsResultDtoMapper;
@@ -83,6 +84,16 @@ public class CommunicationController extends BaseController {
 		renderView(request);
 	}
 
+	/**
+	 * Adds a communication link between two groups, upgrading the users' communication values
+	 * and propagating the link to all users belonging to the concerned groups.
+	 *
+	 * <p><strong>Deprecated — do not use.</strong> This endpoint was used by the v1 admin console
+	 * and is known to corrupt data. It must not be called anymore.</p>
+	 *
+	 * @param request the HTTP request containing path parameters {@code startGroupId} and {@code endGroupId}
+	 * @deprecated This method can corrupt data. Use the new communication API instead.
+	 */
 	@Post("/group/:startGroupId/communique/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -94,6 +105,15 @@ public class CommunicationController extends BaseController {
 				notEmptyResponseHandler(request));
 	}
 
+	/**
+	 * Adds a direct communication link between two users, bypassing group-based rules.
+	 *
+	 * <p>Restricted to super-admins. Intended for integration testing purposes only
+	 * and should not be used in production workflows.</p>
+	 *
+	 * @param request the HTTP request containing path parameters {@code startUser} and {@code endUser},
+	 *                and query parameter {@code direction} defining the direction of the communication link
+	 */
 	@Put("/api/admin/users/:startUser/communiqueDirect/:endUser")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
@@ -110,6 +130,16 @@ public class CommunicationController extends BaseController {
 		communicationService.setDirectCommunication(startUser, endUser, directionEnum, defaultResponseHandler(request));
 	}
 
+	/**
+	 * Removes a communication link between two groups, downgrading the users' communication values
+	 * and propagating the removal to all users belonging to the concerned groups.
+	 *
+	 * <p><strong>Deprecated — do not use.</strong> This endpoint was used by the v1 admin console
+	 * and is known to corrupt data. It must not be called anymore.</p>
+	 *
+	 * @param request the HTTP request containing path parameters {@code startGroupId} and {@code endGroupId}
+	 * @deprecated This method can corrupt data. Use the new communication API instead.
+	 */
 	@Delete("/group/:startGroupId/communique/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -121,8 +151,16 @@ public class CommunicationController extends BaseController {
 				notEmptyResponseHandler(request));
 	}
 	/**
-	 *  For test only
-	 * @param request
+	 * Adds a communication link between users and a group, upgrading the group's {@code users}
+	 * value (NONE, INCOMING, OUTGOING, BOTH) and propagating the link to all users belonging
+	 * to the concerned group.
+	 *
+	 * <p><strong>Deprecated — do not use.</strong> This endpoint was used by the v1 admin console
+	 * and is known to corrupt data. It must not be called anymore.</p>
+	 *
+	 * @param request the HTTP request containing path parameter {@code groupId} and query parameter
+	 *                {@code direction} defining the direction of the communication link
+	 * @deprecated This method can corrupt data. Use the new communication API instead.
 	 */
 	@Post("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -136,8 +174,16 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * For test only
-	 * @param request
+	 * Removes a communication link between users and a group, downgrading the group's {@code users}
+	 * value (NONE, INCOMING, OUTGOING, BOTH) and propagating the removal to all users belonging
+	 * to the concerned group.
+	 *
+	 * <p><strong>Deprecated — do not use.</strong> This endpoint was used by the v1 admin console
+	 * and is known to corrupt data. It must not be called anymore.</p>
+	 *
+	 * @param request the HTTP request containing path parameter {@code groupId} and query parameter
+	 *                {@code direction} defining the direction of the communication link to remove
+	 * @deprecated This method can corrupt data. Use the new communication API instead.
 	 */
 	@Delete("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -150,15 +196,33 @@ public class CommunicationController extends BaseController {
 		communicationService.removeLinkWithUsers(groupId, direction, notEmptyResponseHandler(request));
 	}
 
+	/**
+	 * Returns the group itself along with the list of groups referenced in its {@code communiqueWith}
+	 * Neo4j property, i.e. the groups the source group can communicate with via a {@code COMMUNIQUE}
+	 * relationship.
+	 *
+	 * @param request the HTTP request containing path parameter {@code groupId}
+	 */
 	@Get("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void communiqueWith(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
-		communicationService.communiqueWith(groupId, notEmptyResponseHandler(request));
+		communicationService.communiqueWith(groupId)
+				.onSuccess(result -> render(request, CommuniqueWithDtoMapper.map(result)))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
+	/**
+	 * Returns the groups that the given group has outgoing {@code COMMUNIQUE} relations to,
+	 * i.e. groups whose {@code users} value is {@code OUTGOING} or {@code BOTH} and that can
+	 * therefore receive communication and broadcast it to their members.
+	 *
+	 * <p>Response: array of {@link org.entcore.communication.dto.rest.GroupDTO}.</p>
+	 *
+	 * @param request the HTTP request containing path parameter {@code groupId}
+	 */
 	@Get("/group/:groupId/outgoing")
 	public void getOutgoingRelations(HttpServerRequest request) {
 		String groupId = request.params().get("groupId");
@@ -167,6 +231,15 @@ public class CommunicationController extends BaseController {
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
+	/**
+	 * Returns the groups that have incoming {@code COMMUNIQUE} relations toward the given group,
+	 * i.e. groups whose {@code users} value is {@code INCOMING} or {@code BOTH} and that can
+	 * therefore emit communication from their members.
+	 *
+	 * <p>Response: array of {@link org.entcore.communication.dto.rest.GroupDTO}.</p>
+	 *
+	 * @param request the HTTP request containing path parameter {@code groupId}
+	 */
 	@Get("/group/:groupId/incoming")
 	public void getIncomingRelations(HttpServerRequest request) {
 		String groupId = request.params().get("groupId");
@@ -175,6 +248,23 @@ public class CommunicationController extends BaseController {
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
+	/**
+	 * Creates or updates the {@code COMMUNIQUE_DIRECT} relationship between students and their
+	 * relatives for all relative in the given group. Update the relativeCommuniqueStudent group value
+	 *
+	 * <p>The {@code direction} query parameter controls the direction of the link:</p>
+	 * <ul>
+	 *   <li>{@code INCOMING} — students can communicate toward their relatives</li>
+	 *   <li>{@code OUTGOING} — relatives can communicate toward their students</li>
+	 *   <li>{@code BOTH} — communication is allowed in both directions</li>
+	 * </ul>
+	 *
+	 * <p>Response: {@link org.entcore.communication.dto.rest.CountResultDTO} with the number of
+	 * affected relationships.</p>
+	 *
+	 * @param request the HTTP request containing path parameter {@code groupId} and query parameter
+	 *                {@code direction}
+	 */
 	@Post("/relative/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -190,6 +280,23 @@ public class CommunicationController extends BaseController {
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
+	/**
+	 * Removes the {@code COMMUNIQUE_DIRECT} relationship between students and their relatives
+	 * for all student/relative pairs in the given group.
+	 *
+	 * <p>The {@code direction} query parameter controls which link is removed:</p>
+	 * <ul>
+	 *   <li>{@code INCOMING} — removes the link from students toward their relatives</li>
+	 *   <li>{@code OUTGOING} — removes the link from relatives toward their students</li>
+	 *   <li>{@code BOTH} — removes links in both directions</li>
+	 * </ul>
+	 *
+	 * <p>Response: {@link org.entcore.communication.dto.rest.CountResultDTO} with the number of
+	 * affected relationships.</p>
+	 *
+	 * @param request the HTTP request containing path parameter {@code groupId} and query parameter
+	 *                {@code direction}
+	 */
 	@Delete("/relative/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -205,6 +312,20 @@ public class CommunicationController extends BaseController {
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
+	/**
+	 * Retrieves all users and groups visible to the given user.
+	 * <p>
+	 * Route: {@code GET /visible/:userId}
+	 * <p>
+	 * Query parameters:
+	 * <ul>
+	 *   <li>{@code schoolId} — optional school context to filter results</li>
+	 *   <li>{@code expectedType} — optional, repeatable; restricts results to specific profile types</li>
+	 * </ul>
+	 *
+	 * @param request the HTTP request; path param {@code userId} identifies the user whose visible contacts are fetched
+	 * @deprecated This endpoint no longer appears to be called. Consider removing it or replacing it with the POST {@code /visible} endpoint.
+	 */
 	@Get("/visible/:userId")
 	@SecuredAction("communication.visible.user")
 	public void visibleUsers(final HttpServerRequest request) {
@@ -218,6 +339,30 @@ public class CommunicationController extends BaseController {
 		}
 	}
 
+	/**
+	 * Searches for all users and groups visible to the authenticated user, applying the filters provided in the request body.
+	 * <p>
+	 * Route: {@code POST /visible}
+	 * <p>
+	 * The request body is deserialized into a {@link SearchVisibleRequestDTO}. The following fields are always
+	 * overridden server-side regardless of client input:
+	 * <ul>
+	 *   <li>{@code itSelf=true} — the caller is always included</li>
+	 *   <li>{@code myGroup=true} — the caller's own groups are always included</li>
+	 *   <li>{@code profile=false} — profile-only entries are excluded</li>
+	 * </ul>
+	 * Available filters in the body: {@code structures}, {@code classes}, {@code profiles}, {@code functions},
+	 * {@code positions}, {@code search}, {@code types}, {@code nbUsersInGroups}, {@code groupType}.
+	 * <p>
+	 * Returns a {@link org.entcore.communication.dto.rest.SearchVisibleResultDTO} containing:
+	 * <ul>
+	 *   <li>{@code users} — list of {@link org.entcore.communication.dto.rest.UserDTO} visible to the caller</li>
+	 *   <li>{@code groups} — list of {@link org.entcore.communication.dto.rest.GroupDTO} visible to the caller,
+	 *       optionally annotated with their group type when {@code groupType=true}</li>
+	 * </ul>
+	 *
+	 * @param request the HTTP request carrying the JSON body with search filters
+	 */
 	@Post("/visible")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchVisible(HttpServerRequest request) {
