@@ -2,7 +2,7 @@ import { IconExternalLink } from '@edifice.io/react/icons';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import edificeLogoUrl from '~/assets/edifice-logo.svg';
-import { Level2Stub } from '~/components/Level2Stub';
+import { ChildrenList } from '~/components/ChildrenList';
 import { PartnerLogos } from '~/components/PartnerLogos';
 import { ProviderList } from '~/components/ProviderList';
 import { WelcomeMessage } from '~/components/WelcomeMessage';
@@ -10,12 +10,12 @@ import { useWayfConfig } from '~/hooks/useWayfConfig';
 import type { WayfProvider } from '~/models/wayf';
 import './Wayf.css';
 
+type WayfView = { level: 1 } | { level: 2; parent: WayfProvider };
+
 export const WayfPage = () => {
   const { t } = useTranslation('auth');
   const [childTheme, setChildTheme] = useState<string | undefined>();
-  const [selectedProvider, setSelectedProvider] = useState<WayfProvider | null>(
-    null,
-  );
+  const [view, setView] = useState<WayfView>({ level: 1 });
 
   const { providers } = useWayfConfig();
 
@@ -34,21 +34,27 @@ export const WayfPage = () => {
   const handleProviderClick = (provider: WayfProvider) => {
     if (provider.acs) {
       window.location.href = provider.acs;
-    } else if (provider.children) {
-      setSelectedProvider(provider);
+    } else if (provider.children?.length) {
+      setView({ level: 2, parent: provider });
+    }
+  };
+
+  const handleChildClick = (child: WayfProvider) => {
+    if (child.acs) {
+      window.location.href = child.acs;
     }
   };
 
   const backgroundStyle = childTheme
     ? {
-        backgroundImage: `url(/assets/themes/${childTheme}/img/background.png)`,
+        backgroundImage: `url(/assets/themes/${childTheme}/img/background.png), var(--wayf-editorial-fallback)`,
       }
     : undefined;
 
   return (
-    <div className="wayf-layout">
+    <div className="wayf-layout" style={backgroundStyle}>
       {/* Zone éditoriale — gauche */}
-      <div className="wayf-editorial" style={backgroundStyle}>
+      <div className="wayf-editorial">
         <WelcomeMessage />
         <PartnerLogos />
       </div>
@@ -68,8 +74,12 @@ export const WayfPage = () => {
 
         {/* Espace authentification */}
         <div className="wayf-selection__auth">
-          {selectedProvider ? (
-            <Level2Stub onBack={() => setSelectedProvider(null)} />
+          {view.level === 2 ? (
+            <ChildrenList
+              parent={view.parent}
+              onBack={() => setView({ level: 1 })}
+              onChildClick={handleChildClick}
+            />
           ) : (
             <>
               <h1 className="wayf-title">{t('wayf.choice')}</h1>

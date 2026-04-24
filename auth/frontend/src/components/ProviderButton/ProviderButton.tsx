@@ -7,10 +7,17 @@ import {
 } from '@edifice.io/react/icons/audience';
 import type { ComponentType, SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { WayfProvider } from '~/models/wayf';
+import type { WayfIconKey, WayfProvider } from '~/models/wayf';
 import './ProviderButton.css';
 
-const PROVIDER_ICONS: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+/**
+ * Finite registry mapping icon keys to their component.
+ * To add a new icon: add the key to WAYF_ICONS in models/wayf.ts and register it here.
+ */
+const PROVIDER_ICONS: Record<
+  WayfIconKey,
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
   student: IconStudent,
   teacher: IconTeacher,
   relative: IconParent,
@@ -21,18 +28,32 @@ const PROVIDER_ICONS: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
 interface ProviderButtonProps {
   provider: WayfProvider;
   onClick: (provider: WayfProvider) => void;
+  /** Inherited at level 2 — child buttons pick up the parent's color class */
+  parentColorKey?: string;
+  /** Inherited at level 2 — child buttons fall back to the parent's icon */
+  parentIconKey?: WayfIconKey;
 }
 
-export const ProviderButton = ({ provider, onClick }: ProviderButtonProps) => {
+export const ProviderButton = ({
+  provider,
+  onClick,
+  parentColorKey,
+  parentIconKey,
+}: ProviderButtonProps) => {
   const { t } = useTranslation('auth');
 
   const itemKey = provider.i18n.replace(/wayf\./, '');
-  const cssKey = itemKey.replace(/\./g, '-');
-  const IconComponent = PROVIDER_ICONS[itemKey];
+  const colorKey = (parentColorKey ?? itemKey).replace(/\./g, '-');
+
+  // Icon resolution: explicit provider.icon > parentIconKey > none
+  const resolvedIconKey = provider.icon ?? parentIconKey;
+  const IconComponent = resolvedIconKey
+    ? PROVIDER_ICONS[resolvedIconKey]
+    : undefined;
 
   return (
     <button
-      className={`wayf-provider-btn wayf-provider-btn--${cssKey}`}
+      className={`wayf-provider-btn wayf-provider-btn--${colorKey}`}
       onClick={() => onClick(provider)}
       type="button"
     >

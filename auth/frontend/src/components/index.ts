@@ -1,5 +1,5 @@
 export { App } from './App';
-export { Level2Stub } from './Level2Stub';
+export { ChildrenList } from './ChildrenList';
 export { PartnerLogos } from './PartnerLogos';
 export { ProviderButton } from './ProviderButton';
 export { ProviderList } from './ProviderList';

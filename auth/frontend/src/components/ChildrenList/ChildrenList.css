@@ -1,0 +1,33 @@
+.wayf-children-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.wayf-back-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--primitives-blue-900, #1c1c73);
+  border-radius: var(--border-radius-pill, 128px);
+  transition: background 0.15s ease;
+  min-height: 48px;
+}
+
+.wayf-back-btn:hover {
+  background: rgba(28, 28, 115, 0.06);
+}
+
+.wayf-back-btn:focus-visible {
+  outline: 2px solid var(--primitives-blue-900, #1c1c73);
+  outline-offset: 2px;
+}

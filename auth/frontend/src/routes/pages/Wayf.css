@@ -18,10 +18,19 @@
    Layout principal — Grid deux colonnes
    ═══════════════════════════════════════════ */
 .wayf-layout {
+  --wayf-editorial-fallback: linear-gradient(
+    111deg,
+    #b9e3f8 0%,
+    #2a9cc8 100%
+  );
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-template-areas: 'editorial selection';
   min-height: 100vh;
+  background: var(--wayf-editorial-fallback);
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
 }
 
 /* ═══════════════════════════════════════════
@@ -30,9 +39,6 @@
    ═══════════════════════════════════════════ */
 .wayf-editorial {
   grid-area: editorial;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 3rem;
@@ -139,6 +145,15 @@
   height: 20px;
   width: auto;
   display: block;
+}
+
+/* ═══════════════════════════════════════════
+   Responsive — tablette : colonnes égales
+   ═══════════════════════════════════════════ */
+@media (max-width: 1199px) {
+  .wayf-layout {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* ═══════════════════════════════════════════
