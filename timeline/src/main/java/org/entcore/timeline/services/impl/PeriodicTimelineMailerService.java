@@ -449,7 +449,10 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         }
         StopWatch step7 = new StopWatch();
         emailSender.sendEmails(mails)
-                .onFailure(t -> { log.error(t.getMessage());})
+                .onFailure(t -> {
+                    log.error(t.getMessage());
+                    promise.complete(new JsonObject().put("users.ko", mails.size()));
+                })
                 .onSuccess(v -> {
                     log.info("[PeriodicMails][perf] sendMails page " + page + ", sented : " + v.getSuccess().get() + " time " + step7.elapsedTimeMillis() + " ms");
                     promise.complete(new JsonObject().put("mails.sent", v.getSuccess().get()).put("users.ko", mails.size() - v.getSuccess().get()));
