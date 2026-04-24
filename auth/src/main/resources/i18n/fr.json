@@ -253,5 +253,18 @@
   "wayf.perseducnat.amiens": "Académie d'Amiens",
   "wayf.perseducnat.agri": "Établissement agricole",
   "wayf.perseducnat.collectivite": "Personnel de la collectivité",
+  "wayf.partner.logo.hdf": "/assets/partners/hdf/logo-hdf.png",
+  "wayf.partner.logo.aisne": "/assets/partners/hdf/logo-aisne.png",
+  "wayf.partner.logo.nord": "/assets/partners/hdf/logo-nord.jpg",
+  "wayf.partner.logo.oise": "/assets/partners/hdf/logo-oise.jpg",
+  "wayf.partner.logo.pas-de-calais": "/assets/partners/hdf/logo-pasdecalais.jpg",
+  "wayf.partner.logo.somme": "/assets/partners/hdf/logo-somme.png",
+  "wayf.partner.logo.adica": "/assets/partners/hdf/logo-adica.png",
+  "wayf.partner.logo.oise-hd": "/assets/partners/hdf/logo-oisehd.jpg",
+  "wayf.partner.logo.fibrenum": "/assets/partners/hdf/logo-fibrenum.png",
+  "wayf.partner.logo.somme-numerique": "/assets/partners/hdf/logo-somme-numerique.png",
+  "wayf.partner.logo.agricole": "/assets/partners/hdf/logo-argicole.png",
+  "wayf.partner.logo.rectorat-hdf": "/assets/partners/hdf/logo_RA_HAUTS-DE-FRANCE.png",
+  "wayf.partner.logo.ue": "/assets/partners/hdf/logo-ue.jpg",
   "weak": "Faible"
 }

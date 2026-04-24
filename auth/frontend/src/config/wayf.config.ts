@@ -81,6 +81,21 @@ const hdfProviders: WayfDomainConfig = {
     },
     { i18n: 'wayf.other', icon: 'other', acs: '/auth/saml/other' },
   ],
+  partners: [
+    { logoI18n: 'wayf.partner.logo.hdf', url: 'https://www.hautsdefrance.fr/' },
+    { logoI18n: 'wayf.partner.logo.aisne', url: 'https://www.aisne.com/' },
+    { logoI18n: 'wayf.partner.logo.nord', url: 'https://nordcolleges.enthdf.fr/' },
+    { logoI18n: 'wayf.partner.logo.oise', url: 'https://www.oise.fr/' },
+    { logoI18n: 'wayf.partner.logo.pas-de-calais', url: 'https://www.pasdecalais.fr/colleges' },
+    { logoI18n: 'wayf.partner.logo.somme', url: 'https://www.somme.fr/' },
+    { logoI18n: 'wayf.partner.logo.adica', url: 'https://www.adica.fr/assistance-conseil-informatique' },
+    { logoI18n: 'wayf.partner.logo.oise-hd', url: 'https://oise-thd.fr/' },
+    { logoI18n: 'wayf.partner.logo.fibrenum', url: 'https://www.lafibrenumerique5962.fr/' },
+    { logoI18n: 'wayf.partner.logo.somme-numerique', url: 'https://www.sommenumerique.fr/' },
+    { logoI18n: 'wayf.partner.logo.agricole', url: 'https://draaf.hauts-de-france.agriculture.gouv.fr/' },
+    { logoI18n: 'wayf.partner.logo.rectorat-hdf', url: 'https://www1.ac-lille.fr/la-region-academique-hauts-de-france-121434' },
+    { logoI18n: 'wayf.partner.logo.ue' },
+  ],
 };
 
 export const wayfConfig: WayfConfig = {

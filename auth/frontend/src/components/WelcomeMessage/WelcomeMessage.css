@@ -1,17 +1,34 @@
-.wayf-welcome-message {
+.wayf-welcome {
+  border-radius: var(--border-radius-24);
   background: var(--primitives-white);
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  min-height: 0;
+  box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
 
-.wayf-welcome-message__placeholder {
-  color: var(--primitives-grey-800);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: 0;
+.wayf-welcome__scroll {
+  padding: var(--spacer-24);
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.wayf-welcome__scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.wayf-welcome__scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wayf-welcome__scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.wayf-welcome img,
+.wayf-welcome table {
+  max-width: 100%;
+  height: auto;
 }

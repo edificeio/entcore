@@ -1,0 +1,78 @@
+- generic [active] [ref=e1]:
+  - heading "Portail de connexion à l'ENT HDF" [level=1] [ref=e2]
+  - generic [ref=e3]:
+    - iframe [ref=e5]:
+      - generic [ref=f1e2]:
+        - article [ref=f1e4]:
+          - paragraph [ref=f1e5]: Veuillez renseigner quelques informations pour accéder à votre page d'authentification
+          - paragraph [ref=f1e6]: 1. Sélectionner votre profil
+          - button "Élève" [ref=f1e7] [cursor=pointer]: Élève
+          - button "Responsable d'élève" [ref=f1e9] [cursor=pointer]: Responsable d'élève
+          - button "Personnel Education Nationale" [ref=f1e11] [cursor=pointer]: Personnel Education Nationale
+          - button "Enseignement agricole" [ref=f1e13] [cursor=pointer]: Enseignement agricole
+          - button "Établissements spécialisés" [ref=f1e15] [cursor=pointer]: Établissements spécialisés
+          - button "Personnel collectivité et invité" [ref=f1e17] [cursor=pointer]: Personnel collectivité et invité
+        - article [ref=f1e20]:
+          - heading "Partenaires du projet" [level=2] [ref=f1e21]
+          - generic [ref=f1e22]:
+            - link [ref=f1e23] [cursor=pointer]:
+              - /url: https://www.hautsdefrance.fr
+              - img [ref=f1e24]
+            - link [ref=f1e25] [cursor=pointer]:
+              - /url: https://www.aisne.com
+              - img [ref=f1e26]
+            - link [ref=f1e27] [cursor=pointer]:
+              - /url: https://nordcolleges.enthdf.fr
+              - img [ref=f1e28]
+            - link [ref=f1e29] [cursor=pointer]:
+              - /url: https://www.oise.fr
+              - img [ref=f1e30]
+            - link [ref=f1e31] [cursor=pointer]:
+              - /url: https://www.pasdecalais.fr/colleges
+              - img [ref=f1e32]
+            - link [ref=f1e33] [cursor=pointer]:
+              - /url: https://www.somme.fr
+              - img [ref=f1e34]
+          - generic [ref=f1e35]:
+            - link [ref=f1e36] [cursor=pointer]:
+              - /url: https://www.adica.fr/assistance-conseil-informatique
+              - img [ref=f1e37]
+            - link [ref=f1e38] [cursor=pointer]:
+              - /url: https://oise-thd.fr
+              - img [ref=f1e39]
+            - link [ref=f1e40] [cursor=pointer]:
+              - /url: https://www.lafibrenumerique5962.fr
+              - img [ref=f1e41]
+            - link [ref=f1e42] [cursor=pointer]:
+              - /url: https://www.sommenumerique.fr
+              - img [ref=f1e43]
+          - generic [ref=f1e44]:
+            - link [ref=f1e45] [cursor=pointer]:
+              - /url: https://draaf.hauts-de-france.agriculture.gouv.fr
+              - img [ref=f1e46]
+            - link [ref=f1e47] [cursor=pointer]:
+              - /url: https://www1.ac-lille.fr/la-region-academique-hauts-de-france-121434
+              - img [ref=f1e48]
+            - img [ref=f1e49]
+    - paragraph:
+      - link:
+        - /url: "#"
+  - contentinfo [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - heading "ENT HDF" [level=3] [ref=e9]
+        - paragraph [ref=e10]: Copyrights © 2025
+      - generic [ref=e11]:
+        - heading "Mentions légales" [level=3] [ref=e12]
+        - paragraph [ref=e13]:
+          - link "Charte d'utilisation" [ref=e14] [cursor=pointer]:
+            - /url: https://enthdf.fr/assets/cgu/Charte_ENT_HDF.pdf
+        - paragraph [ref=e15]:
+          - link "Conditions générales d’utilisation" [ref=e16] [cursor=pointer]:
+            - /url: https://enthdf.fr/assets/cgu/Edifice_Conditions_Generales_d_Utilisation.pdf
+        - paragraph [ref=e17]:
+          - link "Politique de confidentialité" [ref=e18] [cursor=pointer]:
+            - /url: https://enthdf.fr/assets/cgu/Edifice_Charte_de_protection_des_donnees_personnelles.pdf
+  - article [ref=e20]:
+    - paragraph [ref=e21]: Parce que nous sommes soucieux de la protection de vos données personnelles, les cookies que nous utilisons collectent des informations anonymisées. Notre seule utilisation de ces cookies vise à améliorer votre expérience utilisateur. Vous pouvez consulter à tout moment ces cookies dans la plateforme depuis la page « Mon compte » dans la section « Cookies ».
+    - button "Fermer" [ref=e22] [cursor=pointer]

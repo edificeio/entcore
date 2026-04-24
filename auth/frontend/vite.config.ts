@@ -1,45 +1,28 @@
 import react from '@vitejs/plugin-react';
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { loadEnv, ProxyOptions } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
+import { createDevProxyConfig } from './vite/plugins/devProxy';
+import { rewriteWayfV2 } from './vite/plugins/rewriteWayfV2';
+import { serveLocalAuthI18n } from './vite/plugins/serveLocalAuthI18n';
+import { serveLocalPartners } from './vite/plugins/serveLocalPartners';
+import { serveLocalWelcome } from './vite/plugins/serveLocalWelcome';
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
-  // Checking environment files
-  const envFile = loadEnv(mode, process.cwd());
-  const envs = { ...process.env, ...envFile };
-  const hasEnvFile = Object.keys(envFile).length;
-
-  // Proxy variables
-  const headers = hasEnvFile
-    ? {
-        'set-cookie': [
-          `oneSessionId=${envs.VITE_ONE_SESSION_ID}`,
-          `XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
-        ],
-        'Cache-Control': 'public, max-age=300',
-      }
-    : {};
-
-  const proxyObj: ProxyOptions = hasEnvFile
-    ? {
-        target: envs.VITE_RECETTE,
-        changeOrigin: true,
-        headers: {
-          cookie: `oneSessionId=${envs.VITE_ONE_SESSION_ID};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
-        },
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.setHeader('X-XSRF-TOKEN', envs.VITE_XSRF_TOKEN || '');
-          });
-        },
-      }
-    : {
-        target: 'http://localhost:8090',
-        changeOrigin: false,
-      };
+  const { headers, proxy } = createDevProxyConfig({
+    mode,
+    routes: [
+      '/applications-list',
+      '/conf/public',
+      '^/(?=help-1d|help-2d)',
+      '^/(?=assets)',
+      '^/(?=theme|locale|i18n|skin)',
+      '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|workspace|infra)',
+      '/explorer',
+      '/auth',
+    ],
+  });
 
   return defineConfig({
     base: mode === 'production' ? '/auth' : '',
@@ -57,26 +40,12 @@ export default ({ mode }: { mode: string }) => {
 
     server: {
       fs: {
-        /**
-         * Allow the server to access the node_modules folder (for the images)
-         * This is a solution to allow the server to access the images and fonts of the bootstrap package for 1D theme
-         */
         allow: ['../../'],
       },
-      proxy: {
-        '/applications-list': proxyObj,
-        '/conf/public': proxyObj,
-        '^/(?=help-1d|help-2d)': proxyObj,
-        '^/(?=assets)': proxyObj,
-        '^/(?=theme|locale|i18n|skin)': proxyObj,
-        '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|auth|workspace|infra)':
-          proxyObj,
-        '/explorer': proxyObj,
-        '/auth': proxyObj,
-      },
       port: 4200,
-      headers,
       host: 'localhost',
+      headers,
+      proxy,
     },
 
     preview: {
@@ -86,28 +55,10 @@ export default ({ mode }: { mode: string }) => {
     },
 
     plugins: [
-      {
-        name: 'serve-local-auth-i18n',
-        configureServer(server) {
-          server.middlewares.use('/auth/i18n', (_req, res) => {
-            const filePath = resolve(__dirname, '../src/main/resources/i18n/fr.json');
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.end(readFileSync(filePath, 'utf-8'));
-          });
-        },
-      },
-      {
-        name: 'rewrite-wayfv2',
-        configureServer(server) {
-          server.middlewares.use((req, _res, next) => {
-            // Whitelist: only redirect specific SPA routes to wayfv2.html
-            if (req.url === '/' || req.url?.startsWith('/saml/wayf')) {
-              req.url = '/wayfv2.html';
-            }
-            next();
-          });
-        },
-      },
+      serveLocalAuthI18n(__dirname),
+      serveLocalWelcome(__dirname),
+      serveLocalPartners(__dirname),
+      rewriteWayfV2(),
       react(),
       tsconfigPaths(),
     ],

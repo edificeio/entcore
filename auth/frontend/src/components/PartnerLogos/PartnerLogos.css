@@ -1,14 +1,23 @@
 .wayf-partners {
-  background: --primitives-white;
-  border-radius: 1rem;
+  background: var(--primitives-white);
+  border-radius: var(--border-radius-24);
   padding: 1rem;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
 }
 
-.wayf-partners__placeholder {
-  color: var(--primitives-grey-800);
-  font-size: 0.875rem;
-  margin: 0;
+.wayf-partners__link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.wayf-partners__logo {
+  max-height: 40px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }

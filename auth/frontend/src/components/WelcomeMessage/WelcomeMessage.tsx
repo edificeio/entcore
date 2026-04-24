@@ -1,12 +1,19 @@
+import type { WelcomeState } from '~/models/welcome';
 import './WelcomeMessage.css';
 
-/** Stub — message d'accueil (US suivante : /auth/configure/welcome) */
-export const WelcomeMessage = () => {
+interface WelcomeMessageProps {
+  state: WelcomeState;
+}
+
+export const WelcomeMessage = ({ state }: WelcomeMessageProps) => {
+  if (state.status !== 'ready') return <div />;
+
   return (
-    <div className="wayf-welcome-message">
-      <p className="wayf-welcome-message__placeholder">
-        Message d'accueil — à implémenter
-      </p>
-    </div>
+    <aside className="wayf-welcome">
+      <div
+        className="wayf-welcome__scroll"
+        dangerouslySetInnerHTML={{ __html: state.html }}
+      />
+    </aside>
   );
 };

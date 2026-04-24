@@ -24,8 +24,16 @@ export interface WayfProvider {
   titleI18n?: string;
 }
 
+export interface WayfPartner {
+  /** i18n key whose value in the translation file is the logo asset URL */
+  logoI18n: string;
+  /** Optional link wrapping the logo */
+  url?: string;
+}
+
 export interface WayfDomainConfig {
   providers: WayfProvider[];
+  partners?: WayfPartner[];
 }
 
 export interface WayfConfig {
