@@ -48,7 +48,7 @@
     "searching-event": {{ workspaceSearchingEvent | default('true') }},
     "publicConf": {
       "lazy-mode": {{ workspaceLazyMode | default('true') }},
-      {% if nextcloudHost is defined or nextcloudProviders is defined %}"folder-service": ["nextcloud"],{% endif %}
+      {% if workspaceEnableNextCloud is defined and workspaceEnableNextCloud %}"folder-service": ["nextcloud"],{% endif %}
       "ttl-documents":{{ workspaceTtlDoc | default('180') }},
       "ttl-folders":{{ workspaceTtlFolder | default('600') }}
     }
