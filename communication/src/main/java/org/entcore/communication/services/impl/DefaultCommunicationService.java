@@ -384,6 +384,19 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
+	public Future<JsonObject> communiqueWith(String groupId) {
+		Promise<JsonObject> promise = Promise.promise();
+		communiqueWith(groupId, r -> {
+			if (r.isLeft()) {
+				promise.fail(r.left().getValue());
+			} else {
+				promise.complete(r.right().getValue());
+			}
+		});
+		return promise.future();
+	}
+
+	@Override
 	public Future<Integer> addLinkBetweenRelativeAndStudent(String groupId, Direction direction) {
 		Promise<Integer> promise = Promise.promise();
 		String createRelationship;
