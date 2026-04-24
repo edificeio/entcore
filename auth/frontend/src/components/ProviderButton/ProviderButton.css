@@ -6,7 +6,7 @@
   display: flex;
   align-items: stretch;
   border: 2px solid var(--btn-color);
-  border-radius: var(--border-radius-pill);
+  border-radius: var(--primitives-border-radius-pill);
   background: var(--primitives-white);
   cursor: pointer;
   overflow: hidden;
@@ -35,7 +35,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem;
+  padding: var(--primitives-spacer-12);
   flex-shrink: 0;
   border-radius: 10px 0 0 10px;
   min-width: 48px;
@@ -53,9 +53,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  font-weight: 700;
+  padding: var(--primitives-spacer-12) var(--primitives-spacer-16);
+  font-size: var(--primitives-font-size-default);
+  font-weight: var(--primitives-font-weight-bold);
   color: var(--primitives-grey-900);
   text-align: center;
 }
@@ -64,31 +64,27 @@
 .wayf-provider-btn__arrow {
   display: flex;
   align-items: center;
-  padding-right: 1rem;
+  padding-right: var(--primitives-spacer-16);
   color: var(--btn-color);
   flex-shrink: 0;
 }
 
 .wayf-provider-btn--student {
-  /* Styles spécifiques pour le bouton étudiant */
   --btn-color: var(--primitives-orange-500);
 }
 
 .wayf-provider-btn--relative {
-  /* Styles spécifiques pour le bouton parent */
   --btn-color: var(--primitives-blue-500);
 }
 
 .wayf-provider-btn--teacher {
-  /* Styles spécifiques pour le bouton enseignant */
   --btn-color: var(--primitives-green-500);
 }
 
 .wayf-provider-btn--perseducnat {
-  /* Styles spécifiques pour le bouton personnel éducatif */
   --btn-color: var(--primitives-pink-500);
 }
+
 .wayf-provider-btn--other {
-  /* Styles spécifiques pour le bouton autre */
   --btn-color: var(--primitives-yellow-500);
 }

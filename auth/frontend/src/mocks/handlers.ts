@@ -190,6 +190,19 @@ const defaultHandlers = [
     });
   }),
 
+  http.get('/auth/configure/welcome', () => {
+    return HttpResponse.json({
+      enabled: true,
+      de: '',
+      co: '',
+      es: '',
+      pt: '',
+      fr: '<h3 class="ng-scope" style="text-align: center;"><span style="background-color: transparent; font-family: Arial, sans-serif; font-size: 11pt; white-space-collapse: preserve; color: rgb(0, 0, 0); text-align: left;">​</span></h3><h1 style="line-height: 28px;" class="ng-scope"><div class="ng-scope" style=""><div class="ng-scope" style=""><span id="docs-internal-guid-fb8fb236-7fff-a1cb-f7bc-e31dd61c790a" class="ng-scope" style=""><span id="docs-internal-guid-03c41daf-7fff-fc74-0585-b5d88705fb05" style=""><div style="color: rgb(0, 0, 0); font-size: 14px; word-break: break-word; line-height: 1.38; margin-top: 12pt; margin-bottom: 12pt;"><span style="background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-variant-position: normal; font-variant-emoji: normal; white-space-collapse: preserve; font-size: 11pt; font-family: Arial, sans-serif; vertical-align: baseline;"><span><div>​</div><br></span></span></div></span></span></div></div></h1><h2 class="ng-scope"><div style="font-size: 14px;"></div></h2>',
+      en: '',
+      it: '',
+    });
+  }),
+
   http.get('/assets/theme-conf.js', () => {
     return HttpResponse.json({
       overriding: [
