@@ -27,7 +27,7 @@ import org.entcore.timeline.services.impl.PeriodicTimelineMailerService;
 
 public class OptimizedWeeklyMailingCronTask implements Handler<Long> {
 
-	private static final Logger log = LoggerFactory.getLogger(WeeklyMailingCronTask.class);
+	private static final Logger log = LoggerFactory.getLogger(OptimizedWeeklyMailingCronTask.class);
 	private final PeriodicTimelineMailerService mailerService;
 	private final int dayDelta;
 

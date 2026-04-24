@@ -170,7 +170,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
 
         final JsonObject results = new JsonObject()
                 .put("mails.sent", new AtomicInteger(0))
-                .put("users.ko", 0);
+                .put("users.ko", new AtomicInteger(0));
         final JsonObject notificationsDefaults = new JsonObject();
         final List<String> notifiedUsers = new ArrayList<>();
 
@@ -274,7 +274,11 @@ public class PeriodicTimelineMailerService implements CronMailerService {
 
         if(periodicity == Periodicity.WEEKLY) {
             return assemblePipeline(currentPage, users, from, to, notificationsDefaults)
-                    .onFailure(t -> log.error("[PeriodicMailer] Error during mail pipeline ", t))
+                    .recover(t -> {
+                        log.error("[PeriodicMailer] Error during mail pipeline ", t);
+                        ((AtomicInteger) results.getValue("users.ko")).addAndGet(users.size());
+                        return Future.succeededFuture(new JsonObject().put("mails.sent", 0).put("users.ko", 0));
+                    })
                     .compose(result -> {
                         ((AtomicInteger) results.getValue("mails.sent")).addAndGet(result.getInteger("mails.sent"));
                         ((AtomicInteger) results.getValue("users.ko")).addAndGet(result.getInteger("users.ko"));
@@ -282,10 +286,14 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                     });
         }
         return assembleDailyPipeline(currentPage, users, from, to, notificationsDefaults)
-                .onFailure(t -> log.error("[PeriodicMailer] Error during mail pipeline ", t))
+                .recover(t -> {
+                    log.error("[PeriodicMailer] Error during mail pipeline ", t);
+                    ((AtomicInteger) results.getValue("users.ko")).addAndGet(users.size());
+                    return Future.succeededFuture(new JsonObject().put("mails.sent", 0).put("users.ko", 0));
+                })
                 .compose(result -> {
                     ((AtomicInteger) results.getValue("mails.sent")).addAndGet(result.getInteger("mails.sent", 0));
-                    ((AtomicInteger) results.getValue("users.ko")).addAndGet(result.getInteger("users.ko",  0));
+                    ((AtomicInteger) results.getValue("users.ko")).addAndGet(result.getInteger("users.ko", 0));
                     return processPages(pages, index + 1, results, from, to, notificationsDefaults, periodicity);
                 });
     }
@@ -444,7 +452,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                 .onFailure(t -> { log.error(t.getMessage());})
                 .onSuccess(v -> {
                     log.info("[PeriodicMails][perf] sendMails page " + page + ", sented : " + v.getSuccess().get() + " time " + step7.elapsedTimeMillis() + " ms");
-                    promise.complete(new JsonObject().put("mails.sent", v.getSuccess().get()).put("users.ko", v.getFailure().get()));
+                    promise.complete(new JsonObject().put("mails.sent", v.getSuccess().get()).put("users.ko", mails.size() - v.getSuccess().get()));
                 });
 
         return promise.future();

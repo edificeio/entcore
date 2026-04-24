@@ -41,7 +41,7 @@ public class OptimizedDailyMailingCronTask implements Handler<Long> {
 		log.info("[Daily mailing] Starting ...");
 		mailerService.sendDailyMails(dayDelta).onSuccess( result ->
 					log.info("[Daily mailing] Completed : " + result.encodePrettily())
-				).onFailure(t -> log.error("[Weekly mailing] Failed : " + t.getMessage(), t));;
+				).onFailure(t -> log.error("[Daily mailing] Failed : " + t.getMessage(), t));;
 	}
 
 }
