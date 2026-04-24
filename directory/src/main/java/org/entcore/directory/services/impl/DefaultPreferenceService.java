@@ -87,19 +87,13 @@ public class DefaultPreferenceService implements PreferenceService {
             return promise.future();
         }
 
-        neo4j.execute("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) RETURN uac, u.lastDomain", params, validUniqueResultHandler(result -> {
-            if (result.isRight()) {
-                JsonObject prefs = result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject());
-                prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
-                preferenceCacheService.putLastDomain(userInfos, result.right().getValue().getString("lastDomain"));
-                UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(prefs);
-                preferenceCacheService.refreshPreferences(userInfos, preferenceDto);
-                promise.complete(preferenceDto);
-            } else {
-                promise.fail(result.left().getValue());
-            }
-        }));
-        return promise.future();
+        return getPreferences(userInfos.getUserId())
+                .compose( pref -> {
+                    preferenceCacheService.putLastDomain(userInfos, pref.getLastDomain());
+                    preferenceCacheService.refreshPreferences(userInfos, pref);
+                    promise.complete(pref);
+                    return promise.future();
+                });
     }
 
     @Override

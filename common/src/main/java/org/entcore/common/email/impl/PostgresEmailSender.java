@@ -21,6 +21,7 @@ import org.entcore.common.user.UserUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static fr.wseduc.webutils.DefaultAsyncResult.handleAsyncError;
 import static fr.wseduc.webutils.DefaultAsyncResult.handleAsyncResult;
@@ -232,9 +233,9 @@ public class PostgresEmailSender implements EmailSender {
                             }
                         }
                     }
-                    addMeta(request, mail).compose(r -> {
-                        return helper.createWithAttachments(mail, attList);
-                    }).onComplete(r -> {
+                    addMeta(request, mail)
+                            .compose(r -> helper.createWithAttachments(mail, attList))
+                            .onComplete(r -> {
                         if (r.failed()) {
                             logger.error("Failed to save mail: ", r.cause());
                             if(handler != null){
@@ -265,6 +266,22 @@ public class PostgresEmailSender implements EmailSender {
         }
     }
 
+    public Future<MassCreateResults> sendEmails(List<PostgresEmailDto> mails) {
+        for ( PostgresEmailDto mail : mails) {
+            mail.setPriority(priority);
+            final String moduleName = BaseServer.getModuleName();
+            if (Utils.isNotEmpty(moduleName)) {
+                mail.setModule(moduleName);
+            }
+            if (Utils.isNotEmpty(platformId)) {
+                mail.setPlatformId(platformId);
+            }
+            mail.setFrom(new PostgresEmailDto.User(getSenderEmail(), null));
+            mail.setPlatformUrl(host);
+        }
+        return helper.massCreate(mails);
+    }
+
     private Future<PostgresEmailBuilder.EmailBuilder> addMeta(HttpServerRequest request, PostgresEmailBuilder.EmailBuilder mail) {
         final Promise<PostgresEmailBuilder.EmailBuilder> future = Promise.promise();
         mail.withPriority(priority);
@@ -292,5 +309,20 @@ public class PostgresEmailSender implements EmailSender {
             future.complete(mail);
         }
         return future.future();
+    }
+
+    public static class MassCreateResults {
+
+        private final AtomicInteger success =  new AtomicInteger(0);
+        private final AtomicInteger failure =  new AtomicInteger(0);
+
+        public AtomicInteger getSuccess() {
+            return success;
+        }
+
+        public AtomicInteger getFailure() {
+            return failure;
+        }
+
     }
 }
