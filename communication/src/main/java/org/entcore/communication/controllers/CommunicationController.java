@@ -380,6 +380,18 @@ public class CommunicationController extends BaseController {
 		}));
 	}
 
+	/**
+	 * Lists all users in a given group that are visible to the currently authenticated user.
+	 * <p>
+	 * Visibility is determined by the communication rules: only users the connected user
+	 * is allowed to communicate with are returned, even if they belong to the group.
+	 *
+	 * @param request the HTTP request; must contain a {@code groupId} path parameter
+	 *                identifying the group whose members are to be listed
+	 * @return a list of user objects  {@link org.entcore.communication.dto.rest.UserDTO},
+	 *         each containing {@code id}, {@code displayName}, {@code login}, and {@code type} fields,
+	 *         ordered by profile type (descending) then display name
+	 */
 	@Get("/visible/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void visibleGroupContains(HttpServerRequest request) {
@@ -492,6 +504,15 @@ public class CommunicationController extends BaseController {
 				userId, schoolId, expectedTypes, itSelf, false, true, null, customReturn, additionnalParams, handler);
 	}
 
+	/**
+	 * Initializes default communication rules for the specified structures.
+	 * <p>
+	 * Rules are read from the {@code initDefaultCommunicationRules} entry of the module configuration.
+	 *
+	 * <p><strong>Response</strong>: {@code 200 OK} with an empty JSON object {@code {}} on success.
+	 *
+	 * @param request the HTTP request containing a {@link InitDefaultRulesDTO} JSON body
+	 */
 	@Put("/init/rules")
 	@SecuredAction("communication.init.default.rules")
 	public void initDefaultCommunicationRules(final HttpServerRequest request) {
@@ -507,6 +528,14 @@ public class CommunicationController extends BaseController {
 		}).onFailure(err -> badRequest(request, err.getMessage()));
 	}
 
+	/**
+	 * Resets the communication rules of a structure to their default values.
+	 * <p>
+	 * Restricted to super-admins.
+	 *
+	 * @param request the HTTP request; must contain a {@code structureId} path parameter
+	 *                identifying the structure whose rules are to be reset
+	 */
 	@Post("/rules/:structureId/reset")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
@@ -529,6 +558,16 @@ public class CommunicationController extends BaseController {
 		Renders.renderJson(request, initDefaultRules, 200);
 	}
 
+	/**
+	 * Applies the default communication rules to a structure.
+	 * <p>
+	 * Only adds the rules defined as defaults — rules that already exist but are not part of
+	 * the defaults are left untouched and will not be removed.
+	 * To fully reset a structure's rules to defaults, use {@link #resetRules} instead.
+	 *
+	 * @param request the HTTP request; must contain a {@code structureId} path parameter
+	 *                identifying the structure to apply the default rules to
+	 */
 	@Put("/rules/:structureId")
 	@SecuredAction("communication.default.rules")
 	public void defaultCommunicationRules(final HttpServerRequest request) {
@@ -604,6 +643,24 @@ public class CommunicationController extends BaseController {
 		}
 	}
 
+	/**
+	 * Removes all communication rules of profile groups belonging to the given structure,
+	 * including direct ({@code communiqueDirect}) links between users of those profile groups.
+	 * <p>
+	 * Other group types (manual groups, etc.) and inbound links from groups outside the structure
+	 * pointing to the structure's profile groups are not affected.
+	 *
+	 * <p><strong>Deprecated — do not use.</strong> Because only a subset of rules and links is
+	 * removed, the {@code communiqueWith} and {@code users} values on the affected Neo4j group nodes
+	 * are not recalculated after the deletion. This leaves those values stale and can lead to data
+	 * corruption. Use {@link #resetRules} to safely reset a structure's rules to their default state.
+	 *
+	 * @param request the HTTP request; must contain a {@code structureId} query parameter
+	 *                identifying the structure whose profile-group rules are to be removed
+	 * @deprecated Can corrupt {@code communiqueWith} / {@code users} values in Neo4j.
+	 *             Use {@link #resetRules} instead.
+	 */
+	@Deprecated
 	@Delete("/rules")
 	@SecuredAction("communication.remove.rules")
 	public void removeCommunicationRules(HttpServerRequest request) {
@@ -672,6 +729,16 @@ public class CommunicationController extends BaseController {
 		return groupId;
 	}
 
+	/**
+	 * Sets the communication direction of a group to {@code BOTH} and adds the corresponding
+	 * communication links between the group and its users if they do not already exist.
+	 * <p>
+	 * Used by the v2 admin console to grant two-way communication between a group and its members.
+	 *
+	 * @param request the HTTP request; must contain a {@code groupId} path parameter
+	 *                identifying the group to update
+	 * @return {@code 200 OK} with a {@link GroupUsersDirectionDTO} body confirming the applied direction
+	 */
     @Post("/group/:groupId/users")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -683,6 +750,24 @@ public class CommunicationController extends BaseController {
                 .onFailure(th -> renderJson(request, new JsonObject().put("error", th.getMessage()), 400));
     }
 
+   	/**
+	 * Safely downgrades the communication direction of a group by removing its link with users,
+	 * if doing so is consistent with the group's existing inbound and outbound relations.
+	 * <p>
+	 * The service counts how many other groups send to ({@code numberOfSendingGroups}) and receive
+	 * from ({@code numberOfReceivingGroups}) this group, then computes the minimum direction still
+	 * required. For example, a group whose {@code users} value is {@code BOTH} but only receives
+	 * communication from other groups can be safely downgraded to {@code OUTGOING}
+	 * (meaning the group receives communication and dispatches it to its members).
+	 * <p>
+	 * If no safe downgrade exists, the operation is refused.
+	 *
+	 * @param request the HTTP request; must contain a {@code groupId} path parameter
+	 *                identifying the group to downgrade
+	 * @return {@code 200 OK} with a {@link GroupUsersDirectionDTO} body containing the resulting direction,
+	 *         {@code 409 Conflict} if the direction cannot be safely changed,
+	 *         or {@code 500} on unexpected error
+	 */
     @Delete("/group/:groupId/users")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -697,6 +782,23 @@ public class CommunicationController extends BaseController {
                 });
     }
 
+	/**
+	 * Checks whether a communication link from {@code startGroupId} to {@code endGroupId} can be
+	 * added by the authenticated user, without actually creating the link.
+	 * <p>
+	 * The check takes into account the current {@code users} direction of both groups and the
+	 * caller's role. For example, an ADML cannot add a link {@code g1 -> g2} if {@code g2} is
+	 * currently {@code INCOMING}, because doing so would require upgrading {@code g2} to
+	 * {@code BOTH} — an operation restricted to super-admins for certain group types.
+	 *
+	 * @param request the HTTP request; must contain path parameters {@code startGroupId} and
+	 *                {@code endGroupId} identifying the source and target groups
+	 * @return {@code 200 OK} with a JSON body {@code {"warning": "<message>"}} where {@code warning}
+	 *         is a non-null string if the link is possible but carries a notable side-effect,
+	 *         or {@code null} if the link can be added without any caveat;
+	 *         {@code 409 Conflict} if the link cannot be added at all given the caller's permissions,
+	 *         or {@code 500} on unexpected error
+	 */
     @Get("/v2/group/:startGroupId/communique/:endGroupId/check")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -714,6 +816,20 @@ public class CommunicationController extends BaseController {
 				});
 	}
 
+	/**
+	 * Adds a communication link from {@code startGroupId} to {@code endGroupId} and adjusts the
+	 * {@code users} direction of each group if necessary to reflect the new relation.
+	 * <p>
+	 * The operation is refused if adding the link would require a direction upgrade that the
+	 * authenticated user is not permitted to perform (e.g. an ADML upgrading a restricted group
+	 * to {@code BOTH}). Use {@link #addLinkCheckOnly} first to verify feasibility without side effects.
+	 *
+	 * @param request the HTTP request; must contain path parameters {@code startGroupId} and
+	 *                {@code endGroupId} identifying the source and target groups
+	 * @return {@code 200 OK} with an {@link AddLinkDirectionsDTO} body containing the resulting
+	 *         direction of each group after the link was applied,
+	 *         or {@code 500} if the operation failed or was not permitted
+	 */
 	@Post("/v2/group/:startGroupId/communique/:endGroupId")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -728,6 +844,19 @@ public class CommunicationController extends BaseController {
 				.onFailure(th -> renderJson(request, new JsonObject().put("error", th.getMessage()), 500));
 	}
     
+	/**
+	 * Removes the communication relation between two groups and recalculates the minimal
+	 * {@code users} direction required for each group based on their remaining communication links.
+	 * <p>
+	 * After the link is removed, the service inspects all still-existing inbound and outbound
+	 * relations of both groups and downgrades their direction to the lowest value that still
+	 * satisfies those remaining relations.
+	 *
+	 * @param request the HTTP request; must contain path parameters {@code startGroupId} and
+	 *                {@code endGroupId} identifying the sender and receiver groups
+	 * @return {@code 200 OK} with a {@link RemoveRelationsResultDTO} body containing the
+	 *         recalculated direction of the sender and the receiver after the removal
+	 */
 	@Delete("/group/:startGroupId/relations/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -767,15 +896,15 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Discover visible users, return list of users that can be dicover by the user
-	 * @param request
-	 * 	{
-	 * 		"structures": ["id1", "id2"],
-	 * 		"profiles": ["Teacher"],
-	 * 		"search": "search",
-	 * 	}
+	 * Returns the list of users discoverable by the authenticated user, optionally filtered by
+	 * structures, profiles, and a search string.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
 	 *
-	 * */
+	 * @param request the HTTP request containing a {@link DiscoverVisibleFilterDTO} JSON body
+	 * @return {@code 200 OK} with a JSON array of {@link UserDTO} entries
+	 */
 	@Post("/discover/visible/users")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -791,8 +920,14 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Return list of accepted profile for discover visible
-	 * */
+	 * Returns the list of profiles accepted by the discover-network feature for the authenticated user.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request
+	 * @return {@code 200 OK} with a JSON array of profile name strings (e.g. {@code ["Teacher", "Student"]})
+	 */
 	@Get("/discover/visible/profiles")
 	@SecuredAction(value= "", type = ActionType.AUTHENTICATED)
 	public void getDiscoverVisibleAcceptedProfile(HttpServerRequest request) {
@@ -803,8 +938,14 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Return list of all structures, to be use to filter discover visible users
-	 * */
+	 * Returns the list of all structures available as filters for the discover-network feature.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request
+	 * @return {@code 200 OK} with a JSON array of {@link DiscoverVisibleStructureDTO} entries
+	 */
 	@Get("/discover/visible/structures")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -819,12 +960,17 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Add communication rights between two users, this methode use "COMMUIQUE_DIRECT" with source 'MANUAL'
-	 * @param request
-	 * 	{
-	 * 		"receiverId": "receiverId"
-	 * 	}
-	 * */
+	 * Creates a direct communication link ({@code COMMUNIQUE_DIRECT} with source {@code MANUAL})
+	 * between the authenticated user and the specified receiver.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request; must contain a {@code receiverId} path parameter
+	 *                identifying the user to establish communication with
+	 * @return {@code 200 OK} with a {@link CountResultDTO} body indicating the number of
+	 *         communication links created
+	 */
 	@Post("/discover/visible/add/commuting/:receiverId")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -841,8 +987,17 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Delete communication rights between two users, this methode delete "COMMUIQUE_DIRECT" with source 'MANUAL'
-	 * */
+	 * Removes the direct communication link ({@code COMMUNIQUE_DIRECT} with source {@code MANUAL})
+	 * between the authenticated user and the specified receiver.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request; must contain a {@code receiverId} path parameter
+	 *                identifying the user whose communication link should be removed
+	 * @return {@code 200 OK} with a {@link CountResultDTO} body indicating the number of
+	 *         communication links removed
+	 */
 	@Delete("/discover/visible/remove/commuting/:receiverId")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -859,8 +1014,14 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * This methode return all groups that the user can see, with the group type 'manager'
-	 * */
+	 * Returns all groups of type {@code manager} visible to the authenticated user.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request
+	 * @return {@code 200 OK} with a JSON array of {@link GroupDTO} entries
+	 */
 	@Get("/discover/visible/groups")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -875,12 +1036,15 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Get the list of users in a group
-	 * @param request
-	 * 	{
-	 * 		"groupId": "groupId"
-	 * 	}
-	 * */
+	 * Returns the list of users belonging to a given discover-network group, filtered to those
+	 * visible to the authenticated user.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request; must contain a {@code groupId} path parameter
+	 * @return {@code 200 OK} with a JSON array of {@link UserDTO} entries
+	 */
 	@Get("/discover/visible/group/:groupId/users")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -899,12 +1063,15 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Create a group with the group type 'manager'
-	 * @param request
-	 * 	{
-	 * 		"name": "name",
-	 * 	}
-	 * */
+	 * Creates a group of type {@code manager} for the discover-network feature.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request containing a {@link DiscoverVisibleGroupBodyDTO} JSON body
+	 * @return {@code 200 OK} with an {@link IdentifiableDTO} body containing the id of the
+	 *         newly created group
+	 */
 	@Post("/discover/visible/group")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -921,13 +1088,16 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Update a group with the group type 'manager'
-	 * @param request
-	 * 	{
-	 * 		"groupId": "groupId",
-	 * 		"name": "name",
-	 * 	}
-	 * */
+	 * Updates the name of a discover-network group of type {@code manager}.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request; must contain a {@code groupId} path parameter and a
+	 *                {@link DiscoverVisibleGroupBodyDTO} JSON body with the new name
+	 * @return {@code 200 OK} with an {@link IdentifiableDTO} body containing the id of the
+	 *         updated group
+	 */
 	@Put("/discover/visible/group/:groupId")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
@@ -949,14 +1119,18 @@ public class CommunicationController extends BaseController {
 	}
 
 	/**
-	 * Update the groups member, with adding the new user in the group and send a notification to the user, and removing the user from the group
-	 * @param request
-	 * 	{
-	 * 		"groupId": "groupId",
-	 * 		"oldUsers": ["userId1", "userId2"], // list of users befor change
-	 * 		"newUsers": "["userId1", "userId2"]" //list of users after change
-	 * 	}
-	 * */
+	 * Updates the members of a discover-network group by diffing the old and new user lists:
+	 * users added to the group receive a notification, users removed from the group are silently
+	 * unlinked.
+	 * <p>
+	 * <strong>Normandie only</strong> — this endpoint is part of the discover-network feature
+	 * and is only active in the Normandie deployment.
+	 *
+	 * @param request the HTTP request; must contain a {@code groupId} path parameter and a
+	 *                {@link DiscoverModifyGroupUsersDTO} JSON body with the previous and new
+	 *                member lists (max 100 users in {@code newUsers})
+	 * @return {@code 200 OK} on success
+	 */
 	@Put("/discover/visible/group/:groupId/users")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
