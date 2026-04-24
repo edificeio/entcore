@@ -334,7 +334,6 @@
               />
               <ode-form-errors
                 [control]="totpCodeInput"
-                [expectedPatternMsg]="'totp.code.format.error' | translate"
               ></ode-form-errors>
             </div>
             <button
@@ -361,7 +360,7 @@
                 name="totpSecret"
                 [pattern]="totpBase32Pattern"
                 #totpInput="ngModel"
-                placeholder="Base32 secret (ex: JBSWY3DPEHPK3PXP)"
+                placeholder="Base32 secret"
                 [disabled]="isForbidden"
                 style="width: 100%;"
               />
