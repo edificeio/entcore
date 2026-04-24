@@ -308,22 +308,72 @@
             >
               <s5l>totp.remove</s5l>
             </button>
+            <button
+              type="button"
+              *ngIf="details.hasTotp && !showTotpVerify"
+              (click)="openTotpVerify()"
+              [disabled]="isForbidden"
+            >
+              <s5l>totp.verify</s5l>
+            </button>
+          </ng-container>
+
+          <!-- Mode vérification : input 6 chiffres + bouton vérifier + annuler -->
+          <ng-container *ngIf="showTotpVerify">
+            <div style="flex: 1; max-width: 200px;">
+              <input
+                type="text"
+                [(ngModel)]="tempTotpCode"
+                name="totpCode"
+                [pattern]="totpCodePattern"
+                #totpCodeInput="ngModel"
+                maxlength="6"
+                placeholder="000000"
+                [disabled]="isForbidden"
+                style="width: 100%;"
+              />
+              <ode-form-errors
+                [control]="totpCodeInput"
+                [expectedPatternMsg]="'totp.code.format.error' | translate"
+              ></ode-form-errors>
+            </div>
+            <button
+              type="button"
+              (click)="verifyTotpCode()"
+              [disabled]="isForbidden || !tempTotpCode || totpCodeInput.invalid || spinner.isLoading('portal-content')"
+            >
+              <s5l>totp.verify.confirm</s5l>
+            </button>
+            <button
+              type="button"
+              (click)="showTotpVerify = false; tempTotpCode = ''"
+            >
+              <s5l>cancel</s5l>
+            </button>
           </ng-container>
           
           <!-- Mode saisie : input + bouton enregistrer + bouton annuler -->
           <ng-container *ngIf="showTotpInput">
-            <input 
-              type="text" 
-              [(ngModel)]="tempTotp" 
-              name="totpSecret" 
-              placeholder="Base32 secret"
-              [disabled]="isForbidden"
-              style="flex: 1; max-width: 300px;"
-            />
+            <div style="flex: 1; max-width: 300px;">
+              <input 
+                type="text" 
+                [(ngModel)]="tempTotp" 
+                name="totpSecret"
+                [pattern]="totpBase32Pattern"
+                #totpInput="ngModel"
+                placeholder="Base32 secret (ex: JBSWY3DPEHPK3PXP)"
+                [disabled]="isForbidden"
+                style="width: 100%;"
+              />
+              <ode-form-errors
+                [control]="totpInput"
+                [expectedPatternMsg]="'totp.format.error' | translate"
+              ></ode-form-errors>
+            </div>
             <button 
               type="button" 
               (click)="saveAndCloseTotpInput()"
-              [disabled]="isForbidden || !tempTotp || spinner.isLoading('portal-content')"
+              [disabled]="isForbidden || !tempTotp || totpInput.invalid || spinner.isLoading('portal-content')"
             >
               <s5l>save</s5l>
               <i class="fa fa-floppy-o"></i>
