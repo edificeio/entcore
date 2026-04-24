@@ -41,7 +41,7 @@
     {% if scratchUrl is defined %} "enable-scratch": true,{% endif %}
     {% if loolProvider is defined or loolProviders is defined %}"enable-lool": true,{% endif %}
     {% if workspaceEnableGeogebra is defined and workspaceEnableGeogebra %}"enable-geogebra": true,{% endif %}
-    {% if nextcloudHost is defined or nextcloudProviders is defined %}
+    {% if workspaceEnableNextCloud is defined and workspaceEnableNextCloud %}
       "enable-nextcloud": true,
       "use-nextcloud-sniplet": {{ nextcloudSniplet | default('false') }},
     {% endif %}
