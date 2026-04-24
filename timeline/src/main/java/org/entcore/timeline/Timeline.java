@@ -37,6 +37,8 @@ import org.entcore.timeline.controllers.FlashMsgController;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.cron.DailyMailingCronTask;
+import org.entcore.timeline.cron.OptimizedDailyMailingCronTask;
+import org.entcore.timeline.cron.OptimizedWeeklyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
 import org.entcore.timeline.services.FlashMsgService;
@@ -117,17 +119,34 @@ public class Timeline extends BaseServer {
 		addController(timelineController);
 		BrokerProxyUtils.addBrokerProxy(new TimelineBrokerListenerImpl(vertx), vertx);
 
+		PeriodicTimelineMailerService periodicTimelineMailerService = new PeriodicTimelineMailerService(vertx, config);
+		periodicTimelineMailerService.setConfigService(configService);
+		periodicTimelineMailerService.setEventsI18n(eventsI18n);
+		periodicTimelineMailerService.setLazyEventsI18n(lazyEventsI18n);
+		periodicTimelineMailerService.setRegisteredNotifications(registeredNotificationsCache);
+
 		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 2 * * ?");
 		final String weeklyMailingCron = config.getString("weekly-mailing-cron", "0 0 5 ? * MON");
 		final int dailyDayDelta = config.getInteger("daily-day-delta", -1);
 		final int weeklyDayDelta = config.getInteger("weekly-day-delta", -1);
+		final boolean useOptimized = config.getBoolean("use-optimized", true);
 
-		try {
-			new CronTrigger(vertx, dailyMailingCron).schedule(new DailyMailingCronTask(mailerService, dailyDayDelta));
-			new CronTrigger(vertx, weeklyMailingCron).schedule(new WeeklyMailingCronTask(mailerService, weeklyDayDelta));
-		} catch (ParseException e) {
-			log.error("Failed to start mailing crons.");
+		if (useOptimized) {
+			try {
+				new CronTrigger(vertx, dailyMailingCron).schedule(new OptimizedDailyMailingCronTask(periodicTimelineMailerService, dailyDayDelta));
+				new CronTrigger(vertx, weeklyMailingCron).schedule(new OptimizedWeeklyMailingCronTask(periodicTimelineMailerService, weeklyDayDelta));
+			} catch (ParseException e) {
+				log.error("Failed to start mailing crons.");
+			}
+		} else {
+			try {
+				new CronTrigger(vertx, dailyMailingCron).schedule(new DailyMailingCronTask(mailerService, dailyDayDelta));
+				new CronTrigger(vertx, weeklyMailingCron).schedule(new WeeklyMailingCronTask(mailerService, weeklyDayDelta));
+			} catch (ParseException e) {
+				log.error("Failed to start mailing crons.");
+			}
 		}
+
 
 		final String purgeMessagesReadCron = config.getString("purge-messages-read-cron", "0 0 2 * * ?");
 		if (purgeMessagesReadCron != null) {
