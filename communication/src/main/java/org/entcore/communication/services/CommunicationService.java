@@ -123,6 +123,8 @@ public interface CommunicationService {
 	void communiqueWith(String groupId,// VisibleType filter,
 			Handler<Either<String, JsonObject>> handler);
 
+	Future<JsonObject> communiqueWith(String groupId);
+
 	Future<Integer> addLinkBetweenRelativeAndStudent(String groupId, Direction direction);
 
 	Future<Integer> removeLinkBetweenRelativeAndStudent(String groupId, Direction direction);
