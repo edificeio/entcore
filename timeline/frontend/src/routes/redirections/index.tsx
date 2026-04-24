@@ -3,7 +3,6 @@ export const manageRedirections = (): string | null => {
   const pathLocation = window.location.pathname;
 
   if (
-    pathLocation === '/' ||
     pathLocation === '/timeline' ||
     pathLocation === '/timeline/' ||
     pathLocation === '/timeline/timeline'
