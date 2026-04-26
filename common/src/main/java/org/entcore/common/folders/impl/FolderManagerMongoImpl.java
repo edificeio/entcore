@@ -129,7 +129,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		if(allowDuplicate) return Future.succeededFuture(false);
 		DocumentQueryBuilder builder = queryHelper.queryBuilder().withNameEq(name).withFileType(type);
 		if(parentId.isPresent()) {
-			builder = builder.withParent(parentId.get());
+			builder.withParent(parentId.get());
 		}
 		
 		if(id != null){
