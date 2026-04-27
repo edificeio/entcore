@@ -42,7 +42,9 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		"DIRECTION",
 		"DIRECTION CHEF D'ETABLISSEMENT",
 		"DIRECTION CHEF D&apos;ETABLISSEMENT",
-		"DIRECTION ADJOINT AU CHEF ETABLISSEMENT"
+		"DIRECTION ADJOINT AU CHEF ETABLISSEMENT",
+		"CHEF D'ETABLISSEMENT ADJOINT",
+		"CHEF D&apos;ETABLISSEMENT ADJOINT"
 	);
 
 	protected PersonnelImportProcessing(String path, Vertx vertx) {
@@ -212,12 +214,14 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 						} else if (!"-".equals(g[1])) {
 							groupExternalId = s.getExternalId() + "$" + g[1];
 							s.createFunctionGroupIfAbsent(groupExternalId, g[2], "Func");
-
-							if(DIRECTION_FONCTIONS.contains(g[4]) == true)
-								createDirectionGroups(new JsonArray().add(g[0]), linkStructureGroups);
 						} else {
 							continue;
 						}
+
+						if(DIRECTION_FONCTIONS.contains(g[4]) == true) {
+							createDirectionGroups(new JsonArray().add(g[0]), linkStructureGroups);
+						}
+
 						if (linkStructureGroups != null) {
 							final String[] group = new String[3];
 							group[0] = s.getExternalId();
