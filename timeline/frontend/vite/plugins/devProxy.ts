@@ -18,7 +18,7 @@ export type CreateDevProxyOptions = {
 };
 
 export type DevProxyConfig = {
-  headers: Record<string, string | string[]>;
+  headers: Record<string, string | string[] | undefined>;
   proxyObj: ProxyOptions;
   proxy: Record<string, ProxyOptions>;
 };
