@@ -27,9 +27,9 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/bootstrap": "epic-homepage",
+    "@edifice.io/bootstrap": "link:../../../edifice-frontend-framework/packages/bootstrap",
     "@edifice.io/client": "epic-homepage",
-    "@edifice.io/react": "epic-homepage",
+    "@edifice.io/react": "link:../../../edifice-frontend-framework/packages/react",
     "@react-spring/web": "9.7.5",
     "@tanstack/react-query": "5.90.21",
     "@uidotdev/usehooks": "2.4.1",

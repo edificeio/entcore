@@ -1,5 +1,9 @@
-import { Layout, LoadingScreen, useEdificeClient } from '@edifice.io/react';
-import { BetaSwitch } from '~/components/BetaSwitch/BetaSwitch';
+import {
+  Layout,
+  LoadingScreen,
+  useEdificeClient,
+  BetaSwitchContainer,
+} from '@edifice.io/react';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -14,7 +18,7 @@ export const Root = () => {
   return init ? (
     <Layout>
       timeline
-      <BetaSwitch />
+      <BetaSwitchContainer />
     </Layout>
   ) : null;
 };
