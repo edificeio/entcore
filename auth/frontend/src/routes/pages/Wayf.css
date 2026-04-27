@@ -34,12 +34,13 @@
 
 /* ═══════════════════════════════════════════
    Zone éditoriale (gauche)
-   ─ grille interne : message (1fr) / partenaires (auto)
+   ─ flex colonne : welcome (shrinkable) puis partenaires collés dessous
    ═══════════════════════════════════════════ */
 .wayf-editorial {
   grid-area: editorial;
-  display: grid;
-  grid-template-rows: 1fr auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   gap: 3rem;
   padding: 4rem;
   max-height: 100vh;

@@ -6,7 +6,7 @@ interface WelcomeMessageProps {
 }
 
 export const WelcomeMessage = ({ state }: WelcomeMessageProps) => {
-  if (state.status !== 'ready') return <div />;
+  if (state.status !== 'ready') return null;
 
   return (
     <aside className="wayf-welcome">
