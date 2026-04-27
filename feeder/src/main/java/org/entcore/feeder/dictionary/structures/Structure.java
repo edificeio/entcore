@@ -305,7 +305,8 @@ public class Structure {
 					"MATCH (c:Class { externalId : {classExternalId}}) " +
 					"MERGE c<-[:DEPENDS]-(cg:Group:HTGroup {externalId: {externalId}}) " +
 					"ON CREATE SET cg.id = {id}, cg.displayNameSearchField = COALESCE({displayNameSearchField}, c.displayNameSearchField), " +
-					"cg.name = COALESCE({name}, c.name + '-HeadTeacher'), cg.structureName = {structureName}, cg.filter = {filter} ";
+					"cg.name = COALESCE({name}, c.name + '-HeadTeacher'), cg.structureName = {structureName}, cg.filter = {filter} " +
+					"SET cg.source = c.source";
 			JsonObject params = new JsonObject()
 					.put("classExternalId", classExternalId)
 					.put("externalId", classGroupExternalId)
