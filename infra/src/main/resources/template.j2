@@ -10,6 +10,7 @@
       "org.entcore.common.http.health.MongoProbe",
       "org.entcore.common.http.health.RedisProbe"
     ],
+    "app-address": "/infra",
     "neo4jMetricsEnable": {{ neo4jMetricsEnable  | default('true') }},
     {% if checkMonitoringEvents is defined %}
       "check-monitoring-events" : {
