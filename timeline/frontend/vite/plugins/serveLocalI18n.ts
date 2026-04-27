@@ -18,9 +18,15 @@ export const serveLocalI18nPlugin = ({
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (req.url?.startsWith(routePath)) {
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          res.end(readFileSync(resolvedFilePath, 'utf-8'));
-          return;
+          try {
+            const fileContents = readFileSync(resolvedFilePath, 'utf-8');
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(fileContents);
+            return;
+          } catch (err) {
+            next(err);
+            return;
+          }
         }
         next();
       });
