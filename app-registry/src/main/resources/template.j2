@@ -84,6 +84,7 @@
       "library-structures-blacklist": {{ libraryStructuresBlacklist | default([]) }},
     {% endif %}
     "port": 8012,
+    "app-address": "/appregistry",
     "fileAnalyzer": {
       "enabled": {{ fileAnalyzerOn | default('true') }},
       "messaging": {
