@@ -1,7 +1,6 @@
 import { odeServices } from '@edifice.io/client';
-import { Button, useToast } from '@edifice.io/react';
+import { Button, Flex, useToast } from '@edifice.io/react';
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useI18n } from '~/hooks/useI18n';
 import './BetaSwitch.css';
 
@@ -30,21 +29,22 @@ export function BetaSwitch() {
     }
   };
 
-  const rootElement = document.getElementById('beta-switch');
-
-  return rootElement
-    ? createPortal(
-        <Button
-          data-testid="beta-switch-button"
-          isLoading={isSwitching}
-          color="tertiary"
-          variant="outline"
-          disabled={isSwitching}
-          onClick={handleSwitchClick}
-        >
-          {t('timeline.beta.switch.previous')}
-        </Button>,
-        rootElement,
-      )
-    : null;
+  return (
+    <Flex direction="row">
+      <p>
+        <strong>{t('timeline.beta.switch.title')}</strong>
+        {t('timeline.beta.switch.description')}
+      </p>
+      <Button
+        data-testid="beta-switch-button"
+        isLoading={isSwitching}
+        color="tertiary"
+        variant="outline"
+        disabled={isSwitching}
+        onClick={handleSwitchClick}
+      >
+        {t('timeline.beta.switch.button')}
+      </Button>
+    </Flex>
+  );
 }
