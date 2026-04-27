@@ -11,11 +11,15 @@ type ServeLocalJsonPluginOptions = {
 export const serveLocalI18nPlugin = ({
   routePath,
   filePath,
+  rootDir,
 }: ServeLocalJsonPluginOptions): Plugin => {
-  const resolvedFilePath = resolve(process.cwd(), filePath);
   return {
     name: `serve-local-i18n`,
     configureServer(server) {
+      const resolvedFilePath = resolve(
+        rootDir ?? server.config.root ?? process.cwd(),
+        filePath,
+      );
       server.middlewares.use((req, res, next) => {
         if (req.url?.startsWith(routePath)) {
           try {
