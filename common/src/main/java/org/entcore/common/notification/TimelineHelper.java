@@ -310,7 +310,30 @@ public class TimelineHelper {
 		});
 	}
 
-	private void replaceEventsI18n(AsyncMap<String, String> eventsI18n, String key, String old, String append, int retry) {
+	/**
+	 * Public static method to append timeline i18n entries to the shared map.
+	 * Can be called from TimelineBrokerListenerImpl.
+	 *
+	 * @param vertx The Vertx instance
+	 * @param i18ns Map of language codes to their translation JsonObjects
+	 */
+	public static Future<Void> appendTimelineEventsI18n(final Vertx vertx, final Map<String, JsonObject> i18ns) {
+		final Promise<Void> promise = Promise.promise();
+		vertx.sharedData().<String, String>getAsyncMap("timelineEventsI18n").onSuccess(eventsI18n -> {
+			for (Map.Entry<String, JsonObject> e : i18ns.entrySet()) {
+				String json = e.getValue().encode();
+				if (StringUtils.isEmpty(json) || "{}".equals(StringUtils.stripSpaces(json))) continue;
+				final String j = json.substring(1, json.length() - 1) + ",";
+				eventsI18n.putIfAbsent(e.getKey(), j)
+					.onSuccess(oldJson -> replaceEventsI18n(eventsI18n, e.getKey(), oldJson, j, 0))
+					.onFailure(ex -> log.error("Error when try put eventsI18n on key " + e.getKey(), ex));
+			}
+			promise.complete();
+		}).onFailure(promise::fail);
+		return promise.future();
+	}
+
+	private static void replaceEventsI18n(AsyncMap<String, String> eventsI18n, String key, String old, String append, int retry) {
 		if (old == null || old.equals(append) || retry > MAX_RETRY) {
 			if (retry > MAX_RETRY) {
 				log.warn("Replace eventi18n not updated after max retries : " + retry);
