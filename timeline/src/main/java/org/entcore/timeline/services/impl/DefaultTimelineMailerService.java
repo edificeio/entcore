@@ -117,7 +117,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		final Map<String, Map<String, Map<String,String>>> processedTemplates = new HashMap<>();
 		templateParameters.put("innerTemplate", notification.getString("template", ""));
 
-		final Map<String, Map<String, Map<String,String>>> toByDomainLang = new HashMap<>();
+		final Map<String, Map<String, Map<String, String>>> toByDomainLang = new HashMap<>();
 
 		final AtomicInteger userCount = new AtomicInteger(userList.size());
 		final Handler<Void> templatesHandler = new Handler<Void>(){
@@ -242,20 +242,11 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		});
 	}
 
-	@Override
 	public void translateTimeline(JsonArray i18nKeys, String domain, String language, Handler<JsonArray> handler) {
-		String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-		final JsonObject timelineI18n;
-		if (i18n == null) {
-			timelineI18n = new JsonObject();
-		} else {
-			timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-		}
-		timelineI18n.mergeIn(I18n.getInstance().load(language, domain));
 		JsonArray translations = new JsonArray();
 		for(Object keyObj : i18nKeys){
 			String key = (String) keyObj;
-			translations.add(timelineI18n.getString(key, key));
+			translations.add(TimelineLambda.translate(language, key, domain, eventsI18n, lazyEventsI18n));
 		}
 		handler.handle(translations);
 	}
