@@ -114,7 +114,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         this.lazyEventsI18n = lazyEventsI18n;
     }
 
-    public void translateTimeline(JsonArray i18nKeys,HttpServerRequest req, String language, Handler<JsonArray> handler) {
+    public void translateTimeline(JsonArray i18nKeys, HttpServerRequest req, String language, Handler<JsonArray> handler) {
         JsonArray translations = new JsonArray();
         for(Object keyObj : i18nKeys){
             String key = (String) keyObj;

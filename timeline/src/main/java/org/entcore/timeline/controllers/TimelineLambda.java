@@ -115,9 +115,31 @@ public final class TimelineLambda {
 		return timelineI18n;
 	}
 
-	public static String translate(String language,  String key, HttpServerRequest request,
+	public static String translate( String language,  String key, String domain,
 									   final Map<String, String> eventsI18n,
 									   final Map<String, JsonObject> lazyEventsI18n) {
+		JsonObject timelineI18n;
+		if (!lazyEventsI18n.containsKey(language)) {
+			timelineI18n = computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
+		} else {
+			String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+			if( eventI18n != null && (!i18nEventsHash.containsKey(language) || eventI18n.hashCode() != i18nEventsHash.get(language))) {
+				computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
+			}
+			timelineI18n = lazyEventsI18n.get(language);
+		}
+		timelineI18n = lazyEventsI18n.get(language);
+		// #46383, translations from the theme takes precedence over those from the domain
+		String translatedContents = I18n.getInstance().translate(key, domain, null, I18n.getLocale(language));
+		if (translatedContents.equals(key)) {
+			translatedContents = timelineI18n.getString(key, key);
+		}
+		return translatedContents;
+	}
+
+	public static String translate(String language,  String key, HttpServerRequest request,
+								   final Map<String, String> eventsI18n,
+								   final Map<String, JsonObject> lazyEventsI18n) {
 		JsonObject timelineI18n;
 		if (!lazyEventsI18n.containsKey(language)) {
 			timelineI18n = computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
