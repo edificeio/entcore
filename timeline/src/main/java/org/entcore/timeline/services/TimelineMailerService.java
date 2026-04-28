@@ -54,16 +54,6 @@ public interface TimelineMailerService {
 							final JsonObject templateParameters, final JsonArray recipientIds);
 
 	/**
-	 * Translates a key using the usual i18n keys + the timeline folders keys (from all apps).
-	 *
-	 * @param i18nKeys : Keys to translate
-	 * @param domain : Domain of the i18n files
-	 * @param language : Language preference of the receiver
-	 * @param handler : Handles a JsonArray containing translated Strings.
-	 */
-	void translateTimeline(JsonArray i18nKeys, String language, String domain, Handler<JsonArray> handler);
-
-	/**
 	 * Processes a mustache template using lambdas defined in the Timeline module.
 	 *
 	 * @param parameters : Template parameters
