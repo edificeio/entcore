@@ -56,5 +56,9 @@
             <version>${entCoreLibsVersion}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-codegen</artifactId>
+        </dependency>
     </dependencies>
 </project>
