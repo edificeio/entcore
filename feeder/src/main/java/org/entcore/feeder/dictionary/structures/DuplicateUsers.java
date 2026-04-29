@@ -47,6 +47,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import org.entcore.feeder.dto.CheckDuplicatesIntegrityDTO;
+import org.entcore.feeder.dto.IgnoreDuplicateDTO;
+import org.entcore.feeder.dto.ListDuplicatesDTO;
+import org.entcore.feeder.dto.MergeByKeysDTO;
+import org.entcore.feeder.dto.MergeDuplicateDTO;
+import org.entcore.feeder.dto.UnmergeByLoginsDTO;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -196,11 +203,11 @@ public class DuplicateUsers {
 		});
 	}
 
-	public void ignoreDuplicate(final Message<JsonObject> message) {
-		String userId1 = message.body().getString("userId1");
-		String userId2 = message.body().getString("userId2");
+	public void ignoreDuplicate(final IgnoreDuplicateDTO dto, final Handler<JsonObject> replyHandler) {
+		String userId1 = dto.getUserId1();
+		String userId2 = dto.getUserId2();
 		if (userId1 == null || userId2 == null || userId1.trim().isEmpty() || userId2.trim().isEmpty()) {
-			message.reply(new JsonObject().put("status", "error").put("message", "invalid.id"));
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "invalid.id"));
 			return;
 		}
 		String query =
@@ -209,12 +216,7 @@ public class DuplicateUsers {
 						"u2.ignoreDuplicates = coalesce(u2.ignoreDuplicates, []) + u1.id " +
 						"DELETE r";
 		JsonObject params = new JsonObject().put("userId1", userId1).put("userId2", userId2);
-		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				message.reply(event.body());
-			}
-		});
+		TransactionManager.getNeo4jHelper().execute(query, params, event -> replyHandler.handle(event.body()));
 	}
 
 	public void listDuplicates(final Message<JsonObject> message) {
@@ -261,8 +263,50 @@ public class DuplicateUsers {
 		});
 	}
 
-	public void mergeDuplicate(final Message<JsonObject> message) {
-		mergeDuplicate(message, null);
+	public void listDuplicates(final ListDuplicatesDTO dto, final Handler<JsonObject> replyHandler) {
+		JsonArray structures = dto.getStructures() != null ? new JsonArray(dto.getStructures()) : null;
+		boolean inherit = Boolean.TRUE.equals(dto.getInherit());
+		final Integer minScore = dto.getMinScore();
+		final boolean inSameStructure = Boolean.TRUE.equals(dto.getInSameStructure());
+
+		final String filter = (minScore != null) ? ((inSameStructure) ? "AND":"WHERE") + " r.score >= {minScore} " : "";
+		String query;
+		if (structures != null && structures.size() > 0) {
+			if (inherit) {
+				query = "MATCH (s:Structure)<-[:HAS_ATTACHMENT*0..]-(so:Structure)<-[:DEPENDS]-(pg:ProfileGroup) ";
+			} else {
+				query = "MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup) ";
+			}
+			query +="WHERE s.id IN {structures} " +
+					"WITH COLLECT(pg.id) as groupIds " +
+					"MATCH (g1:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]->(u2:User)-[:IN]->(g2:ProfileGroup) " +
+					"WHERE g1.id IN groupIds AND g2.id IN groupIds " +
+					"MATCH (s1:Structure)<-[:DEPENDS]-(g1) " + filter +
+					"OPTIONAL MATCH (s2:Structure)<-[:DEPENDS]-(g2) ";
+			query +="RETURN r.score as score, " +
+					"{id: u1.id, firstName: u1.firstName, lastName: u1.lastName, birthDate: u1.birthDate, email: u1.email, profiles: u1.profiles, structures: collect(distinct s1.id)} as user1, " +
+					"{id: u2.id, firstName: u2.firstName, lastName: u2.lastName, birthDate: u2.birthDate, email: u2.email, profiles: u2.profiles, structures: collect(distinct s2.id)} as user2 " +
+					"ORDER BY score DESC";
+		} else {
+			if (inSameStructure) {
+				query = "match (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]-(u2:User) WHERE u2-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s) " ;
+			} else {
+				query = "MATCH (u1:User)-[r:DUPLICATE]->(u2:User) ";
+			}
+			query += filter + "RETURN r.score as score, " +
+					"{id: u1.id, firstName: u1.firstName, lastName: u1.lastName, birthDate: u1.birthDate, email: u1.email, profiles: u1.profiles} as user1, " +
+					"{id: u2.id, firstName: u2.firstName, lastName: u2.lastName, birthDate: u2.birthDate, email: u2.email, profiles: u2.profiles} as user2 " +
+					"ORDER BY score DESC";
+		}
+		JsonObject params = new JsonObject().put("structures", structures).put("minScore", minScore);
+		TransactionManager.getNeo4jHelper().execute(query, params, event -> replyHandler.handle(event.body()));
+	}
+
+	public void mergeDuplicate(final MergeDuplicateDTO dto, final Handler<JsonObject> replyHandler) {
+		mergeDuplicate(new ResultMessage(replyHandler)
+				.put("userId1", dto.getUserId1())
+				.put("userId2", dto.getUserId2())
+				.put("keepRelations", dto.getKeepRelations()), null);
 	}
 
 	/**
@@ -655,6 +699,12 @@ public class DuplicateUsers {
 
 	}
 
+	public void mergeBykeys(final MergeByKeysDTO dto, final Handler<JsonObject> replyHandler) {
+		mergeBykeys(new ResultMessage(replyHandler)
+				.put("originalUserId", dto.getOriginalUserId())
+				.put("mergeKeys", dto.getMergeKeys() != null ? new JsonArray(dto.getMergeKeys()) : null));
+	}
+
 	public void unmergeByLogins(final Message<JsonObject> message) {
 		final JsonObject error = new JsonObject().put("status", "error");
 		final String originalUserId = message.body().getString("originalUserId");
@@ -716,13 +766,14 @@ public class DuplicateUsers {
 		}
 	}
 
-	public static void checkDuplicatesIntegrity(final Message<JsonObject> message) {
-		checkDuplicatesIntegrity(message.body().getString("userId"), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				message.reply(event.body());
-			}
-		});
+	public void unmergeByLogins(final UnmergeByLoginsDTO dto, final Handler<JsonObject> replyHandler) {
+		unmergeByLogins(new ResultMessage(replyHandler)
+				.put("originalUserId", dto.getOriginalUserId())
+				.put("mergedLogins", dto.getMergedLogins() != null ? new JsonArray(dto.getMergedLogins()) : null));
+	}
+
+	public static void checkDuplicatesIntegrity(final CheckDuplicatesIntegrityDTO dto, final Handler<JsonObject> replyHandler) {
+		checkDuplicatesIntegrity(dto.getUserId(), event -> replyHandler.handle(event.body()));
 	}
 
 	public static void checkDuplicatesIntegrity(String userId, Handler<Message<JsonObject>> handler) {

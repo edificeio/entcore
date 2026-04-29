@@ -28,28 +28,68 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.Json;
-import org.entcore.common.bus.MessageUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.schema.Source;
-//import org.entcore.common.schema.users.User;
-//import org.entcore.common.schema.structures.Structure;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.position.UserPositionService;
-import org.entcore.common.user.position.impl.DefaultUserPositionService;
-import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.Id;
 import org.entcore.feeder.aaf.AAFFilesUploadRequest;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.dictionary.structures.User.DeleteTask;
+import org.entcore.feeder.dto.AddUserDTO;
+import org.entcore.feeder.dto.AddUsersDTO;
+import org.entcore.feeder.dto.CreateClassDTO;
+import org.entcore.feeder.mapper.ClassMapper;
+import org.entcore.feeder.dto.CreateStructureDTO;
+import org.entcore.feeder.dto.CreateUserDTO;
+import org.entcore.feeder.dto.CreateFunctionDTO;
+import org.entcore.feeder.dto.CreateGroupDTO;
+import org.entcore.feeder.dto.DeleteFunctionDTO;
+import org.entcore.feeder.dto.DeleteFunctionGroupDTO;
+import org.entcore.feeder.dto.AddGroupUsersDTO;
+import org.entcore.feeder.dto.DeleteGroupDTO;
+import org.entcore.feeder.dto.RemoveGroupUsersDTO;
+import org.entcore.feeder.dto.RelativeStudentDTO;
+import org.entcore.feeder.dto.AddDirectionDTO;
+import org.entcore.feeder.dto.AddHeadTeacherDTO;
+import org.entcore.feeder.dto.AddUserGroupDTO;
+import org.entcore.feeder.dto.RemoveUserGroupDTO;
+import org.entcore.feeder.dto.CreateSubjectDTO;
+import org.entcore.feeder.dto.CreateTenantDTO;
+import org.entcore.feeder.dto.LinkUserPositionsDTO;
+import org.entcore.feeder.dto.StructureAttachmentDTO;
+import org.entcore.feeder.dto.StructureDetachmentDTO;
+import org.entcore.feeder.dto.UpdateGroupLinkedPositionsDTO;
+import org.entcore.feeder.dto.DeleteSubjectDTO;
+import org.entcore.feeder.dto.UpdateEmailGroupDTO;
+import org.entcore.feeder.dto.UpdateSubjectDTO;
+import org.entcore.feeder.dto.AddUserFunctionDTO;
+import org.entcore.feeder.dto.RemoveDirectionDTO;
+import org.entcore.feeder.dto.RemoveUserFunctionDTO;
+import org.entcore.feeder.dto.UpdateHeadTeacherDTO;
+import org.entcore.feeder.dto.UnlinkRelativeStudentDTO;
+import org.entcore.feeder.dto.DeleteUserDTO;
+import org.entcore.feeder.mapper.FunctionMapper;
+import org.entcore.feeder.dto.RemoveClassDTO;
+import org.entcore.feeder.dto.RemoveUserDTO;
+import org.entcore.feeder.dto.RemoveUsersDTO;
+import org.entcore.feeder.dto.RestoreUserDTO;
+import org.entcore.feeder.mapper.StructureMapper;
+import org.entcore.feeder.dto.UpdateClassDTO;
+import org.entcore.feeder.dto.UpdateStructureDTO;
+import org.entcore.feeder.dto.UpdateUserDTO;
+import org.entcore.feeder.dto.UpdateUserLoginDTO;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.entcore.feeder.utils.*;
+import org.entcore.feeder.utils.StatementsBuilder;
+import org.entcore.feeder.utils.TransactionManager;
+import org.entcore.feeder.utils.Validator;
+import org.entcore.feeder.utils.VoidFunction;
 import org.vertx.java.busmods.BusModBase;
 
 import java.io.File;
@@ -92,11 +132,10 @@ public class ManualFeeder extends BusModBase {
 		this.userPositionService = userPositionService;
 	}
 
-	public void createStructure(final Message<JsonObject> message) {
-		JsonObject struct = getMandatoryObject("data", message);
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		if (struct == null) return;
+	public void createStructure(final CreateStructureDTO dto, final Handler<JsonObject> replyHandler) {
+		JsonObject struct = StructureMapper.toStructureProps(dto);
+		final Integer transactionId = dto.getTransactionId();
+		final boolean commit = Boolean.TRUE.equals(dto.getCommit());
 		if (struct.getString("externalId") == null) {
 			struct.put("externalId", UUID.randomUUID().toString());
 		}
@@ -106,117 +145,120 @@ public class ManualFeeder extends BusModBase {
 		final String error = structureValidator.validate(struct);
 		if (error != null) {
 			logger.error(error);
-			sendError(message, error);
-		} else {
-			StatementsBuilder statementsBuilder = new StatementsBuilder();
-			String query =
-					"CREATE (s:Structure {props}) " +
-					"WITH s " +
-					"MATCH (p:Profile) " +
-					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, " +
-					"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->s " +
-					"SET g.id = id(g)+'-'+timestamp() " +
-					"RETURN DISTINCT s.id as id ";
-			JsonObject params = new JsonObject()
-					.put("groupSearchField", Validator.sanitize(struct.getString("name")))
-					.put("props", struct);
-			statementsBuilder.add(query, params);
-			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					final JsonArray results = event.body().getJsonArray("results");
-					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
-					} else {
-						message.reply(event.body());
-					}
-				}
-			});
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
+			return;
 		}
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		String query =
+				"CREATE (s:Structure {props}) " +
+				"WITH s " +
+				"MATCH (p:Profile) " +
+				"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, " +
+				"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->s " +
+				"SET g.id = id(g)+'-'+timestamp() " +
+				"RETURN DISTINCT s.id as id ";
+		JsonObject params = new JsonObject()
+				.put("groupSearchField", Validator.sanitize(struct.getString("name")))
+				.put("props", struct);
+		statementsBuilder.add(query, params);
+		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+					replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
+				} else {
+					replyHandler.handle(event.body());
+				}
+			}
+		});
 	}
 
-	public void createClass(final Message<JsonObject> message) {
-		JsonObject c = getMandatoryObject("data", message);
-		if (c == null) return;
-		String structureId = getMandatoryString("structureId", message);
-		if (structureId == null) return;
-		if (c.getString("externalId") == null || c.getString("externalId").isEmpty()) {
-			c.put("externalId", structureId + "$" + c.getString("name"));
+	public void createClass(final CreateClassDTO dto, final Handler<JsonObject> replyHandler) {
+		final String structureId = dto.getStructureId();
+		if (structureId == null || structureId.trim().isEmpty()) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId must be specified"));
+			return;
 		}
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
+		JsonObject c = ClassMapper.toClassProps(dto);
+		c.put("externalId", structureId + "$" + dto.getName());
+		final Integer transactionId = dto.getTransactionId();
+		final boolean commit = Boolean.TRUE.equals(dto.getCommit());
 		final String error = classValidator.validate(c);
 		if (error != null) {
 			logger.error(error);
-			sendError(message, error);
-		} else {
-			StatementsBuilder statementsBuilder = new StatementsBuilder();
-			String query =
-					"MATCH (s:Structure { id : {structureId}}) " +
-					"CREATE s<-[:BELONGS]-(c:Class {props}) " +
-					"SET c.externalId = s.externalId + '$' + c.name " +
-					"WITH s, c " +
-					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, " +
-					"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->g " +
-					"SET pg.id = id(pg)+'-'+timestamp() " +
-					"RETURN DISTINCT c.id as id ";
-			JsonObject params = new JsonObject()
-					.put("structureId", structureId)
-					.put("groupSearchField", Validator.sanitize(c.getString("name")))
-					.put("props", c);
-			statementsBuilder.add(query, params);
-			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					final JsonArray results = event.body().getJsonArray("results");
-					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
-					} else {
-						message.reply(event.body());
-					}
-				}
-			});
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
+			return;
 		}
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		String query =
+				"MATCH (s:Structure { id : {structureId}}) " +
+				"CREATE s<-[:BELONGS]-(c:Class {props}) " +
+				"SET c.externalId = s.externalId + '$' + c.name " +
+				"WITH s, c " +
+				"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, " +
+				"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->g " +
+				"SET pg.id = id(pg)+'-'+timestamp() " +
+				"RETURN DISTINCT c.id as id ";
+		JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("groupSearchField", Validator.sanitize(c.getString("name")))
+				.put("props", c);
+		statementsBuilder.add(query, params);
+		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+					replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
+				} else {
+					replyHandler.handle(event.body());
+				}
+			}
+		});
 	}
 
-	public void updateClass(final Message<JsonObject> message) {
-		JsonObject c = getMandatoryObject("data", message);
-		if (c == null) return;
-		String classId = getMandatoryString("classId", message);
-		if (classId == null) return;
+	public void updateClass(final UpdateClassDTO dto, final Handler<JsonObject> replyHandler) {
+		final String classId = dto.getClassId();
+		if (classId == null || classId.trim().isEmpty()) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "classId must be specified"));
+			return;
+		}
+		JsonObject c = ClassMapper.toClassProps(dto);
 		final String error = classValidator.modifiableValidate(c);
 		if (error != null) {
 			logger.error(error);
-			sendError(message, error);
-		} else {
-			String rename = "";
-			if (c.getString("name") != null) {
-				rename = "WITH c " +
-						 "MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-						 "(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-						 "SET cpg.name = c.name+'-'+p.name ";
-			}
-			String query =
-					"MATCH (c:`Class` { id : {classId}}) " +
-					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("c", c) +
-					rename +
-					"RETURN DISTINCT c.id as id ";
-			JsonObject params = c.put("classId", classId);
-			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> m) {
-					message.reply(m.body());
-				}
-			});
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
+			return;
 		}
+		String rename = "";
+		if (c.getString("name") != null) {
+			rename = "WITH c " +
+					 "MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+					 "(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+					 "SET cpg.name = c.name+'-'+p.name ";
+		}
+		String query =
+				"MATCH (c:`Class` { id : {classId}}) " +
+				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("c", c) +
+				rename +
+				"RETURN DISTINCT c.id as id ";
+		JsonObject params = c.put("classId", classId);
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				replyHandler.handle(m.body());
+			}
+		});
 	}
 
-	public void removeClass(final Message<JsonObject> message) {
-		String classId = getMandatoryString("classId", message);
-		if (StringUtils.isEmpty(classId)) return;
-
-		//=== Find which users to remove from class
+	public void removeClass(final RemoveClassDTO dto, final Handler<JsonObject> replyHandler) {
+		final String classId = dto.getClassId();
+		if (StringUtils.isEmpty(classId)) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "classId must be specified"));
+			return;
+		}
 		String queryUserIds =
 			"MATCH (c:`Class` {id: {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
 			"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User)-[:IN]->spg " +
@@ -226,37 +268,33 @@ public class ManualFeeder extends BusModBase {
 			public void handle(Message<JsonObject> r) {
 				try {
 					TransactionHelper tx = TransactionManager.getTransaction();
-					
 					JsonArray res = r.body().getJsonArray("result");
 					if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
 						final JsonArray userIds = res.getJsonObject(0).getJsonArray("ids");
-						if( userIds !=null && !userIds.isEmpty() ) {
+						if (userIds != null && !userIds.isEmpty()) {
 							final JsonArray classIds = new JsonArray();
-							userIds.forEach( u -> classIds.add(classId) );
+							userIds.forEach(u -> classIds.add(classId));
 							prepareRemovingUsersFromClasses(tx, userIds, classIds);
 						}
 					}
-
 					prepareRemovingProfileGroupsOfClass(tx, classId);
 					prepareRemovingClass(tx, classId);
-
 					tx.commit(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							final JsonArray results = event.body().getJsonArray("results");
 							if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-								// Notify apps which groups have been deleted.
 								JsonArray r = getOrElse(results.getJsonArray(0), new JsonArray());
-								if( r!=null && !r.isEmpty() ) {
+								if (r != null && !r.isEmpty()) {
 									Transition.publishDeleteGroups(eb, logger, r);
 								}
 							}
-							message.reply(event.body());
+							replyHandler.handle(event.body());
 						}
 					});
 				} catch (TransactionException e) {
 					logger.error("Error in transaction while removing class", e);
-					sendError(message, "transaction.error");
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", "transaction.error"));
 				}
 			}
 		});
@@ -279,58 +317,52 @@ public class ManualFeeder extends BusModBase {
 		tx.add(query, new JsonObject().put("classId", classId));
 	}
 
-	public void createUser(final Message<JsonObject> message) {
-		logger.info("enter create user");
-		logger.info(message.body().encode());
-		final JsonObject user = getMandatoryObject("data", message);
-		if (user == null) return;
+	public void createUser(final CreateUserDTO dto, final Handler<JsonObject> replyHandler) {
+		final JsonObject user = dto.getData().toJson();
 		if (user.getString("externalId") == null) {
 			user.put("externalId", UUID.randomUUID().toString());
 		}
-		final String profile = message.body().getString("profile", "");
+		final String profile = dto.getProfile() != null ? dto.getProfile() : "";
 		if (!profiles.containsKey(profile)) {
-			sendError(message, "Invalid profile : " + profile);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "Invalid profile : " + profile));
 			return;
 		}
 		JsonArray childrenIds = null;
 		if ("Relative".equals(profile)) {
 			childrenIds = user.getJsonArray("childrenIds");
 		}
-		JsonArray userPositionIds = user.getJsonArray("userPositionIds");;
+		JsonArray userPositionIds = user.getJsonArray("userPositionIds");
 		if (userPositionIds != null && !userPositionIds.isEmpty() && !"Personnel".equals(profile)) {
 			logger.warn("Cannot create a user with profile {0} and positions", profile);
-			sendError(message, "user.profiles.not.allowed.for.profile.at.creation");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "user.profiles.not.allowed.for.profile.at.creation"));
 			return;
 		}
-		final String userSource = "SSO".equals(user.getString("source")) ? "SSO": SOURCE;
+		final String userSource = "SSO".equals(user.getString("source")) ? "SSO" : SOURCE;
 		final String error = profiles.get(profile).validate(user);
 		if (error != null) {
 			logger.error(error);
-			sendError(message, error);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
 			return;
 		}
-
 		user.put("source", userSource);
-
-		final String structureId = message.body().getString("structureId");
+		final String structureId = dto.getStructureId();
 		if (structureId != null && !structureId.trim().isEmpty()) {
-			final JsonArray classesNames = message.body().getJsonArray("classesNames");
-			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames, userPositionIds);
+			final List<String> classesNamesList = dto.getClassesNames();
+			final JsonArray classesNames = classesNamesList != null ? new JsonArray(classesNamesList) : null;
+			createUserInStructure(dto, replyHandler, user, profile, structureId, childrenIds, classesNames, userPositionIds);
 			return;
 		}
-		final String classId = message.body().getString("classId");
+		final String classId = dto.getClassId();
 		if (classId != null && !classId.trim().isEmpty()) {
-			createUserInClass(message, user, profile, classId, childrenIds);
+			createUserInClass(dto, replyHandler, user, profile, classId, childrenIds);
 			return;
 		}
-		sendError(message, "structureId or classId must be specified");
+		replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId or classId must be specified"));
 	}
 
-	private void createUserInStructure(final Message<JsonObject> message,
-			final JsonObject user, String profile, String structureId, JsonArray childrenIds, 
+	private void createUserInStructure(final CreateUserDTO dto, final Handler<JsonObject> replyHandler,
+			final JsonObject user, String profile, String structureId, JsonArray childrenIds,
 			JsonArray classesNames, JsonArray userPositionIds) {
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		String related = "";
 		JsonObject params = new JsonObject()
@@ -375,7 +407,7 @@ public class ManualFeeder extends BusModBase {
 			userPositionService.getUserPositionSettingQueryAndParam(
 				userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
 				user.getString("id"),
-				message.body().getString("callerId"))
+				dto.getCallerId())
 			.onSuccess(queryAndParams -> {
 				statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
 				promise.complete();
@@ -383,127 +415,154 @@ public class ManualFeeder extends BusModBase {
 			.onFailure(promise::fail);
 		}
 		promise.future().onSuccess(e -> {
-			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+			neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					final JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
-						if (commit) {
-							eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
-								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
-						}
+						replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
+						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+							(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
 					} else {
-						message.reply(event.body());
+						replyHandler.handle(event.body());
 					}
 				}
 			});
 		}).onFailure(th -> {
-			logger.warn("An error occurred when trying to create user positions update metho", th);
-			message.reply("Unknown error");
+			logger.warn("An error occurred when trying to create user positions update query", th);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "Unknown error"));
 		});
 	}
 
-	public void addUser(final Message<JsonObject> message)
-	{
-		final String userId = getMandatoryString("userId", message);
-		if (userId == null) return;
-
-		TransactionHelper tx = TransactionHelper.DEFAULT;
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		if(transactionId != null)
-			tx = new TransactionHelper(Neo4j.getInstance(), Source.MANUAL, transactionId);
-
-		final String structureId = message.body().getString("structureId");
-		final String classId = message.body().getString("classId");
-		if (structureId != null && !structureId.trim().isEmpty())
-		{
-			MessageUtils.replyWithResults(message,
-				new org.entcore.common.schema.users.User(userId).attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
-			);
-
-		}
-		else if (classId != null && !classId.trim().isEmpty())
-			addUserInClass(message, userId, classId);
-		else
-		{
-			sendError(message, "structureId or classId must be specified");
+	public void addUser(final AddUserDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		if (userId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId must be specified"));
 			return;
 		}
-
-		if(Boolean.TRUE.equals(commit))
-			tx.commit();
-	}
-
-
-	public void addUsers(final Message<JsonObject> message)
-	{
-		final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
-		if (userIds.isEmpty()) return;
-
-		final String structureId = message.body().getString("structureId");
-		final String classId = message.body().getString("classId");
-		if (structureId != null && !structureId.trim().isEmpty())
-		{
-			TransactionHelper tx = new TransactionHelper(Neo4j.getInstance(), Source.MANUAL);
-			StatementsBuilder statementsBuilder = new StatementsBuilder();
-			for(Object userId : userIds.getList())
-				new org.entcore.common.schema.users.User(userId.toString()).attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
-
-			tx.commit(new Handler<Message<JsonObject>>()
-			{
-				@Override
-				public void handle(Message<JsonObject> res)
-				{
-					message.reply(res.body());
-				}
-			});
-		}
-		else if (classId != null && !classId.trim().isEmpty())
-			addUsersInClass(message, userIds, classId);
-		else
-			sendError(message, "structureId or classId must be specified");
-	}
-
-	public void removeUser(final Message<JsonObject> message)
-	{
-		final String userId = getMandatoryString("userId", message);
-		if (userId == null) return;
-
-		final String structureId = message.body().getString("structureId");
-		final String classId = message.body().getString("classId");
-		if (structureId != null && !structureId.trim().isEmpty())
-		{
-			MessageUtils.replyWithResults(message,
-				new org.entcore.common.schema.users.User(userId.toString()).dettach(TransactionHelper.DEFAULT, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
-			);
-		}
-		else if (classId != null && !classId.trim().isEmpty())
-			removeUserFromClass(message, userId, classId);
-		else
-			sendError(message, "structureId or classId must be specified");
-	}
-
-	public void removeUsers(final Message<JsonObject> message) {
-		final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
-		if (userIds.isEmpty()) return;
-
-		final String structureId = message.body().getString("structureId");
+		final String structureId = dto.getStructureId();
+		final String classId = dto.getClassId();
 		if (structureId != null && !structureId.trim().isEmpty()) {
-			removeUsersFromStructure(message, userIds, structureId);
+			TransactionHelper tx = TransactionHelper.DEFAULT;
+			new org.entcore.common.schema.users.User(userId)
+				.attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
+				.onSuccess(rawRes -> {
+					final JsonArray res = (JsonArray) rawRes;
+					JsonArray allResults;
+					JsonArray singleResult;
+					if (res.size() == 0) {
+						allResults = new JsonArray().add(res);
+						singleResult = res;
+					} else {
+						Object first = res.getValue(0);
+						if (first instanceof JsonArray) {
+							allResults = res;
+							singleResult = res.size() == 1 ? (JsonArray) first : null;
+						} else {
+							allResults = new JsonArray().add(res);
+							singleResult = res;
+						}
+					}
+					replyHandler.handle(new JsonObject().put("status", "ok").put("results", allResults).put("result", singleResult));
+				})
+				.onFailure(rawT -> {
+					final Throwable t = (Throwable) rawT;
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", t.getMessage()));
+				});
+			tx.commit();
+		} else if (classId != null && !classId.trim().isEmpty()) {
+			addUserInClass(replyHandler, userId, classId);
+		} else {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId or classId must be specified"));
+		}
+	}
+
+
+	public void addUsers(final AddUsersDTO dto, final Handler<JsonObject> replyHandler) {
+		final List<String> userIdsList = dto.getUserIds();
+		if (userIdsList == null || userIdsList.isEmpty()) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userIds must be specified"));
 			return;
 		}
-		final JsonArray classIds = message.body().getJsonArray("classIds", new JsonArray());
-		if (!classIds.isEmpty()) {
-			if(classIds.size()!=userIds.size()){
-				sendError(message, "userIds and classIds Array must have same number of elements");
+		final String structureId = dto.getStructureId();
+		final String classId = dto.getClassId();
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			TransactionHelper tx = new TransactionHelper(Neo4j.getInstance(), Source.MANUAL);
+			for (String userId : userIdsList) {
+				new org.entcore.common.schema.users.User(userId).attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
+			}
+			tx.commit(res -> replyHandler.handle(res.body()));
+		} else if (classId != null && !classId.trim().isEmpty()) {
+			addUsersInClass(replyHandler, new JsonArray(userIdsList), classId);
+		} else {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId or classId must be specified"));
+		}
+	}
+
+	public void removeUser(final RemoveUserDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		if (userId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId must be specified"));
+			return;
+		}
+		final String structureId = dto.getStructureId();
+		final String classId = dto.getClassId();
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			new org.entcore.common.schema.users.User(userId)
+				.dettach(TransactionHelper.DEFAULT, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
+				.onSuccess(rawRes -> {
+					final JsonArray res = (JsonArray) rawRes;
+					JsonArray allResults;
+					JsonArray singleResult;
+					if (res.size() == 0) {
+						allResults = new JsonArray().add(res);
+						singleResult = res;
+					} else {
+						Object first = res.getValue(0);
+						if (first instanceof JsonArray) {
+							allResults = res;
+							singleResult = res.size() == 1 ? (JsonArray) first : null;
+						} else {
+							allResults = new JsonArray().add(res);
+							singleResult = res;
+						}
+					}
+					replyHandler.handle(new JsonObject().put("status", "ok").put("results", allResults).put("result", singleResult));
+				})
+				.onFailure(rawT -> {
+					final Throwable t = (Throwable) rawT;
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", t.getMessage()).put("error", t.getMessage()));
+				});
+		} else if (classId != null && !classId.trim().isEmpty()) {
+			removeUserFromClass(replyHandler, userId, classId);
+		} else {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId or classId must be specified"));
+		}
+	}
+
+	public void removeUsers(final RemoveUsersDTO dto, final Handler<JsonObject> replyHandler) {
+		final List<String> userIdsList = dto.getUserIds();
+		if (userIdsList == null || userIdsList.isEmpty()) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userIds must be specified"));
+			return;
+		}
+		final JsonArray userIds = new JsonArray(userIdsList);
+		final String structureId = dto.getStructureId();
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			removeUsersFromStructure(replyHandler, userIds, structureId);
+			return;
+		}
+		final List<String> classIdsList = dto.getClassIds();
+		if (classIdsList != null && !classIdsList.isEmpty()) {
+			final JsonArray classIds = new JsonArray(classIdsList);
+			if (classIds.size() != userIds.size()) {
+				replyHandler.handle(new JsonObject().put("status", "error").put("message", "userIds and classIds Array must have same number of elements"));
 				return;
 			}
-			removeUsersFromClass(message, userIds, classIds);
+			removeUsersFromClass(replyHandler, userIds, classIds);
 			return;
 		}
-		sendError(message, "structureId or classIds must be specified");
+		replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId or classIds must be specified"));
 	}
 
 	public static void applyRemoveUserFromStructure(String userId, String userExternalId,
@@ -587,11 +646,11 @@ public class ManualFeeder extends BusModBase {
 		}
 	}
 
-	private void removeUsersFromStructure(final Message<JsonObject> message,
+	private void removeUsersFromStructure(final Handler<JsonObject> replyHandler,
 										 JsonArray userIds, String structureId) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			for(Object userIdObj: userIds) {
+			for (Object userIdObj : userIds) {
 				ManualFeeder.applyRemoveUserFromStructure(userIdObj.toString(), null, structureId, null, tx);
 			}
 			tx.commit(new Handler<Message<JsonObject>>() {
@@ -599,23 +658,21 @@ public class ManualFeeder extends BusModBase {
 				public void handle(Message<JsonObject> event) {
 					final JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
+						replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
 					} else {
-						message.reply(event.body());
+						replyHandler.handle(event.body());
 					}
 				}
 			});
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when remove user from structure", e);
-			sendError(message, "transaction.error");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "transaction.error"));
 		}
 	}
 
-	private void createUserInClass(final Message<JsonObject> message,
+	private void createUserInClass(final CreateUserDTO dto, final Handler<JsonObject> replyHandler,
 			final JsonObject user, String profile, String classId, JsonArray childrenIds) {
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		// Retrieve user position ids and remove them from user properties before creating user node
+		// userPositionIds must not be stored as a node property in the class path
 		final JsonArray userPositionIds = (JsonArray) user.remove("userPositionIds");
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		String related = "";
@@ -641,45 +698,39 @@ public class ManualFeeder extends BusModBase {
 				"RETURN DISTINCT u.id as id, u.login AS login";
 		statementsBuilder.add(query, params);
 		final Promise<Void> promise = Promise.promise();
-		if(userPositionIds == null) {
+		if (userPositionIds == null) {
 			promise.complete();
 		} else {
 			userPositionService.getUserPositionSettingQueryAndParam(
 				userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
 				user.getString("id"),
-				message.body().getString("callerId"))
+				dto.getCallerId())
 			.onSuccess(queryAndParams -> {
 				statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
 				promise.complete();
 			}).onFailure(promise::fail);
 		}
 		promise.future().onSuccess(e -> {
-			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
+			neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					final JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
-						if (commit) {
-							eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
-								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
-						}
+						replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
+						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+							(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
 					} else {
-						message.reply(event.body());
+						replyHandler.handle(event.body());
 					}
 				}
 			});
-			}).onFailure(th -> {
-				logger.warn("An error occurred while creating user position update query", th);
-				sendError(message, "Unknown error");
-			});
-
+		}).onFailure(th -> {
+			logger.warn("An error occurred while creating user position update query", th);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "Unknown error"));
+		});
 	}
 
-	private void addUserInClass(final Message<JsonObject> message,
-								String userId, String classId) {
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
+	private void addUserInClass(final Handler<JsonObject> replyHandler, String userId, String classId) {
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
@@ -698,23 +749,22 @@ public class ManualFeeder extends BusModBase {
 						"inProfileGroup.source = CASE WHEN inProfileGroup.source = 'MANUAL' THEN 'MANUAL' ELSE null END " +
 						"RETURN DISTINCT u.id as id";
 		statementsBuilder.add(query, params);
-		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
+		neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				final JsonArray results = event.body().getJsonArray("results");
 				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-					message.reply(event.body().put("result", results.getJsonArray(0)));
+					replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
 				} else {
-					message.reply(event.body());
+					replyHandler.handle(event.body());
 				}
 			}
 		});
 	}
 
-	private void addUsersInClass(final Message<JsonObject> message,
-								JsonArray userIds, String classId) {
+	private void addUsersInClass(final Handler<JsonObject> replyHandler, JsonArray userIds, String classId) {
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
-		for(Object userId : userIds.getList()) {
+		for (Object userId : userIds.getList()) {
 			JsonObject params = new JsonObject()
 					.put("classId", classId)
 					.put("userId", userId);
@@ -732,12 +782,10 @@ public class ManualFeeder extends BusModBase {
 							"RETURN DISTINCT u.id as id";
 			statementsBuilder.add(query, params);
 		}
-		neo4j.executeTransaction(statementsBuilder.build(), null,true, res-> {
-				message.reply(res.body());
-		});
+		neo4j.executeTransaction(statementsBuilder.build(), null, true, res -> replyHandler.handle(res.body()));
 	}
 
-	private void removeUserFromClass(final Message<JsonObject> message,
+	private void removeUserFromClass(final Handler<JsonObject> replyHandler,
 									 String userId, String classId) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
@@ -772,19 +820,19 @@ public class ManualFeeder extends BusModBase {
 				public void handle(Message<JsonObject> event) {
 					final JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
+						replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
 					} else {
-						message.reply(event.body());
+						replyHandler.handle(event.body());
 					}
 				}
 			});
 		} catch (TransactionException e) {
-			logger.error("Error in transaction when remove user from structure", e);
-			sendError(message, "transaction.error");
+			logger.error("Error in transaction when remove user from class", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "transaction.error"));
 		}
 	}
 
-	private void removeUsersFromClass(final Message<JsonObject> message,
+	private void removeUsersFromClass(final Handler<JsonObject> replyHandler,
 									 JsonArray userIds, JsonArray classIds) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
@@ -794,15 +842,15 @@ public class ManualFeeder extends BusModBase {
 				public void handle(Message<JsonObject> event) {
 					final JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
+						replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
 					} else {
-						message.reply(event.body());
+						replyHandler.handle(event.body());
 					}
 				}
 			});
 		} catch (TransactionException e) {
-			logger.error("Error in transaction when remove user from structure", e);
-			sendError(message, "transaction.error");
+			logger.error("Error in transaction when remove users from class", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "transaction.error"));
 		}
 	}
 
@@ -840,12 +888,14 @@ public class ManualFeeder extends BusModBase {
 		}
 	}
 
-	public void updateUser(final Message<JsonObject> message) {
-		final JsonObject user = getMandatoryObject("data", message);
-		if (user == null) return;
-		final String userId = getMandatoryString("userId", message);
-		final String callerId = message.body().getString("callerId");
-		if (userId == null) return;
+	public void updateUser(final UpdateUserDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		if (userId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId must be specified"));
+			return;
+		}
+		final String callerId = dto.getCallerId();
+		final JsonObject user = dto.getData().toJson();
 		final Boolean useLoginAliasValidatorForAD = this.loginAliasValidatorForAD;
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
@@ -854,12 +904,8 @@ public class ManualFeeder extends BusModBase {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				JsonArray res = r.body().getJsonArray("result");
-				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0)
-				{
+				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0) {
 					StatementsBuilder statementsBuilder = new StatementsBuilder();
-					final Integer transactionId = message.body().getInteger("transactionId");
-					final Boolean commit = message.body().getBoolean("commit", true);
-					// Retrieve user position ids and remove them from user properties before updating user node
 					final JsonArray userPositionIds = (JsonArray) user.remove("positionIds");
 					Set<String> oldLogins = new HashSet<String>();
 					String updatedLoginAlias = user.getString("loginAlias");
@@ -869,32 +915,27 @@ public class ManualFeeder extends BusModBase {
 						String profile = ((JsonObject) o).getString("profile");
 						Validator v = profiles.get(profile);
 						if (v == null) {
-							sendError(message, "Invalid profile : " + profile);
+							replyHandler.handle(new JsonObject().put("status", "error").put("message", "Invalid profile : " + profile));
 							return;
 						}
-
 						String error = null;
-
-						// Remove the login alias if a user manually restores their original login
-						if(updatedLoginAlias != null) {
+						if (updatedLoginAlias != null) {
 							if (updatedLoginAlias.equals(((JsonObject) o).getString("login"))) {
 								user.putNull("loginAlias");
 							} else if (useLoginAliasValidatorForAD) {
 								error = Validator.validAdLoginAlias("loginAlias", updatedLoginAlias, "AdLoginAlias", "fr", I18n.getInstance(), false);
 							}
 						}
-
 						error = (error == null) ? v.modifiableValidate(user) : error;
 						if (error != null) {
 							logger.error(error);
-							sendError(message, error);
+							replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
 							return;
 						}
-						if(updatedLoginAlias != null)
-						{
+						if (updatedLoginAlias != null) {
 							String oldAlias = ((JsonObject) o).getString("loginAlias");
 							String login = ((JsonObject) o).getString("login");
-							if(oldAlias != null && oldAlias.isEmpty() == false) {
+							if (oldAlias != null && !oldAlias.isEmpty()) {
 								oldLogins.add(oldAlias);
 								deletedAlias.add(new JsonObject().put("event-type", "DELETED_ALIAS").put("type", profile)
 										.put("login", login).put("loginAlias", oldAlias).put("id", userId));
@@ -912,7 +953,6 @@ public class ManualFeeder extends BusModBase {
 							"RETURN DISTINCT u.id as id ";
 					JsonObject params = user.put("userId", userId);
 					statementsBuilder.add(query, params);
-
 					final Promise<Void> promise = Promise.promise();
 					if (userPositionIds == null) {
 						promise.complete();
@@ -928,112 +968,96 @@ public class ManualFeeder extends BusModBase {
 						.onFailure(promise::fail);
 					}
 					promise.future().onSuccess(e -> {
-						neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+						neo4j.executeTransaction(statementsBuilder.build(), null, true, new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> m) {
 								Validator.removeLogins(oldLogins);
 								DeleteTask.storeDeleteUserEvent(eventStore, deletedAlias);
 								final JsonObject body = m.body();
-								// Send back to the requester only the id of the updated user
 								final JsonArray results = (JsonArray) body.remove("results");
-								if(results != null && !results.isEmpty()) {
-									// 0 is the index at which the result of the query updating the user node is stored
+								if (results != null && !results.isEmpty()) {
 									body.put("result", results.getValue(0));
 								}
-								message.reply(body);
+								replyHandler.handle(body);
 							}
 						});
 					}).onFailure(th -> {
 						logger.warn("An error occurred while creating user position update query", th);
-						sendError(message, "Unknown error");
+						replyHandler.handle(new JsonObject().put("status", "error").put("message", "Unknown error"));
 					});
 				} else {
-					sendError(message, "Invalid profile.");
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", "Invalid profile."));
 				}
 			}
 		});
 	}
 
-	public void updateUserLogin(final Message<JsonObject> message)
-	{
-		final String userId = getMandatoryString("userId", message);
-		if (userId == null) return;
-
-		final String newLogin = getMandatoryString("login", message);
-		if (newLogin == null) return;
-
+	public void updateUserLogin(final UpdateUserLoginDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String newLogin = dto.getLogin();
+		if (userId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId must be specified"));
+			return;
+		}
+		if (newLogin == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "login must be specified"));
+			return;
+		}
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN DISTINCT p.name as profile, u.login as login ";
-		neo4j.execute(q, new JsonObject().put("userId", userId), new Handler<Message<JsonObject>>()
-		{
+		neo4j.execute(q, new JsonObject().put("userId", userId), new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> r)
-			{
+			public void handle(Message<JsonObject> r) {
 				JsonArray res = r.body().getJsonArray("result");
 				JsonArray loginChangeEvents = new JsonArray();
 				Set<String> oldLogins = new HashSet<String>();
-
-				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0)
-				{
-					for (Object o : res)
-					{
+				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0) {
+					for (Object o : res) {
 						if (!(o instanceof JsonObject)) continue;
-
 						String profile = ((JsonObject) o).getString("profile");
 						String oldLogin = ((JsonObject) o).getString("login");
-
-						if(oldLogin == null)
-						{
+						if (oldLogin == null) {
 							logger.error("Error reading old user login for user " + userId);
-							sendError(message, "Invalid user");
+							replyHandler.handle(new JsonObject().put("status", "error").put("message", "Invalid user"));
 							return;
 						}
-
-						if (!newLogin.equals(oldLogin) && !newLogin.isEmpty())
-						{
+						if (!newLogin.equals(oldLogin) && !newLogin.isEmpty()) {
 							oldLogins.add(oldLogin);
 							loginChangeEvents.add(new JsonObject().put("event-type", "CHANGE_LOGIN").put("type", profile)
 									.put("login", oldLogin).put("loginAlias", newLogin).put("id", userId));
 						}
 					}
-
 					String loginError = Validator.validLogin(newLogin);
-					if(loginError != null)
-					{
+					if (loginError != null) {
 						logger.error(loginError);
-						sendError(message, loginError);
+						replyHandler.handle(new JsonObject().put("status", "error").put("message", loginError));
 						return;
 					}
-					else
-					{
-						String query = "MATCH (u:User {id: {userId}}) SET u.login = {login} RETURN u.id AS id";
-						JsonObject params = new JsonObject().put("userId", userId).put("login", newLogin);
-						neo4j.execute(query, params, new Handler<Message<JsonObject>>()
-						{
-							@Override
-							public void handle(Message<JsonObject> m)
-							{
-								Validator.removeLogins(oldLogins);
-								DeleteTask.storeDeleteUserEvent(eventStore, loginChangeEvents);
-
-								message.reply(m.body());
-							}
-						});
-					}
+					String query = "MATCH (u:User {id: {userId}}) SET u.login = {login} RETURN u.id AS id";
+					JsonObject params = new JsonObject().put("userId", userId).put("login", newLogin);
+					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> m) {
+							Validator.removeLogins(oldLogins);
+							DeleteTask.storeDeleteUserEvent(eventStore, loginChangeEvents);
+							replyHandler.handle(m.body());
+						}
+					});
+				} else {
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", "Invalid user."));
 				}
-				else
-					sendError(message, "Invalid user.");
 			}
 		});
 	}
 
-	public void deleteUser(final Message<JsonObject> message) {
-		final JsonArray users = message.body().getJsonArray("users");
-		if (users == null || users.size() == 0) {
-			sendError(message, "Missing users.");
+	public void deleteUser(final DeleteUserDTO dto, final Handler<JsonObject> replyHandler) {
+		final List<String> usersList = dto.getUsers();
+		if (usersList == null || usersList.isEmpty()) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "Missing users."));
 			return;
 		}
+		final JsonArray users = new JsonArray(usersList);
 		String query =
 				"MATCH (u:User)" +
 				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D', 'SSO'] OR HAS(u.disappearanceDate)) " +
@@ -1046,7 +1070,9 @@ public class ManualFeeder extends BusModBase {
 					if (users.size() == res.size()) {
 						final Set<String> oldLogins = new HashSet<>();
 						final JsonArray deleteUsers = new JsonArray();
-						executeTransaction(message, tx -> {
+						try {
+							TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+							tx.setAutoSend(true);
 							for (Object o : res) {
 								if (!(o instanceof JsonObject)) continue;
 								final JsonObject j = (JsonObject) o;
@@ -1067,57 +1093,65 @@ public class ManualFeeder extends BusModBase {
 								User.getDelete(deleteUsers, tx);
 								User.delete(deleteUsers, tx);
 							}
-						},
-						m -> {
-							final JsonArray results = m.body().getJsonArray("results");
-							if ("ok".equals(m.body().getString("status")) && deleteUsers.size() > 0 && results != null &&
-									(results.size() - 2) > 0) {
-								final JsonArray r = results.getJsonArray(results.size() - 2);
-								User.DeleteTask.publishDeleteUsers(eb, eventStore, r);
-								Validator.removeLogins(oldLogins);
-							}
-							message.reply(m.body());
-						});
+							tx.commit(m -> {
+								final JsonArray results = m.body().getJsonArray("results");
+								if ("ok".equals(m.body().getString("status")) && deleteUsers.size() > 0 && results != null &&
+										(results.size() - 2) > 0) {
+									final JsonArray r = results.getJsonArray(results.size() - 2);
+									User.DeleteTask.publishDeleteUsers(eb, eventStore, r);
+									Validator.removeLogins(oldLogins);
+								}
+								replyHandler.handle(m.body());
+							});
+						} catch (TransactionException e) {
+							logger.error("Error in transaction when deleting users", e);
+							replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+						}
 					} else {
-						sendError(message, "unauthorized.user");
+						replyHandler.handle(new JsonObject().put("status", "error").put("message", "unauthorized.user"));
 					}
 				} else {
-					message.reply(event.body());
+					replyHandler.handle(event.body());
 				}
 			}
 		});
 	}
 
-	public void restoreUser(final Message<JsonObject> message) {
-		final JsonArray users = message.body().getJsonArray("users");
-		if (users == null || users.size() == 0) {
-			sendError(message, "Missing users.");
+	public void restoreUser(final RestoreUserDTO dto, final Handler<JsonObject> replyHandler) {
+		final List<String> usersList = dto.getUsers();
+		if (usersList == null || usersList.isEmpty()) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "Missing users."));
 			return;
 		}
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				for (Object o : users) {
-					User.restorePreDeleted(o.toString(), tx);
-				}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			for (String userId : usersList) {
+				User.restorePreDeleted(userId, tx);
 			}
-		});
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when restoring users", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void createFunction(final Message<JsonObject> message) {
-		final JsonObject function = getMandatoryObject("data", message);
-		if (function == null) return;
-		final String profile = message.body().getString("profile", "");
+	public void createFunction(final CreateFunctionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String profile = dto.getProfile() != null ? dto.getProfile() : "";
 		if (!profiles.containsKey(profile)) {
-			sendError(message, "Invalid profile : " + profile);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "Invalid profile : " + profile));
 			return;
 		}
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Profile.createFunction(profile, null, function, tx);
-			}
-		});
+		final JsonObject function = FunctionMapper.toFunctionData(dto);
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Profile.createFunction(profile, null, function, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when creating function", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
 	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f) {
@@ -1152,40 +1186,54 @@ public class ManualFeeder extends BusModBase {
 		}
 	}
 
-	public void deleteFunction(final Message<JsonObject> message) {
-		final String functionCode = getMandatoryString("functionCode", message);
-		if (functionCode == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Profile.deleteFunction(functionCode, tx);
-			}
-		});
+	public void deleteFunction(final DeleteFunctionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String functionCode = dto.getFunctionCode();
+		if (functionCode == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "functionCode must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Profile.deleteFunction(functionCode, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when deleting function", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void deleteFunctionGroup(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		if (groupId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Profile.deleteFunctionGroup(groupId, tx);
-			}
-		});
+	public void deleteFunctionGroup(final DeleteFunctionGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		if (groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Profile.deleteFunctionGroup(groupId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when deleting function group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void addUserFunction(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String function = message.body().getString("function");
-		if (userId == null || function == null) return;
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		final Boolean autoSend = message.body().getBoolean("autoSend", true);
-		final JsonArray scope = message.body().getJsonArray("scope");
-		String inherit =  message.body().getString("inherit", "");
-		StatementsBuilder statementsBuilder = new StatementsBuilder();
+	public void addUserFunction(final AddUserFunctionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String function = dto.getFunction();
+		if (userId == null || function == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and function must be specified"));
+			return;
+		}
+		final Integer transactionId = dto.getTransactionId();
+		final boolean commit = dto.getCommit() != null ? dto.getCommit() : true;
+		final boolean autoSend = dto.getAutoSend() != null ? dto.getAutoSend() : true;
+		final JsonArray scope = dto.getScope() != null ? new JsonArray(dto.getScope()) : null;
+		final String inherit = dto.getInherit() != null ? dto.getInherit() : "";
 		if (scope != null && ("s".equals(inherit) || "sc".equals(inherit))) {
-			String query;
+			final String query;
 			if ("sc".equals(inherit)) {
 				query = "MATCH (s:Structure)<-[:HAS_ATTACHMENT*0..]-(:Structure)<-[:BELONGS*0..1]-(scope) " +
 						"WHERE s.id IN {scope} " +
@@ -1195,412 +1243,505 @@ public class ManualFeeder extends BusModBase {
 						"WHERE s.id IN {scope} " +
 						"RETURN COLLECT(scope.id) as ids ";
 			}
-			JsonObject params = new JsonObject()
-					.put("scope", scope);
-			statementsBuilder.add(query, params);
-			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					JsonArray result = event.body().getJsonArray("results");
-					if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
-						final JsonArray s = result.getJsonArray(0).getJsonObject(0).getJsonArray("ids");
-						executeTransaction(message, new VoidFunction<TransactionHelper>() {
-							@Override
-							public void apply(TransactionHelper tx) {
-								User.addFunction(userId, function, s, tx);
-							}
-						}, transactionId, commit, autoSend);
-					} else {
-						sendError(message, "invalid.scope");
+			StatementsBuilder statementsBuilder = new StatementsBuilder();
+			statementsBuilder.add(query, new JsonObject().put("scope", scope));
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, event -> {
+				JsonArray result = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
+					final JsonArray s = result.getJsonArray(0).getJsonObject(0).getJsonArray("ids");
+					try {
+						TransactionHelper tx = TransactionManager.getInstance().begin(transactionId);
+						tx.setAutoSend(autoSend);
+						User.addFunction(userId, function, s, tx);
+						if (commit) {
+							tx.commit(m -> replyHandler.handle(m.body()));
+						} else {
+							tx.flush(m -> replyHandler.handle(m.body()));
+						}
+					} catch (TransactionException e) {
+						logger.error("Error in transaction when adding user function", e);
+						replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 					}
+				} else {
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", "invalid.scope"));
 				}
 			});
 		} else {
-			executeTransaction(message, new VoidFunction<TransactionHelper>() {
-				@Override
-				public void apply(TransactionHelper tx) {
-					User.addFunction(userId, function, scope, tx);
+			try {
+				TransactionHelper tx = TransactionManager.getInstance().begin(transactionId);
+				tx.setAutoSend(autoSend);
+				User.addFunction(userId, function, scope, tx);
+				if (commit) {
+					tx.commit(m -> replyHandler.handle(m.body()));
+				} else {
+					tx.flush(m -> replyHandler.handle(m.body()));
 				}
-			}, transactionId, commit, autoSend);
+			} catch (TransactionException e) {
+				logger.error("Error in transaction when adding user function", e);
+				replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+			}
 		}
 	}
 
-	public void addUserHeadTeacherManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String classExternalId = message.body().getString("classExternalId");
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || classExternalId == null || structureExternalId == null) return;
-
-		try
-		{
+	public void addUserHeadTeacherManual(final AddHeadTeacherDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String classExternalId = dto.getClassExternalId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || classExternalId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId, classExternalId and structureExternalId must be specified"));
+			return;
+		}
+		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			Structure.load(structureExternalId, tx, new Handler<Structure>()
-			{
-				@Override
-				public void handle(Structure struct)
-				{
-						struct.createHeadTeacherGroupIfAbsent(classExternalId);
-						User.addHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
-
-						tx.commit(new Handler<Message<JsonObject>>()
-						{
-							@Override
-							public void handle(Message<JsonObject> event)
-							{
-								message.reply(event.body());
-							}
-						});
-				}
+			Structure.load(structureExternalId, tx, struct -> {
+				struct.createHeadTeacherGroupIfAbsent(classExternalId);
+				User.addHeadTeacherManual(userId, structureExternalId, classExternalId, tx);
+				tx.commit(event -> replyHandler.handle(event.body()));
 			});
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when adding user to head teacher group", e);
-			sendError(message, "transaction.error");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
 	}
 
-	public void updateUserHeadTeacherManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String classExternalId = message.body().getString("classExternalId");
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || classExternalId == null || structureExternalId == null) return;
-
-		try
-		{
+	public void updateUserHeadTeacherManual(final UpdateHeadTeacherDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String classExternalId = dto.getClassExternalId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || classExternalId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId, classExternalId and structureExternalId must be specified"));
+			return;
+		}
+		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			Structure.load(structureExternalId, tx, new Handler<Structure>()
-			{
-				@Override
-				public void handle(Structure struct)
-				{
-						struct.createHeadTeacherGroupIfAbsent(classExternalId);
-						User.updateHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
-
-						tx.commit(new Handler<Message<JsonObject>>()
-						{
-							@Override
-							public void handle(Message<JsonObject> event)
-							{
-								message.reply(event.body());
-							}
-						});
-				}
+			Structure.load(structureExternalId, tx, struct -> {
+				struct.createHeadTeacherGroupIfAbsent(classExternalId);
+				User.updateHeadTeacherManual(userId, structureExternalId, classExternalId, tx);
+				tx.commit(event -> replyHandler.handle(event.body()));
 			});
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when updating user to head teacher group", e);
-			sendError(message, "transaction.error");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
 	}
 
-	public void createManualSubject(final Message<JsonObject> message) {
-		JsonObject subject = message.body().getJsonObject("subject");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Subject.createManualSubject(subject, tx);
-			}
-		});
-
+	public void createManualSubject(final CreateSubjectDTO dto, final Handler<JsonObject> replyHandler) {
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Subject.createManualSubject(dto.toJson(), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when creating subject", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void updateManualSubject(final Message<JsonObject> message) {
-		JsonObject subject = message.body().getJsonObject("subject");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Subject.updateManualSubject(subject, tx);
-			}
-		});
-
+	public void updateManualSubject(final UpdateSubjectDTO dto, final Handler<JsonObject> replyHandler) {
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Subject.updateManualSubject(dto.toJson(), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when updating subject", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void deleteManualSubject(final Message<JsonObject> message) {
-		String subjectId = message.body().getString("subjectId");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply (TransactionHelper tx) {
-				Subject.deleteManualSubject(subjectId,tx);
-			}
-		});
+	public void deleteManualSubject(final DeleteSubjectDTO dto, final Handler<JsonObject> replyHandler) {
+		final String subjectId = dto.getSubjectId();
+		if (subjectId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "subjectId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Subject.deleteManualSubject(subjectId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when deleting subject", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void addUserDirectionManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || structureExternalId == null) return;
-
-		try
-		{
+	public void addUserDirectionManual(final AddDirectionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and structureExternalId must be specified"));
+			return;
+		}
+		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			Structure.load(structureExternalId, tx, new Handler<Structure>()
-			{
-				@Override
-				public void handle(Structure struct)
-				{
-						struct.createDirectionGroupIfAbsent();
-						User.addDirectionManual(userId,structureExternalId, tx);
-
-						tx.commit(new Handler<Message<JsonObject>>()
-						{
-							@Override
-							public void handle(Message<JsonObject> event)
-							{
-								message.reply(event.body());
-							}
-						});
-				}
+			Structure.load(structureExternalId, tx, struct -> {
+				struct.createDirectionGroupIfAbsent();
+				User.addDirectionManual(userId, structureExternalId, tx);
+				tx.commit(event -> replyHandler.handle(event.body()));
 			});
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when adding user to direction group", e);
-			sendError(message, "transaction.error");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
 	}
 
-	public void removeUserDirectionManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || structureExternalId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.removeDirectionManual(userId, structureExternalId, tx);
-			}
-		});
-	}
-
-	public void removeUserFunction(Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String function = message.body().getString("function");
-		if (userId == null || function == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.removeFunction(userId, function, tx);
-			}
-		});
-	}
-
-	public void addUserGroup(Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String groupId = message.body().getString("groupId");
-		if (userId == null || groupId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.addGroup(userId, groupId, tx);
-			}
-		});
-	}
-
-	public void removeUserGroup(Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String groupId = message.body().getString("groupId");
-		if (userId == null || groupId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.removeGroup(userId, groupId, tx);
-			}
-		});
-	}
-
-	public void createOrUpdateTenant(Message<JsonObject> message) {
-		final JsonObject tenant = getMandatoryObject("data", message);
-		if (tenant == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				Tenant.createOrUpdate(tenant, tx);
-			}
-		});
-	}
-
-	public void createGroup(Message<JsonObject> message) {
-		final JsonObject group = message.body().getJsonObject("group");
-		if (group == null || group.size() == 0) {
-			sendError(message, "missing.group");
+	public void removeUserDirectionManual(final RemoveDirectionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and structureExternalId must be specified"));
 			return;
 		}
-		final String structureId = message.body().getString("structureId");
-		final String classId = message.body().getString("classId");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				Group.manualCreateOrUpdate(group, structureId, classId, tx);
-			}
-		});
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.removeDirectionManual(userId, structureExternalId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing user from direction group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void deleteGroup(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		if (groupId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Group.manualDelete(groupId, tx);
-			}
-		});
+	public void removeUserFunction(final RemoveUserFunctionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String function = dto.getFunction();
+		if (userId == null || function == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and function must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.removeFunction(userId, function, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing user function", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+	}
+
+	public void addUserGroup(final AddUserGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String groupId = dto.getGroupId();
+		if (userId == null || groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and groupId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.addGroup(userId, groupId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when adding user to group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+	}
+
+	public void removeUserGroup(final RemoveUserGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String groupId = dto.getGroupId();
+		if (userId == null || groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and groupId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.removeGroup(userId, groupId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing user from group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+	}
+
+	public void createOrUpdateTenant(final CreateTenantDTO dto, final Handler<JsonObject> replyHandler) {
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Tenant.createOrUpdate(dto.toJson(), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException | ValidationException e) {
+			logger.error("Error in transaction when creating tenant", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+	}
+
+	public void createGroup(final CreateGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final JsonObject group = dto.getGroup() != null ? dto.getGroup().toJson() : new JsonObject();
+		if (group.size() == 0) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "missing.group"));
+			return;
+		}
+		final String structureId = dto.getStructureId();
+		final String classId = dto.getClassId();
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.manualCreateOrUpdate(group, structureId, classId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException | ValidationException e) {
+			logger.error("Error in transaction when creating/updating group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+	}
+
+	public void deleteGroup(final DeleteGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		if (groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.manualDelete(groupId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when deleting group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 	
-	public void addGroupUsers(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		final JsonArray userIds = message.body().getJsonArray("userIds");
-		
-		if (userIds == null || groupId == null) return;
-		
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Group.addUsers(groupId, userIds, tx);
+	public void addGroupUsers(final AddGroupUsersDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		final List<String> userIds = dto.getUserIds();
+		if (groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId must be specified"));
+			return;
+		}
+		if (userIds == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userIds must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.addUsers(groupId, new JsonArray(userIds), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when adding users to group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+	}
+
+	public void removeGroupUsers(final RemoveGroupUsersDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		final List<String> userIds = dto.getUserIds();
+		if (groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId must be specified"));
+			return;
+		}
+		if (userIds == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userIds must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.removeUsers(groupId, new JsonArray(userIds), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing users from group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+	}
+
+	public void updateEmailGroup(final UpdateEmailGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		final String email = dto.getEmail();
+		if (groupId == null || email == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId and email must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.updateEmail(groupId, email, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException | ValidationException e) {
+			logger.error("Error in transaction when updating email group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+    }
+
+	public void structureAttachment(final StructureAttachmentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String structureId = dto.getStructureId();
+		final String parentStructureId = dto.getParentStructureId();
+		if (structureId == null || parentStructureId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId and parentStructureId must be specified"));
+			return;
+		}
+		final Integer transactionId = dto.getTransactionId();
+		final boolean commit = dto.getCommit() != null ? dto.getCommit() : true;
+		final boolean autoSend = dto.getAutoSend() != null ? dto.getAutoSend() : true;
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin(transactionId);
+			tx.setAutoSend(autoSend);
+			Structure.addAttachment(structureId, parentStructureId, tx);
+			if (commit) {
+				tx.commit(m -> replyHandler.handle(m.body()));
+			} else {
+				tx.flush(m -> replyHandler.handle(m.body()));
 			}
-		});
-	}
-	
-	public void removeGroupUsers(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		final JsonArray userIds = message.body().getJsonArray("userIds");
-		
-		if (userIds == null || groupId == null) return;
-		
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Group.removeUsers(groupId, userIds, tx);
-			}
-		});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when attaching structure", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void updateEmailGroup(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		final String email = getMandatoryString("email", message);
-
-		if (email == null || groupId == null) return;
-
-		executeTransaction(message, tx -> {
-				Group.updateEmail(groupId, email, tx);
-		});
+	public void structureDetachment(final StructureDetachmentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String structureId = dto.getStructureId();
+		final String parentStructureId = dto.getParentStructureId();
+		if (structureId == null || parentStructureId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId and parentStructureId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Structure.removeAttachment(structureId, parentStructureId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when detaching structure", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void structureAttachment(Message<JsonObject> message) {
-		final String structureId = getMandatoryString("structureId", message);
-		final String parentStructureId = getMandatoryString("parentStructureId", message);
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		final Boolean autoSend = message.body().getBoolean("autoSend", true);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				Structure.addAttachment(structureId, parentStructureId, tx);
-			}
-		}, transactionId, commit, autoSend);
-	}
-
-	public void structureDetachment(Message<JsonObject> message) {
-		final String structureId = getMandatoryString("structureId", message);
-		final String parentStructureId = getMandatoryString("parentStructureId", message);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				Structure.removeAttachment(structureId, parentStructureId, tx);
-			}
-		});
-	}
-
-	public void updateStructure(final Message<JsonObject> message) {
-		JsonObject s = getMandatoryObject("data", message);
-		if (s == null) return;
-		String structureId = getMandatoryString("structureId", message);
-		if (structureId == null) return;
+	public void updateStructure(final UpdateStructureDTO dto, final Handler<JsonObject> replyHandler) {
+		if (dto.getStructureId() == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId must be specified"));
+			return;
+		}
+		JsonObject s = StructureMapper.toStructureProps(dto);
+		final String structureId = dto.getStructureId();
 		final String error = structureValidator.modifiableValidate(s);
 		if (error != null) {
 			logger.error(error);
-			sendError(message, error);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
+			return;
+		}
+		String query;
+		JsonObject params = s.copy().put("structureId", structureId);
+		if (s.getString("name") != null) {
+			query = "MATCH (s:`Structure` { id : {structureId}}) " +
+					"SET s.manualName = ({name} <> s.name), s.name = {name} " +
+					"WITH s " +
+					"MATCH (s)<-[:DEPENDS]-(g:Group) " +
+					"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'Direction', 'SCOLARITE'] " +
+					"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName}, ";
+			params.put("sanitizeName", Validator.sanitize(s.getString("name")));
 		} else {
-			String query;
-			JsonObject params = s.copy().put("structureId", structureId);
-			if (s.getString("name") != null)
-			{
-				query = "MATCH (s:`Structure` { id : {structureId}}) " +
-						"SET s.manualName = ({name} <> s.name), s.name = {name} " +
-						"WITH s " +
-						"MATCH (s)<-[:DEPENDS]-(g:Group) " +
-						"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'Direction', 'SCOLARITE'] " +
-						"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName}, ";
-				params.put("sanitizeName", Validator.sanitize(s.getString("name")));
-			}
-			else
-			{
-				query = "MATCH (s:`Structure` { id : {structureId}}) SET";
-
-			}
-			query = query + Neo4jUtils.nodeSetPropertiesFromJson("s", s) +
-					"RETURN DISTINCT s.id as id ";
-
-
-			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> m) {
-					if( logger.isInfoEnabled() ) {
-						try {
-							final Boolean ignoreMFA = s.getBoolean("ignoreMFA");
-							final JsonObject body = message.body();
-							if(ignoreMFA != null && body != null) {
-								logger.info(
-									"ignoreMFA set to "+ignoreMFA.toString()+
-									" at "+ new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date())+
-									" by user \""+body.getString("userLogin", "")+"\" (id="+body.getString("userId", "")+") "+
-									" on structure \""+ s.getString("name") +"\" (id="+structureId+")"
-								);
-							}
-						} catch(Exception e){
-							logger.error("Unexpected error while logging ignoreMFA update: "+ e.getMessage());
+			query = "MATCH (s:`Structure` { id : {structureId}}) SET";
+		}
+		query = query + Neo4jUtils.nodeSetPropertiesFromJson("s", s) +
+				"RETURN DISTINCT s.id as id ";
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				if (logger.isInfoEnabled()) {
+					try {
+						if (dto.getIgnoreMFA() != null) {
+							logger.info(
+								"ignoreMFA set to " + dto.getIgnoreMFA() +
+								" at " + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()) +
+								" by user \"" + dto.getUserLogin() + "\" (id=" + dto.getUserId() + ") " +
+								" on structure \"" + s.getString("name") + "\" (id=" + structureId + ")"
+							);
 						}
+					} catch (Exception e) {
+						logger.error("Unexpected error while logging ignoreMFA update: " + e.getMessage());
 					}
-					message.reply(m.body());
 				}
-			});
+				replyHandler.handle(m.body());
+			}
+		});
+	}
+
+	public void relativeStudent(final RelativeStudentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String relativeId = dto.getRelativeId();
+		final String studentId = dto.getStudentId();
+		if (relativeId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "relativeId must be specified"));
+			return;
+		}
+		if (studentId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "studentId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.relativeStudent(relativeId, studentId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when linking relative to student", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
 	}
 
-	public void relativeStudent(Message<JsonObject> message) {
-		final String relativeId = getMandatoryString("relativeId", message);
-		final String studentId = getMandatoryString("studentId", message);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				User.relativeStudent(relativeId, studentId, tx);
-			}
-		});
-	}
-
-	public void unlinkRelativeStudent(Message<JsonObject> message) {
-		final String relativeId = getMandatoryString("relativeId", message);
-		final String studentId = getMandatoryString("studentId", message);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				User.unlinkRelativeStudent(relativeId, studentId, tx);
-			}
-		});
+	public void unlinkRelativeStudent(final UnlinkRelativeStudentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String relativeId = dto.getRelativeId();
+		final String studentId = dto.getStudentId();
+		if (relativeId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "relativeId must be specified"));
+			return;
+		}
+		if (studentId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "studentId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.unlinkRelativeStudent(relativeId, studentId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when unlinking relative from student", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
 	public void setLoginAliasValidatorForAD(Boolean loginAliasValidatorForAD) {
 		this.loginAliasValidatorForAD = loginAliasValidatorForAD;
 	}
 
-    public void setManualGroupAutolinkUsersPositions(Message<JsonObject> message) {
-        final String groupId = getMandatoryString("groupId", message);
-        final JsonArray userPositions = message.body().getJsonArray("manualGroupAutolinkUsersPositions");
-
-        if (userPositions == null || groupId == null) return;
-
-        executeTransaction(message, tx -> Group.setManualGroupAutolinkUsersPositions(groupId, userPositions, tx));
+    public void setManualGroupAutolinkUsersPositions(final LinkUserPositionsDTO dto, final Handler<JsonObject> replyHandler) {
+        final String groupId = dto.getGroupId();
+        final List<String> userPositions = dto.getManualGroupAutolinkUsersPositions();
+        if (groupId == null || userPositions == null) {
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId and manualGroupAutolinkUsersPositions must be specified"));
+            return;
+        }
+        try {
+            TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+            tx.setAutoSend(true);
+            Group.setManualGroupAutolinkUsersPositions(groupId, new JsonArray(userPositions), tx);
+            tx.commit(m -> replyHandler.handle(m.body()));
+        } catch (TransactionException e) {
+            logger.error("Error in transaction when linking user positions to group", e);
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+        }
     }
 
-    public void updateManualGroupsByUserPositions(Message<JsonObject> message) {
-        final String userPosition = getMandatoryString("userPosition", message);
-        if (userPosition == null || userPosition.isEmpty()) return;
-
-        executeTransaction(message, tx -> Group.updateManualGroupsByUserPositions(userPosition, tx));
+    public void updateManualGroupsByUserPositions(final UpdateGroupLinkedPositionsDTO dto, final Handler<JsonObject> replyHandler) {
+        final String userPosition = dto.getUserPosition();
+        if (userPosition == null || userPosition.isEmpty()) {
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", "userPosition must be specified"));
+            return;
+        }
+        try {
+            TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+            tx.setAutoSend(true);
+            Group.updateManualGroupsByUserPositions(userPosition, tx);
+            tx.commit(m -> replyHandler.handle(m.body()));
+        } catch (TransactionException e) {
+            logger.error("Error in transaction when updating groups by user position", e);
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+        }
     }
 
 }
