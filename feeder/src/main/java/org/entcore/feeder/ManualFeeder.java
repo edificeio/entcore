@@ -27,6 +27,9 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.Json;
+import org.entcore.feeder.dto.CreateStructureDTO;
+import org.entcore.feeder.dto.StructureMapper;
+import org.entcore.feeder.dto.UpdateStructureDTO;
 import org.entcore.common.bus.MessageUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -86,11 +89,10 @@ public class ManualFeeder extends BusModBase {
 		this.userPositionService = userPositionService;
 	}
 
-	public void createStructure(final Message<JsonObject> message) {
-		JsonObject struct = getMandatoryObject("data", message);
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		if (struct == null) return;
+	public void createStructure(final CreateStructureDTO dto, final Handler<JsonObject> replyHandler) {
+		JsonObject struct = StructureMapper.toStructureProps(dto);
+		final Integer transactionId = dto.getTransactionId();
+		final boolean commit = Boolean.TRUE.equals(dto.getCommit());
 		if (struct.getString("externalId") == null) {
 			struct.put("externalId", UUID.randomUUID().toString());
 		}
@@ -100,33 +102,33 @@ public class ManualFeeder extends BusModBase {
 		final String error = structureValidator.validate(struct);
 		if (error != null) {
 			logger.error(error);
-			sendError(message, error);
-		} else {
-			StatementsBuilder statementsBuilder = new StatementsBuilder();
-			String query =
-					"CREATE (s:Structure {props}) " +
-					"WITH s " +
-					"MATCH (p:Profile) " +
-					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, " +
-					"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->s " +
-					"SET g.id = id(g)+'-'+timestamp() " +
-					"RETURN DISTINCT s.id as id ";
-			JsonObject params = new JsonObject()
-					.put("groupSearchField", Validator.sanitize(struct.getString("name")))
-					.put("props", struct);
-			statementsBuilder.add(query, params);
-			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					final JsonArray results = event.body().getJsonArray("results");
-					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-						message.reply(event.body().put("result", results.getJsonArray(0)));
-					} else {
-						message.reply(event.body());
-					}
-				}
-			});
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
+			return;
 		}
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		String query =
+				"CREATE (s:Structure {props}) " +
+				"WITH s " +
+				"MATCH (p:Profile) " +
+				"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, " +
+				"displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->s " +
+				"SET g.id = id(g)+'-'+timestamp() " +
+				"RETURN DISTINCT s.id as id ";
+		JsonObject params = new JsonObject()
+				.put("groupSearchField", Validator.sanitize(struct.getString("name")))
+				.put("props", struct);
+		statementsBuilder.add(query, params);
+		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+					replyHandler.handle(event.body().put("result", results.getJsonArray(0)));
+				} else {
+					replyHandler.handle(event.body());
+				}
+			}
+		});
 	}
 
 	public void createClass(final Message<JsonObject> message) {
@@ -1499,60 +1501,54 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
-	public void updateStructure(final Message<JsonObject> message) {
-		JsonObject s = getMandatoryObject("data", message);
-		if (s == null) return;
-		String structureId = getMandatoryString("structureId", message);
-		if (structureId == null) return;
+	public void updateStructure(final UpdateStructureDTO dto, final Handler<JsonObject> replyHandler) {
+		if (dto.getStructureId() == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId must be specified"));
+			return;
+		}
+		JsonObject s = StructureMapper.toStructureProps(dto);
+		final String structureId = dto.getStructureId();
 		final String error = structureValidator.modifiableValidate(s);
 		if (error != null) {
 			logger.error(error);
-			sendError(message, error);
-		} else {
-			String query;
-			JsonObject params = s.copy().put("structureId", structureId);
-			if (s.getString("name") != null)
-			{
-				query = "MATCH (s:`Structure` { id : {structureId}}) " +
-						"SET s.manualName = ({name} <> s.name), s.name = {name} " +
-						"WITH s " +
-						"MATCH (s)<-[:DEPENDS]-(g:Group) " +
-						"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'Direction', 'SCOLARITE'] " +
-						"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName}, ";
-				params.put("sanitizeName", Validator.sanitize(s.getString("name")));
-			}
-			else
-			{
-				query = "MATCH (s:`Structure` { id : {structureId}}) SET";
-
-			}
-			query = query + Neo4jUtils.nodeSetPropertiesFromJson("s", s) +
-					"RETURN DISTINCT s.id as id ";
-
-
-			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> m) {
-					if( logger.isInfoEnabled() ) {
-						try {
-							final Boolean ignoreMFA = s.getBoolean("ignoreMFA");
-							final JsonObject body = message.body();
-							if(ignoreMFA != null && body != null) {
-								logger.info(
-									"ignoreMFA set to "+ignoreMFA.toString()+
-									" at "+ new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date())+
-									" by user \""+body.getString("userLogin", "")+"\" (id="+body.getString("userId", "")+") "+
-									" on structure \""+ s.getString("name") +"\" (id="+structureId+")"
-								);
-							}
-						} catch(Exception e){
-							logger.error("Unexpected error while logging ignoreMFA update: "+ e.getMessage());
-						}
-					}
-					message.reply(m.body());
-				}
-			});
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", error));
+			return;
 		}
+		String query;
+		JsonObject params = s.copy().put("structureId", structureId);
+		if (s.getString("name") != null) {
+			query = "MATCH (s:`Structure` { id : {structureId}}) " +
+					"SET s.manualName = ({name} <> s.name), s.name = {name} " +
+					"WITH s " +
+					"MATCH (s)<-[:DEPENDS]-(g:Group) " +
+					"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'Direction', 'SCOLARITE'] " +
+					"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName}, ";
+			params.put("sanitizeName", Validator.sanitize(s.getString("name")));
+		} else {
+			query = "MATCH (s:`Structure` { id : {structureId}}) SET";
+		}
+		query = query + Neo4jUtils.nodeSetPropertiesFromJson("s", s) +
+				"RETURN DISTINCT s.id as id ";
+		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> m) {
+				if (logger.isInfoEnabled()) {
+					try {
+						if (dto.getIgnoreMFA() != null) {
+							logger.info(
+								"ignoreMFA set to " + dto.getIgnoreMFA() +
+								" at " + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()) +
+								" by user \"" + dto.getUserLogin() + "\" (id=" + dto.getUserId() + ") " +
+								" on structure \"" + s.getString("name") + "\" (id=" + structureId + ")"
+							);
+						}
+					} catch (Exception e) {
+						logger.error("Unexpected error while logging ignoreMFA update: " + e.getMessage());
+					}
+				}
+				replyHandler.handle(m.body());
+			}
+		});
 	}
 
 	public void relativeStudent(Message<JsonObject> message) {

@@ -63,6 +63,7 @@ import org.entcore.feeder.timetable.edt.EDTFeederLauncher;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.timetable.udt.UDTImporter;
+import org.entcore.feeder.dto.StructureMapper;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionManager;
@@ -369,9 +370,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private void handleAction(MessageReplyNotifier<JsonObject> message) {
 		String action = getOrElse(message.body().getString("action"), "");
 		switch (action) {
-			case "manual-create-structure" : manual.createStructure(message);
+			case "manual-create-structure" :
+				manual.createStructure(StructureMapper.toCreateStructureDTO(message.body()), json -> message.reply(json));
 				break;
-			case "manual-update-structure" : manual.updateStructure(message);
+			case "manual-update-structure" :
+				manual.updateStructure(StructureMapper.toUpdateStructureDTO(message.body()), json -> message.reply(json));
 				break;
 			case "manual-create-class" : manual.createClass(message);
 				break;
