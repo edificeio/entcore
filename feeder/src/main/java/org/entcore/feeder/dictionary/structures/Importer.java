@@ -934,7 +934,8 @@ public class Importer {
 				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->" + filter3 +
 				"WITH u, COLLECT(distinct s.id) as sIds " +
 				"MATCH u-[r:IN]-(g:Group)-[:DEPENDS]->" + filter3 +
-				"WHERE NOT(s.id IN sIds) " + filter +
+				"WHERE NOT(s.id IN sIds) " +
+    			"AND NOT g:ManualGroup " + filter +
 				"DELETE r ";
 		transactionHelper.add(query3, j);
 	}
