@@ -5,6 +5,7 @@ import { defineConfig } from 'vitest/config';
 import { createDevProxyConfig } from './vite/plugins/devProxy';
 import { rewriteWayfV2 } from './vite/plugins/rewriteWayfV2';
 import { serveLocalAuthI18n } from './vite/plugins/serveLocalAuthI18n';
+import { serveLocalCgu } from './vite/plugins/serveLocalCgu';
 import { serveLocalPartners } from './vite/plugins/serveLocalPartners';
 import { serveLocalWelcome } from './vite/plugins/serveLocalWelcome';
 
@@ -58,6 +59,7 @@ export default ({ mode }: { mode: string }) => {
       serveLocalAuthI18n(__dirname),
       serveLocalWelcome(__dirname),
       serveLocalPartners(__dirname),
+      serveLocalCgu(__dirname),
       rewriteWayfV2(),
       react(),
       tsconfigPaths(),

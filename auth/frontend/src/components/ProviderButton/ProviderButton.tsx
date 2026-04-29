@@ -28,8 +28,6 @@ const PROVIDER_ICONS: Record<
 interface ProviderButtonProps {
   provider: WayfProvider;
   onClick: (provider: WayfProvider) => void;
-  /** Inherited at level 2 — child buttons pick up the parent's color class */
-  parentColorKey?: string;
   /** Inherited at level 2 — child buttons fall back to the parent's icon */
   parentIconKey?: WayfIconKey;
 }
@@ -37,13 +35,11 @@ interface ProviderButtonProps {
 export const ProviderButton = ({
   provider,
   onClick,
-  parentColorKey,
   parentIconKey,
 }: ProviderButtonProps) => {
   const { t } = useTranslation('auth');
 
-  const itemKey = provider.i18n.replace(/wayf\./, '');
-  const colorKey = (parentColorKey ?? itemKey).replace(/\./g, '-');
+  const colorKey = provider.color;
 
   // Icon resolution: explicit provider.icon > parentIconKey > none
   const resolvedIconKey = provider.icon ?? parentIconKey;

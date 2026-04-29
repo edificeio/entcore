@@ -1,5 +1,5 @@
-import { animated, useTransition } from '@react-spring/web';
 import { IconExternalLink } from '@edifice.io/react/icons';
+import { animated, useTransition } from '@react-spring/web';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import edificeLogoUrl from '~/assets/edifice-logo.svg';
@@ -9,10 +9,10 @@ import { ProviderList } from '~/components/ProviderList';
 import { WelcomeMessage } from '~/components/WelcomeMessage';
 import { useWayfConfig } from '~/hooks/useWayfConfig';
 import { useWelcomeMessage } from '~/hooks/useWelcomeMessage';
-import type { WayfProvider } from '~/models/wayf';
+import type { WayfParentProvider, WayfProvider } from '~/models/wayf';
 import './Wayf.css';
 
-type WayfView = { level: 1 } | { level: 2; parent: WayfProvider };
+type WayfView = { level: 1 } | { level: 2; parent: WayfParentProvider };
 
 export const WayfPage = () => {
   const { t } = useTranslation('auth');
@@ -36,9 +36,9 @@ export const WayfPage = () => {
   }, []);
 
   const handleProviderClick = (provider: WayfProvider) => {
-    if (provider.acs) {
+    if ('acs' in provider) {
       window.location.href = provider.acs;
-    } else if (provider.children?.length) {
+    } else {
       dirRef.current = 1;
       setView({ level: 2, parent: provider });
     }
@@ -127,7 +127,7 @@ export const WayfPage = () => {
         {/* Pied de page */}
         <div className="wayf-selection__footer">
           <a
-            href="#"
+            href={t('auth.charter')}
             className="wayf-legal-link"
             target="_blank"
             rel="noreferrer"
@@ -135,7 +135,11 @@ export const WayfPage = () => {
             {t('wayf.link.cgu')}
             <IconExternalLink />
           </a>
-          <a href="#" className="wayf-edifice-badge">
+          <a
+            href="https://edifice.io/"
+            target="_blank"
+            className="wayf-edifice-badge"
+          >
             <img
               src={edificeLogoUrl}
               alt="Édifice"

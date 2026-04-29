@@ -47,6 +47,10 @@
   overflow: hidden;
 }
 
+.wayf-editorial iframe {
+  max-width: 100%;
+}
+
 /* ═══════════════════════════════════════════
    Zone de sélection (droite)
    ═══════════════════════════════════════════ */
@@ -181,23 +185,35 @@
 @media (max-width: 767px) {
   .wayf-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto auto;
     grid-template-areas:
       'selection'
       'editorial';
-    min-height: 100svh;
   }
 
   .wayf-selection {
     min-height: unset;
   }
 
-  .wayf-editorial {
-    min-height: 300px;
-    padding: 2rem;
-  }
-
   .wayf-selection__auth {
     padding: 2rem 1.5rem;
+    overflow: visible;
+  }
+
+  .wayf-view-container {
+    display: grid;
+    overflow: visible;
+    position: static;
+  }
+
+  .wayf-view-slide {
+    grid-area: 1 / 1;
+    position: static;
+    overflow-y: visible;
+  }
+
+  .wayf-editorial {
+    min-height: 300px;
+    padding: 1rem;
   }
 }

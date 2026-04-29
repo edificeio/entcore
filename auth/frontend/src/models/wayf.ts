@@ -12,17 +12,27 @@ export const WAYF_ICONS = [
 
 export type WayfIconKey = (typeof WAYF_ICONS)[number];
 
-export interface WayfProvider {
+interface WayfBaseProvider {
   i18n: string;
-  acs?: string;
-  children?: WayfProvider[];
-  color?: string;
-  iconSrc?: string;
-  /** Explicit icon from the built-in finite list. Decoupled from the i18n key. */
+  /** CSS modifier key — must match a `.wayf-provider-btn--{color}` class */
+  color: string;
   icon?: WayfIconKey;
-  /** Overrides the default level-2 title when this provider is expanded */
+  iconSrc?: string;
+}
+
+export interface WayfLeafProvider extends WayfBaseProvider {
+  acs: string;
+  children?: never;
+  titleI18n?: never;
+}
+
+export interface WayfParentProvider extends WayfBaseProvider {
+  children: WayfProvider[];
+  acs?: never;
   titleI18n?: string;
 }
+
+export type WayfProvider = WayfLeafProvider | WayfParentProvider;
 
 export interface WayfPartner {
   /** i18n key whose value in the translation file is the logo asset URL */

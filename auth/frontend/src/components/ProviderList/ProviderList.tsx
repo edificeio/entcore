@@ -5,8 +5,6 @@ import './ProviderList.css';
 interface ProviderListProps {
   providers: WayfProvider[];
   onProviderClick: (provider: WayfProvider) => void;
-  /** Forwarded to each ProviderButton — used at level 2 for color inheritance */
-  parentColorKey?: string;
   /** Forwarded to each ProviderButton — used at level 2 for icon inheritance */
   parentIconKey?: WayfIconKey;
 }
@@ -14,7 +12,6 @@ interface ProviderListProps {
 export const ProviderList = ({
   providers,
   onProviderClick,
-  parentColorKey,
   parentIconKey,
 }: ProviderListProps) => {
   return (
@@ -24,7 +21,6 @@ export const ProviderList = ({
           <ProviderButton
             provider={provider}
             onClick={onProviderClick}
-            parentColorKey={parentColorKey}
             parentIconKey={parentIconKey}
           />
         </li>
