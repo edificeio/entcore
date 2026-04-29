@@ -25,7 +25,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
   },
 ];
 
-export const basename = import.meta.env.PROD ? '/timeline' : '/';
+export const basename = import.meta.env.PROD ? '/timeline/timeline' : '/';
 
 export const router = (queryClient: QueryClient) => {
   const redirectPath = manageRedirections();
