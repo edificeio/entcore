@@ -1,11 +1,55 @@
-<div ng-if="ctrl.isBetaVisible" style="position: absolute; left: 0.4rem; bottom: 0.4rem; z-index: 10;">
-	<button
-		type="button"
-		class="btn btn-outline-secondary"
-		data-testid="beta-switch-button"
-		ng-click="ctrl.activateHomepage()"
-		ng-disabled="ctrl.isSwitching">
-		<span ng-if="ctrl.isSwitching" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-		<i18n>timeline.beta.switch.new</i18n>
-	</button>
+<div
+  ng-if="ctrl.isBetaVisible"
+  style="
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #ffd357;
+    background: linear-gradient(67.55deg, #fcf3cf 0%, #feecfe 100%);
+    align-items: center;
+  "
+>
+  <div
+    style="
+      display: flex;
+      max-width: 1700px;
+      padding: 1.2rem 2.4rem;
+      flex: 1;
+      justify-content: space-between;
+      align-items: center;
+    "
+  >
+    <i18n>timeline.beta.message.new</i18n>
+    <div>
+      <button
+        type="button"
+        class="btn"
+        data-testid="beta-switch-button"
+        ng-click="ctrl.activateHomepage()"
+        ng-disabled="ctrl.isSwitching"
+        style="
+          background: #ffd357;
+          padding: 8px 12px 8px 24px;
+          border-radius: 30px;
+        "
+      >
+        <span
+          ng-if="ctrl.isSwitching"
+          class="spinner-border spinner-border-sm me-2"
+          role="status"
+          aria-hidden="true"
+        ></span>
+        <i18n>timeline.beta.switch.new</i18n>
+        <i class="fa-classic fa-solid fa-angle-right ms-8"></i>
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost-tertiary"
+        data-testid="beta-switch-hide-button"
+        ng-click="ctrl.hideBetaMessage()"
+        ng-disabled="ctrl.isSwitching"
+      >
+        <i class="fa-classic fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
 </div>

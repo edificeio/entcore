@@ -1,8 +1,12 @@
 import { IAttributes, IController, IDirective, IScope } from "angular";
 import { notify } from "entcore";
-import { http } from "ode-ngjs-front";
+import { http, session } from "ode-ngjs-front";
 
-type UserPrefs = { homePage: { betaEnabled: boolean } | null };
+type UserPrefs = {
+  homePage: { closeBetaSwitch?: string; betaEnabled?: boolean } | null;
+};
+
+const DEFAULT_BETA_HIDE_DURATION_DAYS = 15;
 
 export class Controller implements IController {
   public isSwitching = false;
@@ -20,6 +24,20 @@ export class Controller implements IController {
     } catch {
       notify.error("timeline.beta.switch.error");
       this.isSwitching = false;
+    }
+  }
+
+  async hideBetaMessage() {
+    if (this.isSwitching) return;
+
+    this.isBetaVisible = false;
+    try {
+      await http().putJson("/userbook/api/preferences", {
+        homePage: { closeBetaSwitch: new Date().toISOString() },
+      } as UserPrefs);
+    } catch {
+      notify.error("timeline.beta.hide.error");
+      this.isBetaVisible = true;
     }
   }
 }
@@ -52,8 +70,21 @@ class Directive implements IDirective<
     http()
       .get("/userbook/api/preferences")
       .then((userPrefs: UserPrefs) => {
-        ctrl.isBetaVisible =
-          typeof userPrefs?.homePage?.betaEnabled === "boolean";
+        const betaEnabled = session().hasWorkflow(
+          "org.entcore.timeline|betaActivation",
+        );
+        const userCloseBetaDate = userPrefs?.homePage?.closeBetaSwitch
+          ? new Date(userPrefs.homePage.closeBetaSwitch)
+          : null;
+        if (userCloseBetaDate) {
+          userCloseBetaDate.setDate(
+            userCloseBetaDate.getDate() + DEFAULT_BETA_HIDE_DURATION_DAYS,
+          ); // Add x days to the closeBetaSwitch date
+        }
+        const displayUserBeta =
+          !userCloseBetaDate || new Date() < userCloseBetaDate;
+
+        ctrl.isBetaVisible = betaEnabled && displayUserBeta;
         scope.$apply();
       });
   }
