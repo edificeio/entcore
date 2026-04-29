@@ -29,6 +29,7 @@ import org.entcore.feeder.Feeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.users.PersEducNat;
+import org.entcore.feeder.dto.InitTimetableStructureDTO;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
@@ -1069,17 +1070,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 	}
 
-	public static void initStructure(final EventBus eb, final Message<JsonObject> message)
-	{
-		final JsonObject conf = message.body().getJsonObject("conf");
-		if (conf == null) {
-			message.reply(new JsonObject().put("status", "error").put("message", "invalid.conf"));
-			return;
-		}
-
-		final String type = conf.getString("type");
+	public static void initStructure(final EventBus eb, final InitTimetableStructureDTO dto, final Handler<JsonObject> replyHandler) {
+		final String type = dto.getType();
 		final boolean isDefault = type != null && type.equals("");
-		final String condition = isDefault == true ? "(HAS(s.timetable) AND s.timetable <> {type})" : "(NOT(EXISTS(s.timetable)) OR s.timetable <> {type})";
+		final String condition = isDefault ? "(HAS(s.timetable) AND s.timetable <> {type})" : "(NOT(EXISTS(s.timetable)) OR s.timetable <> {type})";
 		final String query =
 				"MATCH (s:Structure {id:{structureId}}) " +
 				"WITH " + condition + " AS update, s " +
@@ -1087,71 +1081,67 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				"REMOVE s.punctualTimetable " +
 				"RETURN update";
 
-		if(conf.getString("type") == null)
-			conf.putNull("typeUpdate");
-		else
-			conf.put("typeUpdate", conf.getString("type"));
+		final JsonObject params = new JsonObject()
+				.put("structureId", dto.getStructureId())
+				.put("type", type);
+		if (type == null) {
+			params.putNull("typeUpdate");
+		} else {
+			params.put("typeUpdate", type);
+		}
 
-		TransactionManager.getNeo4jHelper().execute(query, conf, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(final Message<JsonObject> event) {
-				final JsonArray j = event.body().getJsonArray("result");
-				if ("ok".equals(event.body().getString("status")) && j != null && j.size() == 1 &&
-						j.getJsonObject(0).getBoolean("update", false)) {
-					try {
-						TransactionHelper tx = TransactionManager.getTransaction();
-						final String q1 =
-								"MATCH (s:Structure {id : {structureId}})<-[:DEPENDS]-(fg:FunctionalGroup) " +
-								"OPTIONAL MATCH fg<-[:IN]-(u:User) " +
-								"RETURN fg.id as group, fg.name as groupName, collect(u.id) as users ";
-						final String q2 =
-								"MATCH (s:Structure {id: {structureId}}) " +
-								"WITH s " +
-								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup)" +
-								"OPTIONAL MATCH s<-[:SUBJECT]-(sub:TimetableSubject) " +
-								"OPTIONAL MATCH s<-[:SUBJECT]-(sub2:Subject) " +
-								"WHERE sub2.source <> 'AAF' " +
-								"DETACH DELETE fg, sub, sub2 ";
-						final String q3 =
-								"MATCH (s:Structure {id: {structureId}})<-[:MAPPING]-(cm:ClassesMapping) " +
-								"DETACH DELETE cm";
-						tx.add(q1, conf);
-						tx.add(q2, conf);
-						tx.add(q3, conf);
-						tx.commit(new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> res) {
-								if ("ok".equals(res.body().getString("status"))) {
-									final JsonArray r = res.body().getJsonArray("results");
-									if (r != null && r.size() == 2) {
-										Transition.publishDeleteGroups(eb, log, r.getJsonArray(0));
-									}
-									final JsonObject matcher = new JsonObject().put("structureId", conf.getString("structureId"))
-										.put("deleted", new JsonObject().put("$exists", false));
-									MongoDb.getInstance().update(COURSES, matcher,
-										new JsonObject().put("$set", new JsonObject().put("deleted", System.currentTimeMillis())),
-										false, true,
-										new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> mongoResult) {
-											if (!"ok".equals(mongoResult.body().getString("status"))) {
-												log.error("Error deleting courses : " + mongoResult.body().getString("message"));
-											}
-											message.reply(event.body());
-										}
-									});
-								} else {
-									message.reply(res.body());
-								}
+		TransactionManager.getNeo4jHelper().execute(query, params, event -> {
+			final JsonArray j = event.body().getJsonArray("result");
+			if ("ok".equals(event.body().getString("status")) && j != null && j.size() == 1 &&
+					j.getJsonObject(0).getBoolean("update", false)) {
+				try {
+					TransactionHelper tx = TransactionManager.getTransaction();
+					final String q1 =
+							"MATCH (s:Structure {id : {structureId}})<-[:DEPENDS]-(fg:FunctionalGroup) " +
+							"OPTIONAL MATCH fg<-[:IN]-(u:User) " +
+							"RETURN fg.id as group, fg.name as groupName, collect(u.id) as users ";
+					final String q2 =
+							"MATCH (s:Structure {id: {structureId}}) " +
+							"WITH s " +
+							"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup)" +
+							"OPTIONAL MATCH s<-[:SUBJECT]-(sub:TimetableSubject) " +
+							"OPTIONAL MATCH s<-[:SUBJECT]-(sub2:Subject) " +
+							"WHERE sub2.source <> 'AAF' " +
+							"DETACH DELETE fg, sub, sub2 ";
+					final String q3 =
+							"MATCH (s:Structure {id: {structureId}})<-[:MAPPING]-(cm:ClassesMapping) " +
+							"DETACH DELETE cm";
+					tx.add(q1, params);
+					tx.add(q2, params);
+					tx.add(q3, params);
+					tx.commit(res -> {
+						if ("ok".equals(res.body().getString("status"))) {
+							final JsonArray r = res.body().getJsonArray("results");
+							if (r != null && r.size() == 2) {
+								Transition.publishDeleteGroups(eb, log, r.getJsonArray(0));
 							}
-						});
-					} catch (TransactionException e) {
-						log.error("Transaction error when init timetable structure", e);
-						message.reply(new JsonObject().put("status", "error").put("message", e.getMessage()));
-					}
-				} else {
-					message.reply(event.body());
+							final JsonObject matcher = new JsonObject()
+									.put("structureId", dto.getStructureId())
+									.put("deleted", new JsonObject().put("$exists", false));
+							MongoDb.getInstance().update(COURSES, matcher,
+								new JsonObject().put("$set", new JsonObject().put("deleted", System.currentTimeMillis())),
+								false, true,
+								mongoResult -> {
+									if (!"ok".equals(mongoResult.body().getString("status"))) {
+										log.error("Error deleting courses : " + mongoResult.body().getString("message"));
+									}
+									replyHandler.handle(event.body());
+								});
+						} else {
+							replyHandler.handle(res.body());
+						}
+					});
+				} catch (TransactionException e) {
+					log.error("Transaction error when init timetable structure", e);
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 				}
+			} else {
+				replyHandler.handle(event.body());
 			}
 		});
 	}

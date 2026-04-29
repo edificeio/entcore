@@ -28,6 +28,7 @@ import org.entcore.common.utils.FileUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.common.utils.DateUtils;
 import org.entcore.feeder.dictionary.structures.PostImport;
+import org.entcore.feeder.dto.UdtDTO;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.Slot;
 import org.entcore.feeder.timetable.TimetableReport;
@@ -1033,56 +1034,49 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	public static void launchImport(Vertx vertx, Storage storage, final Message<JsonObject> message, boolean udtUserCreation) {
-		launchImport(vertx, storage, message, null, udtUserCreation, null);
+		final UdtDTO dto = new UdtDTO(message.body()).setUai(message.body().getString("UAI"));
+		launchImport(vertx, storage, dto, null, udtUserCreation, null, message::reply);
 	}
 
-	public static void launchImport(Vertx vertx, Storage storage, final Message<JsonObject> message, final PostImport postImport, boolean udtUserCreation, Long forceDateTimestamp) {
+	public static void launchImport(Vertx vertx, Storage storage, final UdtDTO dto, final PostImport postImport, boolean udtUserCreation, Long forceDateTimestamp, Handler<JsonObject> replyHandler) {
 		final I18n i18n = I18n.getInstance();
-		final String uai = message.body().getString("UAI");
-		final boolean updateGroups = message.body().getBoolean("updateGroups", true);
-		final boolean updateTimetable = message.body().getBoolean("updateTimetable", true);
-		final boolean isManualImport = message.body().getBoolean("isManualImport");
-		final String path = message.body().getString("path");
-		final String acceptLanguage = message.body().getString("language", "fr");
+		final String uai = dto.getUai();
+		final boolean updateGroups = Boolean.TRUE.equals(dto.getUpdateGroups());
+		final boolean updateTimetable = Boolean.TRUE.equals(dto.getUpdateTimetable());
+		final boolean isManualImport = Boolean.TRUE.equals(dto.getIsManualImport());
+		final String path = dto.getPath();
+		final String acceptLanguage = dto.getLanguage();
 
 		if (Utils.isEmpty(uai) || Utils.isEmpty(path) || Utils.isEmpty(acceptLanguage)) {
-			JsonObject json = new JsonObject().put("status", "error").put("message",
-					i18n.translate("invalid.params", I18n.DEFAULT_DOMAIN, acceptLanguage));
-			message.reply(json);
+			replyHandler.handle(new JsonObject().put("status", "error")
+					.put("message", i18n.translate("invalid.params", I18n.DEFAULT_DOMAIN, acceptLanguage)));
+			return;
 		}
 
 		try {
-			String forceDateStr = (forceDateTimestamp == null) ? "" : " with forced date " + DateUtils.format(DateUtils.parseLongDate(forceDateTimestamp), "dd/MM/yyyy HH:mm:ss");
+			final String forceDateStr = (forceDateTimestamp == null) ? "" : " with forced date " + DateUtils.format(DateUtils.parseLongDate(forceDateTimestamp), "dd/MM/yyyy HH:mm:ss");
 			final long start = System.currentTimeMillis();
 			log.info("Launch UDT import : " + uai + forceDateStr);
 
 			new UDTImporter(vertx, storage, uai, path, acceptLanguage, udtUserCreation, isManualImport, updateGroups, updateTimetable, forceDateTimestamp)
-			.launch(new Handler<AsyncResult<Report>>() {
-				@Override
-				public void handle(AsyncResult<Report> event) {
-					if (event.succeeded()) {
-						log.info("Import UDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms" + forceDateStr + ".");
-						message.reply(new JsonObject().put("status", "ok")
-								.put("result", event.result().getResult()));
-						if (postImport != null && udtUserCreation) {
-							postImport.execute();
-						}
-					} else {
-						log.error("Error import UDT : " + uai + " elapsed time " +
-								(System.currentTimeMillis() - start) + " ms" + forceDateStr + ".");
-						log.error(event.cause().getMessage(), event.cause());
-						JsonObject json = new JsonObject().put("status", "error")
-								.put("message",
-										i18n.translate(event.cause().getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage));
-						message.reply(json);
+			.launch(event -> {
+				if (event.succeeded()) {
+					log.info("Import UDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms" + forceDateStr + ".");
+					replyHandler.handle(new JsonObject().put("status", "ok").put("result", event.result().getResult()));
+					if (postImport != null && udtUserCreation) {
+						postImport.execute();
 					}
+				} else {
+					log.error("Error import UDT : " + uai + " elapsed time " + (System.currentTimeMillis() - start) + " ms" + forceDateStr + ".");
+					log.error(event.cause().getMessage(), event.cause());
+					replyHandler.handle(new JsonObject().put("status", "error")
+							.put("message", i18n.translate(event.cause().getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage)));
 				}
 			});
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			JsonObject json = new JsonObject().put("status", "error").put("message",
-					i18n.translate(e.getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage));
-			message.reply(json);
+			replyHandler.handle(new JsonObject().put("status", "error")
+					.put("message", i18n.translate(e.getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage)));
 		}
 	}
 }
