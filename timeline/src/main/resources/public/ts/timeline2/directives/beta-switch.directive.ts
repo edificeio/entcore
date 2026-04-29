@@ -1,8 +1,12 @@
 import { IAttributes, IController, IDirective, IScope } from "angular";
 import { notify } from "entcore";
-import { http } from "ode-ngjs-front";
+import { http, session } from "ode-ngjs-front";
 
-type UserPrefs = { homePage: { betaEnabled: boolean } | null };
+type UserPrefs = {
+  homePage: { closeBetaSwitch?: string; betaEnabled?: boolean } | null;
+};
+
+const DEFAULT_BETA_HIDE_DURATION_DAYS = 7;
 
 export class Controller implements IController {
   public isSwitching = false;
@@ -19,6 +23,23 @@ export class Controller implements IController {
       location.reload();
     } catch {
       notify.error("timeline.beta.switch.error");
+      this.isSwitching = false;
+    }
+  }
+
+  async hideBetaMessage() {
+    if (this.isSwitching) return;
+
+    this.isBetaVisible = false;
+      this.isSwitching = true;
+    try {
+      await http().putJson("/userbook/api/preferences", {
+        homePage: { closeBetaSwitch: new Date().toISOString() },
+      } as UserPrefs);
+    } catch {
+      notify.error("timeline.beta.hide.error");
+      this.isBetaVisible = true;
+    } finally {
       this.isSwitching = false;
     }
   }
@@ -52,8 +73,25 @@ class Directive implements IDirective<
     http()
       .get("/userbook/api/preferences")
       .then((userPrefs: UserPrefs) => {
-        ctrl.isBetaVisible =
-          typeof userPrefs?.homePage?.betaEnabled === "boolean";
+        const betaEnabled = session().hasWorkflow(
+          "org.entcore.timeline|betaActivation",
+        );
+        let userCloseBetaDate = userPrefs?.homePage?.closeBetaSwitch
+          ? new Date(userPrefs.homePage.closeBetaSwitch)
+          : null;
+        
+        if (userCloseBetaDate && !isNaN(userCloseBetaDate?.getTime())) {
+            userCloseBetaDate.setDate(
+              userCloseBetaDate.getDate() + DEFAULT_BETA_HIDE_DURATION_DAYS,
+            ); // Add x days to the closeBetaSwitch date
+        } else {
+          // If the date is invalid, consider the beta message as not closed
+          userCloseBetaDate = null;
+        }
+        const displayUserBeta =
+          !userCloseBetaDate || new Date() < userCloseBetaDate;
+
+        ctrl.isBetaVisible = betaEnabled && displayUserBeta;
         scope.$apply();
       });
   }
