@@ -8,7 +8,7 @@ import { manageRedirections } from './redirections';
 const routes = (_queryClient: QueryClient): RouteObject[] => [
   /* Main route */
   {
-    path: '/timeline',
+    path: '/',
     async lazy() {
       const { loader, Root: Component } = await import('~/routes/root');
       return {
@@ -24,14 +24,18 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
   ];
 };
 
-export const basename = import.meta.env.PROD ? '/timeline' : '/';
+export const basename = import.meta.env.PROD ? '/timeline/timeline' : '/';
 
 export const router = (queryClient: QueryClient) => {
   const redirectPath = manageRedirections();
 
-  if (redirectPath) {
+  if (redirectPath !== null) {
+    // If the redirect path is the root, we need to remove the trailing slash to match with /timeline/timeline
+    const normalizedRedirectPath = redirectPath === '/' ? '' : redirectPath;
     const newUrl =
-      window.location.origin + basename.replace(/\/$/g, '') + redirectPath;
+      window.location.origin +
+      basename.replace(/\/$/g, '') +
+      normalizedRedirectPath;
     window.history.replaceState(null, '', newUrl);
   }
   return createBrowserRouter(routes(queryClient), {
