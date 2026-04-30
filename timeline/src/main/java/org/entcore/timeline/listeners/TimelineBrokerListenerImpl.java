@@ -1,6 +1,7 @@
 package org.entcore.timeline.listeners;
 
 import io.vertx.core.*;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,6 +30,8 @@ public class TimelineBrokerListenerImpl implements TimelineBrokerListener {
     private static final String ERR_REGISTRATION = "timeline.notification.register.error";
     private static final String ERR_SEND_INVALID = "timeline.notification.send.invalid";
     private static final String ERR_SEND_ERROR = "timeline.notification.send.error";
+    private static final String ERR_I18N_INVALID = "timeline.i18n.register.invalid";
+    private static final String ERR_I18N_REGISTER = "timeline.i18n.register.error";
 
     private final Vertx vertx;
     private final TimelineHelper timelineHelper;
@@ -143,6 +146,52 @@ public class TimelineBrokerListenerImpl implements TimelineBrokerListener {
             log.error(ERR_SEND_ERROR + ": " + e.getMessage(), e);
             return Future.failedFuture(ERR_SEND_ERROR);
         }
+    }
+
+    @Override
+    public Future<RegisterTimelineI18nResponseDTO> registerTimelineI18n(RegisterTimelineI18nRequestDTO request) {
+        if (request == null || !request.isValid()) {
+            log.error(ERR_I18N_INVALID + ": Request is null or invalid");
+            return Future.failedFuture(ERR_I18N_INVALID);
+        }
+
+        final String application = request.getApplication();
+        final Map<String, Map<String, String>> translationsByLanguage = request.getTranslationsByLanguage();
+
+        // Convert Map<String, Map<String, String>> to Map<String, JsonObject>
+        final Map<String, JsonObject> i18ns = new HashMap<>();
+        int keysCount = 0;
+
+        for (Map.Entry<String, Map<String, String>> entry : translationsByLanguage.entrySet()) {
+            // Strip .json extension if present ("fr.json" -> "fr")
+            String langKey = entry.getKey();
+            if (langKey.endsWith(".json")) {
+                langKey = langKey.substring(0, langKey.lastIndexOf(".json"));
+            }
+
+            final JsonObject jsonTranslations = new JsonObject();
+            final Map<String, String> translations = entry.getValue();
+            if (translations != null && !translations.isEmpty()) {
+                translations.forEach(jsonTranslations::put);
+                keysCount += translations.size();
+            }
+            i18ns.put(langKey, jsonTranslations);
+        }
+
+        final int totalKeys = keysCount;
+        final int langsCount = i18ns.size();
+
+        log.info("Registering timeline i18n for application: " + application + " (" + langsCount + " languages, " + totalKeys + " keys)");
+
+        // Use the static method from TimelineHelper
+        return TimelineHelper.appendTimelineEventsI18n(vertx, i18ns)
+                .map(v -> {
+                    log.info("Successfully registered timeline i18n for application: " + application);
+                    return new RegisterTimelineI18nResponseDTO(application, langsCount, totalKeys);
+                })
+                .onFailure(err -> {
+                    log.error(ERR_I18N_REGISTER + ": " + err.getMessage(), err);
+                });
     }
 
     /**
