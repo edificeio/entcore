@@ -916,7 +916,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, has(n.password) as hasPw, " +
 				"structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"groupsIds, structureNodes, n.structures as structureExternalId, manualGroups, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
-				"optionEnabled";
+				"optionEnabled, CASE WHEN n.totp IS NOT NULL AND n.totp <> '' THEN true ELSE false END as hasTotp";
 		final String query2 =
 				"MATCH (u:User {id : {id}}) WHERE exists(u.login) " +
 				"MATCH (u)-[:IN]->()-[:AUTHORIZED]->(r:Role) " +

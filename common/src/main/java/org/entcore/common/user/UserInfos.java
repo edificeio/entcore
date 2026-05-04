@@ -560,7 +560,7 @@ public class UserInfos {
 		return hasTotp;
 	}
 
-	public void setTotp(Boolean hasTotp) {
+	public void setHasTotp(Boolean hasTotp) {
 		this.hasTotp = hasTotp;
 	}
 
