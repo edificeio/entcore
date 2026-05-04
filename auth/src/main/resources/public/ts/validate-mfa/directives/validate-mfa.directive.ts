@@ -18,6 +18,7 @@ export class ValidateMfaController implements IController {
 
 	// Input data
 	public inputCode?:String;
+	public otpDigits: string[] = ['', '', '', '', '', ''];
 	public status:OTPStatus = "";
 	public koStatusCause = "";
 	// Server data
@@ -174,10 +175,10 @@ export class ValidateMfaController implements IController {
 interface ValidateMfaScope extends IScope {
 	canRenderUi: boolean;
 	onCodeChange: (form:angular.IFormController) => Promise<void>;
+	onDigitChange: (index:number) => void;
 	onCodeRenew: () => Promise<void>;
 	onOpenTotpEnrollment: () => void;
 	onSaveTotp: () => Promise<void>;
-	onRemoveTotp: () => Promise<void>;
 	onCancelTotpEnrollment: () => void;
 }
 
@@ -270,9 +271,52 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 			safeApply();
 		}
 
-		scope.onRemoveTotp = async () => {
-			await ctrl.removeTotp();
-			safeApply();
+		scope.onDigitChange = (index: number) => {
+			// Garder uniquement les chiffres
+			ctrl.otpDigits[index] = (ctrl.otpDigits[index] || '').replace(/[^0-9]/g, '').slice(-1);
+			if (ctrl.otpDigits[index]) {
+				// Avancer au champ suivant
+				const next = document.getElementById('otp-digit-' + (index + 1));
+				if (next) (next as HTMLInputElement).focus();
+			}
+			// Si tous les champs sont remplis, valider automatiquement
+			const code = ctrl.otpDigits.join('');
+			if (code.length === 6 && /^[0-9]{6}$/.test(code)) {
+				ctrl.inputCode = code;
+				// Bloquer tous les champs
+				for (let i = 0; i < 6; i++) {
+					const el = document.getElementById('otp-digit-' + i);
+					if (el) this.setAttr(el, 'readonly', true);
+				}
+				ctrl.status = 'wait';
+				safeApply();
+				ctrl.validateCode().then(newStatus => {
+					if (newStatus === 'ok') {
+						this.setAttr('btnRenew', 'disabled', true);
+						if (ctrl.redirect) {
+							setTimeout(() => {
+								try {
+									const url = new URL(ctrl.redirect);
+									window.location.href = url.toString();
+								} catch { /* silent fail */ }
+							}, 2000);
+						}
+					} else {
+						// Débloquer et vider les champs
+						ctrl.otpDigits = ['', '', '', '', '', ''];
+						for (let i = 0; i < 6; i++) {
+							const el = document.getElementById('otp-digit-' + i);
+							if (el) this.setAttr(el, 'readonly', false);
+						}
+						setTimeout(() => {
+							const first = document.getElementById('otp-digit-0');
+							if (first) (first as HTMLInputElement).focus();
+						}, 10);
+					}
+					this.setAttr('btnRenew', 'disabled', false);
+					safeApply();
+				});
+			}
 		}
 
 		scope.onCancelTotpEnrollment = () => {
@@ -280,11 +324,38 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 			safeApply();
 		}
 
+		// Gestion du backspace : revenir au champ précédent
+		for (let i = 0; i < 6; i++) {
+			elem[0].addEventListener('keydown', (e: KeyboardEvent) => {
+				const target = e.target as HTMLInputElement;
+				if (target.id === 'otp-digit-' + i && e.key === 'Backspace' && !target.value && i > 0) {
+					const prev = document.getElementById('otp-digit-' + (i - 1)) as HTMLInputElement;
+					if (prev) { prev.value = ''; ctrl.otpDigits[i - 1] = ''; prev.focus(); }
+				}
+			});
+		}
+
+		// Gestion du paste : coller un code complet
+		elem[0].addEventListener('paste', (e: ClipboardEvent) => {
+			const text = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+			if (text.length > 0) {
+				e.preventDefault();
+				for (let i = 0; i < 6; i++) {
+					ctrl.otpDigits[i] = text[i] || '';
+				}
+				safeApply();
+				const lastFilled = Math.min(text.length, 5);
+				const el = document.getElementById('otp-digit-' + lastFilled) as HTMLInputElement;
+				if (el) el.focus();
+				if (text.length === 6) scope.onDigitChange(5);
+			}
+		});
+
 		ctrl.initialize()
 		.then( () => {
 			scope.canRenderUi = true;
 			safeApply();
-			setTimeout( ()=>document.getElementById("input-data").focus(), 10 );
+			setTimeout( ()=>{ const el = document.getElementById("otp-digit-0"); if(el) (el as HTMLInputElement).focus(); }, 10 );
 			setTimeout( ()=>angular.element(document.getElementById('btnRenew')).prop("disabled", false), 15000);
 		});
     }
