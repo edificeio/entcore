@@ -16,13 +16,15 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
         Component,
       };
     },
-    /* 404 Page */
-    {
-      path: '*',
-      element: <NotFound />,
-    },
-  ];
-};
+    children: [
+      /* 404 Page */
+      {
+        path: '*',
+        element: <NotFound />,
+      },
+    ],
+  },
+];
 
 export const basename = import.meta.env.PROD ? '/timeline/timeline' : '/';
 

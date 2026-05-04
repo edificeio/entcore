@@ -54,7 +54,7 @@ public final class UserPreferenceDtoMapper {
         try {
             return Json.decodeValue(codedValue, clazz);
         } catch (Exception e) {
-            LOGGER.error("Could not encode safe string " + codedValue + " " +  e.getMessage());
+            LOGGER.error("Could not decode safely string " + codedValue + " " +  e.getMessage());
             return null;
         }
     }
