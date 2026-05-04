@@ -31,6 +31,7 @@ import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 
 import com.eatthepath.otp.TimeBasedOneTimePasswordGenerator;
 import java.security.InvalidKeyException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
@@ -39,7 +40,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class DefaultMfaService implements MfaService {
     static Logger logger = LoggerFactory.getLogger(DefaultMfaService.class);
-    private static final TimeBasedOneTimePasswordGenerator TOTP_GENERATOR = new TimeBasedOneTimePasswordGenerator();
+    private static final TimeBasedOneTimePasswordGenerator TOTP_GENERATOR = new TimeBasedOneTimePasswordGenerator(Duration.ofSeconds(60));
 
     /** Inner service to manage field "mfaState" */
     //---------------------------------------------------------------
