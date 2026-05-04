@@ -870,7 +870,7 @@
   "mobile": "Téléphone mobile",
   "mobilePhone": "Téléphone portable",
   "totp.secret": "Clé secrète TOTP",
-  "totp.enrolled": "Configurée",
+  "totp.enrolled": "Clé affectée",
   "totp.not.enrolled": "Non configurée",
   "totp.enroll": "Configurer",
   "totp.remove": "Supprimer",
