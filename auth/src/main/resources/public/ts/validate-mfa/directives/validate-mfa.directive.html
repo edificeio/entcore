@@ -42,13 +42,10 @@
                     </div>
                 </div>
 
-                <!-- Boutons de gestion TOTP (enrollment/removal) -->
-                <div ng-if="ctrl.isTotp && !ctrl.showTotpEnrollment" class="text-center mb-16">
-                    <button ng-if="!ctrl.hasTotp" type="button" class="btn btn-primary" ng-click="onOpenTotpEnrollment()">
+                <!-- Boutons de gestion TOTP (enrollment uniquement) -->
+                <div ng-if="ctrl.isTotp && !ctrl.showTotpEnrollment && !ctrl.hasTotp" class="text-center mb-16">
+                    <button type="button" class="btn btn-primary" ng-click="onOpenTotpEnrollment()">
                         <i18n>validate-mfa.totp.define</i18n>
-                    </button>
-                    <button ng-if="ctrl.hasTotp" type="button" class="btn btn-danger" ng-click="onRemoveTotp()">
-                        <i18n>validate-mfa.totp.remove</i18n>
                     </button>
                 </div>
 
@@ -76,17 +73,18 @@
                 <!-- Formulaire de validation du code MFA -->
                 <div class="text-center" ng-if="!ctrl.showTotpEnrollment">
                     <form novalidate autocomplete="off" name="formCodeMfa" class="col-sm-6 form-control-lg mx-auto" ng-submit="">
-                        <label class="mb-8 fw-bold text-center" for="input-data">
+                        <label class="mb-8 fw-bold text-center d-block">
                             <i18n ng-if="!ctrl.isTotp">validate-mfa.step2.form.code</i18n>
                             <i18n ng-if="ctrl.isTotp">validate-mfa.step2.totp.form.code</i18n>
                         </label>
-                        <input type="text" id="input-data" style="background-color: white;" name="inputCode" required
-                            maxlength="6"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                            pattern="[0-9]{6}"
-                            ng-model="ctrl.inputCode" 
-                            ng-model-options="{ debounce: 500 }"
-                            ng-change="onCodeChange(formCodeMfa)" class="form-control" />
+                        <div class="d-flex justify-content-center gap-8">
+                            <input type="text" id="otp-digit-0" class="form-control text-center fw-bold" style="width:3rem;height:3.5rem;font-size:1.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" ng-model="ctrl.otpDigits[0]" ng-change="onDigitChange(0)" />
+                            <input type="text" id="otp-digit-1" class="form-control text-center fw-bold" style="width:3rem;height:3.5rem;font-size:1.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[1]" ng-change="onDigitChange(1)" />
+                            <input type="text" id="otp-digit-2" class="form-control text-center fw-bold" style="width:3rem;height:3.5rem;font-size:1.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[2]" ng-change="onDigitChange(2)" />
+                            <input type="text" id="otp-digit-3" class="form-control text-center fw-bold" style="width:3rem;height:3.5rem;font-size:1.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[3]" ng-change="onDigitChange(3)" />
+                            <input type="text" id="otp-digit-4" class="form-control text-center fw-bold" style="width:3rem;height:3.5rem;font-size:1.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[4]" ng-change="onDigitChange(4)" />
+                            <input type="text" id="otp-digit-5" class="form-control text-center fw-bold" style="width:3rem;height:3.5rem;font-size:1.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[5]" ng-change="onDigitChange(5)" />
+                        </div>
                     </form>
                     <footer class="mt-8 mb-16">
                         <div ng-show="ctrl.status==='wait'" class="text-primary mb-12">
