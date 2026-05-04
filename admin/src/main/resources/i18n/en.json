@@ -42,6 +42,5 @@
     "totp.verify.confirm": "Validate code",
     "totp.verify.success": "TOTP code is valid, authentication will work",
     "totp.verify.failure": "Invalid TOTP code",
-    "totp.verify.not.enrolled": "No TOTP secret configured for this user",
-    "totp.verify.error": "Error while verifying the TOTP code"
+    "totp.verify.not.enrolled": "No TOTP secret configured for this user",    "totp.already.used": "This key is already used for user [[user]]",    "totp.verify.error": "Error while verifying the TOTP code"
 }
