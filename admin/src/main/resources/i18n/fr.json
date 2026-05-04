@@ -883,6 +883,7 @@
   "totp.verify.success": "Le code TOTP est valide, l'authentification fonctionnera",
   "totp.verify.failure": "Code TOTP invalide",
   "totp.verify.not.enrolled": "Aucun secret TOTP configuré pour cet utilisateur",
+  "totp.already.used": "Cette clé est déjà utilisée pour l'utilisateur [[user]]",
   "totp.verify.error": "Erreur lors de la vérification du code TOTP",
   "modification.date": "Date de dernière modification",
   "module": "Module",
