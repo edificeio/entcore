@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 import javax.crypto.spec.SecretKeySpec;
 import java.lang.reflect.Method;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ public class DefaultMfaServiceTest {
 
     private static final TestHelper test = TestHelper.helper();
     private static DefaultMfaService mfaService;
-    private static final TimeBasedOneTimePasswordGenerator TOTP_GENERATOR = new TimeBasedOneTimePasswordGenerator();
+    private static final TimeBasedOneTimePasswordGenerator TOTP_GENERATOR = new TimeBasedOneTimePasswordGenerator(Duration.ofSeconds(60));
 
     // Secret shared by all tests: raw bytes -> Base64 (format stored in Neo4j)
     private static final byte[] SECRET_BYTES = new byte[20];
