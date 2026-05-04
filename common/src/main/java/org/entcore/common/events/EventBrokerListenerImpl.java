@@ -84,23 +84,23 @@ public class EventBrokerListenerImpl implements EventBrokerListener {
         // Create base JSON structure for the request
         final JsonObject jsonRequest = new JsonObject();
         jsonRequest.put("path", request.getPath() != null ? request.getPath() : "/");
-        
+
         // Set up headers
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         // force IP
         headers.add("X-Forwarded-For", request.getIp());
-        // Add provided headers
+        // Add provided headers (includes referer and sessionId if passed via headers map)
         if (request.getHeaders() != null) {
             for (Map.Entry<String, String> header : request.getHeaders().entrySet()) {
                 headers.add(header.getKey(), header.getValue());
             }
         }
-        
+
         // Add specific headers if provided individually
         if (request.getUserAgent() != null) {
             headers.add("User-Agent", request.getUserAgent());
         }
-        
+
         // Create and return the request
         return new SecureHttpServerRequest(new JsonHttpServerRequest(jsonRequest, headers));
     }

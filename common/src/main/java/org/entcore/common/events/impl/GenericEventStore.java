@@ -24,9 +24,11 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventHelper;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Hash;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -43,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.net.URLDecoder;
@@ -241,6 +244,17 @@ public abstract class GenericEventStore implements EventStore {
 	}
 
 	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
+		if (EventHelper.ACCESS_EVENT.equals(eventType) && request != null) {
+			final String referer = request.headers().get("Referer");
+			final String urlApp = getApplicationFromPath(request.path());
+			final String refererApp = getApplicationFromUrl(referer);
+			if (shouldSkipDueToSameApplication(urlApp, refererApp)) {
+				logger.debug("Skipping event - referer and URL have same application. eventType=" + eventType +
+					", pathApp=" + urlApp + ", refererApp=" + refererApp +
+					", path=" + request.path() + ", referer=" + referer);
+				return;
+			}
+		}
 		if (user == null || !userBlacklist.contains(user.getUserId())) {
 			final JsonObject event = generateEvent(eventType, user, request, customAttributes);
 			storeEvent(event, new Handler<Either<String, Void>>() {
@@ -251,6 +265,31 @@ public abstract class GenericEventStore implements EventStore {
 					}
 				}
 			});
+		}
+	}
+
+	private boolean shouldSkipDueToSameApplication(String urlApp, String refererApp) {
+		return urlApp != null && urlApp.equalsIgnoreCase(refererApp);
+	}
+
+	private String getApplicationFromPath(String path) {
+		if (path == null || path.isEmpty()) {
+			return null;
+		}
+		final String[] segments = path.split("/");
+		final int startIndex = segments.length > 0 && segments[0].isEmpty() ? 1 : 0;
+		return segments.length > startIndex ? segments[startIndex] : null;
+	}
+
+	private String getApplicationFromUrl(String url) {
+		if (url == null || url.isEmpty()) {
+			return null;
+		}
+		try {
+			final java.net.URI uri = new java.net.URI(url);
+			return getApplicationFromPath(uri.getPath());
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
@@ -303,8 +342,34 @@ public abstract class GenericEventStore implements EventStore {
 			if (ip != null) {
 				event.put("ip", ip);
 			}
+			final String sessionId = getSessionId(request);
+			if (sessionId != null) {
+				event.put("sessionId", sessionId);
+			}
 		}
 		return event;
+	}
+
+	private String getSessionId(HttpServerRequest request) {
+		// Priority: UserUtils.getSessionId() -> Authorization header
+		final Optional<String> userUtilsSessionId = UserUtils.getSessionId(request);
+		if (userUtilsSessionId.isPresent()) {
+			return hashSessionId(userUtilsSessionId.get());
+		}
+		final String token = request.headers().get("Authorization");
+		if (token != null && !token.isEmpty()) {
+			return hashSessionId(token);
+		}
+		return null;
+	}
+
+	private String hashSessionId(String value) {
+		try {
+			return Hash.sha256(value);
+		} catch (Exception e) {
+			logger.warn("Failed to hash sessionId", e);
+			return null;
+		}
 	}
 	
 	private String decodeCookie(String value) {
