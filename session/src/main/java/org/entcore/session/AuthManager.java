@@ -549,7 +549,14 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				sessionIndex = sessionMetadata.getString("SessionIndex");
 				nameId = sessionMetadata.getString("NameID");
 				secureLocation = Boolean.TRUE.equals(sessionMetadata.getBoolean("secureLocation"));
-				cache = oldSession.getJsonObject("cache");
+				final JsonObject rawCache = oldSession.getJsonObject("cache");
+				if (rawCache != null) {
+					final JsonObject cacheCopy = rawCache.copy();
+					cacheCopy.remove("isMFA");
+					cache = cacheCopy;
+				} else {
+					cache = null;
+				}
 			} else {
 				sessionIndex = null;
 				nameId = null;
