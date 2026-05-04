@@ -130,17 +130,34 @@ public class DefaultUserService implements UserService {
 	}
 
 	public void updateTotp(final String id, final String totpSecret, final Handler<Either<String, JsonObject>> result) {
-		final String query;
-		final JsonObject params = new JsonObject().put("id", id);
 		if (totpSecret != null && !totpSecret.isEmpty()) {
-			// non-empty => enroll (add or update the property)
-			query = "MATCH (u:User {id: {id}}) SET u.totp = {totp}";
-			params.put("totp", totpSecret);
+			// Before enrolling, check if another user already has this TOTP secret
+			final String checkQuery = "MATCH (other:User) WHERE other.totp = {totp} AND other.id <> {id} " +
+					"RETURN other.displayName as displayName LIMIT 1";
+			final JsonObject checkParams = new JsonObject().put("id", id).put("totp", totpSecret);
+			neo.execute(checkQuery, checkParams, checkMsg -> {
+				final Either<String, JsonArray> checkResult = Neo4jResult.validResult(checkMsg);
+				if (checkResult.isLeft()) {
+					result.handle(new Either.Left<>(checkResult.left().getValue()));
+					return;
+				}
+				final JsonArray rows = checkResult.right().getValue();
+				if (rows != null && !rows.isEmpty()) {
+					final String displayName = rows.getJsonObject(0).getString("displayName", "");
+					result.handle(new Either.Left<>("totp.already.used:" + displayName));
+					return;
+				}
+				// No conflict — proceed with enrollment
+				neo.execute("MATCH (u:User {id: {id}}) SET u.totp = {totp}",
+						new JsonObject().put("id", id).put("totp", totpSecret),
+						m -> result.handle(Neo4jResult.validEmpty(m)));
+			});
 		} else {
 			// null or empty => unenroll (remove the property)
-			query = "MATCH (u:User {id: {id}}) REMOVE u.totp";
+			neo.execute("MATCH (u:User {id: {id}}) REMOVE u.totp",
+					new JsonObject().put("id", id),
+					m -> result.handle(Neo4jResult.validEmpty(m)));
 		}
-		neo.execute(query, params, m -> result.handle(Neo4jResult.validEmpty(m)));
 	}
 
 	@Override

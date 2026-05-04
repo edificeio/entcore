@@ -454,7 +454,13 @@ export class UserConnectionSectionComponent
       this.cdRef.markForCheck();
     })
     .catch(err => {
-      this.ns.error('totp.error', '', err);
+      const errMsg: string = (err?.error?.error) || '';
+      if (errMsg.startsWith('totp.already.used:')) {
+        const userName = errMsg.substring('totp.already.used:'.length);
+        this.ns.error({ key: 'totp.already.used', parameters: { user: userName } });
+      } else {
+        this.ns.error('totp.error', '', err);
+      }
     });
   }
 
