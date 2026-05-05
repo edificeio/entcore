@@ -1,0 +1,79 @@
+.app-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background-color: #ed0039;
+  border-radius: 24px;
+  padding: 24px 32px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.app-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 282px;
+}
+
+.app-footer-brand-name {
+  margin: 0;
+  font-family: var(--font-family-title, 'Urbanist', sans-serif);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 28px;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.app-footer-brand-description {
+  margin: 0;
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 22px;
+  color: #ffffff;
+}
+
+.app-footer-brand-logo {
+  width: 126px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.app-footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #ffffff;
+}
+
+.app-footer-section-title {
+  margin: 0;
+  font-family: 'Urbanist', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 26px;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.app-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.app-footer-link {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 22px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.app-footer-link:hover {
+  text-decoration: underline;
+  color: #ffffff;
+}

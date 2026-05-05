@@ -24,6 +24,12 @@
 
 .widget-card-title {
   margin: 0;
+  color: var(--color-text-default, #383838);
+  font-family: var(--font-family-title, Urbanist);
+  font-size: var(--font-size-s, 18px);
+  font-style: normal;
+  font-weight: var(--font-weight-bold, 700);
+  line-height: var(--font-lineHeight-s, 26px);
 }
 
 .widget-card-action {

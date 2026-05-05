@@ -1,0 +1,26 @@
+.favorites-widget.widget-card {
+  border-radius: 12px;
+  padding: 12px;
+  gap: 12px;
+  box-shadow: none;
+}
+
+.favorites-widget .widget-card-header {
+  padding: 0 8px;
+}
+
+.favorites-widget .widget-card-title,
+.favorites-widget .widget-card-title * {
+  font-size: 16px !important;
+  line-height: 26px !important;
+}
+
+.favorites-widget .widget-card-body {
+  padding: 0;
+  border-radius: 0;
+  gap: 12px;
+}
+
+.favorites-widget .voir-tout {
+  color: #b6002c !important;
+}

@@ -1,6 +1,7 @@
 import { Button, Flex } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import { WidgetCard } from '../WidgetCard';
+import './CreateDocumentWidget.css';
 
 const CREATE_ACTIONS = [
   { labelKey: 'Writer', icon: 'W', color: '#2B6CBF', href: '/collaborative' },
@@ -23,12 +24,12 @@ export function CreateDocumentWidget() {
           variant="ghost"
           size="sm"
           onClick={() => window.open('/welcome', '_self')}
-          style={{ color: '#3030D1' }}
+          className="voir-tout"
         >
           {t('homepage.widget.see.all', 'Voir tout')} →
         </Button>
       }
-      backgroundColor="#F2F2F2"
+      backgroundColor="#f7f7f7"
     >
       <Flex gap="8" align="center">
         {CREATE_ACTIONS.map(({ labelKey, icon, color, href }) => (
@@ -37,19 +38,7 @@ export function CreateDocumentWidget() {
             href={href}
             title={labelKey}
             className="create-document-btn"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              background: color,
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: 16,
-              textDecoration: 'none',
-            }}
+            style={{ background: color }}
           >
             {icon}
           </a>

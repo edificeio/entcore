@@ -1,0 +1,40 @@
+.create-document-widget.widget-card {
+  border-radius: 12px;
+  padding: 12px;
+  gap: 12px;
+  box-shadow: none;
+}
+
+.create-document-widget .widget-card-header {
+  padding: 0 8px;
+}
+
+.create-document-widget .widget-card-title,
+.create-document-widget .widget-card-title * {
+  font-size: 16px !important;
+  line-height: 26px !important;
+}
+
+.create-document-widget .widget-card-body {
+  padding: 0;
+  border-radius: 0;
+  gap: 12px;
+}
+
+.create-document-widget .voir-tout {
+  color: #b6002c !important;
+}
+
+.create-document-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  flex-shrink: 0;
+}

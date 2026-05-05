@@ -1,0 +1,179 @@
+.vie-scolaire-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 16px;
+  padding: 12px 16px 16px;
+  background-color: #f7f7f7;
+}
+
+.vie-scolaire-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+
+.vie-scolaire-title {
+  margin: 0;
+  font-family: 'Urbanist', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 26px;
+  color: #383838;
+}
+
+.vie-scolaire-see-more {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 22px;
+  color: #b6002c;
+}
+
+.vie-scolaire-see-more:hover {
+  opacity: 0.8;
+}
+
+/* Inner card */
+.vie-scolaire-content {
+  display: flex;
+  flex-direction: column;
+  background-color: #f2f2f2;
+  border-radius: 16px;
+  padding: 4px;
+  gap: 0;
+}
+
+/* Kids tabs */
+.vie-scolaire-tabs {
+  display: flex;
+  align-items: center;
+}
+
+.vie-scolaire-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Arimo', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a4a4a;
+  border-radius: 16px 16px 0 0;
+}
+
+.vie-scolaire-tab.active {
+  background-color: #ffffff;
+}
+
+.vie-scolaire-tab-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.vie-scolaire-tab-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vie-scolaire-tab-avatar-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #d0d0d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.vie-scolaire-more-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 24px;
+  color: #4a4a4a;
+}
+
+.vie-scolaire-more-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Entries list */
+.vie-scolaire-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  background: #ffffff;
+  border-radius: 0 16px 16px 16px;
+}
+
+.vie-scolaire-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 16px;
+}
+
+.vie-scolaire-entry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background-color: #fefaec;
+  border: 1px solid #ffe5a3;
+  flex-shrink: 0;
+}
+
+.vie-scolaire-entry-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.vie-scolaire-entry-label {
+  font-family: 'Arimo', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  color: #4a4a4a;
+}
+
+.vie-scolaire-entry-sublabel {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 22px;
+  color: #909090;
+}

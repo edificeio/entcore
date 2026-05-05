@@ -1,5 +1,5 @@
 import {
-  Button,
+  Grid,
   LoadingScreen,
   PageLayout,
   useEdificeClient,
@@ -7,9 +7,22 @@ import {
 import { MessageFlashList, SchoolSpace } from '@edifice.io/react/homepage';
 import { useState } from 'react';
 import backgroundImage from '~/assets/background.png';
+import { AppFooter } from '~/components/AppFooter';
 import { BetaSwitch } from '~/components/BetaSwitch/BetaSwitch';
 import { WidgetCard } from '~/components/WidgetCard';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
+import { LiensUtilesWidget } from '~/components/LiensUtilesWidget';
+import {
+  MOCK_AVANTAGES,
+  MOCK_EMPLOI_DU_TEMPS,
+  MOCK_LIENS_UTILES,
+  MOCK_MES_EMPRUNTS,
+  MOCK_VIE_SCOLAIRE,
+} from '~/mocks/widgetsMockData';
+import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
+import { VieScolaireWidget } from '~/components/VieScolaireWidget/VieScolaireWidget';
+import { EmploiDuTempsWidget } from '~/components/EmploiDuTempsWidget';
+import { MesEmpruntsWidget } from '~/components/MesEmpruntsWidget/MesEmpruntsWidget';
 
 const MOCK_SCHOOLS = [
   {
@@ -81,6 +94,42 @@ export const Root = () => {
           />
 
           <WelcomeWidget />
+
+          {/** Service proposal widgets would go here, for example: */}
+          <WidgetCard
+            title="Vos services"
+            style={{ marginBottom: '16px', marginTop: '16px' }}
+          >
+            <Grid>
+              <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+                <LiensUtilesWidget items={MOCK_LIENS_UTILES} />
+              </Grid.Col>
+              <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+                <AvantagesWidget items={MOCK_AVANTAGES} />
+              </Grid.Col>
+            </Grid>
+          </WidgetCard>
+
+          {/** Service proposal widgets would go here, for example: */}
+          <WidgetCard
+            title="Vie scolaire"
+            style={{ marginBottom: '16px', marginTop: '16px' }}
+          >
+            <Grid>
+              <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+                <VieScolaireWidget kids={MOCK_VIE_SCOLAIRE} />
+                <MesEmpruntsWidget items={MOCK_MES_EMPRUNTS} />
+              </Grid.Col>
+              <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+                <EmploiDuTempsWidget
+                  date="Lundi 19 janvier"
+                  entries={MOCK_EMPLOI_DU_TEMPS}
+                  currentTimeIndex={0}
+                />
+              </Grid.Col>
+            </Grid>
+          </WidgetCard>
+          <AppFooter />
         </PageLayout.Content>
       </PageLayout>
     </div>
