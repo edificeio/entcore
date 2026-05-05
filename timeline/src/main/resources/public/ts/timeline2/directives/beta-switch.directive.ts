@@ -31,7 +31,7 @@ export class Controller implements IController {
     if (this.isSwitching) return;
 
     this.isBetaVisible = false;
-      this.isSwitching = true;
+    this.isSwitching = true;
     try {
       await http().putJson("/userbook/api/preferences", {
         homePage: { closeBetaSwitch: new Date().toISOString() },
@@ -79,17 +79,17 @@ class Directive implements IDirective<
         let userCloseBetaDate = userPrefs?.homePage?.closeBetaSwitch
           ? new Date(userPrefs.homePage.closeBetaSwitch)
           : null;
-        
+
         if (userCloseBetaDate && !isNaN(userCloseBetaDate?.getTime())) {
-            userCloseBetaDate.setDate(
-              userCloseBetaDate.getDate() + DEFAULT_BETA_HIDE_DURATION_DAYS,
-            ); // Add x days to the closeBetaSwitch date
+          userCloseBetaDate.setDate(
+            userCloseBetaDate.getDate() + DEFAULT_BETA_HIDE_DURATION_DAYS,
+          ); // Add x days to the closeBetaSwitch date
         } else {
           // If the date is invalid, consider the beta message as not closed
           userCloseBetaDate = null;
         }
         const displayUserBeta =
-          !userCloseBetaDate || new Date() < userCloseBetaDate;
+          !userCloseBetaDate || new Date() > userCloseBetaDate;
 
         ctrl.isBetaVisible = betaEnabled && displayUserBeta;
         scope.$apply();
