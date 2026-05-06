@@ -63,7 +63,11 @@ import org.entcore.feeder.timetable.edt.EDTFeederLauncher;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.timetable.udt.UDTImporter;
+import org.entcore.feeder.dto.ClassMapper;
+import org.entcore.feeder.dto.FunctionMapper;
+import org.entcore.feeder.dto.GroupMapper;
 import org.entcore.feeder.dto.StructureMapper;
+import org.entcore.feeder.dto.UserMapper;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionManager;
@@ -371,42 +375,58 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		String action = getOrElse(message.body().getString("action"), "");
 		switch (action) {
 			case "manual-create-structure" :
-				manual.createStructure(StructureMapper.toCreateStructureDTO(message.body()), json -> message.reply(json));
+				manual.createStructure(StructureMapper.toCreateStructureDTO(message.body()), message::reply);
 				break;
 			case "manual-update-structure" :
-				manual.updateStructure(StructureMapper.toUpdateStructureDTO(message.body()), json -> message.reply(json));
+				manual.updateStructure(StructureMapper.toUpdateStructureDTO(message.body()), message::reply);
 				break;
-			case "manual-create-class" : manual.createClass(message);
+			case "manual-create-class" :
+				manual.createClass(ClassMapper.toCreateClassDTO(message.body()), message::reply);
 				break;
-			case "manual-update-class" : manual.updateClass(message);
+			case "manual-update-class" :
+				manual.updateClass(ClassMapper.toUpdateClassDTO(message.body()), message::reply);
 				break;
-			case "manual-remove-class" : manual.removeClass(message);
+			case "manual-remove-class" :
+				manual.removeClass(ClassMapper.toRemoveClassDTO(message.body()), message::reply);
 				break;
-			case "manual-create-user" : manual.createUser(message);
+			case "manual-create-user" :
+				manual.createUser(UserMapper.toCreateUserDTO(message.body()), message::reply);
 				break;
-			case "manual-update-user" : manual.updateUser(message);
+			case "manual-update-user" :
+				manual.updateUser(UserMapper.toUpdateUserDTO(message.body()), message::reply);
 				break;
-			case "manual-update-user-login": manual.updateUserLogin(message);
+			case "manual-update-user-login" :
+				manual.updateUserLogin(UserMapper.toUpdateUserLoginDTO(message.body()), message::reply);
 				break;
-			case "manual-add-user" : manual.addUser(message);
+			case "manual-add-user" :
+				manual.addUser(UserMapper.toAddUserDTO(message.body()), message::reply);
 				break;
-			case "manual-add-users" : manual.addUsers(message);
+			case "manual-add-users" :
+				manual.addUsers(UserMapper.toAddUsersDTO(message.body()), message::reply);
 				break;
-			case "manual-remove-user" : manual.removeUser(message);
+			case "manual-remove-user":
+				manual.removeUser(UserMapper.toRemoveUserDTO(message.body()), message::reply);
 				break;
-			case "manual-remove-users" : manual.removeUsers(message);
+			case "manual-remove-users":
+				manual.removeUsers(UserMapper.toRemoveUsersDTO(message.body()), message::reply);
 				break;
-			case "manual-delete-user" : manual.deleteUser(message);
+			case "manual-delete-user":
+				manual.deleteUser(UserMapper.toDeleteUserDTO(message.body()), message::reply);
 				break;
-			case "manual-restore-user" : manual.restoreUser(message);
+			case "manual-restore-user":
+				manual.restoreUser(UserMapper.toRestoreUserDTO(message.body()), message::reply);
 				break;
-			case "manual-create-function" : manual.createFunction(message);
+			case "manual-create-function":
+				manual.createFunction(FunctionMapper.toCreateFunctionDTO(message.body()), json -> message.reply(json));
 				break;
-			case "manual-delete-function" : manual.deleteFunction(message);
+			case "manual-delete-function":
+				manual.deleteFunction(FunctionMapper.toDeleteFunctionDTO(message.body()), message::reply);
 				break;
-			case "manual-delete-function-group" : manual.deleteFunctionGroup(message);
+			case "manual-delete-function-group":
+				manual.deleteFunctionGroup(FunctionMapper.toDeleteFunctionGroupDTO(message.body()), message::reply);
 				break;
-			case "manual-create-group" : manual.createGroup(message);
+			case "manual-create-group":
+				manual.createGroup(GroupMapper.toCreateGroupDTO(message.body()), json -> message.reply(json));
 				break;
 			case "manual-delete-group" : manual.deleteGroup(message);
 				break;

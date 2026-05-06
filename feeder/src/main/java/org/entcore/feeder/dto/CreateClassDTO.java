@@ -1,28 +1,17 @@
 package org.entcore.feeder.dto;
 
-import java.util.List;
+public class CreateClassDTO {
 
-public class CreateStructureDTO {
-
+    private String structureId;
     private String name;
-    private String uai;
-    private Boolean hasApp;
     private Integer transactionId;
     private Boolean commit;
 
+    public String getStructureId() { return structureId; }
+    public void setStructureId(String structureId) { this.structureId = structureId; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
-    public String getUai() { return uai; }
-    public void setUai(String uai) { this.uai = uai; }
-
-    public Boolean getHasApp() {
-        return hasApp;
-    }
-
-    public void setHasApp(Boolean hasApp) {
-        this.hasApp = hasApp;
-    }
 
     public Integer getTransactionId() { return transactionId; }
     public void setTransactionId(Integer transactionId) { this.transactionId = transactionId; }

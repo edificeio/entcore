@@ -28,22 +28,22 @@ handleAction (Feeder.java)
 |---|:---:|:---:|:---:|
 | `manual-create-structure` | ✅ | ✅ | ✅ |
 | `manual-update-structure` | ✅ | ✅ | ✅ |
-| `manual-create-class` | ❌ | ❌ | ❌ |
-| `manual-update-class` | ❌ | ❌ | ❌ |
-| `manual-remove-class` | ❌ | ❌ | ❌ |
-| `manual-create-user` | ❌ | ❌ | ❌ |
-| `manual-update-user` | ❌ | ❌ | ❌ |
-| `manual-update-user-login` | ❌ | ❌ | ❌ |
-| `manual-add-user` | ❌ | ❌ | ❌ |
-| `manual-add-users` | ❌ | ❌ | ❌ |
-| `manual-remove-user` | ❌ | ❌ | ❌ |
-| `manual-remove-users` | ❌ | ❌ | ❌ |
-| `manual-delete-user` | ❌ | ❌ | ❌ |
-| `manual-restore-user` | ❌ | ❌ | ❌ |
-| `manual-create-function` | ❌ | ❌ | ❌ |
-| `manual-delete-function` | ❌ | ❌ | ❌ |
-| `manual-delete-function-group` | ❌ | ❌ | ❌ |
-| `manual-create-group` | ❌ | ❌ | ❌ |
+| `manual-create-class` | ✅ | ✅ | ✅ |
+| `manual-update-class` | ✅ | ✅ | ✅ |
+| `manual-remove-class` | ✅ | ✅ | ✅ |
+| `manual-create-user` | ✅ | ✅ | ✅ |
+| `manual-update-user` | ✅ | ✅ | ✅ |
+| `manual-update-user-login` | ✅ | ✅ | ✅ |
+| `manual-add-user` | ✅ | ✅ | ✅ |
+| `manual-add-users` | ✅ | ✅ | ✅ |
+| `manual-remove-user` | ✅ | ✅ | ✅ |
+| `manual-remove-users` | ✅ | ✅ | ✅ |
+| `manual-delete-user` | ✅ | ✅ | ✅ |
+| `manual-restore-user` | ✅ | ✅ | ✅ |
+| `manual-create-function` | ✅ | ✅ | ✅ |
+| `manual-delete-function` | ✅ | ✅ | ✅ |
+| `manual-delete-function-group` | ✅ | ✅ | ✅ |
+| `manual-create-group` | ✅ | ✅ | ✅ |
 | `manual-delete-group` | ❌ | ❌ | ❌ |
 | `manual-add-group-users` | ❌ | ❌ | ❌ |
 | `manual-remove-group-users` | ❌ | ❌ | ❌ |
@@ -75,40 +75,14 @@ handleAction (Feeder.java)
 
 #### `manual-create-structure` → `CreateStructureDTO`
 Package: `org.entcore.feeder.dto`
-Validated by: `dictionary/schema/Structure.json`
+
+The DTO only captures the fields that are manually settable at creation time. `externalId` is auto-generated server-side and not accepted from the caller. All other schema fields (feederName, siret, address, etc.) are not part of the manual create contract. `Structure.json` is used for internal validation of the persisted node but is not the source of truth for the DTO.
 
 | Field | Java type | JSON key | Required | Notes |
 |---|---|---|:---:|---|
 | `name` | `String` | `data.name` | ✅ | |
-| `externalId` | `String` | `data.externalId` | — | auto-generated UUID if absent |
-| `feederName` | `String` | `data.feederName` | — | |
-| `siret` | `String` | `data.SIRET` | — | |
-| `siren` | `String` | `data.SIREN` | — | |
-| `joinKey` | `List<String>` | `data.joinKey` | — | |
 | `uai` | `String` | `data.UAI` | — | |
-| `type` | `String` | `data.type` | — | |
-| `address` | `String` | `data.address` | — | |
-| `postbox` | `String` | `data.postbox` | — | |
-| `zipCode` | `String` | `data.zipCode` | — | |
-| `city` | `String` | `data.city` | — | |
-| `phone` | `String` | `data.phone` | — | |
-| `accountable` | `String` | `data.accountable` | — | |
-| `email` | `String` | `data.email` | — | |
-| `website` | `String` | `data.website` | — | |
-| `contact` | `String` | `data.contact` | — | |
-| `ministry` | `String` | `data.ministry` | — | |
-| `contract` | `String` | `data.contract` | — | |
-| `administrativeAttachment` | `List<String>` | `data.administrativeAttachment` | — | |
-| `functionalAttachment` | `List<String>` | `data.functionalAttachment` | — | |
-| `area` | `String` | `data.area` | — | |
-| `town` | `String` | `data.town` | — | |
-| `district` | `String` | `data.district` | — | |
-| `sector` | `String` | `data.sector` | — | |
-| `rpi` | `String` | `data.rpi` | — | |
-| `academy` | `String` | `data.academy` | — | |
 | `hasApp` | `Boolean` | `data.hasApp` | — | |
-| `groups` | `List<String>` | `data.groups` | — | |
-| `ignoreMFA` | `Boolean` | `data.ignoreMFA` | — | |
 | `transactionId` | `Integer` | `transactionId` | — | infrastructure, may be removed in PG |
 | `commit` | `Boolean` | `commit` | — | default `true`, infrastructure |
 
@@ -131,19 +105,17 @@ Modifiable fields per schema: `name`, `UAI`, `hasApp`, `ignoreMFA`
 ### Classes
 
 #### `manual-create-class`
-Validated by: `dictionary/schema/Class.json`
+
+`externalId` is auto-generated server-side as `structureId + "$" + name` and is not accepted from the caller. `Class.json` is used for internal node validation, not as the DTO contract.
 
 | Field | Java type | JSON key | Required |
 |---|---|---|:---:|
 | `structureId` | `String` | `structureId` | ✅ |
 | `name` | `String` | `data.name` | ✅ |
-| `externalId` | `String` | `data.externalId` | — |
-| `level` | `String` | `data.level` | — |
 | `transactionId` | `Integer` | `transactionId` | — |
 | `commit` | `Boolean` | `commit` | — |
 
 #### `manual-update-class`
-Modifiable fields per schema: `name`, `level`
 
 | Field | Java type | JSON key | Required |
 |---|---|---|:---:|
@@ -162,86 +134,64 @@ Modifiable fields per schema: `name`, `level`
 ### Users
 
 #### `manual-create-user`
-Validated by profile-specific schema (see below).
+
+Callers: `DefaultUserService.createInStructure/createInClass` (via `DirectoryController`), `SSOAzure.createUserIfNeeded`, `CanopeCasClient.createUserClass`. The JSON schema validators (`Personnel.json`, `Student.json`, `User.json`) are applied inside `ManualFeeder` but are not the source of truth for the DTO contract.
+
+**Outer fields** (message body):
 
 | Field | Java type | JSON key | Required | Notes |
 |---|---|---|:---:|---|
 | `profile` | `String` | `profile` | ✅ | enum: `Teacher`, `Personnel`, `Student`, `Relative`, `Guest` |
 | `structureId` | `String` | `structureId` | ✅* | *either structureId or classId required |
 | `classId` | `String` | `classId` | ✅* | |
-| `classesNames` | `List<String>` | `classesNames` | — | only with structureId |
-| `callerId` | `String` | `callerId` | — | for user position audit |
-| `userData` | see below | `data` | ✅ | profile-dependent |
+| `classesNames` | `List<String>` | `classesNames` | — | SSOAzure only; requires structureId |
+| `callerId` | `String` | `callerId` | — | DirectoryController only; used for position audit |
 
-**Teacher / Personnel** (`data`, validated by `Personnel.json`):
+**`data` fields** (union of what all callers actually send):
 
-| Field | Java type | Required |
-|---|---|:---:|
-| `firstName` | `String` | ✅ |
-| `lastName` | `String` | ✅ |
-| `externalId` | `String` | — |
-| `displayName` | `String` | — |
-| `birthDate` | `String` | — |
-| `title` | `String` | — |
-| `email` / `emailAcademy` / `emailInternal` | `String` | — |
-| `homePhone` / `workPhone` / `mobile` | `String` | — |
-| `address` / `postbox` / `zipCode` / `city` / `country` | `String` | — |
-| `subjectTaught` / `headTeacher` / `classCategories` / `modules` | `List<String>` | — |
-| `teaches` / `isTeacher` | `Boolean` | — |
-| `loginAlias` | `String` | — |
-| `userPositionIds` | `List<String>` | — | Personnel only |
-
-**Student** (`data`, validated by `Student.json`):
-
-| Field | Java type | Required |
-|---|---|:---:|
-| `firstName` | `String` | ✅ |
-| `lastName` | `String` | ✅ |
-| `birthDate` | `String` | ✅ |
-| `externalId` | `String` | — |
-| `level` / `sector` / `classType` / `module` / `moduleName` | `String` | — |
-| `email` / `emailInternal` | `String` | — |
-| `homePhone` / `workPhone` / `mobile` | `String` | — |
-| `address` / `postbox` / `zipCode` / `city` / `country` | `String` | — |
-| `ine` / `status` / `attachmentId` / `attachmentMENAgriId` | `String` | — |
-| `relative` / `relativeAddress` / `fieldOfStudy` / `fieldOfStudyLabels` | `List<String>` | — |
-| `transport` / `schoolCanteen` / `supervisedStudy` / `morningChildcare` / `afternoonChildcare` / `scholarshipHolder` | `Boolean` | — |
-| `loginAlias` | `String` | — |
-
-**Relative / Guest** (`data`, validated by `User.json`):
-
-| Field | Java type | Required | Notes |
-|---|---|:---:|---|
-| `firstName` | `String` | ✅ | |
-| `lastName` | `String` | ✅ | |
-| `childrenIds` | `List<String>` | — | Relative only |
-| `externalId` | `String` | — | |
-| `email` / `emailInternal` | `String` | — | |
-| `homePhone` / `workPhone` / `mobile` / `mobilePhone` | `String`/`List<String>` | — | |
-| `address` / `postbox` / `zipCode` / `city` / `country` | `String` | — | |
-| `birthDate` | `String` | — | |
-| `loginAlias` | `String` | — | |
+| Field | Java type | JSON key | Sent by | Notes |
+|---|---|---|---|---|
+| `firstName` | `String` | `data.firstName` | all | |
+| `lastName` | `String` | `data.lastName` | all | |
+| `birthDate` | `String` | `data.birthDate` | DirectoryController (optional), SSOAzure (required for Student) | |
+| `childrenIds` | `List<String>` | `data.childrenIds` | DirectoryController | Relative only |
+| `userPositionIds` | `List<String>` | `data.userPositionIds` | DirectoryController | Personnel only |
+| `externalId` | `String` | `data.externalId` | SSOAzure, Canope | auto-generated UUID if absent |
+| `email` | `String` | `data.email` | SSOAzure, Canope | |
+| `emailAcademy` | `String` | `data.emailAcademy` | SSOAzure, Canope | |
+| `source` | `String` | `data.source` | SSOAzure | hardcoded `"SSO"`; controls userSource inside ManualFeeder |
+| `profile` | `String` | `data.profile` | SSOAzure, Canope | duplicated inside data by those callers |
+| `profiles` | `List<String>` | `data.profiles` | all (added by DefaultUserService or caller) | legacy field, not used by feeder logic |
+| `type` | `String` | `data.type` | DirectoryController | same value as outer `profile`; added before passing to DefaultUserService |
 
 #### `manual-update-user`
-Modifiable fields are identical across all profiles.
 
-| Field | Java type | JSON key | Required |
-|---|---|---|:---:|
-| `userId` | `String` | `userId` | ✅ |
-| `callerId` | `String` | `callerId` | — |
-| `firstName` | `String` | `data.firstName` | — |
-| `lastName` | `String` | `data.lastName` | — |
-| `password` | `String` | `data.password` | — |
-| `displayName` | `String` | `data.displayName` | — |
-| `surname` / `otherNames` | `String`/`List<String>` | `data.*` | — |
-| `address` / `postbox` / `zipCode` / `city` / `country` | `String` | `data.*` | — |
-| `homePhone` / `workPhone` / `mobile` | `String` | `data.*` | — |
-| `email` / `emailInternal` | `String` | `data.*` | — |
-| `birthDate` | `String` | `data.birthDate` | — |
-| `loginAlias` | `String` | `data.loginAlias` | — |
-| `positionIds` | `List<String>` | `data.positionIds` | — |
-| `transactionId` | `Integer` | `transactionId` | — |
-| `commit` | `Boolean` | `commit` | — |
+Single caller: `DefaultUserService.update`, invoked by `UserController.update`. The request body is validated against `directory/src/main/resources/jsonschema/updateUser.json` (`additionalProperties: false`) before reaching the feeder — that schema is the source of truth for `data` fields.
+
+**Outer fields:**
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `userId` | `String` | `userId` | ✅ | from path param |
+| `callerId` | `String` | `callerId` | — | from caller's UserInfos |
+
+**`data` fields** (constrained by `updateUser.json`):
+
+| Field | Java type | JSON key | Notes |
+|---|---|---|---|
+| `firstName` | `String` | `data.firstName` | stripped by controller for non-admins/non-class-admins |
+| `lastName` | `String` | `data.lastName` | stripped by controller for non-admins/non-class-admins |
+| `displayName` | `String` | `data.displayName` | |
+| `birthDate` | `String` | `data.birthDate` | nullable |
+| `address` | `String` | `data.address` | nullable |
+| `zipCode` | `String` | `data.zipCode` | nullable |
+| `city` | `String` | `data.city` | nullable |
+| `loginAlias` | `String` | `data.loginAlias` | nullable |
+| `email` | `String` | `data.email` | nullable |
+| `homePhone` | `String` | `data.homePhone` | nullable |
+| `mobile` | `String` | `data.mobile` | nullable; normalized to E.164 by controller before sending |
+| `childrenIds` | `String` | `data.childrenIds` | nullable; plain string in schema (not array) |
+| `positionIds` | `List<String>` | `data.positionIds` | stripped by controller for non-admins |
 
 #### `manual-update-user-login`
 
@@ -300,14 +250,13 @@ Modifiable fields are identical across all profiles.
 
 #### `manual-create-function`
 
+Single caller: `DefaultProfileService.createFunction`, invoked by `ProfileController.createFunction`. The request body is validated against `directory/src/main/resources/jsonschema/createFunction.json` (`additionalProperties: false`) before reaching the feeder — that schema is the source of truth for `data` fields.
+
 | Field | Java type | JSON key | Required | Notes |
 |---|---|---|:---:|---|
-| `profile` | `String` | `profile` | ✅ | enum: Teacher, Personnel, Student, Relative, Guest |
-| `externalId` | `String` | `data.externalId` | — | used for deletion |
-| `name` | `String` | `data.name` | — | |
-| *(other props)* | `String` | `data.*` | — | persisted as-is on Neo4j node |
-
-Note: no schema validation — all `data` fields land as Function node properties.
+| `profile` | `String` | `profile` | ✅ | from path param; enum: Teacher, Personnel, Student, Relative, Guest |
+| `externalId` | `String` | `data.externalId` | ✅ | required by schema |
+| `name` | `String` | `data.name` | ✅ | required by schema |
 
 #### `manual-delete-function`
 
@@ -326,20 +275,45 @@ Note: no schema validation — all `data` fields land as Function node propertie
 ### Groups
 
 #### `manual-create-group`
-No schema validation — all fields in `group` land as ManualGroup node properties.
 
-| Field | Java type | JSON key | Required | Notes |
-|---|---|---|:---:|---|
-| `name` | `String` | `group.name` | ✅ | |
-| `id` | `String` | `group.id` | — | if present: upsert; if absent: create |
-| `filter` | `String` | `group.filter` | — | defaults to `"Manual"` |
-| `autolinkUsersFromGroups` | `List<String>` | `group.autolinkUsersFromGroups` | — | |
-| `autolinkUsersFromPositions` | `List<String>` | `group.autolinkUsersFromPositions` | — | |
-| `autolinkTargetAllStructs` | `Boolean` | `group.autolinkTargetAllStructs` | — | |
-| `autolinkTargetStructs` | `List<String>` | `group.autolinkTargetStructs` | — | |
-| `lockDelete` | `Boolean` | `group.lockDelete` | — | |
-| `structureId` | `String` | `structureId` | — | links group to structure on create |
-| `classId` | `String` | `classId` | — | links group to class on create |
+Four callers, all routed through `DefaultGroupService.createOrUpdateManual` which always adds `groupDisplayName = group.name` before sending. All `group` fields land as ManualGroup node properties.
+
+- **`GroupController.create`** — validates body with `createManualGroup.json` (`additionalProperties: false`, requires `name`); then strips autolink fields for non-super-admins; adds `createdById`, `createdByName`, `createdAt`; passes `structureId`/`classId` separately.
+- **`GroupController.update`** — validates body with `updateManualGroup.json` (`additionalProperties: false`, requires `name`); then strips autolink fields for non-super-admins; adds `id` (path param), `modifiedById`, `modifiedByName`, `modifiedAt`; always passes `structureId=null`, `classId=null`.
+- **`DefaultSchoolService.activateGar`** — sends `name`, `id`, `lockDelete=true`; passes `structureId`.
+- **`DirectoryBrokerListenerImpl.createManualGroup`** — sends `name`, `filter`, `id=""` (empty = create), optionally `externalId`; passes `structureId`/`classId`.
+- **`DirectoryBrokerListenerImpl.updateManualGroup`** — sends `id`, optionally `name`; passes empty `structureId`/`classId`.
+
+**Outer fields:**
+
+| Field | Java type | JSON key | Notes |
+|---|---|---|---|
+| `structureId` | `String` | `structureId` | links group to structure on create |
+| `classId` | `String` | `classId` | links group to class on create |
+
+**`group` fields** (union of all callers):
+
+| Field | Java type | JSON key | Notes |
+|---|---|---|---|
+| `name` | `String` | `group.name` | required by all HTTP paths |
+| `id` | `String` | `group.id` | empty string or absent = create; non-empty = upsert |
+| `groupDisplayName` | `String` | `group.groupDisplayName` | always set to `name` by `DefaultGroupService` |
+| `filter` | `String` | `group.filter` | broker path only |
+| `externalId` | `String` | `group.externalId` | broker path only |
+| `subType` | `String` | `group.subType` | `createManualGroup.json` |
+| `autolinkTargetAllStructs` | `Boolean` | `group.autolinkTargetAllStructs` | super-admin HTTP only |
+| `autolinkTargetStructs` | `List<String>` | `group.autolinkTargetStructs` | super-admin HTTP only |
+| `autolinkUsersFromGroups` | `List<String>` | `group.autolinkUsersFromGroups` | super-admin HTTP only |
+| `autolinkUsersFromPositions` | `List<String>` | `group.autolinkUsersFromPositions` | super-admin HTTP only |
+| `autolinkUsersFromLevels` | `List<String>` | `group.autolinkUsersFromLevels` | super-admin HTTP only |
+| `lockDelete` | `Boolean` | `group.lockDelete` | GAR path and `updateManualGroup.json` |
+| `lockCompose` | `Boolean` | `group.lockCompose` | `updateManualGroup.json` |
+| `createdById` | `String` | `group.createdById` | `GroupController.create` |
+| `createdByName` | `String` | `group.createdByName` | `GroupController.create` |
+| `createdAt` | `Long` | `group.createdAt` | `GroupController.create` (epoch ms) |
+| `modifiedById` | `String` | `group.modifiedById` | `GroupController.update` |
+| `modifiedByName` | `String` | `group.modifiedByName` | `GroupController.update` |
+| `modifiedAt` | `Long` | `group.modifiedAt` | `GroupController.update` (epoch ms) |
 
 #### `manual-delete-group`
 
@@ -534,7 +508,7 @@ Validated by: `dictionary/schema/Tenant.json`
 ### Mapper naming convention
 One mapper class per domain entity, placed in `org.entcore.feeder.dto`:
 - `StructureMapper` — structures (done)
-- `ClassMapper` — classes
+- `ClassMapper` — classes (done)
 - `UserMapper` — users (complex: profile-dependent)
 - `GroupMapper` — groups, functions, head teachers, direction, user-group relations
 - `SubjectMapper` — subjects
