@@ -457,8 +457,10 @@ export class UserConnectionSectionComponent
       const errMsg: string = (err?.response?.data?.error) || (err?.error?.error) || '';
       if (errMsg.startsWith('totp.already.used:')) {
         const userName = errMsg.substring('totp.already.used:'.length);
-        const template = this.bundles.translate('totp.already.used');
-        this.ns.error(template.replace('[[user]]', userName));
+        this.ns.error({
+          key: 'totp.already.used',
+          parameters: { user: userName }
+        }, 'totp.error.title');
       } else {
         this.ns.error('totp.error', '', err);
       }
