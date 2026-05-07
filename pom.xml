@@ -79,6 +79,17 @@
         <hikari.version>2.4.2</hikari.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-codegen</artifactId>
+                <version>${vertxVersion}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.entcore</groupId>
@@ -209,6 +220,35 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-compile</id>
+                            <configuration>
+                                <useIncrementalCompilation>false</useIncrementalCompilation>
+                                <annotationProcessors>
+                                    <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                                </annotationProcessors>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-codegen</artifactId>
+                                        <version>${vertxVersion}</version>
+                                    </path>
+                                </annotationProcessorPaths>
+                                <compilerArgs>
+                                    <arg>-s</arg>
+                                    <arg>${project.build.directory}/generated-sources/annotations</arg>
+                                </compilerArgs>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin> <!-- Plugin enabling parent pom version to be resolved when building any submodule alone -->
                 <groupId>org.codehaus.mojo</groupId>

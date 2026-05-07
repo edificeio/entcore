@@ -67,7 +67,6 @@ import org.entcore.communication.mapper.BusUserDtoMapper;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -366,11 +365,8 @@ public class CommunicationController extends BaseController {
 	@Post("/visible")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchVisible(HttpServerRequest request) {
-		RequestUtils.bodyToClass(request, SearchVisibleRequestDTO.class).onSuccess(filter -> UserUtils.getUserInfos(eb, request, user -> {
-			// override some value for this canal
-			filter.setItSelf(true)
-				.setMyGroup(true)
-				.setProfile(false);
+		RequestUtils.bodyToClass(request, SearchVisibleRequestDTO.class).onSuccess(rawFilter -> UserUtils.getUserInfos(eb, request, user -> {
+			SearchVisibleRequestDTO filter = rawFilter.withServerDefaults();
 			boolean returnGroupType = Boolean.TRUE.equals(filter.getGroupType());
 			communicationService.visibleUsers(user, filter)
 					.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())))
@@ -433,7 +429,7 @@ public class CommunicationController extends BaseController {
 
 	@BusAddress("wse.communication.users")
 	public void visibleUsers(final Message<JsonObject> message) {
-		SearchVisibleBusDTO searchQuery = message.body().mapTo(SearchVisibleBusDTO.class);
+		SearchVisibleBusDTO searchQuery = new SearchVisibleBusDTO(message.body());
 		String userId = searchQuery.getUserId();
 		if (userId == null || userId.trim().isEmpty()) {
 			message.reply(new JsonArray());
@@ -457,11 +453,11 @@ public class CommunicationController extends BaseController {
 			case "visibleUsersForShare":
 				future = communicationService.visibleUsersForShare(userId, searchQuery.getSearch(),
 						new JsonArray(searchQuery.getUserIds()))
-						.map(arr -> serialize(arr, BusUserDtoMapper::map));
+						.map(arr -> serializeForBus(arr, BusUserDtoMapper::map));
 				break;
 			case "usersCanSeeMe":
 				future = communicationService.usersCanSeeMe(userId)
-						.map(arr -> serialize(arr, BusUserDtoMapper::map));
+						.map(arr -> serializeForBus(arr, BusUserDtoMapper::map));
 				break;
 			case "visibleProfilsGroups":
 				//FIXME: we can't define a DTO  until we remove customeReturn from query
@@ -483,14 +479,6 @@ public class CommunicationController extends BaseController {
 					log.warn(err.getMessage());
 					message.reply(new JsonArray());
 				});
-	}
-
-	private static <T> JsonArray serialize(JsonArray arr, Function<JsonObject, T> mapper) {
-		return new JsonArray(arr.stream()
-				.map(JsonObject.class::cast)
-				.map(mapper)
-				.map(JsonObject::mapFrom)
-				.collect(Collectors.toList()));
 	}
 
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes,
@@ -582,7 +570,7 @@ public class CommunicationController extends BaseController {
 
 	@BusAddress("wse.communication")
 	public void communicationEventBusHandler(final Message<JsonObject> message) {
-		CommunicationBusDTO dto = message.body().mapTo(CommunicationBusDTO.class);
+		CommunicationBusDTO dto = new CommunicationBusDTO(message.body());
 		JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
 		final Future<JsonObject> future;
 

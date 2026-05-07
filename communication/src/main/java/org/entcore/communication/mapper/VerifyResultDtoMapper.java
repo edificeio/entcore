@@ -6,6 +6,6 @@ import org.entcore.communication.dto.rest.VerifyResultDTO;
 public class VerifyResultDtoMapper {
 
     public static VerifyResultDTO map(JsonObject json) {
-        return new VerifyResultDTO(Boolean.TRUE.equals(json.getBoolean("canCommunicate")));
+        return new VerifyResultDTO(json);
     }
 }

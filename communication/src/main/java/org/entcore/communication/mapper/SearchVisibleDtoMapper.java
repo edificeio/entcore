@@ -1,24 +1,27 @@
 package org.entcore.communication.mapper;
 
 import io.vertx.core.json.JsonObject;
+import org.entcore.communication.dto.rest.GroupDTO;
 import org.entcore.communication.dto.rest.SearchVisibleResultDTO;
+import org.entcore.communication.dto.rest.UserDTO;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SearchVisibleDtoMapper {
 
     public static SearchVisibleResultDTO map(JsonObject json) {
-        SearchVisibleResultDTO dto = new SearchVisibleResultDTO();
-
-        json.getJsonArray("groups").stream()
+        List<GroupDTO> groups = json.getJsonArray("groups").stream()
                 .map(JsonObject.class::cast)
                 .map(GroupDtoMapper::map)
-                .forEach(dto::addGroup);
+                .collect(Collectors.toList());
 
-        json.getJsonArray("users").stream()
+        List<UserDTO> users = json.getJsonArray("users").stream()
                 .map(JsonObject.class::cast)
                 .map(UserDtoMapper::map)
-                .forEach(dto::addUser);
+                .collect(Collectors.toList());
 
-        return dto;
+        return new SearchVisibleResultDTO(groups, users);
     }
 
 }

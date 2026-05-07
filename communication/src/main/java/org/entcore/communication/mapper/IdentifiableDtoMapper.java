@@ -6,7 +6,7 @@ import org.entcore.communication.dto.rest.IdentifiableDTO;
 public class IdentifiableDtoMapper {
 
     public static IdentifiableDTO map(JsonObject json) {
-      return new IdentifiableDTO(json.getString("id"), json.getString("name"));
+        return new IdentifiableDTO(json);
     }
 
 }

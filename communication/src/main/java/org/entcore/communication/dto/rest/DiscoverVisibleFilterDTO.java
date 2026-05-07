@@ -1,15 +1,32 @@
 package org.entcore.communication.dto.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
 import java.util.List;
 
+@DataObject
+@JsonGen
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DiscoverVisibleFilterDTO {
 
     private List<String> structures;
     private List<String> profiles;
     private String search;
+
+    public DiscoverVisibleFilterDTO() {}
+
+    public DiscoverVisibleFilterDTO(JsonObject json) {
+        this();
+        DiscoverVisibleFilterDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        DiscoverVisibleFilterDTOConverter.toJson(this, json);
+        return json;
+    }
 
     public List<String> getStructures() {
         return structures;

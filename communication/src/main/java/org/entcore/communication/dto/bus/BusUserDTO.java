@@ -1,10 +1,15 @@
 package org.entcore.communication.dto.bus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@DataObject
+@JsonGen
 public class BusUserDTO {
 
     private String id;
@@ -18,6 +23,19 @@ public class BusUserDTO {
     private List<String> profiles;
     private List<String> positionIds;
     private List<String> positionNames;
+
+    public BusUserDTO() {}
+
+    public BusUserDTO(JsonObject json) {
+        this();
+        BusUserDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        BusUserDTOConverter.toJson(this, json);
+        return json;
+    }
 
     public String getId() { return id; }
     public BusUserDTO setId(String id) { this.id = id; return this; }
