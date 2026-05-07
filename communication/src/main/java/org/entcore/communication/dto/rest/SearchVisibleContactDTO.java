@@ -1,10 +1,15 @@
 package org.entcore.communication.dto.rest;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@DataObject
+@JsonGen
 public class SearchVisibleContactDTO {
 
     private String id;
@@ -23,6 +28,19 @@ public class SearchVisibleContactDTO {
     // non-student users
     private List<ContactRefDTO> children;
     private List<ContactRefDTO> relatives;
+
+    public SearchVisibleContactDTO() {}
+
+    public SearchVisibleContactDTO(JsonObject json) {
+        this();
+        SearchVisibleContactDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        SearchVisibleContactDTOConverter.toJson(this, json);
+        return json;
+    }
 
     public String getId() {
         return id;

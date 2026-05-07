@@ -2,14 +2,13 @@ package org.entcore.communication.dto.rest;
 
 public class CountResultDTO {
 
-    public int count;
+    private final int count;
 
     public CountResultDTO(int count) {
         this.count = count;
     }
 
-    public CountResultDTO() {
-        //for serialization
+    public int getCount() {
+        return count;
     }
-
 }

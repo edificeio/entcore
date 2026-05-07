@@ -4,9 +4,7 @@ import org.entcore.communication.services.CommunicationService;
 
 public class GroupUsersDirectionDTO {
 
-    private CommunicationService.Direction users;
-
-    public GroupUsersDirectionDTO() {}
+    private final CommunicationService.Direction users;
 
     public GroupUsersDirectionDTO(CommunicationService.Direction users) {
         this.users = users;
@@ -14,9 +12,5 @@ public class GroupUsersDirectionDTO {
 
     public CommunicationService.Direction getUsers() {
         return users;
-    }
-
-    public void setUsers(CommunicationService.Direction users) {
-        this.users = users;
     }
 }
