@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static fr.wseduc.webutils.Utils.eitherToFuture;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static io.vertx.core.json.JsonObject.mapFrom;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -539,43 +540,43 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public Future<JsonObject> initDefaultRules(JsonArray structureIds, JsonObject defaultRules) {
-		return toFuture(h -> initDefaultRules(structureIds, defaultRules, h));
+		return eitherToFuture(h -> initDefaultRules(structureIds, defaultRules, h));
 	}
 
 	@Override
 	public Future<JsonObject> initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
 			Integer transactionId, Boolean commit) {
-		return toFuture(h -> initDefaultRules(structureIds, defaultRules, transactionId, commit, h));
+		return eitherToFuture(h -> initDefaultRules(structureIds, defaultRules, transactionId, commit, h));
 	}
 
 	@Override
 	public Future<JsonObject> applyDefaultRules(JsonArray structureIds) {
-		return toFuture(h -> applyDefaultRules(structureIds, h));
+		return eitherToFuture(h -> applyDefaultRules(structureIds, h));
 	}
 
 	@Override
 	public Future<JsonObject> applyDefaultRules(JsonArray structureIds, Integer transactionId, Boolean commit) {
-		return toFuture(h -> applyDefaultRules(structureIds, transactionId, commit, h));
+		return eitherToFuture(h -> applyDefaultRules(structureIds, transactionId, commit, h));
 	}
 
 	@Override
 	public Future<JsonObject> applyRules(String groupId) {
-		return toFuture(h -> applyRules(groupId, h));
+		return eitherToFuture(h -> applyRules(groupId, h));
 	}
 
 	@Override
 	public Future<JsonObject> addLink(String startGroupId, String endGroupId) {
-		return toFuture(h -> addLink(startGroupId, endGroupId, h));
+		return eitherToFuture(h -> addLink(startGroupId, endGroupId, h));
 	}
 
 	@Override
 	public Future<JsonObject> addLinkWithUsers(String groupId, Direction direction) {
-		return toFuture(h -> addLinkWithUsers(groupId, direction, h));
+		return eitherToFuture(h -> addLinkWithUsers(groupId, direction, h));
 	}
 
 	@Override
 	public Future<JsonObject> removeLinkWithUsers(String groupId, Direction direction) {
-		return toFuture(h -> removeLinkWithUsers(groupId, direction, h));
+		return eitherToFuture(h -> removeLinkWithUsers(groupId, direction, h));
 	}
 
 	private void getStatementsForDefaultRules(JsonArray structureIds, String attr, JsonObject defaultRules,
@@ -810,7 +811,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					"OPTIONAL MATCH ()-[r1:COMMUNIQUE_DIRECT]->() " +
 					"DELETE r, r1 ";
 		}
-		return toFuture(h -> neo4j.execute(query, params, validEmptyHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query, params, validEmptyHandler(h)));
 	}
 
 	@Override
@@ -1108,42 +1109,33 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
-	private static <T> Future<T> toFuture(java.util.function.Consumer<Handler<Either<String, T>>> call) {
-		Promise<T> promise = Promise.promise();
-		call.accept(res -> {
-			if (res.isRight()) promise.complete(res.right().getValue());
-			else promise.fail(res.left().getValue());
-		});
-		return promise.future();
-	}
-
 	@Override
 	public Future<JsonArray> visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
 			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
 			String userProfile, boolean reverseUnion) {
-		return toFuture(h -> visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile,
+		return eitherToFuture(h -> visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile,
 				preFilter, customReturn, additionalParams, userProfile, reverseUnion, h));
 	}
 
 	@Override
 	public Future<JsonArray> usersCanSeeMe(String userId) {
-		return toFuture(h -> usersCanSeeMe(userId, h));
+		return eitherToFuture(h -> usersCanSeeMe(userId, h));
 	}
 
 	@Override
 	public Future<JsonArray> visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
 			String preFilter) {
-		return toFuture(h -> visibleProfilsGroups(userId, customReturn, additionnalParams, preFilter, h));
+		return eitherToFuture(h -> visibleProfilsGroups(userId, customReturn, additionnalParams, preFilter, h));
 	}
 
 	@Override
 	public Future<JsonArray> visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams) {
-		return toFuture(h -> visibleManualGroups(userId, customReturn, additionnalParams, h));
+		return eitherToFuture(h -> visibleManualGroups(userId, customReturn, additionnalParams, h));
 	}
 
 	@Override
 	public Future<JsonArray> visibleUsersForShare(String userId, String search, JsonArray userIds) {
-		return toFuture(h -> visibleUsersForShare(userId, search, userIds, h));
+		return eitherToFuture(h -> visibleUsersForShare(userId, search, userIds, h));
 	}
 
 	private static String relationQuery = "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
@@ -1527,7 +1519,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public Future<JsonObject> verify(String senderId, String recipientId) {
-		return toFuture(h -> verifyCallback(senderId, recipientId, h));
+		return eitherToFuture(h -> verifyCallback(senderId, recipientId, h));
 	}
 
 	private void verifyCallback(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler) {
@@ -1614,7 +1606,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				+ "return DISTINCT visibles.id as id, visibles.name as name, visibles.displayName as displayName, "
 				+ "visibles.groupDisplayName as groupDisplayName, HEAD(visibles.profiles) as profile, visibles.structures as structures, u IS NOT NULL as hasCommunication");
 
-		return toFuture(h -> neo4j.execute(query.toString(), params, validResultHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query.toString(), params, validResultHandler(h)));
 	}
 
 	/**
@@ -1625,7 +1617,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		String query = "MATCH (s:Structure) "
 				+ "RETURN s.id as id, s.externalId as type, s.name as label, 'false' as checked";
 
-		return toFuture(h -> neo4j.execute(query, new JsonObject(), validResultHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query, new JsonObject(), validResultHandler(h)));
 	}
 
 
@@ -1639,7 +1631,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				+ "WHERE relCount = 0 CREATE (s)-[:COMMUNIQUE_DIRECT {source: 'MANUAL'}]->(r) RETURN COUNT(*) AS number ";
 
 		JsonObject params = new JsonObject().put("senderId", user.getUserId()).put("recipientId", recipientId).put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile);
-		return toFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(result -> {
+		return eitherToFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(result -> {
 			if (result.isRight() && !result.right().getValue().isEmpty()) {
 				if (result.right().getValue().getInteger("number") > 0) {
 					sendNotificationTimeline(request, user, new JsonArray().add(recipientId), "");
@@ -1662,7 +1654,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		JsonObject params = new JsonObject().put("senderId", senderId).put("recipientId", recipientId);
 
-		return toFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(h)));
 	}
 
 	/**
@@ -1675,7 +1667,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		JsonObject params = new JsonObject().put("userId", userId);
 
-		return toFuture(h -> neo4j.execute(query, params, validResultHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query, params, validResultHandler(h)));
 	}
 
 	/**
@@ -1689,7 +1681,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		JsonObject param = new JsonObject().put("userId", userId).put("groupId", groupId);
 
-		return toFuture(h -> neo4j.execute(query, param, validResultHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query, param, validResultHandler(h)));
 	}
 
 	/**
@@ -1706,7 +1698,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		JsonObject params = new JsonObject().put("userId", userId).put("name", body.getName());
 
-		return toFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(h)));
 	}
 
 	/**
@@ -1720,7 +1712,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		JsonObject params = new JsonObject().put("groupId", groupId).put("name", body.getName());
 
-		return toFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(h)));
+		return eitherToFuture(h -> neo4j.execute(query, params, validUniqueResultHandler(h)));
 	}
 
 	/**

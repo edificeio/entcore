@@ -1,11 +1,16 @@
 package org.entcore.communication.dto.rest;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.collect.Lists;
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@DataObject
+@JsonGen(inheritConverter = true)
 public class GroupDTO extends IdentifiableDTO {
 
     private String filter;
@@ -13,13 +18,26 @@ public class GroupDTO extends IdentifiableDTO {
     private String displayName;
     private String groupDisplayName;
     private InternalCommunicationRule internalCommunicationRule;
-    private List<IdentifiableDTO> classes = Lists.newArrayList();
-    private List<IdentifiableDTO> structures = Lists.newArrayList();;
+    private List<IdentifiableDTO> classes = new ArrayList<>();
+    private List<IdentifiableDTO> structures = new ArrayList<>();
     private String type;
     private String groupType;
     private String subType;
     private String sortName;
     private Integer nbUsers;
+
+    public GroupDTO() {}
+
+    public GroupDTO(JsonObject json) {
+        this();
+        GroupDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        GroupDTOConverter.toJson(this, json);
+        return json;
+    }
 
     public String getFilter() {
         return filter;
