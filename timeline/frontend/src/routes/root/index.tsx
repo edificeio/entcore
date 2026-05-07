@@ -21,7 +21,6 @@ export const Root = () => {
       <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
         <SchoolSpaceContainer />
         <LastInfosContainer />
-        <LastInfosContainer />
       </PageLayout.SidebarLeft>
       <PageLayout.Content className="d-grid py-16 gap-16">
         <MessageFlashListContainer />
