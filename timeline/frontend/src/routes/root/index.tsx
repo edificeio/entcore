@@ -1,5 +1,8 @@
-import { Layout, LoadingScreen, useEdificeClient } from '@edifice.io/react';
-import { BetaSwitch } from '~/components/BetaSwitch/BetaSwitch';
+import { LoadingScreen, PageLayout, useEdificeClient } from '@edifice.io/react';
+import {
+  LastInfosContainer,
+  MessageFlashListContainer,
+} from '@edifice.io/react/homepage';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -11,12 +14,18 @@ export const Root = () => {
 
   if (!init) return <LoadingScreen position={false} />;
 
-  return init ? (
-    <Layout>
-      timeline
-      <BetaSwitch />
-    </Layout>
-  ) : null;
+  return (
+    <PageLayout scrollMode="columns" variant="fullpage">
+      <PageLayout.Header />
+      <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
+        {/* <SchoolSpaceContainer /> */}
+        <LastInfosContainer />
+      </PageLayout.SidebarLeft>
+      <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
+        <MessageFlashListContainer />
+      </PageLayout.Content>
+    </PageLayout>
+  );
 };
 
 export default Root;
