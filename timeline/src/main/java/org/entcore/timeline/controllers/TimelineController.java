@@ -907,26 +907,16 @@ public class TimelineController extends BaseController {
 				this.removeMutersFromRecipientList(json)
 				.onComplete(notificationResult -> {
 					final JsonObject notification = notificationResult.succeeded() ? notificationResult.result() : json;
-					store.add(notification, result -> {
-                        // IF call only when recipient size > maxRecipientLength (10k by default)
-                        // timer for performance (thread block) reasons
-                        if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
-                            final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-                            result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-                            for (int i = 0; i < chunkedNotifications.size(); i++) {
-                                final JsonObject cn = chunkedNotifications.getJsonObject(i);
-                                vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
-                                    final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
-                                    log.info("Launch chunked immediate notification. Recipients :  " +
-                                        (chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
-                                    notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
-                                });
-                            }
-                        } else {
-                            notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
-                        }
-                        handler.handle(result);
-                    });
+					final JsonArray recipientsIds = notification.getJsonArray("recipientsIds", new JsonArray());
+					if (recipientsIds.isEmpty()) {
+						store.add(notification, result -> {
+							handler.handle(result);
+						});
+					} else {
+						notificationHelper.resolveUsersAndMarkDeferredRecipients(recipientsIds, notification, userList ->
+							storeAndSendImmediate(notification, recipientsIds, userList, handler::handle)
+						);
+					}
 				});
 				if (refreshTypesCache && eventTypes != null && !eventTypes.contains(json.getString("type"))) {
 					eventTypes = null;
@@ -992,6 +982,48 @@ public class TimelineController extends BaseController {
 			originalNotification.put("recipientsIds", new JsonArray(recipientsIdsWithoutMuters));
 			originalNotification.put("recipients", new JsonArray(recipientsWithoutMuters));
 			return originalNotification;
+		});
+	}
+
+	private void storeAndSendImmediate(JsonObject notification, JsonArray recipientsIds, JsonArray resolvedUserList, Handler<JsonObject> onStored) {
+		final Set<String> deferredUserIds;
+		final JsonArray immediateUserList;
+		if (resolvedUserList == null) {
+			log.warn("[Timeline] Neo4j unavailable, deferring ALL " + recipientsIds.size() + " recipients (fail-close)");
+			notificationHelper.markAllRecipientsDeferred(notification);
+			deferredUserIds = new HashSet<>();
+			for (int i = 0; i < recipientsIds.size(); i++) {
+				String uid = recipientsIds.getString(i);
+				if (uid != null) deferredUserIds.add(uid);
+			}
+			immediateUserList = new JsonArray();
+		} else {
+			deferredUserIds = notificationHelper.extractDeferredUserIds(notification);
+			immediateUserList = resolvedUserList;
+		}
+
+		store.add(notification, result -> {
+			if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
+				final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+				result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+				for (int i = 0; i < chunkedNotifications.size(); i++) {
+					final JsonObject chunkNotification = chunkedNotifications.getJsonObject(i);
+					vertx.setTimer((i * IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
+						final JsonArray chunkRecipientsIds = chunkNotification.getJsonArray("recipientsIds");
+						log.info("Launch chunked immediate notification. Recipients: " + (chunkRecipientsIds != null ? chunkRecipientsIds.size() : 0));
+						notificationHelper.sendImmediateNotifications(
+								new JsonHttpServerRequest(chunkNotification.getJsonObject("request")),
+								chunkNotification, deferredUserIds, immediateUserList
+						);
+					});
+				}
+			} else {
+				notificationHelper.sendImmediateNotifications(
+						new JsonHttpServerRequest(notification.getJsonObject("request")),
+						notification, deferredUserIds, immediateUserList
+				);
+			}
+			onStored.handle(result);
 		});
 	}
 
@@ -1169,28 +1201,16 @@ public class TimelineController extends BaseController {
 		this.removeMutersFromRecipientList(event)
 			.onComplete(notificationResult -> {
 			final JsonObject notificationToAdd = notificationResult.succeeded() ? notificationResult.result() : event;
-			store.add(notificationToAdd, new Handler<JsonObject>() {
-				public void handle(JsonObject result) {
-					// IF call only when recipient size > maxRecipientLength (10k by default)
-					// timer for performance (thread block) reasons
-					if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
-						final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-						result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-						for (int i = 0; i < chunkedNotifications.size(); i++) {
-							final JsonObject cn = chunkedNotifications.getJsonObject(i);
-							vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
-								final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
-								log.info("Launch chunked immediate notification. Recipients :  " +
-									(chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
-								notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
-							});
-						}
-					} else {
-						notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notificationToAdd.getJsonObject("request")), notificationToAdd);
-					}
+			final JsonArray recipientsIds = notificationToAdd.getJsonArray("recipientsIds", new JsonArray());
+			if (recipientsIds.isEmpty()) {
+				store.add(notificationToAdd, result -> {
 					ok(request);
-				}
-			});
+				});
+			} else {
+				notificationHelper.resolveUsersAndMarkDeferredRecipients(recipientsIds, notificationToAdd, userList ->
+					storeAndSendImmediate(notificationToAdd, recipientsIds, userList, result -> ok(request))
+				);
+			}
 		});
 		if (refreshTypesCache && eventTypes != null && !eventTypes.contains(event.getString("type"))) {
 			eventTypes = null;
