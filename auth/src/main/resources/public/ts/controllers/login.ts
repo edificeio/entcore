@@ -142,7 +142,8 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 	xhr.onload = async () => {
 		eval(xhr.responseText.split('exports.')[1]);
 		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
-		$scope.childTheme = currentTheme.child;
+		$scope.childTheme = currentTheme ? currentTheme.child : (skin.skin || 'neoconnect');
+		if (!$scope.$$phase) { $scope.$apply(); }
 	};
 	xhr.send();
 
