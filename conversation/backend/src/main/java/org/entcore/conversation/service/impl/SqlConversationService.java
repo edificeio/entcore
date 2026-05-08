@@ -2028,8 +2028,7 @@ public class SqlConversationService implements ConversationService{
 	private String addCompleteFolderCondition(JsonArray values, String restrain, Boolean unread, String folder, UserInfos user, EnumSet<State> states) {
 		String additionalWhere = "";
 		if(unread != null && unread){
-			additionalWhere += "AND unread = ? ";
-			values.add(unread);
+			additionalWhere += "AND unread = true ";
 		}
 		if(restrain != null){
 			additionalWhere += "AND um.folder_id = ? AND um.trashed = false";
