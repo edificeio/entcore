@@ -16,7 +16,7 @@
   "export.hi": "Hello,",
   "export.info": "You requested an export of your data.",
   "export.regards": "Regards,",
-  "export.signature": "The Edifice team",
+  "export.signature": "The Open ENT team",
   "exportId.not.found": "The archive does not exist",
   "get.export.path.error": "An error occurred in finding the archive.",
   "zip.export.error": "An error occurred while creating the archive.",
