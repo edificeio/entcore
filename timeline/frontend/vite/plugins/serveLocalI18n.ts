@@ -2,28 +2,37 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
 
-type ServeLocalJsonPluginOptions = {
+type ServeLocalI18nRoute = {
   routePath: string;
   filePath: string;
+};
+
+type ServeLocalI18nPluginOptions = {
+  routes: ServeLocalI18nRoute[];
   rootDir?: string;
 };
 
 export const serveLocalI18nPlugin = ({
-  routePath,
-  filePath,
+  routes,
   rootDir,
-}: ServeLocalJsonPluginOptions): Plugin => {
+}: ServeLocalI18nPluginOptions): Plugin => {
   return {
     name: `serve-local-i18n`,
     configureServer(server) {
-      const resolvedFilePath = resolve(
-        rootDir ?? server.config.root ?? process.cwd(),
-        filePath,
-      );
+      const baseDir = rootDir ?? server.config.root ?? process.cwd();
+      const resolvedRoutes = routes.map(({ routePath, filePath }) => ({
+        routePath,
+        filePath: resolve(baseDir, filePath),
+      }));
+
       server.middlewares.use((req, res, next) => {
-        if (req.url?.startsWith(routePath)) {
+        const matchingRoute = resolvedRoutes.find(({ routePath }) =>
+          req.url?.startsWith(routePath),
+        );
+
+        if (matchingRoute) {
           try {
-            const fileContents = readFileSync(resolvedFilePath, 'utf-8');
+            const fileContents = readFileSync(matchingRoute.filePath, 'utf-8');
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
             res.end(fileContents);
             return;
