@@ -35,12 +35,16 @@ public class DefaultPreferenceService implements PreferenceService {
         StringBuilder create = new StringBuilder(" ON CREATE SET ");
         StringBuilder merge = new StringBuilder(" ON MATCH SET ");
 
-        preference.getPreferences().forEach( ( appName ) -> {
+        for (UserPreferenceDto.Application appName : preference.getPreferences()) {
+            if (!preference.getPreference(appName).validate()) {
+                promise.fail("invalid.preference." + appName.getMappingName());
+                return promise.future();
+            }
             String partialQuery = " uac."+ appName.getMappingName() +" = {"+ appName.getMappingName() +"},";
             create.append(partialQuery);
             merge.append(partialQuery);
             params.put(appName.getMappingName(), preference.getPreference(appName).encode());
-        });
+        }
 
         create.deleteCharAt(create.length() - 1);
         merge.deleteCharAt(merge.length() - 1);
