@@ -44,8 +44,19 @@ public final class UserPreferenceDtoMapper {
         }
         if (pref.containsKey("lastDomain") && pref.getString("lastDomain") != null) {
             dto.setLastDomain(pref.getString("lastDomain"));
-        } else {
+        }
+       	else {
            dto.setLastDomain(I18n.DEFAULT_DOMAIN);
+        }
+        if (pref.containsKey(TIMEZONE.getMappingName())) {
+           dto.getPreferences().add(TIMEZONE);
+           dto.setTimezone(new TimezonePreference());
+           dto.getTimezone().setTimezone(pref.getString(TIMEZONE.getMappingName()));
+        }
+        if (pref.containsKey(QUIET_HOURS.getMappingName())) {
+           dto.getPreferences().add(QUIET_HOURS);
+           String encoded = pref.getString(QUIET_HOURS.getMappingName());
+           dto.setQuietHours(decodeSafely(encoded, QuietHoursPreference.class));
         }
         return dto;
     }
