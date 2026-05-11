@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 import { createDevProxyConfig } from './vite/plugins/devProxy';
+import { serveLocalI18nPlugin } from './vite/plugins/serveLocalI18n';
 
-// https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
   const { headers, proxy } = createDevProxyConfig({
     mode,
@@ -46,6 +46,19 @@ export default ({ mode }: { mode: string }) => {
     },
 
     plugins: [
+      serveLocalI18nPlugin({
+        routes: [
+          {
+            routePath: '/timeline/i18n',
+            filePath: '../src/main/resources/i18n/timeline/fr.json',
+          },
+          {
+            routePath: '/i18n',
+            filePath: '../../portal/backend/src/main/resources/i18n/fr.json',
+          },
+        ],
+        rootDir: __dirname,
+      }),
       {
         name: 'rewrite-homepage',
         configureServer(server) {
