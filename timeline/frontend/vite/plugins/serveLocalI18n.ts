@@ -7,7 +7,7 @@ type ServeLocalI18nRoute = {
   filePath: string;
 };
 
-type ServeLocalJsonPluginOptions = {
+type ServeLocalI18nPluginOptions = {
   routes: ServeLocalI18nRoute[];
   rootDir?: string;
 };
@@ -15,7 +15,7 @@ type ServeLocalJsonPluginOptions = {
 export const serveLocalI18nPlugin = ({
   routes,
   rootDir,
-}: ServeLocalJsonPluginOptions): Plugin => {
+}: ServeLocalI18nPluginOptions): Plugin => {
   return {
     name: `serve-local-i18n`,
     configureServer(server) {
