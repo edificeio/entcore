@@ -37,9 +37,11 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.utils.MapFactory;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.infra.controllers.*;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.cron.MonitoringEventsChecker;
+import org.entcore.infra.listeners.ConfigBrokerListenerImpl;
 import org.entcore.infra.metrics.MicrometerInfraMetricsRecorder;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.ClamAvService;
@@ -102,6 +104,7 @@ public class Starter extends BaseServer {
 		addController(eventStoreController);
 		addController(new MonitoringController());
 		addController(new EmbedController());
+		BrokerProxyUtils.addBrokerProxy(new ConfigBrokerListenerImpl(), vertx);
 		if (config.getJsonObject("node-pdf-generator") != null) {
 			try {
 				PdfController pdfController = new PdfController();
