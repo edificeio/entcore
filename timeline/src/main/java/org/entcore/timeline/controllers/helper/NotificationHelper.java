@@ -24,11 +24,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.utils.StringUtils;
+import org.entcore.common.user.dto.QuietHoursPreference;
+import org.entcore.common.user.dto.TimezonePreference;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
 import org.entcore.timeline.services.TimelinePushNotifService;
@@ -38,8 +40,6 @@ import java.time.*;
 import java.util.List;
 
 import org.entcore.common.notification.NotificationUtils;
-
-import static java.lang.System.currentTimeMillis;
 
 
 public class NotificationHelper {
@@ -70,14 +70,31 @@ public class NotificationHelper {
                     }
                     final JsonObject notificationProperties = properties.right().getValue();
                     //Get users preferences (overrides notification properties)
-                    NotificationUtils.getUsersPreferences(eb, json.getJsonArray("recipientsIds"), "language: uac.language, displayName: u.displayName, tokens: uac.fcmTokens ", new Handler<JsonArray>() {
+                     NotificationUtils.getUsersPreferences(eb, json.getJsonArray("recipientsIds"),
+                             "language: uac.language, displayName: u.displayName, tokens: uac.fcmTokens, " +
+                             "uai: head([(u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) | s.UAI]), " +
+                             "quietHours: uac.quietHours, " +
+                             "timezone: uac.timezone ",
+                            new Handler<JsonArray>() {
                         public void handle(final JsonArray userList) {
                             if (userList == null) {
                                 log.error("[NotificationHelper] Issue while retrieving users preferences.");
                                 return;
                             }
+                            // Filter recipients currently in quiet hours based on their preference or structure's timezone
+                            final JsonArray activeUserList = new JsonArray();
+                            final Instant now = Instant.now();
+                             for (int i = 0; i < userList.size(); i++) {
+                                 JsonObject user = userList.getJsonObject(i);
+                                 QuietHoursPreference userPrefQuietHours = parseQuietHours(user);
+                                 TimezonePreference userPrefTimezone = parseTimezone(user);
+                                 String uai = user.getString("uai");
+                                  if (!QuietHoursHelper.isQuietHour(now, userPrefQuietHours, userPrefTimezone, uai)) {
+                                      activeUserList.add(user);
+                                  }
+                             }
                             if (disableMailNotification == null || !disableMailNotification.booleanValue()) {
-                                mailerService.sendImmediateMails(request, notificationName, notification, json.getJsonObject("params"), userList, notificationProperties);
+                                mailerService.sendImmediateMails(request, notificationName, notification, json.getJsonObject("params"), activeUserList, notificationProperties);
                             }
 
                             if (pushNotifServices != null && pushNotifServices.size() > 0
@@ -87,7 +104,7 @@ public class NotificationHelper {
                                     && !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(notificationProperties.getString("restriction"))
                                     && !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(notificationProperties.getString("restriction"))) {
                                 pushNotifServices.forEach(pushNotifService -> {
-                                    pushNotifService.sendImmediateNotifs(notificationName, json, userList, notificationProperties);
+                                    pushNotifService.sendImmediateNotifs(notificationName, json, activeUserList, notificationProperties);
                                 });
                             }
                         }
@@ -116,12 +133,43 @@ public class NotificationHelper {
         if(dateWrapper == null || dateWrapper.getString("$date") == null) {
             isImmediate = true;
         } else {
-            Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+            Instant now = Instant.now();
             Instant publishDate = OffsetDateTime.parse(dateWrapper.getString("$date")).toInstant();
             isImmediate = publishDate.isBefore(now);
         }
         return isImmediate;
     }
+
+
+
+    /**
+     * Parses the quietHours preference from the user JSON object.
+     * Returns null if absent or malformed.
+     */
+    static QuietHoursPreference parseQuietHours(JsonObject user) {
+        String json = user.getString("quietHours");
+        if (json == null) return null;
+        
+        try {
+            return Json.decodeValue(json, QuietHoursPreference.class);
+        } catch (Exception e) {
+            log.warn("[NotificationHelper] Cannot parse quietHours preference: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Parses the timezone preference from the user JSON object.
+     * Returns null if absent or malformed.
+     */
+    static TimezonePreference parseTimezone(JsonObject user) {
+        String tz = user.getString("timezone");
+        if (tz == null) return null;
+        TimezonePreference pref = new TimezonePreference();
+        pref.setTimezone(tz);
+        return pref;
+    }
+
 
 
     public void setPushNotifServices(List<TimelinePushNotifService> pushNotifServices) {
