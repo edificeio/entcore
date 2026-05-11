@@ -1,10 +1,8 @@
-package org.entcore.feeder.dto;
+package org.entcore.feeder.mapper;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import org.entcore.feeder.dto.CreateStructureDTO;
+import org.entcore.feeder.dto.UpdateStructureDTO;
 
 public final class StructureMapper {
 
@@ -36,26 +34,18 @@ public final class StructureMapper {
 
     public static JsonObject toStructureProps(CreateStructureDTO dto) {
         JsonObject props = new JsonObject();
-        putString(props, "name", dto.getName());
-        putString(props, "UAI", dto.getUai());
-        putBoolean(props, "hasApp", dto.getHasApp());
+        if (dto.getName() != null) props.put("name", dto.getName());
+        if (dto.getUai() != null) props.put("UAI", dto.getUai());
+        if (dto.getHasApp() != null) props.put("hasApp", dto.getHasApp());
         return props;
     }
 
     public static JsonObject toStructureProps(UpdateStructureDTO dto) {
         JsonObject props = new JsonObject();
-        putString(props, "name", dto.getName());
-        putString(props, "UAI", dto.getUai());
-        putBoolean(props, "hasApp", dto.getHasApp());
-        putBoolean(props, "ignoreMFA", dto.getIgnoreMFA());
+        if (dto.getName() != null) props.put("name", dto.getName());
+        if (dto.getUai() != null) props.put("UAI", dto.getUai());
+        if (dto.getHasApp() != null) props.put("hasApp", dto.getHasApp());
+        if (dto.getIgnoreMFA() != null) props.put("ignoreMFA", dto.getIgnoreMFA());
         return props;
-    }
-
-    private static void putString(JsonObject obj, String key, String value) {
-        if (value != null) obj.put(key, value);
-    }
-
-    private static void putBoolean(JsonObject obj, String key, Boolean value) {
-        if (value != null) obj.put(key, value);
     }
 }

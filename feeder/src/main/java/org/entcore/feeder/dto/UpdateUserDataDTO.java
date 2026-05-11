@@ -1,7 +1,15 @@
 package org.entcore.feeder.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
+
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@DataObject
+@JsonGen
 public class UpdateUserDataDTO {
 
     private String firstName;
@@ -18,42 +26,54 @@ public class UpdateUserDataDTO {
     private String childrenIds;
     private List<String> positionIds;
 
+    public UpdateUserDataDTO() {}
+
+    public UpdateUserDataDTO(JsonObject json) {
+        UpdateUserDataDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        UpdateUserDataDTOConverter.toJson(this, json);
+        return json;
+    }
+
     public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public UpdateUserDataDTO setFirstName(String firstName) { this.firstName = firstName; return this; }
 
     public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public UpdateUserDataDTO setLastName(String lastName) { this.lastName = lastName; return this; }
 
     public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public UpdateUserDataDTO setDisplayName(String displayName) { this.displayName = displayName; return this; }
 
     public String getBirthDate() { return birthDate; }
-    public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
+    public UpdateUserDataDTO setBirthDate(String birthDate) { this.birthDate = birthDate; return this; }
 
     public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+    public UpdateUserDataDTO setAddress(String address) { this.address = address; return this; }
 
     public String getZipCode() { return zipCode; }
-    public void setZipCode(String zipCode) { this.zipCode = zipCode; }
+    public UpdateUserDataDTO setZipCode(String zipCode) { this.zipCode = zipCode; return this; }
 
     public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
+    public UpdateUserDataDTO setCity(String city) { this.city = city; return this; }
 
     public String getLoginAlias() { return loginAlias; }
-    public void setLoginAlias(String loginAlias) { this.loginAlias = loginAlias; }
+    public UpdateUserDataDTO setLoginAlias(String loginAlias) { this.loginAlias = loginAlias; return this; }
 
     public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public UpdateUserDataDTO setEmail(String email) { this.email = email; return this; }
 
     public String getHomePhone() { return homePhone; }
-    public void setHomePhone(String homePhone) { this.homePhone = homePhone; }
+    public UpdateUserDataDTO setHomePhone(String homePhone) { this.homePhone = homePhone; return this; }
 
     public String getMobile() { return mobile; }
-    public void setMobile(String mobile) { this.mobile = mobile; }
+    public UpdateUserDataDTO setMobile(String mobile) { this.mobile = mobile; return this; }
 
     public String getChildrenIds() { return childrenIds; }
-    public void setChildrenIds(String childrenIds) { this.childrenIds = childrenIds; }
+    public UpdateUserDataDTO setChildrenIds(String childrenIds) { this.childrenIds = childrenIds; return this; }
 
     public List<String> getPositionIds() { return positionIds; }
-    public void setPositionIds(List<String> positionIds) { this.positionIds = positionIds; }
+    public UpdateUserDataDTO setPositionIds(List<String> positionIds) { this.positionIds = positionIds; return this; }
 }

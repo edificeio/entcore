@@ -8,22 +8,22 @@ import io.vertx.core.json.JsonObject;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @DataObject
 @JsonGen
-public class RemoveClassDTO {
+public class DeleteGroupDTO {
 
-    private String classId;
+    private String groupId;
 
-    public RemoveClassDTO() {}
+    public DeleteGroupDTO() {}
 
-    public RemoveClassDTO(JsonObject json) {
-        RemoveClassDTOConverter.fromJson(json, this);
+    public DeleteGroupDTO(JsonObject json) {
+        DeleteGroupDTOConverter.fromJson(json, this);
     }
 
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
-        RemoveClassDTOConverter.toJson(this, json);
+        DeleteGroupDTOConverter.toJson(this, json);
         return json;
     }
 
-    public String getClassId() { return classId; }
-    public RemoveClassDTO setClassId(String classId) { this.classId = classId; return this; }
+    public String getGroupId() { return groupId; }
+    public DeleteGroupDTO setGroupId(String groupId) { this.groupId = groupId; return this; }
 }

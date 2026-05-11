@@ -1,6 +1,9 @@
-package org.entcore.feeder.dto;
+package org.entcore.feeder.mapper;
 
 import io.vertx.core.json.JsonObject;
+import org.entcore.feeder.dto.CreateClassDTO;
+import org.entcore.feeder.dto.RemoveClassDTO;
+import org.entcore.feeder.dto.UpdateClassDTO;
 
 public final class ClassMapper {
 
@@ -26,25 +29,20 @@ public final class ClassMapper {
     }
 
     public static RemoveClassDTO toRemoveClassDTO(JsonObject body) {
-        RemoveClassDTO dto = new RemoveClassDTO();
-        dto.setClassId(body.getString("classId"));
-        return dto;
+        return new RemoveClassDTO(body);
     }
 
     public static JsonObject toClassProps(CreateClassDTO dto) {
-        JsonObject props = new JsonObject();
-        putString(props, "name", dto.getName());
+        JsonObject props = dto.toJson();
+        props.remove("structureId");
+        props.remove("transactionId");
+        props.remove("commit");
         return props;
     }
 
     public static JsonObject toClassProps(UpdateClassDTO dto) {
-        JsonObject props = new JsonObject();
-        putString(props, "name", dto.getName());
-        putString(props, "level", dto.getLevel());
+        JsonObject props = dto.toJson();
+        props.remove("classId");
         return props;
-    }
-
-    private static void putString(JsonObject obj, String key, String value) {
-        if (value != null) obj.put(key, value);
     }
 }

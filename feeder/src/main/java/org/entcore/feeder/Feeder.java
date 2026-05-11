@@ -63,11 +63,24 @@ import org.entcore.feeder.timetable.edt.EDTFeederLauncher;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.timetable.udt.UDTImporter;
-import org.entcore.feeder.dto.ClassMapper;
-import org.entcore.feeder.dto.FunctionMapper;
-import org.entcore.feeder.dto.GroupMapper;
-import org.entcore.feeder.dto.StructureMapper;
-import org.entcore.feeder.dto.UserMapper;
+import org.entcore.feeder.dto.AddUserDTO;
+import org.entcore.feeder.dto.AddUsersDTO;
+import org.entcore.feeder.dto.CreateGroupDTO;
+import org.entcore.feeder.dto.CreateUserDTO;
+import org.entcore.feeder.dto.DeleteGroupDTO;
+import org.entcore.feeder.dto.DeleteUserDTO;
+import org.entcore.feeder.dto.RemoveUserDTO;
+import org.entcore.feeder.dto.RemoveUsersDTO;
+import org.entcore.feeder.dto.RestoreUserDTO;
+import org.entcore.feeder.dto.UpdateUserDTO;
+import org.entcore.feeder.dto.UpdateUserLoginDTO;
+import org.entcore.feeder.dto.AddGroupUsersDTO;
+import org.entcore.feeder.dto.RemoveGroupUsersDTO;
+import org.entcore.feeder.dto.RelativeStudentDTO;
+import org.entcore.feeder.dto.UnlinkRelativeStudentDTO;
+import org.entcore.feeder.mapper.ClassMapper;
+import org.entcore.feeder.mapper.FunctionMapper;
+import org.entcore.feeder.mapper.StructureMapper;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionManager;
@@ -390,34 +403,34 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				manual.removeClass(ClassMapper.toRemoveClassDTO(message.body()), message::reply);
 				break;
 			case "manual-create-user" :
-				manual.createUser(UserMapper.toCreateUserDTO(message.body()), message::reply);
+				manual.createUser(new CreateUserDTO(message.body()), message::reply);
 				break;
 			case "manual-update-user" :
-				manual.updateUser(UserMapper.toUpdateUserDTO(message.body()), message::reply);
+				manual.updateUser(new UpdateUserDTO(message.body()), message::reply);
 				break;
 			case "manual-update-user-login" :
-				manual.updateUserLogin(UserMapper.toUpdateUserLoginDTO(message.body()), message::reply);
+				manual.updateUserLogin(new UpdateUserLoginDTO(message.body()), message::reply);
 				break;
 			case "manual-add-user" :
-				manual.addUser(UserMapper.toAddUserDTO(message.body()), message::reply);
+				manual.addUser(new AddUserDTO(message.body()), message::reply);
 				break;
 			case "manual-add-users" :
-				manual.addUsers(UserMapper.toAddUsersDTO(message.body()), message::reply);
+				manual.addUsers(new AddUsersDTO(message.body()), message::reply);
 				break;
 			case "manual-remove-user":
-				manual.removeUser(UserMapper.toRemoveUserDTO(message.body()), message::reply);
+				manual.removeUser(new RemoveUserDTO(message.body()), message::reply);
 				break;
 			case "manual-remove-users":
-				manual.removeUsers(UserMapper.toRemoveUsersDTO(message.body()), message::reply);
+				manual.removeUsers(new RemoveUsersDTO(message.body()), message::reply);
 				break;
 			case "manual-delete-user":
-				manual.deleteUser(UserMapper.toDeleteUserDTO(message.body()), message::reply);
+				manual.deleteUser(new DeleteUserDTO(message.body()), message::reply);
 				break;
 			case "manual-restore-user":
-				manual.restoreUser(UserMapper.toRestoreUserDTO(message.body()), message::reply);
+				manual.restoreUser(new RestoreUserDTO(message.body()), message::reply);
 				break;
 			case "manual-create-function":
-				manual.createFunction(FunctionMapper.toCreateFunctionDTO(message.body()), json -> message.reply(json));
+				manual.createFunction(FunctionMapper.toCreateFunctionDTO(message.body()), message::reply);
 				break;
 			case "manual-delete-function":
 				manual.deleteFunction(FunctionMapper.toDeleteFunctionDTO(message.body()), message::reply);
@@ -426,18 +439,18 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				manual.deleteFunctionGroup(FunctionMapper.toDeleteFunctionGroupDTO(message.body()), message::reply);
 				break;
 			case "manual-create-group":
-				manual.createGroup(GroupMapper.toCreateGroupDTO(message.body()), json -> message.reply(json));
+				manual.createGroup(new CreateGroupDTO(message.body()), message::reply);
 				break;
-			case "manual-delete-group" : manual.deleteGroup(message);
+			case "manual-delete-group" : manual.deleteGroup(new DeleteGroupDTO(message.body()), message::reply);
 				break;
-			case "manual-add-group-users" : manual.addGroupUsers(message);
+			case "manual-add-group-users" : manual.addGroupUsers(new AddGroupUsersDTO(message.body()), message::reply);
 				break;
-			case "manual-remove-group-users" : manual.removeGroupUsers(message);
+			case "manual-remove-group-users" : manual.removeGroupUsers(new RemoveGroupUsersDTO(message.body()), message::reply);
 				break;
-			case "manual-relative-student" : manual.relativeStudent(message);
+			case "manual-relative-student" : manual.relativeStudent(new RelativeStudentDTO(message.body()), message::reply);
 				break;
-			case "manual-unlink-relative-student" : manual.unlinkRelativeStudent(message);
-			break;
+			case "manual-unlink-relative-student" : manual.unlinkRelativeStudent(new UnlinkRelativeStudentDTO(message.body()), message::reply);
+				break;
 			case "manual-add-user-function" : manual.addUserFunction(message);
 				break;
 			case "manual-add-head-teacher" : manual.addUserHeadTeacherManual(message);

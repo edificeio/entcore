@@ -1,6 +1,9 @@
-package org.entcore.feeder.dto;
+package org.entcore.feeder.mapper;
 
 import io.vertx.core.json.JsonObject;
+import org.entcore.feeder.dto.CreateFunctionDTO;
+import org.entcore.feeder.dto.DeleteFunctionDTO;
+import org.entcore.feeder.dto.DeleteFunctionGroupDTO;
 
 public final class FunctionMapper {
 
@@ -16,21 +19,16 @@ public final class FunctionMapper {
     }
 
     public static DeleteFunctionDTO toDeleteFunctionDTO(JsonObject body) {
-        DeleteFunctionDTO dto = new DeleteFunctionDTO();
-        dto.setFunctionCode(body.getString("functionCode"));
-        return dto;
+        return new DeleteFunctionDTO(body);
     }
 
     public static DeleteFunctionGroupDTO toDeleteFunctionGroupDTO(JsonObject body) {
-        DeleteFunctionGroupDTO dto = new DeleteFunctionGroupDTO();
-        dto.setGroupId(body.getString("groupId"));
-        return dto;
+        return new DeleteFunctionGroupDTO(body);
     }
 
     public static JsonObject toFunctionData(CreateFunctionDTO dto) {
-        JsonObject data = new JsonObject();
-        if (dto.getExternalId() != null) data.put("externalId", dto.getExternalId());
-        if (dto.getName() != null) data.put("name", dto.getName());
+        JsonObject data = dto.toJson();
+        data.remove("profile");
         return data;
     }
 }

@@ -40,27 +40,30 @@ import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.dictionary.structures.User.DeleteTask;
 import org.entcore.feeder.dto.AddUserDTO;
 import org.entcore.feeder.dto.AddUsersDTO;
-import org.entcore.feeder.dto.ClassMapper;
 import org.entcore.feeder.dto.CreateClassDTO;
+import org.entcore.feeder.mapper.ClassMapper;
 import org.entcore.feeder.dto.CreateStructureDTO;
 import org.entcore.feeder.dto.CreateUserDTO;
 import org.entcore.feeder.dto.CreateFunctionDTO;
 import org.entcore.feeder.dto.CreateGroupDTO;
-import org.entcore.feeder.dto.GroupMapper;
 import org.entcore.feeder.dto.DeleteFunctionDTO;
 import org.entcore.feeder.dto.DeleteFunctionGroupDTO;
+import org.entcore.feeder.dto.AddGroupUsersDTO;
+import org.entcore.feeder.dto.DeleteGroupDTO;
+import org.entcore.feeder.dto.RemoveGroupUsersDTO;
+import org.entcore.feeder.dto.RelativeStudentDTO;
+import org.entcore.feeder.dto.UnlinkRelativeStudentDTO;
 import org.entcore.feeder.dto.DeleteUserDTO;
-import org.entcore.feeder.dto.FunctionMapper;
+import org.entcore.feeder.mapper.FunctionMapper;
 import org.entcore.feeder.dto.RemoveClassDTO;
 import org.entcore.feeder.dto.RemoveUserDTO;
 import org.entcore.feeder.dto.RemoveUsersDTO;
 import org.entcore.feeder.dto.RestoreUserDTO;
-import org.entcore.feeder.dto.StructureMapper;
+import org.entcore.feeder.mapper.StructureMapper;
 import org.entcore.feeder.dto.UpdateClassDTO;
 import org.entcore.feeder.dto.UpdateStructureDTO;
 import org.entcore.feeder.dto.UpdateUserDTO;
 import org.entcore.feeder.dto.UpdateUserLoginDTO;
-import org.entcore.feeder.dto.UserMapper;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.StatementsBuilder;
@@ -292,7 +295,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	public void createUser(final CreateUserDTO dto, final Handler<JsonObject> replyHandler) {
-		final JsonObject user = UserMapper.toUserProps(dto.getData());
+		final JsonObject user = dto.getData().toJson();
 		if (user.getString("externalId") == null) {
 			user.put("externalId", UUID.randomUUID().toString());
 		}
@@ -869,7 +872,7 @@ public class ManualFeeder extends BusModBase {
 			return;
 		}
 		final String callerId = dto.getCallerId();
-		final JsonObject user = UserMapper.toUpdateUserProps(dto.getData());
+		final JsonObject user = dto.getData().toJson();
 		final Boolean useLoginAliasValidatorForAD = this.loginAliasValidatorForAD;
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
@@ -1098,13 +1101,13 @@ public class ManualFeeder extends BusModBase {
 			return;
 		}
 		try {
-			TransactionHelper tx = TransactionManager.getInstance().begin(null);
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
 			tx.setAutoSend(true);
 			for (String userId : usersList) {
 				User.restorePreDeleted(userId, tx);
 			}
 			tx.commit(m -> replyHandler.handle(m.body()));
-		} catch (TransactionException | ValidationException e) {
+		} catch (TransactionException e) {
 			logger.error("Error in transaction when restoring users", e);
 			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
@@ -1118,11 +1121,11 @@ public class ManualFeeder extends BusModBase {
 		}
 		final JsonObject function = FunctionMapper.toFunctionData(dto);
 		try {
-			TransactionHelper tx = TransactionManager.getInstance().begin(null);
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
 			tx.setAutoSend(true);
 			Profile.createFunction(profile, null, function, tx);
 			tx.commit(m -> replyHandler.handle(m.body()));
-		} catch (TransactionException | ValidationException e) {
+		} catch (TransactionException e) {
 			logger.error("Error in transaction when creating function", e);
 			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
@@ -1167,11 +1170,11 @@ public class ManualFeeder extends BusModBase {
 			return;
 		}
 		try {
-			TransactionHelper tx = TransactionManager.getInstance().begin(null);
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
 			tx.setAutoSend(true);
 			Profile.deleteFunction(functionCode, tx);
 			tx.commit(m -> replyHandler.handle(m.body()));
-		} catch (TransactionException | ValidationException e) {
+		} catch (TransactionException e) {
 			logger.error("Error in transaction when deleting function", e);
 			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
@@ -1184,11 +1187,11 @@ public class ManualFeeder extends BusModBase {
 			return;
 		}
 		try {
-			TransactionHelper tx = TransactionManager.getInstance().begin(null);
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
 			tx.setAutoSend(true);
 			Profile.deleteFunctionGroup(groupId, tx);
 			tx.commit(m -> replyHandler.handle(m.body()));
-		} catch (TransactionException | ValidationException e) {
+		} catch (TransactionException e) {
 			logger.error("Error in transaction when deleting function group", e);
 			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
@@ -1435,7 +1438,7 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	public void createGroup(final CreateGroupDTO dto, final Handler<JsonObject> replyHandler) {
-		final JsonObject group = dto.getGroup() != null ? GroupMapper.toGroupData(dto.getGroup()) : new JsonObject();
+		final JsonObject group = dto.getGroup() != null ? dto.getGroup().toJson() : new JsonObject();
 		if (group.size() == 0) {
 			replyHandler.handle(new JsonObject().put("status", "error").put("message", "missing.group"));
 			return;
@@ -1443,7 +1446,7 @@ public class ManualFeeder extends BusModBase {
 		final String structureId = dto.getStructureId();
 		final String classId = dto.getClassId();
 		try {
-			TransactionHelper tx = TransactionManager.getInstance().begin(null);
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
 			tx.setAutoSend(true);
 			Group.manualCreateOrUpdate(group, structureId, classId, tx);
 			tx.commit(m -> replyHandler.handle(m.body()));
@@ -1453,43 +1456,65 @@ public class ManualFeeder extends BusModBase {
 		}
 	}
 
-	public void deleteGroup(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		if (groupId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Group.manualDelete(groupId, tx);
-			}
-		});
+	public void deleteGroup(final DeleteGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		if (groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.manualDelete(groupId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when deleting group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 	
-	public void addGroupUsers(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		final JsonArray userIds = message.body().getJsonArray("userIds");
-		
-		if (userIds == null || groupId == null) return;
-		
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Group.addUsers(groupId, userIds, tx);
-			}
-		});
+	public void addGroupUsers(final AddGroupUsersDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		final List<String> userIds = dto.getUserIds();
+		if (groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId must be specified"));
+			return;
+		}
+		if (userIds == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userIds must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.addUsers(groupId, new JsonArray(userIds), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when adding users to group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
-	
-	public void removeGroupUsers(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		final JsonArray userIds = message.body().getJsonArray("userIds");
-		
-		if (userIds == null || groupId == null) return;
-		
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Group.removeUsers(groupId, userIds, tx);
-			}
-		});
+
+	public void removeGroupUsers(final RemoveGroupUsersDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		final List<String> userIds = dto.getUserIds();
+		if (groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId must be specified"));
+			return;
+		}
+		if (userIds == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userIds must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.removeUsers(groupId, new JsonArray(userIds), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing users from group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
 	public void updateEmailGroup(Message<JsonObject> message) {
@@ -1578,26 +1603,48 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
-	public void relativeStudent(Message<JsonObject> message) {
-		final String relativeId = getMandatoryString("relativeId", message);
-		final String studentId = getMandatoryString("studentId", message);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				User.relativeStudent(relativeId, studentId, tx);
-			}
-		});
+	public void relativeStudent(final RelativeStudentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String relativeId = dto.getRelativeId();
+		final String studentId = dto.getStudentId();
+		if (relativeId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "relativeId must be specified"));
+			return;
+		}
+		if (studentId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "studentId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.relativeStudent(relativeId, studentId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when linking relative to student", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void unlinkRelativeStudent(Message<JsonObject> message) {
-		final String relativeId = getMandatoryString("relativeId", message);
-		final String studentId = getMandatoryString("studentId", message);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				User.unlinkRelativeStudent(relativeId, studentId, tx);
-			}
-		});
+	public void unlinkRelativeStudent(final UnlinkRelativeStudentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String relativeId = dto.getRelativeId();
+		final String studentId = dto.getStudentId();
+		if (relativeId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "relativeId must be specified"));
+			return;
+		}
+		if (studentId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "studentId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.unlinkRelativeStudent(relativeId, studentId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when unlinking relative from student", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
 	public void setLoginAliasValidatorForAD(Boolean loginAliasValidatorForAD) {

@@ -1,7 +1,15 @@
 package org.entcore.feeder.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
+
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@DataObject
+@JsonGen
 public class GroupDataDTO {
 
     private String name;
@@ -24,60 +32,72 @@ public class GroupDataDTO {
     private String modifiedByName;
     private Long modifiedAt;
 
+    public GroupDataDTO() {}
+
+    public GroupDataDTO(JsonObject json) {
+        GroupDataDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        GroupDataDTOConverter.toJson(this, json);
+        return json;
+    }
+
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public GroupDataDTO setName(String name) { this.name = name; return this; }
 
     public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public GroupDataDTO setId(String id) { this.id = id; return this; }
 
     public String getGroupDisplayName() { return groupDisplayName; }
-    public void setGroupDisplayName(String groupDisplayName) { this.groupDisplayName = groupDisplayName; }
+    public GroupDataDTO setGroupDisplayName(String groupDisplayName) { this.groupDisplayName = groupDisplayName; return this; }
 
     public String getFilter() { return filter; }
-    public void setFilter(String filter) { this.filter = filter; }
+    public GroupDataDTO setFilter(String filter) { this.filter = filter; return this; }
 
     public String getExternalId() { return externalId; }
-    public void setExternalId(String externalId) { this.externalId = externalId; }
+    public GroupDataDTO setExternalId(String externalId) { this.externalId = externalId; return this; }
 
     public String getSubType() { return subType; }
-    public void setSubType(String subType) { this.subType = subType; }
+    public GroupDataDTO setSubType(String subType) { this.subType = subType; return this; }
 
     public Boolean getAutolinkTargetAllStructs() { return autolinkTargetAllStructs; }
-    public void setAutolinkTargetAllStructs(Boolean autolinkTargetAllStructs) { this.autolinkTargetAllStructs = autolinkTargetAllStructs; }
+    public GroupDataDTO setAutolinkTargetAllStructs(Boolean autolinkTargetAllStructs) { this.autolinkTargetAllStructs = autolinkTargetAllStructs; return this; }
 
     public List<String> getAutolinkTargetStructs() { return autolinkTargetStructs; }
-    public void setAutolinkTargetStructs(List<String> autolinkTargetStructs) { this.autolinkTargetStructs = autolinkTargetStructs; }
+    public GroupDataDTO setAutolinkTargetStructs(List<String> autolinkTargetStructs) { this.autolinkTargetStructs = autolinkTargetStructs; return this; }
 
     public List<String> getAutolinkUsersFromGroups() { return autolinkUsersFromGroups; }
-    public void setAutolinkUsersFromGroups(List<String> autolinkUsersFromGroups) { this.autolinkUsersFromGroups = autolinkUsersFromGroups; }
+    public GroupDataDTO setAutolinkUsersFromGroups(List<String> autolinkUsersFromGroups) { this.autolinkUsersFromGroups = autolinkUsersFromGroups; return this; }
 
     public List<String> getAutolinkUsersFromPositions() { return autolinkUsersFromPositions; }
-    public void setAutolinkUsersFromPositions(List<String> autolinkUsersFromPositions) { this.autolinkUsersFromPositions = autolinkUsersFromPositions; }
+    public GroupDataDTO setAutolinkUsersFromPositions(List<String> autolinkUsersFromPositions) { this.autolinkUsersFromPositions = autolinkUsersFromPositions; return this; }
 
     public List<String> getAutolinkUsersFromLevels() { return autolinkUsersFromLevels; }
-    public void setAutolinkUsersFromLevels(List<String> autolinkUsersFromLevels) { this.autolinkUsersFromLevels = autolinkUsersFromLevels; }
+    public GroupDataDTO setAutolinkUsersFromLevels(List<String> autolinkUsersFromLevels) { this.autolinkUsersFromLevels = autolinkUsersFromLevels; return this; }
 
     public Boolean getLockDelete() { return lockDelete; }
-    public void setLockDelete(Boolean lockDelete) { this.lockDelete = lockDelete; }
+    public GroupDataDTO setLockDelete(Boolean lockDelete) { this.lockDelete = lockDelete; return this; }
 
     public Boolean getLockCompose() { return lockCompose; }
-    public void setLockCompose(Boolean lockCompose) { this.lockCompose = lockCompose; }
+    public GroupDataDTO setLockCompose(Boolean lockCompose) { this.lockCompose = lockCompose; return this; }
 
     public String getCreatedById() { return createdById; }
-    public void setCreatedById(String createdById) { this.createdById = createdById; }
+    public GroupDataDTO setCreatedById(String createdById) { this.createdById = createdById; return this; }
 
     public String getCreatedByName() { return createdByName; }
-    public void setCreatedByName(String createdByName) { this.createdByName = createdByName; }
+    public GroupDataDTO setCreatedByName(String createdByName) { this.createdByName = createdByName; return this; }
 
     public Long getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
+    public GroupDataDTO setCreatedAt(Long createdAt) { this.createdAt = createdAt; return this; }
 
     public String getModifiedById() { return modifiedById; }
-    public void setModifiedById(String modifiedById) { this.modifiedById = modifiedById; }
+    public GroupDataDTO setModifiedById(String modifiedById) { this.modifiedById = modifiedById; return this; }
 
     public String getModifiedByName() { return modifiedByName; }
-    public void setModifiedByName(String modifiedByName) { this.modifiedByName = modifiedByName; }
+    public GroupDataDTO setModifiedByName(String modifiedByName) { this.modifiedByName = modifiedByName; return this; }
 
     public Long getModifiedAt() { return modifiedAt; }
-    public void setModifiedAt(Long modifiedAt) { this.modifiedAt = modifiedAt; }
+    public GroupDataDTO setModifiedAt(Long modifiedAt) { this.modifiedAt = modifiedAt; return this; }
 }

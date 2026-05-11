@@ -56,5 +56,9 @@
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-codegen</artifactId>
+        </dependency>
     </dependencies>
 </project>

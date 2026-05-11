@@ -44,11 +44,11 @@ handleAction (Feeder.java)
 | `manual-delete-function` | ✅ | ✅ | ✅ |
 | `manual-delete-function-group` | ✅ | ✅ | ✅ |
 | `manual-create-group` | ✅ | ✅ | ✅ |
-| `manual-delete-group` | ❌ | ❌ | ❌ |
-| `manual-add-group-users` | ❌ | ❌ | ❌ |
-| `manual-remove-group-users` | ❌ | ❌ | ❌ |
-| `manual-relative-student` | ❌ | ❌ | ❌ |
-| `manual-unlink-relative-student` | ❌ | ❌ | ❌ |
+| `manual-delete-group` | ✅ | ✅ | ✅ |
+| `manual-add-group-users` | ✅ | ✅ | ✅ |
+| `manual-remove-group-users` | ✅ | ✅ | ✅ |
+| `manual-relative-student` | ✅ | ✅ | ✅ |
+| `manual-unlink-relative-student` | ✅ | ✅ | ✅ |
 | `manual-add-user-function` | ❌ | ❌ | ❌ |
 | `manual-add-head-teacher` | ❌ | ❌ | ❌ |
 | `manual-update-head-teacher` | ❌ | ❌ | ❌ |
@@ -505,14 +505,63 @@ Validated by: `dictionary/schema/Tenant.json`
 
 ## Implementation Notes
 
+### DTO pattern: vertx-codegen @DataObject
+
+All DTOs use the vertx-codegen `@DataObject` + `@JsonGen` annotations, matching the pattern established in the communication module. The `CodeGenProcessor` annotation processor (already configured in the parent pom's `maven-compiler-plugin`) generates a `*Converter` class alongside each DTO during compilation. The generated converter handles all `fromJson`/`toJson` field mapping automatically.
+
+**Build setup required in feeder:**
+- Add `vertx-codegen` dependency to `feeder/pom.xml` (same as `communication/pom.xml`)
+- Add `package-info.java` in `org.entcore.feeder.dto` with `@ModuleGen(name = "feeder-dto", groupPackage = "org.entcore.feeder")`
+
+**Every DTO must follow this structure:**
+
+```java
+@DataObject
+@JsonGen
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class SomeDTO {
+    // fields ...
+
+    public SomeDTO() {}
+
+    public SomeDTO(JsonObject json) {
+        SomeDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        SomeDTOConverter.toJson(this, json);
+        return json;
+    }
+
+    // fluent setters (return `this`)
+}
+```
+
+For DTOs that extend another `@DataObject` class, add `@JsonGen(inheritConverter = true)` and call `super(json)` in the JsonObject constructor.
+
+**Existing plain-POJO DTOs** (CreateStructureDTO, UpdateStructureDTO, CreateClassDTO, UpdateClassDTO, RemoveClassDTO, CreateUserDTO, UserDataDTO, UpdateUserDTO, UpdateUserDataDTO, UpdateUserLoginDTO, AddUserDTO, AddUsersDTO, RemoveUserDTO, RemoveUsersDTO, DeleteUserDTO, RestoreUserDTO, CreateFunctionDTO, DeleteFunctionDTO, DeleteFunctionGroupDTO, CreateGroupDTO, GroupDataDTO) must be migrated to this pattern as part of the ongoing work.
+
 ### Mapper naming convention
+
 One mapper class per domain entity, placed in `org.entcore.feeder.dto`:
-- `StructureMapper` — structures (done)
-- `ClassMapper` — classes (done)
-- `UserMapper` — users (complex: profile-dependent)
-- `GroupMapper` — groups, functions, head teachers, direction, user-group relations
+- `StructureMapper` — structures (exists, plain POJO — migrate to @DataObject)
+- `ClassMapper` — classes (exists, plain POJO — migrate to @DataObject)
+- `UserMapper` — users (exists, plain POJO — migrate to @DataObject; complex: profile-dependent)
+- `GroupMapper` — groups, functions, head teachers, direction, user-group relations (exists, partial — migrate to @DataObject)
 - `SubjectMapper` — subjects
 - `TenantMapper` — tenants
+
+### Mapper responsibilities
+
+Mappers remain hand-written because the incoming JSON structure does not always match the DTO field layout:
+- nested `data` sub-objects must be extracted and flattened explicitly (e.g., `body.getJsonObject("data").getString("UAI")` → `dto.setUai(...)`)
+- JSON keys with non-standard casing (e.g., `"UAI"`) are renamed to camelCase DTO fields
+- some JSON arrays require stream-based conversion
+
+The `JSON → DTO` direction (e.g., `StructureMapper.toCreateStructureDTO(body)`) stays fully hand-written.
+
+The `DTO → JsonObject` direction is handled by the generated `dto.toJson()`. The `to*Props()` methods in mappers act as thin selectors on top of it: they call `dto.toJson()` and remove infrastructure-only fields (`transactionId`, `commit`, `autoSend`) that must not become Neo4j node properties.
 
 ### Handling `transactionId` / `commit` / `autoSend`
 These are infrastructure fields from the Neo4j transaction API. They have no equivalent in PostgreSQL and should be dropped from DTOs once the underlying persistence layer is replaced. During the transition period they are kept in the DTO.

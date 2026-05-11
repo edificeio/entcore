@@ -1,7 +1,15 @@
 package org.entcore.feeder.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
+
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@DataObject
+@JsonGen
 public class UserDataDTO {
 
     private String firstName;
@@ -17,39 +25,51 @@ public class UserDataDTO {
     private List<String> childrenIds;
     private List<String> userPositionIds;
 
+    public UserDataDTO() {}
+
+    public UserDataDTO(JsonObject json) {
+        UserDataDTOConverter.fromJson(json, this);
+    }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        UserDataDTOConverter.toJson(this, json);
+        return json;
+    }
+
     public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public UserDataDTO setFirstName(String firstName) { this.firstName = firstName; return this; }
 
     public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public UserDataDTO setLastName(String lastName) { this.lastName = lastName; return this; }
 
     public String getBirthDate() { return birthDate; }
-    public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
+    public UserDataDTO setBirthDate(String birthDate) { this.birthDate = birthDate; return this; }
 
     public String getExternalId() { return externalId; }
-    public void setExternalId(String externalId) { this.externalId = externalId; }
+    public UserDataDTO setExternalId(String externalId) { this.externalId = externalId; return this; }
 
     public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public UserDataDTO setEmail(String email) { this.email = email; return this; }
 
     public String getEmailAcademy() { return emailAcademy; }
-    public void setEmailAcademy(String emailAcademy) { this.emailAcademy = emailAcademy; }
+    public UserDataDTO setEmailAcademy(String emailAcademy) { this.emailAcademy = emailAcademy; return this; }
 
     public String getSource() { return source; }
-    public void setSource(String source) { this.source = source; }
+    public UserDataDTO setSource(String source) { this.source = source; return this; }
 
     public String getProfile() { return profile; }
-    public void setProfile(String profile) { this.profile = profile; }
+    public UserDataDTO setProfile(String profile) { this.profile = profile; return this; }
 
     public List<String> getProfiles() { return profiles; }
-    public void setProfiles(List<String> profiles) { this.profiles = profiles; }
+    public UserDataDTO setProfiles(List<String> profiles) { this.profiles = profiles; return this; }
 
     public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public UserDataDTO setType(String type) { this.type = type; return this; }
 
     public List<String> getChildrenIds() { return childrenIds; }
-    public void setChildrenIds(List<String> childrenIds) { this.childrenIds = childrenIds; }
+    public UserDataDTO setChildrenIds(List<String> childrenIds) { this.childrenIds = childrenIds; return this; }
 
     public List<String> getUserPositionIds() { return userPositionIds; }
-    public void setUserPositionIds(List<String> userPositionIds) { this.userPositionIds = userPositionIds; }
+    public UserDataDTO setUserPositionIds(List<String> userPositionIds) { this.userPositionIds = userPositionIds; return this; }
 }
