@@ -3,6 +3,7 @@ import {
   LastInfosContainer,
   MessageFlashListContainer,
 } from '@edifice.io/react/homepage';
+import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -22,6 +23,7 @@ export const Root = () => {
         <LastInfosContainer />
       </PageLayout.SidebarLeft>
       <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
+        <BetaSwitchContainer />
         <MessageFlashListContainer />
       </PageLayout.Content>
     </PageLayout>
