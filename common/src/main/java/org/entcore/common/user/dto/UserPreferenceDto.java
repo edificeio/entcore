@@ -13,6 +13,8 @@ public class UserPreferenceDto {
     private LanguagePreference language;
     private ApplicationPreference apps;
     private String lastDomain;
+    private TimezonePreference timezone;
+    private QuietHoursPreference quietHours;
 
     @JsonIgnore
     private JsonObject legacyPreferences;
@@ -86,12 +88,30 @@ public class UserPreferenceDto {
         return language.getLanguages().get(I18n.DEFAULT_DOMAIN);
     }
 
+    public TimezonePreference getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(TimezonePreference timezone) {
+        this.timezone = timezone;
+    }
+
+    public QuietHoursPreference getQuietHours() {
+        return quietHours;
+    }
+
+    public void setQuietHours(QuietHoursPreference quietHours) {
+        this.quietHours = quietHours;
+    }
+
     public Preference getPreference(Application appName) {
         switch (appName) {
             case HOME_PAGE: return homePage;
             case THEME: return theme;
             case LANGUAGE: return language;
             case APPLICATION: return apps;
+            case TIMEZONE: return timezone;
+            case QUIET_HOURS: return quietHours;
         }
         return new Preference() {
             @Override
@@ -112,7 +132,9 @@ public class UserPreferenceDto {
         HOME_PAGE("homePage"),
         THEME("theme"),
         LANGUAGE("language"),
-        APPLICATION("apps");
+        APPLICATION("apps"),
+        TIMEZONE("timezone"),
+        QUIET_HOURS("quietHours");
 
         private String mappingName;
 
