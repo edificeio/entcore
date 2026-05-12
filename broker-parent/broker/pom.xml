@@ -13,9 +13,6 @@
 
     <properties>
         <skipBuildClients>true</skipBuildClients>
-        <!-- minimizeJar strips classes unreachable via static analysis; broker uses MongoDb
-             and other entcore-common classes via reflection/inheritance from BaseServer -->
-        <shade.minimizeJar>false</shade.minimizeJar>
     </properties>
 
     <dependencies>
@@ -109,6 +106,31 @@
                             <destinationFile>${project.build.directory}/classes/META-INF/broker-proxy.nats.json</destinationFile>
                             <overWrite>true</overWrite>
                             <failIfSourceDoesntExist>true</failIfSourceDoesntExist>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>shade-jar</id>
+                        <configuration>
+                            <filters>
+                                <!--
+                                  mongodb-helper est accédé via réflexion depuis
+                                  BaseServer.initFilters() → AppOAuthResourceProvider →
+                                  MongoDbEventStoreFactory. Ce chemin échappe à l'analyse
+                                  statique de minimizeJar=true, donc on force l'inclusion.
+                                -->
+                                <filter>
+                                    <artifact>fr.wseduc:mongodb-helper</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
