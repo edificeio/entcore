@@ -1,5 +1,5 @@
 import { Button, Flex } from '@edifice.io/react';
-import React from 'react';
+import { IconExternalLink } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { WidgetCard } from '../WidgetCard';
 import './CreateDocumentWidget.css';
@@ -25,26 +25,28 @@ export function CreateDocumentWidget() {
           variant="ghost"
           size="sm"
           onClick={() => window.open('/welcome', '_self')}
-          className="voir-tout"
+          className="create-document-widget-link"
+          rightIcon={<IconExternalLink />}
         >
-          {t('homepage.widget.see.all', 'Voir tout')} →
+          {t('homepage.widget.see.all', 'Voir tout')}
         </Button>
       }
-      style={{ '--widget-card-bg': 'var(--edifice-grey-100)' } as React.CSSProperties}
     >
-      <Flex gap="8" align="center">
-        {CREATE_ACTIONS.map(({ labelKey, icon, colorVar, href }) => (
-          <a
-            key={labelKey}
-            href={href}
-            title={labelKey}
-            className="create-document-btn"
-            style={{ background: colorVar }}
-          >
-            {icon}
-          </a>
-        ))}
-      </Flex>
+      <div className="create-document-apps-card">
+        <Flex gap="8" align="center">
+          {CREATE_ACTIONS.map(({ labelKey, icon, colorVar, href }) => (
+            <a
+              key={labelKey}
+              href={href}
+              title={labelKey}
+              className="create-document-btn"
+              style={{ background: colorVar }}
+            >
+              {icon}
+            </a>
+          ))}
+        </Flex>
+      </div>
     </WidgetCard>
   );
 }

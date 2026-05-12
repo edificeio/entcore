@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--edifice-spacer-12);
-  border-radius: var(--edifice-border-radius-lg);
-  padding: var(--edifice-spacer-12);
+  border-radius: var(--edifice-border-radius-xl);
+  padding: var(--edifice-spacer-12) var(--edifice-spacer-16) var(--edifice-spacer-16);
   background-color: var(--list-widget-bg, var(--edifice-grey-100));
 }
 
@@ -57,7 +57,7 @@
   align-items: center;
   gap: var(--edifice-spacer-8);
   background: var(--edifice-white);
-  border: 2px solid var(--edifice-grey-200);
+  border: 1px solid var(--edifice-grey-200);
   border-radius: var(--edifice-border-radius-lg);
   padding: var(--edifice-spacer-8);
   text-decoration: none;

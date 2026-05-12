@@ -1,5 +1,5 @@
-import { AppIcon, Button, Flex, useBookmark } from '@edifice.io/react';
-import React from 'react';
+import { AppIcon, Button, useBookmark } from '@edifice.io/react';
+import { IconExternalLink, IconStar } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { WidgetCard } from '~/components/WidgetCard';
 import './FavoritesWidget.css';
@@ -18,31 +18,40 @@ export function FavoritesWidget() {
           variant="ghost"
           size="sm"
           onClick={() => window.open('/welcome', '_self')}
-          className="voir-tout"
+          className="favorites-widget-link"
+          rightIcon={<IconExternalLink />}
         >
-          {t('homepage.widget.see.all', 'Voir tout')} →
+          {t('homepage.widget.favorites.all', 'Mes applis')}
         </Button>
       }
-      style={{ '--widget-card-bg': 'var(--edifice-grey-100)' } as React.CSSProperties}
     >
-      <Flex gap="16" wrap="wrap">
-        {bookmarkedApps.slice(0, 6).map((app) => (
-          <a
-            key={app.name}
-            href={app.address}
-            title={app.displayName}
-            target={app.isExternal ? '_blank' : undefined}
-            rel={app.isExternal ? 'noopener noreferrer' : undefined}
-          >
-            <AppIcon
-              app={app}
-              size="48"
-              variant="circle"
-              iconFit="ratio"
-            />
-          </a>
-        ))}
-      </Flex>
+      <div className="favorites-widget-apps-card">
+        {bookmarkedApps.length === 0 ? (
+          <div className="favorites-widget-empty">
+            <IconStar width={32} height={32} />
+            <p>
+              {t(
+                'homepage.widget.favorites.empty',
+                'Aucune application en favoris',
+              )}
+            </p>
+          </div>
+        ) : (
+          <div className="favorites-widget-apps-grid">
+            {bookmarkedApps.slice(0, 6).map((app) => (
+              <a
+                key={app.name}
+                href={app.address}
+                title={app.displayName}
+                target={app.isExternal ? '_blank' : undefined}
+                rel={app.isExternal ? 'noopener noreferrer' : undefined}
+              >
+                <AppIcon app={app} size="40" variant="circle" />
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     </WidgetCard>
   );
 }

@@ -25,7 +25,6 @@ export function WelcomeWidget() {
 
   return (
     <WidgetCard className="welcome-widget">
-      {/* Header — avatar + prénom + rôle + actions */}
       <Grid className="welcome-widget-header mb-16 align-items-start">
         <Grid.Col sm="3" md="3" lg="8">
           <Grid className="align-items-center">
