@@ -13,6 +13,9 @@
 
     <properties>
         <skipBuildClients>true</skipBuildClients>
+        <!-- minimizeJar strips classes unreachable via static analysis; broker uses MongoDb
+             and other entcore-common classes via reflection/inheritance from BaseServer -->
+        <shade.minimizeJar>false</shade.minimizeJar>
     </properties>
 
     <dependencies>
