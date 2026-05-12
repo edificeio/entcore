@@ -190,13 +190,25 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
             requestConsumer = null;
         }
         
-        // Close all NATS clients
+        // Close all NATS clients.
+        // nats-vertx's NatsClientImpl.drainSubscription() calls nextMessage() on each
+        // subscription during close. If the NATS connection was already torn down (e.g.
+        // because the Vert.x context started shutting down before the drain completed),
+        // nextMessage() throws IllegalStateException("This subscription is inactive").
+        // We recover from this — the subscription is gone either way, the shutdown can proceed.
         List<Future<Void>> closeFutures = new ArrayList<>();
         for (NatsClient client : getAllNatsClients()) {
             closeFutures.add(client.close()
-                .onFailure(e -> log.error("Error while closing NATS client", e)));
+                .recover(e -> {
+                    if (e instanceof IllegalStateException) {
+                        log.debug("NATS subscription inactive during drain (normal during restart): {}", e.getMessage());
+                    } else {
+                        log.error("Error while closing NATS client", e);
+                    }
+                    return Future.succeededFuture();
+                }));
         }
-        
+
         return Future.all(closeFutures).mapEmpty();
     }
     

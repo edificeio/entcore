@@ -41,13 +41,26 @@ public class Broker extends BaseServer {
   @Override
   public void stop(Promise<Void> stopPromise) throws Exception {
     log.info("Stopping Broker...");
-    super.stop(stopPromise);
-    brokerClient.close().onSuccess(e -> {
-      log.info("Broker client stopped successfully.");
-      stopPromise.tryComplete();
-    }).onFailure(err -> {
-      log.error("Failed to stop broker client.", err);
-      stopPromise.tryFail(err);
-    });
+    if (brokerClient == null) {
+      super.stop(stopPromise);
+      return;
+    }
+    // Close the broker client FIRST before calling super.stop().
+    // Calling super.stop(stopPromise) first would complete stopPromise and start tearing
+    // down the Vert.x context while the NATS drain is still running in executeBlocking,
+    // which makes subscriptions inactive and causes IllegalStateException in drainSubscription.
+    brokerClient.close()
+      .onComplete(ar -> {
+        if (ar.failed()) {
+          log.warn("Broker client close had issues (normal during restart): " + ar.cause().getMessage());
+        } else {
+          log.info("Broker client stopped successfully.");
+        }
+        try {
+          super.stop(stopPromise);
+        } catch (Exception e) {
+          stopPromise.tryFail(e);
+        }
+      });
   }
 }
