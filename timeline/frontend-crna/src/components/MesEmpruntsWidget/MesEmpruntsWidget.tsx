@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ListWidget, type ListWidgetItem } from '../ListWidget';
 import './MesEmpruntsWidget.css';
@@ -19,7 +20,7 @@ export function MesEmpruntsWidget({
         title={t('homepage.widget.emprunts.title', 'Mes emprunts')}
         items={items}
         onSeeMore={onSeeMore}
-        backgroundColor="#ffebeb"
+        style={{ '--list-widget-bg': 'var(--edifice-danger-200)' } as React.CSSProperties}
       />
     </div>
   );

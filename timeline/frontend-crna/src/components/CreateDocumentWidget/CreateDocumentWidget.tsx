@@ -1,14 +1,15 @@
 import { Button, Flex } from '@edifice.io/react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { WidgetCard } from '../WidgetCard';
 import './CreateDocumentWidget.css';
 
 const CREATE_ACTIONS = [
-  { labelKey: 'Writer', icon: 'W', color: '#2B6CBF', href: '/collaborative' },
-  { labelKey: 'Présentation', icon: 'P', color: '#E07A5F', href: '/mindmap' },
-  { labelKey: 'Tableur', icon: 'X', color: '#3D9A6D', href: '/formulaire' },
-  { labelKey: 'Formulaire', icon: '⊞', color: '#7B61FF', href: '/formulaire' },
-  { labelKey: 'Carte mentale', icon: '⊕', color: '#F2A541', href: '/mindmap' },
+  { labelKey: 'Writer', icon: 'W', colorVar: '#2B6CBF', href: '/collaborative' },
+  { labelKey: 'Présentation', icon: 'P', colorVar: '#E07A5F', href: '/mindmap' },
+  { labelKey: 'Tableur', icon: 'X', colorVar: '#3D9A6D', href: '/formulaire' },
+  { labelKey: 'Formulaire', icon: '⊞', colorVar: '#7B61FF', href: '/formulaire' },
+  { labelKey: 'Carte mentale', icon: '⊕', colorVar: '#F2A541', href: '/mindmap' },
 ] as const;
 
 export function CreateDocumentWidget() {
@@ -29,16 +30,16 @@ export function CreateDocumentWidget() {
           {t('homepage.widget.see.all', 'Voir tout')} →
         </Button>
       }
-      backgroundColor="#f7f7f7"
+      style={{ '--widget-card-bg': 'var(--edifice-grey-100)' } as React.CSSProperties}
     >
       <Flex gap="8" align="center">
-        {CREATE_ACTIONS.map(({ labelKey, icon, color, href }) => (
+        {CREATE_ACTIONS.map(({ labelKey, icon, colorVar, href }) => (
           <a
             key={labelKey}
             href={href}
             title={labelKey}
             className="create-document-btn"
-            style={{ background: color }}
+            style={{ background: colorVar }}
           >
             {icon}
           </a>

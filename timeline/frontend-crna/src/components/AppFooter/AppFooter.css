@@ -1,38 +1,30 @@
 .app-footer {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: #ed0039;
-  border-radius: 24px;
-  padding: 24px 32px;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  background-color: var(--edifice-clients-crna-500);
+  border-radius: var(--edifice-border-radius-2xl);
+  padding: var(--edifice-spacer-24) var(--edifice-spacer-32);
+  margin-top: var(--edifice-spacer-16);
+  margin-bottom: var(--edifice-spacer-16);
 }
 
-.app-footer-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 282px;
-}
+.app-footer-brand {}
 
 .app-footer-brand-name {
-  margin: 0;
-  font-family: var(--font-family-title, 'Urbanist', sans-serif);
-  font-weight: 700;
-  font-size: 22px;
-  line-height: 28px;
-  color: #ffffff;
+  margin: 0 !important;
+  font-family: var(--edifice-font-family-urbanist) !important;
+  font-weight: var(--edifice-font-weight-bold) !important;
+  font-size: 2.2rem !important;
+  line-height: var(--edifice-font-lineheight-xs) !important;
+  color: var(--edifice-white) !important;
   white-space: nowrap;
 }
 
 .app-footer-brand-description {
   margin: 0;
-  font-family: 'Arimo', sans-serif;
+  font-family: var(--edifice-font-family-arimo);
   font-weight: 400;
-  font-size: 16px;
-  line-height: 22px;
-  color: #ffffff;
+  font-size: var(--edifice-font-size-default);
+  line-height: var(--edifice-font-lineheight-xs);
+  color: var(--edifice-white);
 }
 
 .app-footer-brand-logo {
@@ -42,38 +34,29 @@
 }
 
 .app-footer-section {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  color: #ffffff;
+  color: var(--edifice-white);
 }
 
 .app-footer-section-title {
-  margin: 0;
-  font-family: 'Urbanist', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 26px;
-  color: #ffffff;
+  margin: 0 !important;
+  font-family: var(--edifice-font-family-urbanist) !important;
+  font-weight: var(--edifice-font-weight-bold) !important;
+  font-size: var(--edifice-font-size-s) !important;
+  line-height: var(--edifice-font-lineheight-s) !important;
+  color: var(--edifice-white) !important;
   white-space: nowrap;
 }
 
-.app-footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .app-footer-link {
-  font-family: 'Arimo', sans-serif;
+  font-family: var(--edifice-font-family-arimo);
   font-weight: 400;
-  font-size: 16px;
-  line-height: 22px;
-  color: #ffffff;
+  font-size: var(--edifice-font-size-default);
+  line-height: var(--edifice-font-lineheight-xs);
+  color: var(--edifice-white);
   text-decoration: none;
 }
 
 .app-footer-link:hover {
   text-decoration: underline;
-  color: #ffffff;
+  color: var(--edifice-white);
 }

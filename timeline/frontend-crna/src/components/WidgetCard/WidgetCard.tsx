@@ -1,31 +1,29 @@
 import { Heading } from '@edifice.io/react';
 import clsx from 'clsx';
-import { type ComponentPropsWithoutRef, type ReactNode } from 'react';
+import React, { type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import './WidgetCard.css';
 
 export interface WidgetCardProps extends ComponentPropsWithoutRef<'div'> {
-  backgroundColor?: string;
   title?: string;
   action?: ReactNode;
   footerAction?: ReactNode;
-  footerBackgroundColor?: string;
+  footerStyle?: React.CSSProperties;
 }
 
 export function WidgetCard({
   children,
   className,
-  backgroundColor = '#ffffff',
   style,
   title,
   action,
   footerAction,
-  footerBackgroundColor,
+  footerStyle,
   ...props
 }: WidgetCardProps) {
   return (
     <div
       className={clsx('widget-card', className)}
-      style={{ backgroundColor, ...style }}
+      style={style}
       {...props}
     >
       {(title || action) && (
@@ -40,10 +38,7 @@ export function WidgetCard({
       )}
       <div className="widget-card-body">{children}</div>
       {footerAction && (
-        <div
-          className="widget-card-footer"
-          style={footerBackgroundColor ? { backgroundColor: footerBackgroundColor } : undefined}
-        >
+        <div className="widget-card-footer" style={footerStyle}>
           {footerAction}
         </div>
       )}

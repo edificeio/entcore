@@ -1,13 +1,8 @@
-import { Avatar, Button, Grid, useUser } from '@edifice.io/react';
-import {
-  IconSettings,
-  IconUserSearch,
-  IconUsers,
-} from '@edifice.io/react/icons';
+import { Avatar, Flex, Grid, Heading, IconButton, useUser } from '@edifice.io/react';
+import { IconSettings, IconUserSearch, IconUsers } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { CreateDocumentWidget } from '~/components/CreateDocumentWidget';
 import { FavoritesWidget } from '~/components/FavoritesWidget';
-
 import { MOCK_MEDIACENTRE } from '~/mocks/widgetsMockData';
 import { MediacentreWidget } from '../MediacentreWidget';
 import { WidgetCard } from '../WidgetCard';
@@ -29,18 +24,18 @@ export function WelcomeWidget() {
   const profile = user?.type ?? '';
 
   return (
-    <WidgetCard style={{ marginBottom: '16px', marginTop: '16px' }}>
+    <WidgetCard className="welcome-widget">
       {/* Header — avatar + prénom + rôle + actions */}
       <Grid className="welcome-widget-header mb-16 align-items-start">
-      <Grid.Col sm="3" md="3" lg="8">
+        <Grid.Col sm="3" md="3" lg="8">
           <Grid className="align-items-center">
             <Grid.Col sm="1" md="1" lg="1">
               <Avatar alt={firstName} src={avatar} size="md" variant="circle" />
             </Grid.Col>
             <Grid.Col sm="3" md="3" lg="11">
-              <span className="fw-bold fs-5 d-block">
+              <Heading level="h2" headingStyle="h4" className="mb-0 fw-bold">
                 {t('homepage.widget.welcome.greeting', 'Bonjour')} {firstName}
-              </span>
+              </Heading>
               <span className="text-muted small">
                 {PROFILE_LABELS[profile] ?? profile}
               </span>
@@ -53,7 +48,7 @@ export function WelcomeWidget() {
           lg="4"
           className="d-flex justify-content-end align-items-center"
         >
-          <div className="welcome-header-actions">
+          <Flex align="center" gap="12">
             <a href="/classes" className="welcome-header-link">
               <IconUsers width={19} height={19} />
               <span>{t('homepage.widget.welcome.classes', 'Mes classes')}</span>
@@ -62,14 +57,13 @@ export function WelcomeWidget() {
               <IconUserSearch width={19} height={19} />
               <span>{t('homepage.widget.welcome.directory', 'Annuaire')}</span>
             </a>
-            <button
-              type="button"
+            <IconButton
+              icon={<IconSettings width={20} height={20} />}
+              variant="outline"
               className="welcome-header-settings"
               aria-label={t('homepage.widget.welcome.settings', 'Paramètres')}
-            >
-              <IconSettings width={20} height={20} />
-            </button>
-          </div>
+            />
+          </Flex>
         </Grid.Col>
       </Grid>
 

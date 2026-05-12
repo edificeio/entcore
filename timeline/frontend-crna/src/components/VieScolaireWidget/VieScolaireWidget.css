@@ -1,146 +1,96 @@
 .vie-scolaire-widget {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-radius: 16px;
-  padding: 12px 16px 16px;
-  background-color: #f7f7f7;
+  gap: var(--edifice-spacer-8);
+  border-radius: var(--edifice-border-radius-xl);
+  padding: var(--edifice-spacer-12) var(--edifice-spacer-16) var(--edifice-spacer-16);
+  background-color: var(--edifice-grey-100);
 }
 
 .vie-scolaire-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 8px;
+  padding: 0 var(--edifice-spacer-8);
 }
 
 .vie-scolaire-title {
-  margin: 0;
-  font-family: 'Urbanist', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 26px;
-  color: #383838;
+  margin: 0 !important;
+  font-family: var(--edifice-font-family-urbanist) !important;
+  font-weight: var(--edifice-font-weight-bold) !important;
+  font-size: var(--edifice-font-size-s) !important;
+  line-height: var(--edifice-font-lineheight-s) !important;
+  color: var(--edifice-grey-900) !important;
 }
 
 .vie-scolaire-see-more {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px 0;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 22px;
-  color: #b6002c;
+  padding: 0 !important;
+  font-family: var(--edifice-legacy-font-family-roboto) !important;
+  font-weight: var(--edifice-font-weight-bold) !important;
+  font-size: var(--edifice-font-size-small) !important;
+  color: var(--edifice-clients-crna-700) !important;
 }
 
 .vie-scolaire-see-more:hover {
   opacity: 0.8;
 }
 
-/* Inner card */
 .vie-scolaire-content {
   display: flex;
   flex-direction: column;
-  background-color: #f2f2f2;
-  border-radius: 16px;
-  padding: 4px;
-  gap: 0;
+  background-color: var(--edifice-grey-200);
+  border-radius: var(--edifice-border-radius-xl);
+  padding: var(--edifice-spacer-4);
 }
 
-/* Kids tabs */
-.vie-scolaire-tabs {
-  display: flex;
-  align-items: center;
+/* Override Bootstrap nav-tabs */
+.vie-scolaire-content .nav-tabs {
+  background-color: transparent !important;
+  border-bottom: none !important;
+  gap: 0 !important;
+  flex-wrap: nowrap;
 }
 
-.vie-scolaire-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-family: 'Arimo', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 20px;
-  color: #4a4a4a;
-  border-radius: 16px 16px 0 0;
+.vie-scolaire-content .nav-tabs .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--edifice-spacer-8) !important;
+  padding: var(--edifice-spacer-8) var(--edifice-spacer-12) !important;
+  font-family: var(--edifice-font-family-arimo) !important;
+  font-weight: var(--edifice-font-weight-bold) !important;
+  font-size: var(--edifice-font-size-small) !important;
+  line-height: var(--edifice-font-lineheight-2xs) !important;
+  color: var(--edifice-grey-900) !important;
+  border: none !important;
+  border-radius: var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) 0 0 !important;
+  background-color: transparent !important;
 }
 
-.vie-scolaire-tab.active {
-  background-color: #ffffff;
+.vie-scolaire-content .nav-tabs .nav-link.selected {
+  background-color: var(--edifice-white) !important;
+  color: var(--edifice-grey-900) !important;
 }
 
-.vie-scolaire-tab-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
+.vie-scolaire-content .nav-tabs .nav-slide {
+  display: none !important;
 }
 
-.vie-scolaire-tab-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.vie-scolaire-content .tab-content {
+  background-color: var(--edifice-white) !important;
+  border-radius: 0 var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) !important;
 }
 
-.vie-scolaire-tab-avatar-placeholder {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #d0d0d0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  flex-shrink: 0;
+.vie-scolaire-content .tab-pane {
+  padding: 0 !important;
 }
 
-.vie-scolaire-more-btn {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 24px;
-  color: #4a4a4a;
-}
 
-.vie-scolaire-more-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* Entries list */
 .vie-scolaire-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
   list-style: none;
   margin: 0;
-  padding: 4px 0;
-  background: #ffffff;
-  border-radius: 0 16px 16px 16px;
+  padding: var(--edifice-spacer-4) 0;
 }
 
 .vie-scolaire-entry {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-radius: 16px;
+  padding: var(--edifice-spacer-4) var(--edifice-spacer-8);
+  border-radius: var(--edifice-border-radius-xl);
 }
 
 .vie-scolaire-entry-icon {
@@ -149,31 +99,39 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 12px;
-  background-color: #fefaec;
-  border: 1px solid #ffe5a3;
+  border-radius: var(--edifice-border-radius-lg);
+  background-color: var(--edifice-yellow-100);
+  border: 1px solid var(--edifice-yellow-300);
+  color: var(--edifice-grey-900);
   flex-shrink: 0;
 }
 
 .vie-scolaire-entry-text {
-  display: flex;
-  flex-direction: column;
   flex: 1;
   min-width: 0;
 }
 
 .vie-scolaire-entry-label {
-  font-family: 'Arimo', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 20px;
-  color: #4a4a4a;
+  font-family: var(--edifice-font-family-arimo);
+  font-weight: var(--edifice-font-weight-bold);
+  font-size: var(--edifice-font-size-small);
+  line-height: var(--edifice-font-lineheight-2xs);
+  color: var(--edifice-grey-900);
+}
+
+.vie-scolaire-empty {
+  margin: 0;
+  padding: var(--edifice-spacer-16);
+  font-family: var(--edifice-legacy-font-family-roboto);
+  font-size: var(--edifice-font-size-small);
+  color: var(--edifice-grey-700);
+  text-align: center;
 }
 
 .vie-scolaire-entry-sublabel {
-  font-family: 'Roboto', sans-serif;
+  font-family: var(--edifice-legacy-font-family-roboto);
   font-weight: 400;
-  font-size: 14px;
-  line-height: 22px;
-  color: #909090;
+  font-size: var(--edifice-font-size-small);
+  line-height: var(--edifice-font-lineheight-xs);
+  color: var(--edifice-grey-700);
 }

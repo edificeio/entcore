@@ -1,14 +1,7 @@
-/*
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- This is a starter file and can be deleted.
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
-
 .voir-tout {
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 22px;
-  color: #3030d1 !important;
+  font-family: var(--edifice-legacy-font-family-roboto);
+  font-size: var(--edifice-font-size-small);
+  font-weight: var(--edifice-font-weight-medium);
+  line-height: var(--edifice-font-lineheight-xs);
+  color: var(--edifice-blue-700) !important;
 }

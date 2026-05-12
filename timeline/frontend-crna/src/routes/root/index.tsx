@@ -53,7 +53,6 @@ export const Root = () => {
   if (!init) return <LoadingScreen position={false} />;
 
   return (
-    <div data-product="edifice2d">
       <PageLayout
         variant="fullpage"
         style={{
@@ -66,7 +65,7 @@ export const Root = () => {
       >
         <BetaSwitch />
         <PageLayout.Header />
-        <PageLayout.SidebarLeft style={{ backgroundColor: '#FFFFFF' }}>
+        <PageLayout.SidebarLeft style={{ backgroundColor: 'var(--edifice-white)' }}>
           <SchoolSpace
             schools={MOCK_SCHOOLS}
             selectedSchool={selectedSchool}
@@ -132,7 +131,6 @@ export const Root = () => {
           <AppFooter />
         </PageLayout.Content>
       </PageLayout>
-    </div>
   );
 };
 

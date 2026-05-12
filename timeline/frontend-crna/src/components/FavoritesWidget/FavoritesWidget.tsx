@@ -1,4 +1,5 @@
 import { AppIcon, Button, Flex, useBookmark } from '@edifice.io/react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { WidgetCard } from '~/components/WidgetCard';
 import './FavoritesWidget.css';
@@ -22,7 +23,7 @@ export function FavoritesWidget() {
           {t('homepage.widget.see.all', 'Voir tout')} →
         </Button>
       }
-      backgroundColor="#f7f7f7"
+      style={{ '--widget-card-bg': 'var(--edifice-grey-100)' } as React.CSSProperties}
     >
       <Flex gap="16" wrap="wrap">
         {bookmarkedApps.slice(0, 6).map((app) => (

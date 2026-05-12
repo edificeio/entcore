@@ -1,9 +1,11 @@
+import { Grid, Heading } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import './AppFooter.css';
 
 export interface FooterLink {
   label: string;
   href: string;
+  isExternal?: boolean;
 }
 
 export interface AppFooterProps {
@@ -36,11 +38,11 @@ export function AppFooter({
   const { t } = useTranslation();
 
   return (
-    <footer className="app-footer">
-      <div className="app-footer-brand">
-        <p className="app-footer-brand-name">
+    <footer className="grid app-footer">
+      <Grid.Col sm="4" lg="5" className="d-flex flex-column gap-8 app-footer-brand">
+        <Heading level="h2" headingStyle="h4" className="app-footer-brand-name">
           {appName ?? t('homepage.footer.app-name', 'Lycée Connecté')}
-        </p>
+        </Heading>
         <p className="app-footer-brand-description">
           {appDescription ??
             t(
@@ -55,33 +57,45 @@ export function AppFooter({
             className="app-footer-brand-logo"
           />
         )}
-      </div>
+      </Grid.Col>
 
-      <div className="app-footer-section">
-        <p className="app-footer-section-title">
+      <Grid.Col sm="2" lg="3" className="d-flex flex-column gap-4 app-footer-section">
+        <Heading level="h3" headingStyle="h5" className="app-footer-section-title">
           {t('homepage.footer.useful-links', 'Liens utiles')}
-        </p>
-        <nav className="app-footer-links">
+        </Heading>
+        <nav className="d-flex flex-column gap-4 app-footer-links">
           {usefulLinks.map((link) => (
-            <a key={link.href} href={link.href} className="app-footer-link">
+            <a
+              key={link.href}
+              href={link.href}
+              className="app-footer-link"
+              target={link.isExternal ? '_blank' : undefined}
+              rel={link.isExternal ? 'noopener noreferrer' : undefined}
+            >
               {link.label}
             </a>
           ))}
         </nav>
-      </div>
+      </Grid.Col>
 
-      <div className="app-footer-section">
-        <p className="app-footer-section-title">
+      <Grid.Col sm="2" lg="4" className="d-flex flex-column gap-4 app-footer-section">
+        <Heading level="h3" headingStyle="h5" className="app-footer-section-title">
           {t('homepage.footer.legal', 'Informations légales')}
-        </p>
-        <nav className="app-footer-links">
+        </Heading>
+        <nav className="d-flex flex-column gap-4 app-footer-links">
           {legalLinks.map((link) => (
-            <a key={link.href} href={link.href} className="app-footer-link">
+            <a
+              key={link.href}
+              href={link.href}
+              className="app-footer-link"
+              target={link.isExternal ? '_blank' : undefined}
+              rel={link.isExternal ? 'noopener noreferrer' : undefined}
+            >
               {link.label}
             </a>
           ))}
         </nav>
-      </div>
+      </Grid.Col>
     </footer>
   );
 }
