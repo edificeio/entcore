@@ -3,12 +3,8 @@ import { render, screen } from '~/mocks/setup';
 import { App } from './App';
 
 describe('App', () => {
-  it('should render', () => {
+  it('should render WayfPage', () => {
     render(<App />);
-
-    const button = screen.getByRole('button', { name: /button/i });
-
-    expect(button).toBeInTheDocument();
-    expect(button).toHaveTextContent('Button');
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 });

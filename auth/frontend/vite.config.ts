@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadEnv, ProxyOptions } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -85,6 +86,16 @@ export default ({ mode }: { mode: string }) => {
     },
 
     plugins: [
+      {
+        name: 'serve-local-auth-i18n',
+        configureServer(server) {
+          server.middlewares.use('/auth/i18n', (_req, res) => {
+            const filePath = resolve(__dirname, '../src/main/resources/i18n/fr.json');
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(readFileSync(filePath, 'utf-8'));
+          });
+        },
+      },
       {
         name: 'rewrite-wayfv2',
         configureServer(server) {
