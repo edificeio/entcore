@@ -1,0 +1,16 @@
+.wayf-level2-stub {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.wayf-btn-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+}

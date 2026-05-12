@@ -1,0 +1,51 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features",
+    },
+    "[scss]": {
+      "editor.defaultFormatter": "vscode.css-language-features",
+    },
+    "editor.accessibilitySupport": "off",
+    "editor.minimap.enabled": false,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "extensions.ignoreRecommendations": true,
+    "js/ts.updateImportsOnFileMove.enabled": "always",
+    "workbench.tree.indent": 15,
+    "importCost.timeout": 200000,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit",
+    },
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+    ],
+    "git.openRepositoryInParentFolders": "never",
+    "workbench.startupEditor": "none",
+    "scss.format.spaceAroundSelectorSeparator": true,
+    "scss.format.enable": false,
+    "eslint.format.enable": true,
+    "window.commandCenter": false,
+  },
+  "extensions": {
+    "recommendations": [
+      "formulahendry.auto-rename-tag",
+      "aaron-bond.better-comments",
+      "dsznajder.es7-react-js-snippets",
+      "wix.vscode-import-cost",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+    ],
+  },
+}

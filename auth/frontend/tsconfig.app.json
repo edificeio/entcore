@@ -20,10 +20,9 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"],
-      "@images/*": ["node_modules/@edifice.io/bootstrap/dist/images/*"]
+      "~/*": ["./src/*"],
+      "@images/*": ["./node_modules/@edifice.io/bootstrap/dist/images/*"]
     },
     "types": [
       "vite/client",

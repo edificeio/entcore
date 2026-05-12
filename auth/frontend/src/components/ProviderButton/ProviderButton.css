@@ -1,0 +1,94 @@
+/* Bouton provider — pill design */
+.wayf-provider-btn {
+  --btn-color: var(--primitives-grey-800);
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: stretch;
+  border: 2px solid var(--btn-color);
+  border-radius: var(--border-radius-pill);
+  background: var(--primitives-white);
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  transition: box-shadow 0.15s ease;
+  text-decoration: none;
+}
+
+.wayf-provider-btn:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.wayf-provider-btn:focus-visible {
+  outline: 3px solid var(--btn-color);
+  outline-offset: 2px;
+}
+
+/* Zone icône — fond teinté, coins arrondis gauche */
+.wayf-provider-btn__icon-wrap {
+  background-color: color-mix(
+    in srgb,
+    var(--btn-color) 15%,
+    var(--primitives-white)
+  );
+  color: var(--btn-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  flex-shrink: 0;
+  border-radius: 10px 0 0 10px;
+  min-width: 48px;
+}
+
+.wayf-provider-btn__icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Libellé — centré */
+.wayf-provider-btn__label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primitives-grey-900);
+  text-align: center;
+}
+
+/* Flèche */
+.wayf-provider-btn__arrow {
+  display: flex;
+  align-items: center;
+  padding-right: 1rem;
+  color: var(--btn-color);
+  flex-shrink: 0;
+}
+
+.wayf-provider-btn--student {
+  /* Styles spécifiques pour le bouton étudiant */
+  --btn-color: var(--primitives-orange-500);
+}
+
+.wayf-provider-btn--relative {
+  /* Styles spécifiques pour le bouton parent */
+  --btn-color: var(--primitives-blue-500);
+}
+
+.wayf-provider-btn--teacher {
+  /* Styles spécifiques pour le bouton enseignant */
+  --btn-color: var(--primitives-green-500);
+}
+
+.wayf-provider-btn--perseducnat {
+  /* Styles spécifiques pour le bouton personnel éducatif */
+  --btn-color: var(--primitives-pink-500);
+}
+.wayf-provider-btn--other {
+  /* Styles spécifiques pour le bouton autre */
+  --btn-color: var(--primitives-yellow-500);
+}
