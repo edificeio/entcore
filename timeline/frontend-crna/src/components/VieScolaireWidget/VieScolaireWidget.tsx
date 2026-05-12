@@ -1,4 +1,4 @@
-import { Avatar, Button, Grid, Heading, Tabs, TextSkeleton } from '@edifice.io/react';
+import { Avatar, Button, Tabs } from '@edifice.io/react';
 import type { TabsItemProps } from '@edifice.io/react';
 import {
   IconClockAlert,
@@ -9,6 +9,9 @@ import {
   IconUser,
 } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
+import type { WidgetBaseProps } from '../types';
+import { WidgetHeader } from '../WidgetHeader';
+import { WidgetSkeleton } from '../WidgetSkeleton';
 import './VieScolaireWidget.css';
 
 export type VieScolaireEntryType =
@@ -32,10 +35,8 @@ export interface VieScolaireChild {
   entries: VieScolaireEntry[];
 }
 
-export interface VieScolaireWidgetProps {
+export interface VieScolaireWidgetProps extends WidgetBaseProps {
   kids?: VieScolaireChild[];
-  isLoading?: boolean;
-  onSeeMore?: () => void;
 }
 
 const ENTRY_ICONS: Record<VieScolaireEntryType, JSX.Element> = {
@@ -85,33 +86,26 @@ export function VieScolaireWidget({
 
   return (
     <div className="vie-scolaire-widget">
-      <Grid className="align-items-center vie-scolaire-header">
-        <Grid.Col sm="2" lg="6">
-          <Heading level="h3" headingStyle="h5" className="vie-scolaire-title">
-            {t('homepage.widget.vie-scolaire.title', 'Vie scolaire')}
-          </Heading>
-        </Grid.Col>
-        <Grid.Col sm="2" lg="6" className="d-flex justify-content-end">
+      <WidgetHeader
+        className="vie-scolaire-header"
+        title={t('homepage.widget.vie-scolaire.title', 'Vie scolaire')}
+        action={
           <Button
             variant="ghost"
             size="sm"
-            className="vie-scolaire-see-more"
+            className="widget-action-link"
             rightIcon={<IconExternalLink />}
             onClick={onSeeMore}
           >
             {t('homepage.widget.see.more', 'Voir plus')}
           </Button>
-        </Grid.Col>
-      </Grid>
+        }
+      />
 
       {isLoading ? (
-        <div className="d-flex flex-column gap-8 p-8">
-          <TextSkeleton size="sm" />
-          <TextSkeleton size="md" />
-          <TextSkeleton size="sm" />
-        </div>
+        <WidgetSkeleton />
       ) : kids.length === 0 ? (
-        <p className="vie-scolaire-empty">
+        <p className="widget-empty">
           {t('homepage.widget.vie-scolaire.empty', 'Aucune donnée disponible')}
         </p>
       ) : (

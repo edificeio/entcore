@@ -1,6 +1,9 @@
-import { Button, Grid, Heading, TextSkeleton } from '@edifice.io/react';
+import { Button } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
 import React, { type ReactNode } from 'react';
+import type { WidgetBaseProps } from '../types';
+import { WidgetHeader } from '../WidgetHeader';
+import { WidgetSkeleton } from '../WidgetSkeleton';
 import './ListWidget.css';
 
 export interface ListWidgetItem {
@@ -11,11 +14,9 @@ export interface ListWidgetItem {
   href?: string;
 }
 
-export interface ListWidgetProps {
+export interface ListWidgetProps extends WidgetBaseProps {
   title: string;
   items: ListWidgetItem[];
-  isLoading?: boolean;
-  onSeeMore?: () => void;
   style?: React.CSSProperties;
 }
 
@@ -28,35 +29,29 @@ export function ListWidget({
 }: ListWidgetProps) {
   return (
     <div className="list-widget" style={style}>
-      <Grid className="align-items-center list-widget-header">
-        <Grid.Col sm="2" lg="6">
-          <Heading level="h3" headingStyle="h5" className="list-widget-title">
-            {title}
-          </Heading>
-        </Grid.Col>
-        <Grid.Col sm="2" lg="6" className="d-flex justify-content-end">
-          {onSeeMore && (
+      <WidgetHeader
+        className="list-widget-header"
+        titleClassName="list-widget-title"
+        title={title}
+        action={
+          onSeeMore ? (
             <Button
               variant="ghost"
               size="sm"
-              className="list-widget-see-more"
+              className="widget-action-link"
               rightIcon={<IconExternalLink />}
               onClick={onSeeMore}
             >
               Voir plus
             </Button>
-          )}
-        </Grid.Col>
-      </Grid>
+          ) : undefined
+        }
+      />
 
       {isLoading ? (
-        <div className="d-flex flex-column gap-8">
-          <TextSkeleton size="md" />
-          <TextSkeleton size="md" />
-          <TextSkeleton size="sm" />
-        </div>
+        <WidgetSkeleton />
       ) : items.length === 0 ? (
-        <p className="list-widget-empty">Aucun élément à afficher</p>
+        <p className="widget-empty">Aucun élément à afficher</p>
       ) : (
         <ul className="list-widget-list">
           {items.map((item) => {

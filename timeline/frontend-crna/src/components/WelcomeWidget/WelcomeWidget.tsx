@@ -3,7 +3,7 @@ import { IconSettings, IconUserSearch, IconUsers } from '@edifice.io/react/icons
 import { useTranslation } from 'react-i18next';
 import { CreateDocumentWidget } from '~/components/CreateDocumentWidget';
 import { FavoritesWidget } from '~/components/FavoritesWidget';
-import { MOCK_MEDIACENTRE } from '~/mocks/widgetsMockData';
+import type { ListWidgetItem } from '../ListWidget';
 import { MediacentreWidget } from '../MediacentreWidget';
 import { WidgetCard } from '../WidgetCard';
 import './WelcomeWidget.css';
@@ -16,7 +16,11 @@ const PROFILE_LABELS: Record<string, string> = {
   SUPERADMIN: 'Administrateur',
 };
 
-export function WelcomeWidget() {
+export interface WelcomeWidgetProps {
+  mediacentreItems?: ListWidgetItem[];
+}
+
+export function WelcomeWidget({ mediacentreItems = [] }: WelcomeWidgetProps) {
   const { t } = useTranslation();
   const { user, avatar } = useUser();
 
@@ -72,7 +76,7 @@ export function WelcomeWidget() {
           <CreateDocumentWidget />
         </Grid.Col>
         <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-          <MediacentreWidget items={MOCK_MEDIACENTRE} />
+          <MediacentreWidget items={mediacentreItems} />
         </Grid.Col>
       </Grid>
     </WidgetCard>

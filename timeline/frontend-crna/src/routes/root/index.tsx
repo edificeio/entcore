@@ -16,6 +16,7 @@ import {
   MOCK_AVANTAGES,
   MOCK_EMPLOI_DU_TEMPS,
   MOCK_LIENS_UTILES,
+  MOCK_MEDIACENTRE,
   MOCK_MES_EMPRUNTS,
   MOCK_VIE_SCOLAIRE,
 } from '~/mocks/widgetsMockData';
@@ -90,7 +91,7 @@ export const Root = () => {
           ]}
         />
 
-        <WelcomeWidget />
+        <WelcomeWidget mediacentreItems={MOCK_MEDIACENTRE} />
 
         {/** Service proposal widgets would go here, for example: */}
         <WidgetCard

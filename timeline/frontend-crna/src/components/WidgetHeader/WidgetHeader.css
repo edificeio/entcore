@@ -1,0 +1,9 @@
+/* Base : !important centralisé ici pour battre Bootstrap .h5 (une seule source) */
+.widget-header-title {
+  margin: 0 !important;
+  font-family: var(--edifice-font-family-urbanist) !important;
+  font-weight: var(--edifice-font-weight-bold) !important;
+  font-size: var(--edifice-font-size-s) !important;
+  line-height: var(--edifice-font-lineheight-s) !important;
+  color: var(--edifice-grey-900) !important;
+}

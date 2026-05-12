@@ -1,0 +1,33 @@
+.widget-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--edifice-spacer-12);
+  border-radius: var(--edifice-border-radius-xl);
+  padding: var(--edifice-spacer-12) var(--edifice-spacer-16) var(--edifice-spacer-16);
+  background-color: var(--edifice-grey-100);
+}
+
+.widget-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--edifice-spacer-8);
+}
+
+.widget-panel-title {
+  margin: 0;
+  font-family: var(--edifice-font-family-urbanist);
+  font-weight: var(--edifice-font-weight-bold);
+  font-size: var(--edifice-font-size-default);
+  line-height: var(--edifice-font-lineheight-s);
+  color: var(--edifice-grey-900);
+}
+
+.widget-panel-action {
+  flex-shrink: 0;
+}
+
+.widget-panel-body {
+  display: flex;
+  flex-direction: column;
+}

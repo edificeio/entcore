@@ -1,7 +1,7 @@
 import { AppIcon, Button, useBookmark } from '@edifice.io/react';
 import { IconExternalLink, IconStar } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { WidgetCard } from '~/components/WidgetCard';
+import { WidgetPanel } from '../WidgetPanel';
 import './FavoritesWidget.css';
 
 export function FavoritesWidget() {
@@ -9,8 +9,7 @@ export function FavoritesWidget() {
   const bookmarkedApps = useBookmark() ?? [];
 
   return (
-    <WidgetCard
-      className="favorites-widget"
+    <WidgetPanel
       title={t('homepage.widget.favorites.title', 'Favoris')}
       action={
         <Button
@@ -18,7 +17,7 @@ export function FavoritesWidget() {
           variant="ghost"
           size="sm"
           onClick={() => window.open('/welcome', '_self')}
-          className="favorites-widget-link"
+          className="widget-action-link"
           rightIcon={<IconExternalLink />}
         >
           {t('homepage.widget.favorites.all', 'Mes applis')}
@@ -52,6 +51,6 @@ export function FavoritesWidget() {
           </div>
         )}
       </div>
-    </WidgetCard>
+    </WidgetPanel>
   );
 }

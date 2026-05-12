@@ -12,34 +12,9 @@
   padding: var(--edifice-spacer-8);
 }
 
-.edt-date {
-  margin: 0 !important;
-  font-family: var(--edifice-font-family-urbanist) !important;
-  font-weight: var(--edifice-font-weight-bold) !important;
+/* Override font-size — compound selector (0,2,0) + !important bat la base de WidgetHeader.css */
+.edt-date.widget-header-title {
   font-size: var(--edifice-font-size-default) !important;
-  line-height: var(--edifice-font-lineheight-s) !important;
-  color: var(--edifice-grey-900) !important;
-}
-
-.edt-see-more {
-  padding: 0 !important;
-  font-family: var(--edifice-legacy-font-family-roboto) !important;
-  font-weight: var(--edifice-font-weight-bold) !important;
-  font-size: var(--edifice-font-size-small) !important;
-  color: var(--edifice-clients-crna-700) !important;
-}
-
-.edt-see-more:hover {
-  opacity: 0.8;
-}
-
-.edt-empty {
-  margin: 0;
-  padding: var(--edifice-spacer-16);
-  font-family: var(--edifice-legacy-font-family-roboto);
-  font-size: var(--edifice-font-size-small);
-  color: var(--edifice-grey-700);
-  text-align: center;
 }
 
 .edt-body {

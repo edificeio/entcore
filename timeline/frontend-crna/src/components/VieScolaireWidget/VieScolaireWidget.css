@@ -11,26 +11,7 @@
   padding: 0 var(--edifice-spacer-8);
 }
 
-.vie-scolaire-title {
-  margin: 0 !important;
-  font-family: var(--edifice-font-family-urbanist) !important;
-  font-weight: var(--edifice-font-weight-bold) !important;
-  font-size: var(--edifice-font-size-s) !important;
-  line-height: var(--edifice-font-lineheight-s) !important;
-  color: var(--edifice-grey-900) !important;
-}
-
-.vie-scolaire-see-more {
-  padding: 0 !important;
-  font-family: var(--edifice-legacy-font-family-roboto) !important;
-  font-weight: var(--edifice-font-weight-bold) !important;
-  font-size: var(--edifice-font-size-small) !important;
-  color: var(--edifice-clients-crna-700) !important;
-}
-
-.vie-scolaire-see-more:hover {
-  opacity: 0.8;
-}
+/* font-size-s est déjà le défaut de .widget-header-title — pas d'override nécessaire */
 
 .vie-scolaire-content {
   display: flex;
@@ -40,47 +21,46 @@
   padding: var(--edifice-spacer-4);
 }
 
-/* Override Bootstrap nav-tabs */
+/* Override Bootstrap nav-tabs — spécificité 0,3,0 via parent */
 .vie-scolaire-content .nav-tabs {
-  background-color: transparent !important;
-  border-bottom: none !important;
-  gap: 0 !important;
+  background-color: transparent;
+  border-bottom: none;
+  gap: 0;
   flex-wrap: nowrap;
 }
 
 .vie-scolaire-content .nav-tabs .nav-link {
-  display: flex !important;
-  align-items: center !important;
-  gap: var(--edifice-spacer-8) !important;
-  padding: var(--edifice-spacer-8) var(--edifice-spacer-12) !important;
-  font-family: var(--edifice-font-family-arimo) !important;
-  font-weight: var(--edifice-font-weight-bold) !important;
-  font-size: var(--edifice-font-size-small) !important;
-  line-height: var(--edifice-font-lineheight-2xs) !important;
-  color: var(--edifice-grey-900) !important;
-  border: none !important;
-  border-radius: var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) 0 0 !important;
-  background-color: transparent !important;
+  display: flex;
+  align-items: center;
+  gap: var(--edifice-spacer-8);
+  padding: var(--edifice-spacer-8) var(--edifice-spacer-12);
+  font-family: var(--edifice-font-family-arimo);
+  font-weight: var(--edifice-font-weight-bold);
+  font-size: var(--edifice-font-size-small);
+  line-height: var(--edifice-font-lineheight-2xs);
+  color: var(--edifice-grey-900);
+  border: none;
+  border-radius: var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) 0 0;
+  background-color: transparent;
 }
 
 .vie-scolaire-content .nav-tabs .nav-link.selected {
-  background-color: var(--edifice-white) !important;
-  color: var(--edifice-grey-900) !important;
+  background-color: var(--edifice-white);
+  color: var(--edifice-grey-900);
 }
 
 .vie-scolaire-content .nav-tabs .nav-slide {
-  display: none !important;
+  display: none;
 }
 
 .vie-scolaire-content .tab-content {
-  background-color: var(--edifice-white) !important;
-  border-radius: 0 var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) !important;
+  background-color: var(--edifice-white);
+  border-radius: 0 var(--edifice-border-radius-xl) var(--edifice-border-radius-xl) var(--edifice-border-radius-xl);
 }
 
 .vie-scolaire-content .tab-pane {
-  padding: 0 !important;
+  padding: 0;
 }
-
 
 .vie-scolaire-list {
   list-style: none;
@@ -117,15 +97,6 @@
   font-size: var(--edifice-font-size-small);
   line-height: var(--edifice-font-lineheight-2xs);
   color: var(--edifice-grey-900);
-}
-
-.vie-scolaire-empty {
-  margin: 0;
-  padding: var(--edifice-spacer-16);
-  font-family: var(--edifice-legacy-font-family-roboto);
-  font-size: var(--edifice-font-size-small);
-  color: var(--edifice-grey-700);
-  text-align: center;
 }
 
 .vie-scolaire-entry-sublabel {

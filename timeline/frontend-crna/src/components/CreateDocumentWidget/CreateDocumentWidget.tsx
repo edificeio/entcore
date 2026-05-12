@@ -1,7 +1,7 @@
 import { Button, Flex } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { WidgetCard } from '../WidgetCard';
+import { WidgetPanel } from '../WidgetPanel';
 import './CreateDocumentWidget.css';
 
 const CREATE_ACTIONS = [
@@ -16,8 +16,7 @@ export function CreateDocumentWidget() {
   const { t } = useTranslation();
 
   return (
-    <WidgetCard
-      className="create-document-widget"
+    <WidgetPanel
       title={t('homepage.widget.create.title', 'Créer un document')}
       action={
         <Button
@@ -25,7 +24,7 @@ export function CreateDocumentWidget() {
           variant="ghost"
           size="sm"
           onClick={() => window.open('/welcome', '_self')}
-          className="create-document-widget-link"
+          className="widget-action-link"
           rightIcon={<IconExternalLink />}
         >
           {t('homepage.widget.see.all', 'Voir tout')}
@@ -47,6 +46,6 @@ export function CreateDocumentWidget() {
           ))}
         </Flex>
       </div>
-    </WidgetCard>
+    </WidgetPanel>
   );
 }
