@@ -1,6 +1,7 @@
 package org.entcore.broker.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Message;
@@ -68,7 +69,8 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     protected static final Logger log = LoggerFactory.getLogger(AbstractNATSBrokerClient.class);
     
     protected final Vertx vertx;
-    protected final ObjectMapper mapper = new ObjectMapper();
+    protected final ObjectMapper mapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     protected final String charset = "UTF-8";
     protected final long defaultTimeout;
     protected final String serverId = UUID.randomUUID().toString();
