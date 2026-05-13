@@ -191,11 +191,16 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     }
 
     private void notifyAdminWatchers(final String subject, final byte[] data) {
+        notifyAdminWatchers(subject, data, "in");
+    }
+
+    private void notifyAdminWatchers(final String subject, final byte[] data, final String direction) {
         if (adminWatchers.isEmpty()) return;
         final String dataStr = data != null ? new String(data, StandardCharsets.UTF_8) : "";
         final JsonObject msg = new JsonObject()
                 .put("subject", subject)
                 .put("data", dataStr)
+                .put("direction", direction)
                 .put("ts", System.currentTimeMillis());
         adminWatchers.forEach((replyAddress, patterns) -> {
             if (matchesAnyPattern(subject, patterns)) {
@@ -650,7 +655,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
 
         try {
             final byte[] payload = message.getBytes(charset);
-            notifyAdminWatchers(subject, payload);
+            notifyAdminWatchers(subject, payload, "out");
             return client.publish(subject, payload)
                     .onFailure(e -> log.error("Error while sending message to NATS", e));
         } catch (Exception e) {
