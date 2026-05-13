@@ -1,5 +1,5 @@
-import { AppIcon, Button, useBookmark } from '@edifice.io/react';
-import { IconExternalLink, IconStarFull } from '@edifice.io/react/icons';
+import { AppIcon, ButtonBeta, useBookmark } from '@edifice.io/react';
+import { IconArrowRight, IconStarFull } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { WidgetPanel } from '../WidgetPanel';
 import './FavoritesWidget.css';
@@ -12,16 +12,14 @@ export function FavoritesWidget() {
     <WidgetPanel
       title={t('homepage.widget.favorites.title', 'Favoris')}
       action={
-        <Button
-          color="tertiary"
+        <ButtonBeta
+          color="default"
           variant="ghost"
-          size="sm"
           onClick={() => window.open('/welcome', '_self')}
-          className="widget-action-link"
-          rightIcon={<IconExternalLink />}
+          rightIcon={<IconArrowRight />}
         >
           {t('homepage.widget.favorites.all', 'Mes applis')}
-        </Button>
+        </ButtonBeta>
       }
     >
       <div className="favorites-widget-apps-card">

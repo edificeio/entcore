@@ -1,4 +1,4 @@
-import { Button } from '@edifice.io/react';
+import { ButtonBeta } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
 import React, { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,15 +37,14 @@ export function ListWidget({
         title={title}
         action={
           onSeeMore ? (
-            <Button
+            <ButtonBeta
+              color="default"
               variant="ghost"
-              size="sm"
-              className="widget-action-link"
               rightIcon={<IconExternalLink />}
               onClick={onSeeMore}
             >
               {t('homepage.widget.see.more', 'Voir plus')}
-            </Button>
+            </ButtonBeta>
           ) : undefined
         }
       />
@@ -53,17 +52,23 @@ export function ListWidget({
       {isLoading ? (
         <WidgetSkeleton />
       ) : items.length === 0 ? (
-        <p className="widget-empty">{t('homepage.widget.list.empty', 'Aucun élément à afficher')}</p>
+        <p className="align-items-center gap-8 d-flex flex-column">
+          {t('homepage.widget.list.empty', 'Aucun élément à afficher')}
+        </p>
       ) : (
         <ul className="list-widget-list">
           {items.map((item) => {
             const content = (
               <>
-                {item.icon && <div className="list-widget-item-icon">{item.icon}</div>}
+                {item.icon && (
+                  <div className="list-widget-item-icon">{item.icon}</div>
+                )}
                 <div className="d-flex flex-column gap-4 list-widget-item-text">
                   <span className="list-widget-item-label">{item.label}</span>
                   {item.sublabel && (
-                    <span className="list-widget-item-sublabel">{item.sublabel}</span>
+                    <span className="list-widget-item-sublabel">
+                      {item.sublabel}
+                    </span>
                   )}
                 </div>
               </>

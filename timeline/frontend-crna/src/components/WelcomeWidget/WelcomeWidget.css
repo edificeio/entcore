@@ -27,12 +27,12 @@
 }
 
 .welcome-header-settings.btn {
-  border: 1px solid var(--edifice-clients-crna-700) !important;
+  border: 1px solid var(--edifice-primary-800) !important;
   border-radius: var(--edifice-border-radius-pill) !important;
   color: var(--edifice-grey-900) !important;
   flex-shrink: 0;
 }
 
 .welcome-header-settings.btn:hover {
-  background: var(--edifice-clients-crna-200) !important;
+  background: var(--edifice-primary-200) !important;
 }

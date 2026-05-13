@@ -1,4 +1,4 @@
-import { Avatar, Button, Tabs } from '@edifice.io/react';
+import { Avatar, ButtonBeta, Tabs } from '@edifice.io/react';
 import type { TabsItemProps } from '@edifice.io/react';
 import {
   IconClockAlert,
@@ -40,10 +40,10 @@ export interface VieScolaireWidgetProps extends WidgetBaseProps {
 }
 
 const ENTRY_ICONS: Record<VieScolaireEntryType, JSX.Element> = {
-  retard:     <IconClockAlert width={20} height={20} />,
-  absence:    <IconUser width={20} height={20} />,
-  note:       <IconNotes width={20} height={20} />,
-  cahier:     <IconFiles width={20} height={20} />,
+  retard: <IconClockAlert width={20} height={20} />,
+  absence: <IconUser width={20} height={20} />,
+  note: <IconNotes width={20} height={20} />,
+  cahier: <IconFiles width={20} height={20} />,
   competence: <IconLsuCompetenceNumerique width={20} height={20} />,
 };
 
@@ -57,14 +57,7 @@ export function VieScolaireWidget({
   const tabItems: TabsItemProps[] = kids.map((kid) => ({
     id: kid.id,
     label: kid.name,
-    icon: (
-      <Avatar
-        alt={kid.name}
-        src={kid.avatar}
-        size="xs"
-        variant="circle"
-      />
-    ),
+    icon: <Avatar alt={kid.name} src={kid.avatar} size="xs" variant="circle" />,
     content: (
       <ul className="vie-scolaire-list">
         {kid.entries.map((entry) => (
@@ -75,7 +68,9 @@ export function VieScolaireWidget({
               </div>
               <div className="d-flex flex-column vie-scolaire-entry-text">
                 <span className="vie-scolaire-entry-label">{entry.label}</span>
-                <span className="vie-scolaire-entry-sublabel">{entry.sublabel}</span>
+                <span className="vie-scolaire-entry-sublabel">
+                  {entry.sublabel}
+                </span>
               </div>
             </div>
           </li>
@@ -90,22 +85,21 @@ export function VieScolaireWidget({
         className="vie-scolaire-header"
         title={t('homepage.widget.vie-scolaire.title', 'Vie scolaire')}
         action={
-          <Button
+          <ButtonBeta
+            color="default"
             variant="ghost"
-            size="sm"
-            className="widget-action-link"
             rightIcon={<IconExternalLink />}
             onClick={onSeeMore}
           >
             {t('homepage.widget.see.more', 'Voir plus')}
-          </Button>
+          </ButtonBeta>
         }
       />
 
       {isLoading ? (
         <WidgetSkeleton />
       ) : kids.length === 0 ? (
-        <p className="widget-empty">
+        <p className="align-items-center gap-8 d-flex flex-column">
           {t('homepage.widget.vie-scolaire.empty', 'Aucune donnée disponible')}
         </p>
       ) : (

@@ -1,4 +1,4 @@
-import { Button, Heading, Layout, useEdificeClient } from '@edifice.io/react';
+import { ButtonBeta, Heading, Layout, useEdificeClient } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useRouteError } from 'react-router-dom';
 
@@ -16,9 +16,9 @@ export const PageError = () => {
           {t('oops')}
         </Heading>
         <div className="text">{t('timeline.notfound.or.unauthorized')}</div>
-        <Button color="primary" onClick={() => navigate(-1)}>
+        <ButtonBeta color="default" onClick={() => navigate(-1)}>
           {t('back')}
-        </Button>
+        </ButtonBeta>
       </div>
     </Layout>
   );

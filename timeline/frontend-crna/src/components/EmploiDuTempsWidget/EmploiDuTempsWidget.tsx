@@ -1,4 +1,4 @@
-import { Button } from '@edifice.io/react';
+import { Button, ButtonBeta } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import type { WidgetBaseProps } from '../types';
@@ -39,22 +39,22 @@ export function EmploiDuTempsWidget({
         titleClassName="edt-date"
         title={date ?? t('homepage.widget.edt.date', 'Lundi 19 janvier')}
         action={
-          <Button
+          <ButtonBeta
+            color="default"
             variant="ghost"
-            size="sm"
-            className="widget-action-link"
             rightIcon={<IconExternalLink />}
             onClick={onSeeMore}
+            data-testid="edt-see-more-btn"
           >
             {t('homepage.widget.see.more', 'Voir plus')}
-          </Button>
+          </ButtonBeta>
         }
       />
 
       {isLoading ? (
         <WidgetSkeleton />
       ) : entries.length === 0 ? (
-        <p className="widget-empty">
+        <p className="align-items-center gap-8 d-flex flex-column widget-empty">
           {t('homepage.widget.edt.empty', "Aucun cours aujourd'hui")}
         </p>
       ) : (
@@ -72,7 +72,10 @@ export function EmploiDuTempsWidget({
           </div>
           <div className="edt-blocks">
             {entries.map((entry) => (
-              <div key={entry.id} className={`edt-block ${entry.color ?? 'grey'}`}>
+              <div
+                key={entry.id}
+                className={`edt-block ${entry.color ?? 'grey'}`}
+              >
                 <div className="edt-block-bar" />
                 <div className="edt-block-content">
                   <p className="edt-block-subject">{entry.subject}</p>

@@ -59,6 +59,6 @@ export function useAvantages() {
 export function useMediacentre() {
   return useQuery<ListWidgetItem[]>({
     queryKey: ['mediacentre'],
-    queryFn: async () => MOCK_MEDIACENTRE,
+    queryFn: async () => [],
   });
 }
