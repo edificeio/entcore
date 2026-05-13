@@ -45,7 +45,7 @@ export function FavoritesWidget() {
                 target={app.isExternal ? '_blank' : undefined}
                 rel={app.isExternal ? 'noopener noreferrer' : undefined}
               >
-                <AppIcon app={app} size="40" variant="circle" />
+                <AppIcon app={app} size="40" variant="square" />
               </a>
             ))}
           </div>
