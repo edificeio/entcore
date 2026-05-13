@@ -1,10 +1,10 @@
 import { useToast } from '@edifice.io/react';
 import { useState } from 'react';
-import { useI18n } from '~/hooks/useI18n';
+import { useTranslation } from 'react-i18next';
 import { preferenceService } from '~/services';
 
 export function useBetaSwitch() {
-  const { common_t } = useI18n();
+  const { t: common_t } = useTranslation('common');
   const toast = useToast();
   const [isSwitching, setIsSwitching] = useState(false);
 

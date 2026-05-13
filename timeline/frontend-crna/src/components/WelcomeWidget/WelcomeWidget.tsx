@@ -18,9 +18,13 @@ const PROFILE_LABELS: Record<string, string> = {
 
 export interface WelcomeWidgetProps {
   mediacentreItems?: ListWidgetItem[];
+  isMediacentreLoading?: boolean;
 }
 
-export function WelcomeWidget({ mediacentreItems = [] }: WelcomeWidgetProps) {
+export function WelcomeWidget({
+  mediacentreItems = [],
+  isMediacentreLoading = false,
+}: WelcomeWidgetProps) {
   const { t } = useTranslation();
   const { user, avatar } = useUser();
 
@@ -40,7 +44,7 @@ export function WelcomeWidget({ mediacentreItems = [] }: WelcomeWidgetProps) {
                 {t('homepage.widget.welcome.greeting', 'Bonjour')} {firstName}
               </Heading>
               <span className="text-muted small">
-                {PROFILE_LABELS[profile] ?? profile}
+                {t(`homepage.profile.${profile.toLowerCase()}`, PROFILE_LABELS[profile] ?? profile)}
               </span>
             </Grid.Col>
           </Grid>
@@ -76,7 +80,7 @@ export function WelcomeWidget({ mediacentreItems = [] }: WelcomeWidgetProps) {
           <CreateDocumentWidget />
         </Grid.Col>
         <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-          <MediacentreWidget items={mediacentreItems} />
+          <MediacentreWidget items={mediacentreItems} isLoading={isMediacentreLoading} />
         </Grid.Col>
       </Grid>
     </WidgetCard>

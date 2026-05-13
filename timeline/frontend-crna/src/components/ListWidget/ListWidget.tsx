@@ -1,6 +1,7 @@
 import { Button } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
 import React, { type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { WidgetBaseProps } from '../types';
 import { WidgetHeader } from '../WidgetHeader';
 import { WidgetSkeleton } from '../WidgetSkeleton';
@@ -27,6 +28,7 @@ export function ListWidget({
   onSeeMore,
   style,
 }: ListWidgetProps) {
+  const { t } = useTranslation();
   return (
     <div className="list-widget" style={style}>
       <WidgetHeader
@@ -42,7 +44,7 @@ export function ListWidget({
               rightIcon={<IconExternalLink />}
               onClick={onSeeMore}
             >
-              Voir plus
+              {t('homepage.widget.see.more', 'Voir plus')}
             </Button>
           ) : undefined
         }
@@ -51,7 +53,7 @@ export function ListWidget({
       {isLoading ? (
         <WidgetSkeleton />
       ) : items.length === 0 ? (
-        <p className="widget-empty">Aucun élément à afficher</p>
+        <p className="widget-empty">{t('homepage.widget.list.empty', 'Aucun élément à afficher')}</p>
       ) : (
         <ul className="list-widget-list">
           {items.map((item) => {

@@ -1,4 +1,5 @@
 export * from './WidgetCard';
+export * from './WidgetErrorBoundary';
 export * from './WidgetHeader';
 export * from './WidgetPanel';
 export * from './WidgetSkeleton';

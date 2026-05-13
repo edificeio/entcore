@@ -29,7 +29,7 @@ export function WidgetCard({
       {(title || action) && (
         <div className="widget-card-header">
           {title && (
-            <Heading level="h6" headingStyle="h6" className="widget-card-title">
+            <Heading level="h3" headingStyle="h6" className="widget-card-title">
               {title}
             </Heading>
           )}

@@ -8,13 +8,13 @@
 
 .app-footer-brand {}
 
-.app-footer-brand-name {
-  margin: 0 !important;
-  font-family: var(--edifice-font-family-urbanist) !important;
-  font-weight: var(--edifice-font-weight-bold) !important;
-  font-size: 2.2rem !important;
-  line-height: var(--edifice-font-lineheight-xs) !important;
-  color: var(--edifice-white) !important;
+.app-footer .app-footer-brand-name {
+  margin: 0;
+  font-family: var(--edifice-font-family-urbanist);
+  font-weight: var(--edifice-font-weight-bold);
+  font-size: 2.2rem;
+  line-height: var(--edifice-font-lineheight-xs);
+  color: var(--edifice-white);
   white-space: nowrap;
 }
 
@@ -37,13 +37,13 @@
   color: var(--edifice-white);
 }
 
-.app-footer-section-title {
-  margin: 0 !important;
-  font-family: var(--edifice-font-family-urbanist) !important;
-  font-weight: var(--edifice-font-weight-bold) !important;
-  font-size: var(--edifice-font-size-s) !important;
-  line-height: var(--edifice-font-lineheight-s) !important;
-  color: var(--edifice-white) !important;
+.app-footer .app-footer-section-title {
+  margin: 0;
+  font-family: var(--edifice-font-family-urbanist);
+  font-weight: var(--edifice-font-weight-bold);
+  font-size: var(--edifice-font-size-s);
+  line-height: var(--edifice-font-lineheight-s);
+  color: var(--edifice-white);
   white-space: nowrap;
 }
 

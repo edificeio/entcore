@@ -20,7 +20,7 @@ export function WidgetHeader({
     <Grid className={clsx('align-items-center', className)}>
       <Grid.Col sm="2" lg="6">
         <Heading
-          level="h3"
+          level="h4"
           headingStyle="h5"
           className={clsx('widget-header-title', titleClassName)}
         >

@@ -20,7 +20,7 @@ export function WidgetPanel({
       {(title || action) && (
         <div className="widget-panel-header">
           {title && (
-            <Heading level="h6" headingStyle="h6" className="widget-panel-title">
+            <Heading level="h3" headingStyle="h6" className="widget-panel-title">
               {title}
             </Heading>
           )}
