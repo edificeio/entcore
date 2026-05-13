@@ -1,5 +1,5 @@
 import { AppIcon, Button, useBookmark } from '@edifice.io/react';
-import { IconExternalLink, IconStar } from '@edifice.io/react/icons';
+import { IconExternalLink, IconStarFull } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { WidgetPanel } from '../WidgetPanel';
 import './FavoritesWidget.css';
@@ -27,11 +27,11 @@ export function FavoritesWidget() {
       <div className="favorites-widget-apps-card">
         {bookmarkedApps.length === 0 ? (
           <div className="favorites-widget-empty">
-            <IconStar width={32} height={32} />
+            <IconStarFull width={32} height={32} color="#FFD422" />
             <p>
               {t(
                 'homepage.widget.favorites.empty',
-                'Aucune application en favoris',
+                'Ajouter des applications à vos favoris pour les retrouver içi et y accéder rapidement !',
               )}
             </p>
           </div>

@@ -14,10 +14,10 @@
 
 .favorites-widget-empty {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: var(--edifice-spacer-8);
+  gap: var(--edifice-spacer-8, 8px) 12px;
   padding: var(--edifice-spacer-16) 0;
   color: var(--edifice-grey-600);
 }
@@ -26,5 +26,4 @@
   margin: 0;
   font-family: var(--edifice-legacy-font-family-roboto);
   font-size: var(--edifice-font-size-small);
-  text-align: center;
 }
