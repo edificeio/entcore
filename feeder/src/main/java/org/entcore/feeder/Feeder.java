@@ -27,7 +27,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,6 +42,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.feeder.aaf.AAFFilesUploadRequest;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
@@ -78,11 +81,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
+import static io.vertx.core.Future.failedFuture;
+import static java.io.File.separator;
 import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
 import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
 import static org.entcore.feeder.csv.CsvReport.MAPPINGS;
+import static org.entcore.feeder.utils.Report.log;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -266,6 +273,17 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		I18n.getInstance().init(vertx);
 		validatorFactory = new ValidatorFactory(vertx, storage);
+		if("true".equals(System.getenv("ALLOW_UPLOAD_AAF_FILES"))) {
+			log.warn("Starting upload aaf files ");
+			eb.localConsumer("feeder.upload-aaf", m -> {
+				final AAFFilesUploadRequest request = ((JsonObject) m.body()).mapTo(AAFFilesUploadRequest.class);
+				uploadAAFFiles(request)
+				.onSuccess(e -> m.reply(new JsonObject().put("success", true)))
+				.onFailure(th -> m.fail(500, th.getMessage()));
+			});
+		} else {
+			log.debug("No aaf files uploading is possible");
+		}
 		return Future.succeededFuture();
 	}
 
@@ -989,6 +1007,42 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		if (event != null) {
 			handle(event);
 		}
+	}
+
+	public Future<Void> uploadAAFFiles(final AAFFilesUploadRequest request) {
+		final String importFiles = this.config.getString("import-files");
+		final String subPath = request.getSubPath();
+		if(!checkPathIsStraightForward(subPath)) {
+			logger.warn(subPath + " is not an acceptable path");
+			return failedFuture("subPath.not.acceptable");
+		}
+		for (String key : request.getFiles().keySet()) {
+			if(!checkPathIsStraightForward(key)) {
+				logger.warn(key + " is not an acceptable path");
+				return failedFuture("filename.not.acceptable");
+			}
+		}
+		final FileSystem fs = vertx.fileSystem();
+		final String parentDir = importFiles + separator + subPath;
+		return fs.mkdirs(parentDir)
+		.compose(e -> {
+			final List<Future<Void>> futures = request.getFiles().entrySet().stream().map(fileEntry -> {
+				final String fileName = fileEntry.getKey();
+				final String fileContent = fileEntry.getValue();
+				final String filePath = parentDir + separator + fileName;
+				return vertx.fileSystem().writeFile(filePath, Buffer.buffer().appendString(fileContent))
+						.onSuccess(h -> logger.info("Successfully written file " + filePath))
+						.onFailure(th -> logger.warn("Error while writing file " + filePath, th));
+			}).collect(Collectors.toList());
+			return Future.all(futures).mapEmpty();
+		});
+	}
+
+	private static boolean checkPathIsStraightForward(final String path) {
+		if(path.matches("^[A-Za-z0-9_\\-\\./]+$")) {
+			return !path.contains("..");
+		}
+		return false;
 	}
 
 }
