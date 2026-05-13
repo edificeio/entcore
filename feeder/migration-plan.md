@@ -49,23 +49,47 @@ handleAction (Feeder.java)
 | `manual-remove-group-users` | ✅ | ✅ | ✅ |
 | `manual-relative-student` | ✅ | ✅ | ✅ |
 | `manual-unlink-relative-student` | ✅ | ✅ | ✅ |
-| `manual-add-user-function` | ❌ | ❌ | ❌ |
-| `manual-add-head-teacher` | ❌ | ❌ | ❌ |
-| `manual-update-head-teacher` | ❌ | ❌ | ❌ |
-| `manual-add-subject` | ❌ | ❌ | ❌ |
-| `manual-update-subject` | ❌ | ❌ | ❌ |
-| `manual-delete-subject` | ❌ | ❌ | ❌ |
-| `manual-add-direction` | ❌ | ❌ | ❌ |
-| `manual-remove-direction` | ❌ | ❌ | ❌ |
-| `manual-remove-user-function` | ❌ | ❌ | ❌ |
-| `manual-add-user-group` | ❌ | ❌ | ❌ |
-| `manual-remove-user-group` | ❌ | ❌ | ❌ |
-| `manual-update-email-group` | ❌ | ❌ | ❌ |
-| `manual-create-tenant` | ❌ | ❌ | ❌ |
-| `manual-structure-attachment` | ❌ | ❌ | ❌ |
-| `manual-structure-detachment` | ❌ | ❌ | ❌ |
-| `manual-link-user-positions` | ❌ | ❌ | ❌ |
-| `manual-update-group-linked-positions` | ❌ | ❌ | ❌ |
+| `manual-add-user-function` | ✅ | ✅ | ✅ |
+| `manual-add-head-teacher` | ✅ | ✅ | ✅ |
+| `manual-update-head-teacher` | ✅ | ✅ | ✅ |
+| `manual-add-subject` | ✅ | ✅ | ✅ |
+| `manual-update-subject` | ✅ | ✅ | ✅ |
+| `manual-delete-subject` | ✅ | ✅ | ✅ |
+| `manual-add-direction` | ✅ | ✅ | ✅ |
+| `manual-remove-direction` | ✅ | ✅ | ✅ |
+| `manual-remove-user-function` | ✅ | ✅ | ✅ |
+| `manual-add-user-group` | ✅ | ✅ | ✅ |
+| `manual-remove-user-group` | ✅ | ✅ | ✅ |
+| `manual-update-email-group` | ✅ | ✅ | ✅ |
+| `manual-create-tenant` | ✅ | ✅ | ✅ |
+| `manual-structure-attachment` | ✅ | ✅ | ✅ |
+| `manual-structure-detachment` | ✅ | ✅ | ✅ |
+| `manual-link-user-positions` | ✅ | ✅ | ✅ |
+| `manual-update-group-linked-positions` | ✅ | ✅ | ✅ |
+| `manual-link-autogroups` | N/A | N/A | N/A |
+| `manual-init-timetable-structure` | ❌ | ❌ | ❌ |
+| `manual-edt` | ❌ | ❌ | ❌ |
+| `manual-udt` | ❌ | ❌ | ❌ |
+| `transition` | ❌ | ❌ | ❌ |
+| `import` | ❌ | ❌ | ❌ |
+| `importWithId` | ❌ | ❌ | ❌ |
+| `export` | N/A | N/A | N/A |
+| `validate` | ❌ | ❌ | ❌ |
+| `validateWithId` | ❌ | ❌ | ❌ |
+| `columnsMapping` | ❌ | ❌ | ❌ |
+| `classesMapping` | ❌ | ❌ | ❌ |
+| `ignore-duplicate` | ❌ | ❌ | ❌ |
+| `list-duplicate` | ❌ | ❌ | ❌ |
+| `merge-duplicate` | ❌ | ❌ | ❌ |
+| `merge-by-keys` | ❌ | ❌ | ❌ |
+| `unmerge-by-logins` | ❌ | ❌ | ❌ |
+| `mark-duplicates` | N/A | N/A | N/A |
+| `automerge-duplicates` | N/A | N/A | N/A |
+| `check-duplicates` | ❌ | ❌ | ❌ |
+| `reinit-logins` | N/A | N/A | N/A |
+| `find-users-old-platform` | ❌ | ❌ | ❌ |
+| `update-users-old-platform` | ❌ | ❌ | ❌ |
+| `search-users-old-platform` | N/A | N/A | N/A |
 
 ---
 
@@ -500,6 +524,225 @@ Validated by: `dictionary/schema/Tenant.json`
 | Field | Java type | JSON key | Required |
 |---|---|---|:---:|
 | `userPosition` | `String` | `userPosition` | ✅ |
+
+---
+
+### Timetable
+
+#### `manual-init-timetable-structure`
+
+Single caller: `AbstractTimetableImporter.initStructure(eb, message)`. The method reads a `conf` sub-object and dispatches to EDT or UDT importer based on `conf.type`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `type` | `String` | `conf.type` | ✅ | `"EDT"` or `"UDT"` |
+| `structureId` | `String` | `conf.structureId` | ✅ | |
+
+#### `manual-edt`
+
+Caller: `EDTImporter.launchImport(...)`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `uai` | `String` | `UAI` | ✅ | |
+| `path` | `String` | `path` | ✅ | |
+| `language` | `String` | `language` | — | default `"fr"` |
+| `updateGroups` | `Boolean` | `updateGroups` | — | default `true` |
+| `updateTimetable` | `Boolean` | `updateTimetable` | — | default `true` |
+| `isManualImport` | `Boolean` | `isManualImport` | — | |
+
+#### `manual-udt`
+
+Caller: `UDTImporter.launchImport(...)`. Same shape as EDT minus `language` being at the same level.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `uai` | `String` | `UAI` | ✅ | |
+| `path` | `String` | `path` | ✅ | |
+| `language` | `String` | `language` | — | default `"fr"` |
+| `updateGroups` | `Boolean` | `updateGroups` | — | default `true` |
+| `updateTimetable` | `Boolean` | `updateTimetable` | — | default `true` |
+| `isManualImport` | `Boolean` | `isManualImport` | — | |
+
+#### `manual-link-autogroups`
+
+No input. Calls `Group.runLinkRules()` and replies OK inline. No DTO needed (N/A).
+
+---
+
+### Import / Export Pipeline
+
+#### `transition`
+
+Caller: `launchTransition(message, null)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `structureExternalId` | `String` | `structureExternalId` | — |
+| `onlyRemoveShare` | `Boolean` | `onlyRemoveShare` | — |
+
+#### `import`
+
+Caller: `launchImport(message)`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `feeder` | `String` | `feeder` | ✅ | importer type |
+| `structureExternalId` | `String` | `structureExternalId` | — | |
+| `preDelete` | `Boolean` | `preDelete` | — | |
+| `transition` | `Boolean` | `transition` | — | |
+
+#### `importWithId`
+
+Caller: `importWithId(message)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `id` | `String` | `id` | ✅ |
+
+#### `export`
+
+No input body reads. No DTO needed (N/A).
+
+#### `validate`
+
+Caller: `launchImportValidation(message, null)`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `feeder` | `String` | `feeder` | ✅ | |
+| `language` | `String` | `language` | — | |
+| `structureExternalId` | `String` | `structureExternalId` | — | |
+| `preDelete` | `Boolean` | `preDelete` | — | |
+| `path` | `String` | `path` | — | |
+| `adml-structures` | `List<String>` | `adml-structures` | — | JSON array |
+
+#### `validateWithId`
+
+Caller: `validateWithId(message)`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `id` | `String` | `id` | ✅ | |
+| `admlStructures` | `List<String>` | `adml-structures` | — | JSON array |
+
+#### `columnsMapping`
+
+Caller: `csvColumnMapping(message)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `language` | `String` | `language` | — |
+| `path` | `String` | `path` | ✅ |
+
+#### `classesMapping`
+
+Caller: `csvClassesMapping(message)`. Note: existing code reads key `"langage"` (typo in the original). The DTO field should use the correct name `language`; the mapper must read the `"langage"` key explicitly.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `language` | `String` | `langage` | — | typo in original JSON key — mapper must preserve it |
+| `path` | `String` | `path` | ✅ | |
+
+---
+
+### Duplicate Management
+
+#### `ignore-duplicate`
+
+Caller: `DuplicateUsers.ignoreDuplicate(message)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `userId1` | `String` | `userId1` | ✅ |
+| `userId2` | `String` | `userId2` | ✅ |
+
+#### `list-duplicate`
+
+Caller: `DuplicateUsers.listDuplicates(message)`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `structures` | `List<String>` | `structures` | — | JSON array |
+| `inherit` | `Boolean` | `inherit` | — | |
+| `minScore` | `Integer` | `minScore` | — | |
+| `inSameStructure` | `Boolean` | `inSameStructure` | — | |
+
+#### `merge-duplicate`
+
+Caller: `DuplicateUsers.mergeDuplicate(message)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `userId1` | `String` | `userId1` | ✅ |
+| `userId2` | `String` | `userId2` | ✅ |
+| `keepRelations` | `Boolean` | `keepRelations` | — |
+
+#### `merge-by-keys`
+
+Caller: `DuplicateUsers.mergeBykeys(message)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `originalUserId` | `String` | `originalUserId` | ✅ |
+| `mergeKeys` | `List<String>` | `mergeKeys` | ✅ |
+
+#### `unmerge-by-logins`
+
+Caller: `DuplicateUsers.unmergeByLogins(message)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `originalUserId` | `String` | `originalUserId` | ✅ |
+| `mergedLogins` | `List<String>` | `mergedLogins` | ✅ |
+
+#### `mark-duplicates`
+
+No input body reads. Triggers a full duplicate search across all profiles. No DTO needed (N/A).
+
+#### `automerge-duplicates`
+
+No input body reads. Calls `autoMergeDuplicatesInStructure` and replies OK inline. No DTO needed (N/A).
+
+#### `check-duplicates`
+
+Caller: `DuplicateUsers.checkDuplicatesIntegrity(message)`.
+
+| Field | Java type | JSON key | Required |
+|---|---|---|:---:|
+| `userId` | `String` | `userId` | ✅ |
+
+---
+
+### Utilities
+
+#### `reinit-logins`
+
+No input body reads. Calls `Validator.initLogin` and replies OK inline. No DTO needed (N/A).
+
+#### `find-users-old-platform`
+
+Caller: `User.findAndModifyUserFromOldPlatform(message)`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `matcher` | `JsonObject` | `matcher` | — | MongoDB-style query |
+| `update` | `JsonObject` | `update` | — | MongoDB-style update |
+| `sort` | `JsonObject` | `sort` | — | |
+| `keys` | `JsonObject` | `keys` | — | projection |
+
+#### `update-users-old-platform`
+
+Caller: `User.updateUsersFromOldPlatform(message)`.
+
+| Field | Java type | JSON key | Required | Notes |
+|---|---|---|:---:|---|
+| `criteria` | `JsonObject` | `criteria` | — | MongoDB-style query |
+| `update` | `JsonObject` | `update` | — | MongoDB-style update |
+
+#### `search-users-old-platform`
+
+No input body reads. Calls `User.searchUserFromOldPlatform(vertx)` and replies OK inline. No DTO needed (N/A).
 
 ---
 

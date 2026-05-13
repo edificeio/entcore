@@ -1,9 +1,11 @@
 package org.entcore.feeder.mapper;
 
 import io.vertx.core.json.JsonObject;
+import org.entcore.feeder.dto.AddUserFunctionDTO;
 import org.entcore.feeder.dto.CreateFunctionDTO;
 import org.entcore.feeder.dto.DeleteFunctionDTO;
 import org.entcore.feeder.dto.DeleteFunctionGroupDTO;
+import org.entcore.feeder.dto.RemoveUserFunctionDTO;
 
 public final class FunctionMapper {
 
@@ -24,6 +26,14 @@ public final class FunctionMapper {
 
     public static DeleteFunctionGroupDTO toDeleteFunctionGroupDTO(JsonObject body) {
         return new DeleteFunctionGroupDTO(body);
+    }
+
+    public static AddUserFunctionDTO toAddUserFunctionDTO(JsonObject body) {
+        return new AddUserFunctionDTO(body);
+    }
+
+    public static RemoveUserFunctionDTO toRemoveUserFunctionDTO(JsonObject body) {
+        return new RemoveUserFunctionDTO(body);
     }
 
     public static JsonObject toFunctionData(CreateFunctionDTO dto) {

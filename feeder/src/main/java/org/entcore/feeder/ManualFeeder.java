@@ -52,6 +52,23 @@ import org.entcore.feeder.dto.AddGroupUsersDTO;
 import org.entcore.feeder.dto.DeleteGroupDTO;
 import org.entcore.feeder.dto.RemoveGroupUsersDTO;
 import org.entcore.feeder.dto.RelativeStudentDTO;
+import org.entcore.feeder.dto.AddDirectionDTO;
+import org.entcore.feeder.dto.AddHeadTeacherDTO;
+import org.entcore.feeder.dto.AddUserGroupDTO;
+import org.entcore.feeder.dto.RemoveUserGroupDTO;
+import org.entcore.feeder.dto.CreateSubjectDTO;
+import org.entcore.feeder.dto.CreateTenantDTO;
+import org.entcore.feeder.dto.LinkUserPositionsDTO;
+import org.entcore.feeder.dto.StructureAttachmentDTO;
+import org.entcore.feeder.dto.StructureDetachmentDTO;
+import org.entcore.feeder.dto.UpdateGroupLinkedPositionsDTO;
+import org.entcore.feeder.dto.DeleteSubjectDTO;
+import org.entcore.feeder.dto.UpdateEmailGroupDTO;
+import org.entcore.feeder.dto.UpdateSubjectDTO;
+import org.entcore.feeder.dto.AddUserFunctionDTO;
+import org.entcore.feeder.dto.RemoveDirectionDTO;
+import org.entcore.feeder.dto.RemoveUserFunctionDTO;
+import org.entcore.feeder.dto.UpdateHeadTeacherDTO;
 import org.entcore.feeder.dto.UnlinkRelativeStudentDTO;
 import org.entcore.feeder.dto.DeleteUserDTO;
 import org.entcore.feeder.mapper.FunctionMapper;
@@ -1197,18 +1214,20 @@ public class ManualFeeder extends BusModBase {
 		}
 	}
 
-	public void addUserFunction(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String function = message.body().getString("function");
-		if (userId == null || function == null) return;
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		final Boolean autoSend = message.body().getBoolean("autoSend", true);
-		final JsonArray scope = message.body().getJsonArray("scope");
-		String inherit =  message.body().getString("inherit", "");
-		StatementsBuilder statementsBuilder = new StatementsBuilder();
+	public void addUserFunction(final AddUserFunctionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String function = dto.getFunction();
+		if (userId == null || function == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and function must be specified"));
+			return;
+		}
+		final Integer transactionId = dto.getTransactionId();
+		final boolean commit = dto.getCommit() != null ? dto.getCommit() : true;
+		final boolean autoSend = dto.getAutoSend() != null ? dto.getAutoSend() : true;
+		final JsonArray scope = dto.getScope() != null ? new JsonArray(dto.getScope()) : null;
+		final String inherit = dto.getInherit() != null ? dto.getInherit() : "";
 		if (scope != null && ("s".equals(inherit) || "sc".equals(inherit))) {
-			String query;
+			final String query;
 			if ("sc".equals(inherit)) {
 				query = "MATCH (s:Structure)<-[:HAS_ATTACHMENT*0..]-(:Structure)<-[:BELONGS*0..1]-(scope) " +
 						"WHERE s.id IN {scope} " +
@@ -1218,223 +1237,231 @@ public class ManualFeeder extends BusModBase {
 						"WHERE s.id IN {scope} " +
 						"RETURN COLLECT(scope.id) as ids ";
 			}
-			JsonObject params = new JsonObject()
-					.put("scope", scope);
-			statementsBuilder.add(query, params);
-			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					JsonArray result = event.body().getJsonArray("results");
-					if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
-						final JsonArray s = result.getJsonArray(0).getJsonObject(0).getJsonArray("ids");
-						executeTransaction(message, new VoidFunction<TransactionHelper>() {
-							@Override
-							public void apply(TransactionHelper tx) {
-								User.addFunction(userId, function, s, tx);
-							}
-						}, transactionId, commit, autoSend);
-					} else {
-						sendError(message, "invalid.scope");
+			StatementsBuilder statementsBuilder = new StatementsBuilder();
+			statementsBuilder.add(query, new JsonObject().put("scope", scope));
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, event -> {
+				JsonArray result = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
+					final JsonArray s = result.getJsonArray(0).getJsonObject(0).getJsonArray("ids");
+					try {
+						TransactionHelper tx = TransactionManager.getInstance().begin(transactionId);
+						tx.setAutoSend(autoSend);
+						User.addFunction(userId, function, s, tx);
+						if (commit) {
+							tx.commit(m -> replyHandler.handle(m.body()));
+						} else {
+							tx.flush(m -> replyHandler.handle(m.body()));
+						}
+					} catch (TransactionException e) {
+						logger.error("Error in transaction when adding user function", e);
+						replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 					}
+				} else {
+					replyHandler.handle(new JsonObject().put("status", "error").put("message", "invalid.scope"));
 				}
 			});
 		} else {
-			executeTransaction(message, new VoidFunction<TransactionHelper>() {
-				@Override
-				public void apply(TransactionHelper tx) {
-					User.addFunction(userId, function, scope, tx);
+			try {
+				TransactionHelper tx = TransactionManager.getInstance().begin(transactionId);
+				tx.setAutoSend(autoSend);
+				User.addFunction(userId, function, scope, tx);
+				if (commit) {
+					tx.commit(m -> replyHandler.handle(m.body()));
+				} else {
+					tx.flush(m -> replyHandler.handle(m.body()));
 				}
-			}, transactionId, commit, autoSend);
+			} catch (TransactionException e) {
+				logger.error("Error in transaction when adding user function", e);
+				replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+			}
 		}
 	}
 
-	public void addUserHeadTeacherManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String classExternalId = message.body().getString("classExternalId");
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || classExternalId == null || structureExternalId == null) return;
-
-		try
-		{
+	public void addUserHeadTeacherManual(final AddHeadTeacherDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String classExternalId = dto.getClassExternalId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || classExternalId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId, classExternalId and structureExternalId must be specified"));
+			return;
+		}
+		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			Structure.load(structureExternalId, tx, new Handler<Structure>()
-			{
-				@Override
-				public void handle(Structure struct)
-				{
-						struct.createHeadTeacherGroupIfAbsent(classExternalId);
-						User.addHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
-
-						tx.commit(new Handler<Message<JsonObject>>()
-						{
-							@Override
-							public void handle(Message<JsonObject> event)
-							{
-								message.reply(event.body());
-							}
-						});
-				}
+			Structure.load(structureExternalId, tx, struct -> {
+				struct.createHeadTeacherGroupIfAbsent(classExternalId);
+				User.addHeadTeacherManual(userId, structureExternalId, classExternalId, tx);
+				tx.commit(event -> replyHandler.handle(event.body()));
 			});
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when adding user to head teacher group", e);
-			sendError(message, "transaction.error");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
 	}
 
-	public void updateUserHeadTeacherManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String classExternalId = message.body().getString("classExternalId");
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || classExternalId == null || structureExternalId == null) return;
-
-		try
-		{
+	public void updateUserHeadTeacherManual(final UpdateHeadTeacherDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String classExternalId = dto.getClassExternalId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || classExternalId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId, classExternalId and structureExternalId must be specified"));
+			return;
+		}
+		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			Structure.load(structureExternalId, tx, new Handler<Structure>()
-			{
-				@Override
-				public void handle(Structure struct)
-				{
-						struct.createHeadTeacherGroupIfAbsent(classExternalId);
-						User.updateHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
-
-						tx.commit(new Handler<Message<JsonObject>>()
-						{
-							@Override
-							public void handle(Message<JsonObject> event)
-							{
-								message.reply(event.body());
-							}
-						});
-				}
+			Structure.load(structureExternalId, tx, struct -> {
+				struct.createHeadTeacherGroupIfAbsent(classExternalId);
+				User.updateHeadTeacherManual(userId, structureExternalId, classExternalId, tx);
+				tx.commit(event -> replyHandler.handle(event.body()));
 			});
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when updating user to head teacher group", e);
-			sendError(message, "transaction.error");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
 	}
 
-	public void createManualSubject(final Message<JsonObject> message) {
-		JsonObject subject = message.body().getJsonObject("subject");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Subject.createManualSubject(subject, tx);
-			}
-		});
-
+	public void createManualSubject(final CreateSubjectDTO dto, final Handler<JsonObject> replyHandler) {
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Subject.createManualSubject(dto.toJson(), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when creating subject", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void updateManualSubject(final Message<JsonObject> message) {
-		JsonObject subject = message.body().getJsonObject("subject");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				Subject.updateManualSubject(subject, tx);
-			}
-		});
-
+	public void updateManualSubject(final UpdateSubjectDTO dto, final Handler<JsonObject> replyHandler) {
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Subject.updateManualSubject(dto.toJson(), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when updating subject", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void deleteManualSubject(final Message<JsonObject> message) {
-		String subjectId = message.body().getString("subjectId");
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply (TransactionHelper tx) {
-				Subject.deleteManualSubject(subjectId,tx);
-			}
-		});
+	public void deleteManualSubject(final DeleteSubjectDTO dto, final Handler<JsonObject> replyHandler) {
+		final String subjectId = dto.getSubjectId();
+		if (subjectId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "subjectId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Subject.deleteManualSubject(subjectId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when deleting subject", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void addUserDirectionManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || structureExternalId == null) return;
-
-		try
-		{
+	public void addUserDirectionManual(final AddDirectionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and structureExternalId must be specified"));
+			return;
+		}
+		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			Structure.load(structureExternalId, tx, new Handler<Structure>()
-			{
-				@Override
-				public void handle(Structure struct)
-				{
-						struct.createDirectionGroupIfAbsent();
-						User.addDirectionManual(userId,structureExternalId, tx);
-
-						tx.commit(new Handler<Message<JsonObject>>()
-						{
-							@Override
-							public void handle(Message<JsonObject> event)
-							{
-								message.reply(event.body());
-							}
-						});
-				}
+			Structure.load(structureExternalId, tx, struct -> {
+				struct.createDirectionGroupIfAbsent();
+				User.addDirectionManual(userId, structureExternalId, tx);
+				tx.commit(event -> replyHandler.handle(event.body()));
 			});
 		} catch (TransactionException e) {
 			logger.error("Error in transaction when adding user to direction group", e);
-			sendError(message, "transaction.error");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
 		}
 	}
 
-	public void removeUserDirectionManual(final Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String structureExternalId = message.body().getString("structureExternalId");
-		if (userId == null || structureExternalId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.removeDirectionManual(userId, structureExternalId, tx);
-			}
-		});
+	public void removeUserDirectionManual(final RemoveDirectionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String structureExternalId = dto.getStructureExternalId();
+		if (userId == null || structureExternalId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and structureExternalId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.removeDirectionManual(userId, structureExternalId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing user from direction group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void removeUserFunction(Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String function = message.body().getString("function");
-		if (userId == null || function == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.removeFunction(userId, function, tx);
-			}
-		});
+	public void removeUserFunction(final RemoveUserFunctionDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String function = dto.getFunction();
+		if (userId == null || function == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and function must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.removeFunction(userId, function, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing user function", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void addUserGroup(Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String groupId = message.body().getString("groupId");
-		if (userId == null || groupId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.addGroup(userId, groupId, tx);
-			}
-		});
+	public void addUserGroup(final AddUserGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String groupId = dto.getGroupId();
+		if (userId == null || groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and groupId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.addGroup(userId, groupId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when adding user to group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void removeUserGroup(Message<JsonObject> message) {
-		final String userId = getMandatoryString("userId", message);
-		final String groupId = message.body().getString("groupId");
-		if (userId == null || groupId == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) {
-				User.removeGroup(userId, groupId, tx);
-			}
-		});
+	public void removeUserGroup(final RemoveUserGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String userId = dto.getUserId();
+		final String groupId = dto.getGroupId();
+		if (userId == null || groupId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "userId and groupId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			User.removeGroup(userId, groupId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when removing user from group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void createOrUpdateTenant(Message<JsonObject> message) {
-		final JsonObject tenant = getMandatoryObject("data", message);
-		if (tenant == null) return;
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				Tenant.createOrUpdate(tenant, tx);
-			}
-		});
+	public void createOrUpdateTenant(final CreateTenantDTO dto, final Handler<JsonObject> replyHandler) {
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Tenant.createOrUpdate(dto.toJson(), tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException | ValidationException e) {
+			logger.error("Error in transaction when creating tenant", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
 	public void createGroup(final CreateGroupDTO dto, final Handler<JsonObject> replyHandler) {
@@ -1517,40 +1544,65 @@ public class ManualFeeder extends BusModBase {
 		}
 	}
 
-	public void updateEmailGroup(Message<JsonObject> message) {
-		final String groupId = getMandatoryString("groupId", message);
-		final String email = getMandatoryString("email", message);
+	public void updateEmailGroup(final UpdateEmailGroupDTO dto, final Handler<JsonObject> replyHandler) {
+		final String groupId = dto.getGroupId();
+		final String email = dto.getEmail();
+		if (groupId == null || email == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId and email must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Group.updateEmail(groupId, email, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException | ValidationException e) {
+			logger.error("Error in transaction when updating email group", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
+    }
 
-		if (email == null || groupId == null) return;
-
-		executeTransaction(message, tx -> {
-				Group.updateEmail(groupId, email, tx);
-		});
+	public void structureAttachment(final StructureAttachmentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String structureId = dto.getStructureId();
+		final String parentStructureId = dto.getParentStructureId();
+		if (structureId == null || parentStructureId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId and parentStructureId must be specified"));
+			return;
+		}
+		final Integer transactionId = dto.getTransactionId();
+		final boolean commit = dto.getCommit() != null ? dto.getCommit() : true;
+		final boolean autoSend = dto.getAutoSend() != null ? dto.getAutoSend() : true;
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin(transactionId);
+			tx.setAutoSend(autoSend);
+			Structure.addAttachment(structureId, parentStructureId, tx);
+			if (commit) {
+				tx.commit(m -> replyHandler.handle(m.body()));
+			} else {
+				tx.flush(m -> replyHandler.handle(m.body()));
+			}
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when attaching structure", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
-	public void structureAttachment(Message<JsonObject> message) {
-		final String structureId = getMandatoryString("structureId", message);
-		final String parentStructureId = getMandatoryString("parentStructureId", message);
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		final Boolean autoSend = message.body().getBoolean("autoSend", true);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				Structure.addAttachment(structureId, parentStructureId, tx);
-			}
-		}, transactionId, commit, autoSend);
-	}
-
-	public void structureDetachment(Message<JsonObject> message) {
-		final String structureId = getMandatoryString("structureId", message);
-		final String parentStructureId = getMandatoryString("parentStructureId", message);
-		executeTransaction(message, new VoidFunction<TransactionHelper>() {
-			@Override
-			public void apply(TransactionHelper tx) throws ValidationException {
-				Structure.removeAttachment(structureId, parentStructureId, tx);
-			}
-		});
+	public void structureDetachment(final StructureDetachmentDTO dto, final Handler<JsonObject> replyHandler) {
+		final String structureId = dto.getStructureId();
+		final String parentStructureId = dto.getParentStructureId();
+		if (structureId == null || parentStructureId == null) {
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "structureId and parentStructureId must be specified"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+			tx.setAutoSend(true);
+			Structure.removeAttachment(structureId, parentStructureId, tx);
+			tx.commit(m -> replyHandler.handle(m.body()));
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when detaching structure", e);
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+		}
 	}
 
 	public void updateStructure(final UpdateStructureDTO dto, final Handler<JsonObject> replyHandler) {
@@ -1651,19 +1703,38 @@ public class ManualFeeder extends BusModBase {
 		this.loginAliasValidatorForAD = loginAliasValidatorForAD;
 	}
 
-    public void setManualGroupAutolinkUsersPositions(Message<JsonObject> message) {
-        final String groupId = getMandatoryString("groupId", message);
-        final JsonArray userPositions = message.body().getJsonArray("manualGroupAutolinkUsersPositions");
-
-        if (userPositions == null || groupId == null) return;
-
-        executeTransaction(message, tx -> Group.setManualGroupAutolinkUsersPositions(groupId, userPositions, tx));
+    public void setManualGroupAutolinkUsersPositions(final LinkUserPositionsDTO dto, final Handler<JsonObject> replyHandler) {
+        final String groupId = dto.getGroupId();
+        final List<String> userPositions = dto.getManualGroupAutolinkUsersPositions();
+        if (groupId == null || userPositions == null) {
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", "groupId and manualGroupAutolinkUsersPositions must be specified"));
+            return;
+        }
+        try {
+            TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+            tx.setAutoSend(true);
+            Group.setManualGroupAutolinkUsersPositions(groupId, new JsonArray(userPositions), tx);
+            tx.commit(m -> replyHandler.handle(m.body()));
+        } catch (TransactionException e) {
+            logger.error("Error in transaction when linking user positions to group", e);
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+        }
     }
 
-    public void updateManualGroupsByUserPositions(Message<JsonObject> message) {
-        final String userPosition = getMandatoryString("userPosition", message);
-        if (userPosition == null || userPosition.isEmpty()) return;
-
-        executeTransaction(message, tx -> Group.updateManualGroupsByUserPositions(userPosition, tx));
+    public void updateManualGroupsByUserPositions(final UpdateGroupLinkedPositionsDTO dto, final Handler<JsonObject> replyHandler) {
+        final String userPosition = dto.getUserPosition();
+        if (userPosition == null || userPosition.isEmpty()) {
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", "userPosition must be specified"));
+            return;
+        }
+        try {
+            TransactionHelper tx = TransactionManager.getInstance().begin((Integer) null);
+            tx.setAutoSend(true);
+            Group.updateManualGroupsByUserPositions(userPosition, tx);
+            tx.commit(m -> replyHandler.handle(m.body()));
+        } catch (TransactionException e) {
+            logger.error("Error in transaction when updating groups by user position", e);
+            replyHandler.handle(new JsonObject().put("status", "error").put("message", e.getMessage()));
+        }
     }
 }
