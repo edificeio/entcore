@@ -86,6 +86,19 @@ public class TaskController extends BaseController {
 		} );
 	}
 
+	@Post("/api/internal/upload-aaf")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void uploadAAFFiles(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, uploadRequest -> {
+			eb.request("feeder.upload-aaf", uploadRequest)
+			.onSuccess(message -> render(request, new JsonObject().put("success", true)))
+			.onFailure(th -> {
+				log.warn("Error while uploading aaf files", th);
+				renderError(request);
+			});
+		});
+	}
+
 	/**
 	 * Endpoint to trigger CSV import task with specified path and configuration, used for Educasud project
 	 * @param request the HTTP request containing

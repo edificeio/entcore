@@ -20,8 +20,10 @@
 package org.entcore.feeder;
 
 import fr.wseduc.webutils.I18n;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -42,6 +44,7 @@ import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.Id;
+import org.entcore.feeder.aaf.AAFFilesUploadRequest;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.dictionary.structures.User.DeleteTask;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -49,6 +52,7 @@ import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
 import org.vertx.java.busmods.BusModBase;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -56,6 +60,8 @@ import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static io.vertx.core.Future.failedFuture;
+import static java.io.File.separator;
 
 
 public class ManualFeeder extends BusModBase {
@@ -1596,4 +1602,5 @@ public class ManualFeeder extends BusModBase {
 
         executeTransaction(message, tx -> Group.updateManualGroupsByUserPositions(userPosition, tx));
     }
+
 }
