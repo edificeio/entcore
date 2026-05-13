@@ -89,6 +89,13 @@ import org.entcore.feeder.dto.AddGroupUsersDTO;
 import org.entcore.feeder.dto.RemoveGroupUsersDTO;
 import org.entcore.feeder.dto.RelativeStudentDTO;
 import org.entcore.feeder.dto.UnlinkRelativeStudentDTO;
+import org.entcore.feeder.dto.CheckDuplicatesIntegrityDTO;
+import org.entcore.feeder.dto.IgnoreDuplicateDTO;
+import org.entcore.feeder.dto.ListDuplicatesDTO;
+import org.entcore.feeder.dto.MergeByKeysDTO;
+import org.entcore.feeder.dto.MergeDuplicateDTO;
+import org.entcore.feeder.dto.TransitionDTO;
+import org.entcore.feeder.dto.UnmergeByLoginsDTO;
 import org.entcore.feeder.mapper.ClassMapper;
 import org.entcore.feeder.mapper.FunctionMapper;
 import org.entcore.feeder.mapper.StructureMapper;
@@ -500,7 +507,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
             case "manual-update-group-linked-positions":
                 manual.updateManualGroupsByUserPositions(new UpdateGroupLinkedPositionsDTO(message.body()), message::reply);
                 break;
-			case "transition" : launchTransition(message, null);
+			case "transition" : launchTransition(new TransitionDTO(message.body()), message::reply);
 				break;
 			case "import" : launchImport(message);
 				break;
@@ -517,19 +524,19 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "classesMapping" : csvClassesMapping(message);
 				break;
 			case "ignore-duplicate" :
-				duplicateUsers.ignoreDuplicate(message);
+				duplicateUsers.ignoreDuplicate(new IgnoreDuplicateDTO(message.body()), message::reply);
 				break;
 			case "list-duplicate" :
-				duplicateUsers.listDuplicates(message);
+				duplicateUsers.listDuplicates(new ListDuplicatesDTO(message.body()), message::reply);
 				break;
 			case "merge-duplicate" :
-				duplicateUsers.mergeDuplicate(message);
+				duplicateUsers.mergeDuplicate(new MergeDuplicateDTO(message.body()), message::reply);
 				break;
 			case "merge-by-keys" :
-				duplicateUsers.mergeBykeys(message);
+				duplicateUsers.mergeBykeys(new MergeByKeysDTO(message.body()), message::reply);
 				break;
 			case "unmerge-by-logins" : // Reverse operation of "merge-by-keys"
-				duplicateUsers.unmergeByLogins(message);
+				duplicateUsers.unmergeByLogins(new UnmergeByLoginsDTO(message.body()), message::reply);
 				break;
 			case "mark-duplicates" :
 				duplicateUsers.markDuplicates(message);
@@ -544,7 +551,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				});
 				break;
 			case "check-duplicates" :
-				duplicateUsers.checkDuplicatesIntegrity(message);
+				DuplicateUsers.checkDuplicatesIntegrity(new CheckDuplicatesIntegrityDTO(message.body()), message::reply);
 				break;
 			case "manual-init-timetable-structure" :
 				AbstractTimetableImporter.initStructure(eb, message);
@@ -774,6 +781,29 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			});
 		} catch (Exception e) {
 			sendError(message, e.getMessage(), e);
+		}
+	}
+
+	private void launchTransition(final TransitionDTO dto, final Handler<JsonObject> replyHandler) {
+		if (GraphData.isReady()) {
+			final String structureExternalId = dto.getStructureExternalId();
+			Transition transition = new Transition(vertx,
+					getOrElse(config.getLong("delayBetweenStructure"), 5000l),
+					getOrElse(dto.getOnlyRemoveShare(), false));
+			transition.launch(structureExternalId, m -> {
+                if (m != null && "ok".equals(m.body().getString("status"))) {
+                    AbstractTimetableImporter.transition(structureExternalId);
+                    replyHandler.handle(m.body());
+                } else if (m != null) {
+                    logger.error(m.body().getString("message"));
+                    replyHandler.handle(m.body());
+                } else {
+                    logger.error("Transition return null value.");
+                    replyHandler.handle(new JsonObject().put("status", "error").put("message", "transition.error"));
+                }
+                GraphData.clear();
+                checkEventQueue();
+            });
 		}
 	}
 
