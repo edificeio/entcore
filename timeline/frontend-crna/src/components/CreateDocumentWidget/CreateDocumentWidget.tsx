@@ -1,4 +1,4 @@
-import { ButtonBeta, Flex } from '@edifice.io/react';
+import { ButtonBeta, Flex, IconButton } from '@edifice.io/react';
 import {
   IconExternalLink,
   IconMic,
@@ -10,28 +10,39 @@ import './CreateDocumentWidget.css';
 
 const CREATE_ACTIONS = [
   {
-    labelKey: 'Writer',
+    labelKey: `('tiptap.toolbar.text', 'Document Texte')`,
     icon: 'W',
-    colorVar: '#2B6CBF',
+    colorVar: 'blue',
     href: '/collaborative',
   },
   {
-    labelKey: 'Présentation',
+    labelKey: `('tiptap.toolbar.presentation', 'Présentation')`,
     icon: 'P',
-    colorVar: '#E07A5F',
+    colorVar: 'orange',
     href: '/mindmap',
   },
-  { labelKey: 'Tableur', icon: 'X', colorVar: '#3D9A6D', href: '/formulaire' },
   {
-    labelKey: 'Formulaire',
-    icon: <IconRecordVideo width={20} height={20} />,
-    colorVar: '#7B61FF',
+    labelKey: `('tiptap.toolbar.spreadsheet', 'Classeur')`,
+    icon: 'X',
+    colorVar: 'green',
     href: '/formulaire',
   },
   {
-    labelKey: 'Carte mentale',
-    icon: <IconMic width={20} height={20} />,
-    colorVar: '#F2A541',
+    labelKey: `('tiptap.toolbar.video', 'Ajout Vidéo')`,
+    icon: (
+      <IconRecordVideo
+        width={20}
+        height={20}
+        color="var(--edifice-yellow-800)"
+      />
+    ),
+    colorVar: 'yellow',
+    href: '/formulaire',
+  },
+  {
+    labelKey: `('tiptap.toolbar.audio', 'Ajout Audio')`,
+    icon: <IconMic width={20} height={20} color="var(--edifice-pink-800)" />,
+    colorVar: 'pink',
     href: '/mindmap',
   },
 ] as const;
@@ -56,15 +67,22 @@ export function CreateDocumentWidget() {
       <div className="create-document-apps-card">
         <Flex gap="8" align="center">
           {CREATE_ACTIONS.map(({ labelKey, icon, colorVar, href }) => (
-            <a
+            <IconButton
               key={labelKey}
-              href={href}
-              title={labelKey}
+              onClick={() => window.open(href, '_self')}
+              title={t(labelKey)}
               className="create-document-btn"
-              style={{ background: colorVar }}
-            >
-              {icon}
-            </a>
+              aria-label={t(labelKey)}
+              style={
+                {
+                  'background': `var(--edifice-${colorVar}-200)`,
+                  'color': `var(--edifice-${colorVar}-800)`,
+                  '--edifice-btn-border-color': `var(--edifice-${colorVar}-800)`,
+                  '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-800)`,
+                } as React.CSSProperties
+              }
+              icon={icon}
+            />
           ))}
         </Flex>
       </div>
