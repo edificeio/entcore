@@ -26,6 +26,7 @@ import org.entcore.common.folders.QuotaService;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
@@ -95,6 +96,18 @@ public class QuotaController extends BaseController {
 	@MfaProtected()
 	public void getDefault(final HttpServerRequest request) {
 		quotaService.getDefaultMaxQuota(arrayResponseHandler(request));
+	}
+
+	/**
+	 * POST /quota/user/:userId/init
+	 * Crée le UserBook (quota) si absent (idempotent via MERGE).
+	 * Utile pour les comptes non encore activés via activation.ack.
+	 */
+	@Post("/quota/user/:userId/init")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void initUserQuota(final HttpServerRequest request) {
+		String userId = request.params().get("userId");
+		quotaService.quotaAndUsage(userId, notEmptyResponseHandler(request));
 	}
 
 	@BusAddress("activation.ack")

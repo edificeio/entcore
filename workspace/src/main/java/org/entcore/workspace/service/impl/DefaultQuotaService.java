@@ -19,6 +19,7 @@
 
 package org.entcore.workspace.service.impl;
 
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import java.util.ArrayList;
@@ -87,7 +88,18 @@ public class DefaultQuotaService extends BasicQuotaService {
 
 	@Override
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {
-		super.quotaAndUsage(userId, handler);
+		// MERGE crée le UserBook avec le quota par défaut du profil s'il n'existe pas.
+		// Évite le 404 pour les utilisateurs dont le compte n'a pas été activé via activation.ack.
+		String query =
+			"MATCH (n:User {id: {userId}}) " +
+			"OPTIONAL MATCH (n)-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+			"WITH n, sum(CASE WHEN p IS NOT NULL AND p.defaultQuota IS NOT NULL " +
+			"           THEN p.defaultQuota ELSE 104857600 END) AS defaultQ " +
+			"MERGE (n)-[:USERBOOK]->(u:UserBook) " +
+			"ON CREATE SET u.userid = {userId}, u.quota = defaultQ, u.storage = 0, u.alertSize = false " +
+			"RETURN u.quota AS quota, u.storage AS storage";
+		neo4j.execute(query, new io.vertx.core.json.JsonObject().put("userId", userId),
+			validUniqueResultHandler(handler));
 	}
 
 	@Override
