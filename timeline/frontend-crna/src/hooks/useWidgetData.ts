@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import type { EmploiDuTempsEntry } from '~/components/EmploiDuTempsWidget';
 import type { ListWidgetItem } from '~/components/ListWidget';
+import type { LastInfosProps } from '@edifice.io/react/homepage';
 import {
   MOCK_AVANTAGES,
   MOCK_EMPLOI_DU_TEMPS,
+  MOCK_LAST_INFOS,
   MOCK_LIENS_UTILES,
   MOCK_MEDIACENTRE,
   MOCK_MES_EMPRUNTS,
@@ -52,5 +54,12 @@ export function useMediacentre() {
   return useQuery<ListWidgetItem[]>({
     queryKey: ['mediacentre'],
     queryFn: async () => [],
+  });
+}
+
+export function useLastInfos() {
+  return useQuery<LastInfosProps[]>({
+    queryKey: ['last-infos'],
+    queryFn: async () => MOCK_LAST_INFOS,
   });
 }

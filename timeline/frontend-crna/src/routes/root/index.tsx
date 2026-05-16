@@ -16,10 +16,12 @@ import { LiensUtilesWidget } from '~/components/LiensUtilesWidget';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
 import { EmploiDuTempsWidget } from '~/components/EmploiDuTempsWidget';
+import { LastInfosWidget } from '~/components/LastInfosWidget';
 import { MesEmpruntsWidget } from '~/components/MesEmpruntsWidget/MesEmpruntsWidget';
 import {
   useAvantages,
   useEmploiDuTemps,
+  useLastInfos,
   useLiensUtiles,
   useMediacentre,
   useMesEmprunts,
@@ -56,6 +58,7 @@ export const Root = () => {
   const { data: liensUtiles, isLoading: isLiensLoading } = useLiensUtiles();
   const { data: avantages, isLoading: isAvantagesLoading } = useAvantages();
   const { data: mediacentre, isLoading: isMediacentreLoading } = useMediacentre();
+  const { data: lastInfos, isLoading: isLastInfosLoading } = useLastInfos();
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -77,6 +80,9 @@ export const Root = () => {
           selectedSchool={selectedSchool}
           onSelectedSchoolChange={(idx) => setSelectedSchool(MOCK_SCHOOLS[idx])}
         />
+        <WidgetErrorBoundary>
+          <LastInfosWidget infos={lastInfos ?? []} isLoading={isLastInfosLoading} />
+        </WidgetErrorBoundary>
       </PageLayout.SidebarLeft>
       <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
         <BetaSwitchContainer />
