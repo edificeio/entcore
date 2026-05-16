@@ -14,7 +14,7 @@ import { WidgetErrorBoundary } from '~/components/WidgetErrorBoundary';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
 import { LiensUtilesWidget } from '~/components/LiensUtilesWidget';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
-import { VieScolaireWidget } from '~/components/VieScolaireWidget/VieScolaireWidget';
+import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
 import { EmploiDuTempsWidget } from '~/components/EmploiDuTempsWidget';
 import { MesEmpruntsWidget } from '~/components/MesEmpruntsWidget/MesEmpruntsWidget';
 import {
@@ -23,7 +23,6 @@ import {
   useLiensUtiles,
   useMediacentre,
   useMesEmprunts,
-  useVieScolaire,
 } from '~/hooks/useWidgetData';
 
 const MOCK_SCHOOLS = [
@@ -53,7 +52,6 @@ export const Root = () => {
   const [selectedSchool, setSelectedSchool] = useState(MOCK_SCHOOLS[1]);
 
   const { data: emploiDuTemps, isLoading: isEdtLoading } = useEmploiDuTemps();
-  const { data: vieScolaire, isLoading: isVieScolaireLoading } = useVieScolaire();
   const { data: mesEmprunts, isLoading: isEmpruntsLoading } = useMesEmprunts();
   const { data: liensUtiles, isLoading: isLiensLoading } = useLiensUtiles();
   const { data: avantages, isLoading: isAvantagesLoading } = useAvantages();
@@ -131,7 +129,7 @@ export const Root = () => {
           <Grid>
             <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
               <WidgetErrorBoundary>
-                <VieScolaireWidget kids={vieScolaire ?? []} isLoading={isVieScolaireLoading} />
+                <CarnetDeBordWidget />
               </WidgetErrorBoundary>
               <WidgetErrorBoundary>
                 <MesEmpruntsWidget items={mesEmprunts ?? []} isLoading={isEmpruntsLoading} />

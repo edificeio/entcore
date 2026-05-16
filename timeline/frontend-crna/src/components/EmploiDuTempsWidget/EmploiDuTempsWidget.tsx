@@ -1,4 +1,4 @@
-import { Button, ButtonBeta } from '@edifice.io/react';
+import { ButtonBeta } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import type { WidgetBaseProps } from '../types';

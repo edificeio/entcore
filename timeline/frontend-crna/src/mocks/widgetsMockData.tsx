@@ -1,7 +1,5 @@
 import type { EmploiDuTempsEntry } from '~/components/EmploiDuTempsWidget';
 import type { ListWidgetItem } from '~/components/ListWidget';
-import type { VieScolaireChild } from '~/components/VieScolaireWidget';
-// ListWidgetItem is reused for MesEmprunts
 
 function IconPlaceholder({ label, bg }: { label: string; bg: string }) {
   return (
@@ -96,25 +94,6 @@ export const MOCK_AVANTAGES: ListWidgetItem[] = [
   },
 ];
 
-const SOPHIE_ENTRIES = [
-  { id: 's1', type: 'retard' as const, label: 'Retards non justifiés', sublabel: 'le 08/06/2024 - 08:30' },
-  { id: 's2', type: 'absence' as const, label: 'Absences non justifiées', sublabel: 'du 02/02/2024 09:00 au 02/02/2024 16:00' },
-  { id: 's3', type: 'note' as const, label: 'Notes', sublabel: '16,00/20 en TECHNOLOGIE le 18/04/2024' },
-  { id: 's4', type: 'cahier' as const, label: 'Cahier de textes', sublabel: 'Travail en MATHEMATIQUES pour le 12/06/2024' },
-  { id: 's5', type: 'competence' as const, label: 'Compétences acquises', sublabel: 'Evaluation le 13/06/2024 en MATHEMATIQUES' },
-];
-
-const JULIEN_ENTRIES = [
-  { id: 'j1', type: 'absence' as const, label: 'Absences non justifiées', sublabel: 'le 10/06/2024 - journée entière' },
-  { id: 'j2', type: 'note' as const, label: 'Notes', sublabel: '12,50/20 en FRANÇAIS le 05/06/2024' },
-  { id: 'j3', type: 'cahier' as const, label: 'Cahier de textes', sublabel: 'Exposé en HISTOIRE-GEO pour le 15/06/2024' },
-  { id: 'j4', type: 'competence' as const, label: 'Compétences acquises', sublabel: 'Evaluation le 20/06/2024 en SCIENCES' },
-];
-
-export const MOCK_VIE_SCOLAIRE: VieScolaireChild[] = [
-  { id: 'sophie', name: 'Sophie', entries: SOPHIE_ENTRIES },
-  { id: 'julien', name: 'Julien', entries: JULIEN_ENTRIES },
-];
 
 export const MOCK_EMPLOI_DU_TEMPS: EmploiDuTempsEntry[] = [
   { id: 'e1', subject: 'Spé-SVT',           room: 'Bat A - Salle 202', teacher: 'M.DUCHEMIN',  startTime: '8h30',  color: 'green'  },
