@@ -1,25 +1,25 @@
 .edt-widget {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-8);
-  background-color: var(--edifice-danger-200);
-  border-radius: var(--edifice-border-radius-2xl);
-  padding: var(--edifice-spacer-8) var(--edifice-spacer-16);
+  gap: var(--primitive-spacer-8);
+  background-color: var(--primitive-danger-200);
+  border-radius: var(--primitive-border-radius-2xl);
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-16);
   overflow: hidden;
 }
 
 .edt-header {
-  padding: var(--edifice-spacer-8);
+  padding: var(--primitive-spacer-8);
 }
 
 /* Override font-size — compound selector (0,2,0) + !important bat la base de WidgetHeader.css */
 .edt-date.widget-header-title {
-  font-size: var(--edifice-font-size-default) !important;
+  font-size: var(--primitive-font-size-default) !important;
 }
 
 .edt-body {
   display: flex;
-  gap: var(--edifice-spacer-24);
+  gap: var(--primitive-spacer-24);
   align-items: flex-start;
 }
 
@@ -39,7 +39,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: 1px;
-  background-color: var(--edifice-clients-crna-300);
+  background-color: var(--primitive-clients-crna-300);
   z-index: 0;
 }
 
@@ -51,12 +51,12 @@
   justify-content: center;
   width: 49px;
   height: 21px;
-  border-radius: var(--edifice-border-radius-2xl);
-  font-family: var(--edifice-legacy-font-family-roboto);
+  border-radius: var(--primitive-border-radius-2xl);
+  font-family: var(--primitive-legacy-font-family-roboto);
   font-weight: 400;
-  font-size: var(--edifice-font-size-caption);
-  line-height: var(--edifice-font-lineheight-2xs);
-  color: var(--edifice-grey-900);
+  font-size: var(--primitive-font-size-caption);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-900);
   margin-bottom: 83px;
   flex-shrink: 0;
 }
@@ -66,13 +66,13 @@
 }
 
 .edt-time-badge.current {
-  background-color: var(--edifice-clients-crna-500);
-  color: var(--edifice-white);
-  border: 1px solid var(--edifice-white);
+  background-color: var(--primitive-clients-crna-500);
+  color: var(--primitive-white);
+  border: 1px solid var(--primitive-white);
 }
 
 .edt-time-badge.past {
-  background-color: var(--edifice-clients-crna-300);
+  background-color: var(--primitive-clients-crna-300);
 }
 
 .edt-now-dot {
@@ -80,7 +80,7 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background-color: var(--edifice-clients-crna-500);
+  background-color: var(--primitive-clients-crna-500);
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
@@ -89,7 +89,7 @@
 .edt-blocks {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-12);
+  gap: var(--primitive-spacer-12);
   flex: 1;
   min-width: 0;
 }
@@ -97,10 +97,10 @@
 .edt-block {
   display: flex;
   align-items: center;
-  border-radius: var(--edifice-border-radius-lg);
+  border-radius: var(--primitive-border-radius-lg);
   padding: 10px 7px;
   border: 1px solid transparent;
-  gap: var(--edifice-spacer-12);
+  gap: var(--primitive-spacer-12);
 }
 
 .edt-block-bar {
@@ -120,33 +120,33 @@
 
 .edt-block-subject {
   margin: 0;
-  font-family: var(--edifice-legacy-font-family-roboto);
-  font-weight: var(--edifice-font-weight-bold);
-  font-size: var(--edifice-font-size-small);
-  line-height: var(--edifice-font-lineheight-xs);
-  color: var(--edifice-grey-900);
+  font-family: var(--primitive-legacy-font-family-roboto);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-grey-900);
 }
 
 .edt-block-details {
-  font-family: var(--edifice-legacy-font-family-roboto);
+  font-family: var(--primitive-legacy-font-family-roboto);
   font-weight: 400;
-  font-size: var(--edifice-font-size-small);
-  line-height: var(--edifice-font-lineheight-xs);
-  color: var(--edifice-grey-800);
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-grey-800);
 }
 
 /* ─── Color variants ─────────────────────────────────────────────────────── */
-.edt-block.green  { background-color: var(--edifice-green-100);  border-color: var(--edifice-green-300); }
-.edt-block.green  .edt-block-bar { background-color: var(--edifice-green-500); }
+.edt-block.green  { background-color: var(--primitive-green-100);  border-color: var(--primitive-green-300); }
+.edt-block.green  .edt-block-bar { background-color: var(--primitive-green-500); }
 
-.edt-block.pink   { background-color: var(--edifice-pink-100);   border-color: var(--edifice-pink-300); }
-.edt-block.pink   .edt-block-bar { background-color: var(--edifice-pink-500); }
+.edt-block.pink   { background-color: var(--primitive-pink-100);   border-color: var(--primitive-pink-300); }
+.edt-block.pink   .edt-block-bar { background-color: var(--primitive-pink-500); }
 
-.edt-block.orange { background-color: var(--edifice-orange-100); border-color: var(--edifice-orange-300); }
-.edt-block.orange .edt-block-bar { background-color: var(--edifice-orange-500); }
+.edt-block.orange { background-color: var(--primitive-orange-100); border-color: var(--primitive-orange-300); }
+.edt-block.orange .edt-block-bar { background-color: var(--primitive-orange-500); }
 
-.edt-block.blue   { background-color: var(--edifice-blue-100);   border-color: var(--edifice-blue-300); }
-.edt-block.blue   .edt-block-bar { background-color: var(--edifice-blue-500); }
+.edt-block.blue   { background-color: var(--primitive-blue-100);   border-color: var(--primitive-blue-300); }
+.edt-block.blue   .edt-block-bar { background-color: var(--primitive-blue-500); }
 
-.edt-block.grey   { background-color: var(--edifice-grey-100);   border-color: var(--edifice-grey-300); }
-.edt-block.grey   .edt-block-bar { background-color: var(--edifice-grey-500); }
+.edt-block.grey   { background-color: var(--primitive-grey-100);   border-color: var(--primitive-grey-300); }
+.edt-block.grey   .edt-block-bar { background-color: var(--primitive-grey-500); }

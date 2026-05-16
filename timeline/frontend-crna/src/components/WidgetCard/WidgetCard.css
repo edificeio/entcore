@@ -1,17 +1,17 @@
 .widget-card {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-16);
-  border-radius: var(--edifice-border-radius-2xl);
-  padding: var(--edifice-spacer-16);
-  background-color: var(--widget-card-bg, var(--edifice-white));
-  box-shadow: var(--edifice-box-shadow);
+  gap: var(--primitive-spacer-16);
+  border-radius: var(--primitive-border-radius-2xl);
+  padding: var(--primitive-spacer-16);
+  background-color: var(--widget-card-bg, var(--primitive-white));
+  box-shadow: var(--primitive-box-shadow);
 }
 
 .widget-card-body {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-16);
+  gap: var(--primitive-spacer-16);
 }
 
 .widget-card-header {
@@ -22,12 +22,12 @@
 
 .widget-card-title {
   margin: 0;
-  color: var(--edifice-grey-900);
-  font-family: var(--edifice-font-family-urbanist);
-  font-size: var(--edifice-font-size-s);
+  color: var(--primitive-grey-900);
+  font-family: var(--primitive-font-family-urbanist);
+  font-size: var(--primitive-font-size-s);
   font-style: normal;
-  font-weight: var(--edifice-font-weight-bold);
-  line-height: var(--edifice-font-lineheight-s);
+  font-weight: var(--primitive-font-weight-bold);
+  line-height: var(--primitive-font-lineheight-s);
 }
 
 .widget-card-action {
@@ -38,11 +38,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--edifice-spacer-16);
+  gap: var(--primitive-spacer-16);
   height: 70px;
-  margin: 0 calc(-1 * var(--edifice-spacer-16)) calc(-1 * var(--edifice-spacer-16));
-  padding: var(--edifice-spacer-32) var(--edifice-spacer-16) var(--edifice-spacer-16);
-  border-bottom-right-radius: var(--edifice-border-radius-2xl);
-  border-bottom-left-radius: var(--edifice-border-radius-2xl);
+  margin: 0 calc(-1 * var(--primitive-spacer-16)) calc(-1 * var(--primitive-spacer-16));
+  padding: var(--primitive-spacer-32) var(--primitive-spacer-16) var(--primitive-spacer-16);
+  border-bottom-right-radius: var(--primitive-border-radius-2xl);
+  border-bottom-left-radius: var(--primitive-border-radius-2xl);
   border-top: 2px solid transparent;
 }

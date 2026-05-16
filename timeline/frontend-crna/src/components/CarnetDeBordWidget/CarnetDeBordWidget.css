@@ -1,20 +1,20 @@
 .carnet-de-bord-widget {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-8);
-  border-radius: var(--edifice-border-radius-xl);
-  padding: var(--edifice-spacer-12) var(--edifice-spacer-16) var(--edifice-spacer-16);
-  background-color: var(--edifice-grey-100);
+  gap: var(--primitive-spacer-8);
+  border-radius: var(--primitive-border-radius-xl);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16) var(--primitive-spacer-16);
+  background-color: var(--primitive-grey-100);
 }
 
 .carnet-de-bord-header {
-  padding: 0 var(--edifice-spacer-8);
+  padding: 0 var(--primitive-spacer-8);
 }
 
 .carnet-de-bord-list {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-8);
+  gap: var(--primitive-spacer-8);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -23,11 +23,11 @@
 .carnet-de-bord-entry {
   display: flex;
   align-items: center;
-  gap: var(--edifice-spacer-8);
-  background: var(--edifice-white);
-  border: 1px solid var(--edifice-grey-200);
-  border-radius: var(--edifice-border-radius-lg);
-  padding: var(--edifice-spacer-8);
+  gap: var(--primitive-spacer-8);
+  background: var(--primitive-white);
+  border: 1px solid var(--primitive-grey-200);
+  border-radius: var(--primitive-border-radius-lg);
+  padding: var(--primitive-spacer-8);
   text-decoration: none;
   color: inherit;
   width: 100%;
@@ -40,8 +40,8 @@ button.carnet-de-bord-entry {
 }
 
 button.carnet-de-bord-entry:hover {
-  background-color: var(--edifice-grey-100);
-  border-color: var(--edifice-grey-300);
+  background-color: var(--primitive-grey-100);
+  border-color: var(--primitive-grey-300);
 }
 
 .carnet-de-bord-entry-icon {
@@ -50,42 +50,42 @@ button.carnet-de-bord-entry:hover {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--edifice-border-radius-lg);
+  border-radius: var(--primitive-border-radius-lg);
   overflow: hidden;
   flex-shrink: 0;
-  background-color: var(--edifice-yellow-100);
-  border: 1px solid var(--edifice-yellow-300);
-  color: var(--edifice-grey-900);
+  background-color: var(--primitive-yellow-100);
+  border: 1px solid var(--primitive-yellow-300);
+  color: var(--primitive-grey-900);
 }
 
 .carnet-de-bord-entry-icon[data-type="lateness"] {
-  background-color: var(--edifice-orange-200);
-  border-color: var(--edifice-orange-300);
-  color: var(--edifice-orange-800);
+  background-color: var(--primitive-orange-200);
+  border-color: var(--primitive-orange-300);
+  color: var(--primitive-orange-700);
 }
 
 .carnet-de-bord-entry-icon[data-type="absences"] {
-  background-color: var(--edifice-red-200);
-  border-color: var(--edifice-red-300);
-  color: var(--edifice-red-800);
+  background-color: var(--primitive-danger-200);
+  border-color: var(--primitive-danger-300);
+  color: var(--primitive-danger-700);
 }
 
 .carnet-de-bord-entry-icon[data-type="grades"] {
-  background-color: var(--edifice-blue-200);
-  border-color: var(--edifice-blue-300);
-  color: var(--edifice-blue-800);
+  background-color: var(--primitive-blue-200);
+  border-color: var(--primitive-blue-300);
+  color: var(--primitive-blue-700);
 }
 
 .carnet-de-bord-entry-icon[data-type="diary"] {
-  background-color: var(--edifice-green-200);
-  border-color: var(--edifice-green-300);
-  color: var(--edifice-green-800);
+  background-color: var(--primitive-green-200);
+  border-color: var(--primitive-green-300);
+  color: var(--primitive-green-700);
 }
 
 .carnet-de-bord-entry-icon[data-type="skills"] {
-  background-color: var(--edifice-purple-200);
-  border-color: var(--edifice-purple-300);
-  color: var(--edifice-purple-800);
+  background-color: var(--primitive-pink-200);
+  border-color: var(--primitive-pink-300);
+  color: var(--primitive-pink-700);
 }
 
 .carnet-de-bord-entry-text {
@@ -94,19 +94,19 @@ button.carnet-de-bord-entry:hover {
 }
 
 .carnet-de-bord-entry-label {
-  font-family: var(--edifice-font-family-arimo);
-  font-weight: var(--edifice-font-weight-bold);
-  font-size: var(--edifice-font-size-small);
-  line-height: var(--edifice-font-lineheight-2xs);
-  color: var(--edifice-grey-900);
+  font-family: var(--primitive-font-family-arimo);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-900);
 }
 
 .carnet-de-bord-entry-sublabel {
-  font-family: var(--edifice-legacy-font-family-roboto);
+  font-family: var(--primitive-legacy-font-family-roboto);
   font-weight: 400;
-  font-size: var(--edifice-font-size-caption);
-  line-height: var(--edifice-font-lineheight-2xs);
-  color: var(--edifice-grey-800);
+  font-size: var(--primitive-font-size-caption);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-800);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -123,9 +123,9 @@ button.carnet-de-bord-entry:hover {
 .carnet-de-bord-lightbox-item {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-4);
-  padding: var(--edifice-spacer-12) var(--edifice-spacer-8);
-  border-bottom: 1px solid var(--edifice-grey-200);
+  gap: var(--primitive-spacer-4);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-8);
+  border-bottom: 1px solid var(--primitive-grey-200);
 }
 
 .carnet-de-bord-lightbox-item:last-child {
@@ -135,8 +135,8 @@ button.carnet-de-bord-entry:hover {
 .carnet-de-bord-lightbox-subsection {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-2);
-  padding-left: var(--edifice-spacer-8);
+  gap: var(--primitive-spacer-2);
+  padding-left: var(--primitive-spacer-8);
 }
 
 .carnet-de-bord-lightbox-link {
@@ -145,14 +145,14 @@ button.carnet-de-bord-entry:hover {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: var(--edifice-border-radius-sm);
-  color: var(--edifice-grey-600);
+  border-radius: var(--primitive-border-radius-sm);
+  color: var(--primitive-grey-500);
   flex-shrink: 0;
   text-decoration: none;
   transition: color 0.15s, background-color 0.15s;
 }
 
 .carnet-de-bord-lightbox-link:hover {
-  color: var(--edifice-primary-500, var(--edifice-blue-500));
-  background-color: var(--edifice-blue-200);
+  color: var(--primitive-primary-500, var(--primitive-blue-500));
+  background-color: var(--primitive-blue-200);
 }

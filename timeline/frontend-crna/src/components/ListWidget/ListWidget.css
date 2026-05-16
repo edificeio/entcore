@@ -1,26 +1,26 @@
 .list-widget {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-12);
-  border-radius: var(--edifice-border-radius-xl);
-  padding: var(--edifice-spacer-12) var(--edifice-spacer-16) var(--edifice-spacer-16);
-  background-color: var(--list-widget-bg, var(--edifice-grey-100));
+  gap: var(--primitive-spacer-12);
+  border-radius: var(--primitive-border-radius-xl);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16) var(--primitive-spacer-16);
+  background-color: var(--list-widget-bg, var(--primitive-grey-100));
 }
 
 .list-widget-header {
-  padding: 0 var(--edifice-spacer-8);
+  padding: 0 var(--primitive-spacer-8);
   min-height: 38px;
 }
 
 /* Override font-size — compound selector (0,2,0) + !important bat la base de WidgetHeader.css */
 .list-widget-title.widget-header-title {
-  font-size: var(--edifice-font-size-default) !important;
+  font-size: var(--primitive-font-size-default) !important;
 }
 
 .list-widget-list {
   display: flex;
   flex-direction: column;
-  gap: var(--edifice-spacer-8);
+  gap: var(--primitive-spacer-8);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -29,11 +29,11 @@
 .list-widget-item {
   display: flex;
   align-items: center;
-  gap: var(--edifice-spacer-8);
-  background: var(--edifice-white);
-  border: 1px solid var(--edifice-grey-200);
-  border-radius: var(--edifice-border-radius-lg);
-  padding: var(--edifice-spacer-8);
+  gap: var(--primitive-spacer-8);
+  background: var(--primitive-white);
+  border: 1px solid var(--primitive-grey-200);
+  border-radius: var(--primitive-border-radius-lg);
+  padding: var(--primitive-spacer-8);
   text-decoration: none;
   color: inherit;
 }
@@ -41,7 +41,7 @@
 .list-widget-item-icon {
   width: 36px;
   height: 36px;
-  border-radius: var(--edifice-border-radius-lg);
+  border-radius: var(--primitive-border-radius-lg);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -50,7 +50,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--edifice-border-radius-lg);
+  border-radius: var(--primitive-border-radius-lg);
 }
 
 .list-widget-item-text {
@@ -59,19 +59,19 @@
 }
 
 .list-widget-item-label {
-  font-family: var(--edifice-font-family-arimo);
+  font-family: var(--primitive-font-family-arimo);
   font-weight: 400;
-  font-size: var(--edifice-font-size-small);
-  line-height: var(--edifice-font-lineheight-2xs);
-  color: var(--edifice-grey-900);
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-900);
 }
 
 .list-widget-item-sublabel {
-  font-family: var(--edifice-legacy-font-family-roboto);
+  font-family: var(--primitive-legacy-font-family-roboto);
   font-weight: 400;
-  font-size: var(--edifice-font-size-caption);
-  line-height: var(--edifice-font-lineheight-2xs);
-  color: var(--edifice-grey-800);
+  font-size: var(--primitive-font-size-caption);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-800);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

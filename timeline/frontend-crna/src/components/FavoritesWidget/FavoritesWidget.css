@@ -1,15 +1,15 @@
 .favorites-widget-apps-card {
-  background-color: var(--edifice-white);
-  border-radius: var(--edifice-border-radius-xl);
-  border: 1px solid var(--edifice-grey-200);
-  padding: var(--edifice-spacer-12);
+  background-color: var(--primitive-white);
+  border-radius: var(--primitive-border-radius-xl);
+  border: 1px solid var(--primitive-grey-200);
+  padding: var(--primitive-spacer-12);
 }
 
 .favorites-widget-apps-grid {
   display: flex;
   flex-wrap: wrap;
-  row-gap: var(--edifice-spacer-8);
-  column-gap: var(--edifice-spacer-16);
+  row-gap: var(--primitive-spacer-8);
+  column-gap: var(--primitive-spacer-16);
 }
 
 .favorites-widget-empty {
@@ -17,13 +17,13 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: var(--edifice-spacer-8, 8px) 12px;
-  padding: var(--edifice-spacer-16) 0;
-  color: var(--edifice-grey-600);
+  gap: var(--primitive-spacer-8, 8px) 12px;
+  padding: var(--primitive-spacer-16) 0;
+  color: var(--primitive-grey-500);
 }
 
 .favorites-widget-empty p {
   margin: 0;
-  font-family: var(--edifice-legacy-font-family-roboto);
-  font-size: var(--edifice-font-size-small);
+  font-family: var(--primitive-legacy-font-family-roboto);
+  font-size: var(--primitive-font-size-small);
 }

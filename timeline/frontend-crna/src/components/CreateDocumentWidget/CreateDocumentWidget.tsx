@@ -73,8 +73,8 @@ export function CreateDocumentWidget() {
                   {
                     background: `var(--edifice-${colorVar}-200)`,
                     color: `var(--edifice-${colorVar}-800)`,
-                    '--edifice-btn-border-color': `var(--edifice-${colorVar}-300)`,
-                    '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-300)`,
+                    '--edifice-btn-border-color': `var(--edifice-${colorVar}-800)`,
+                    '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-800)`,
                   } as React.CSSProperties
                 }
                 icon={icon}
@@ -94,8 +94,8 @@ export function CreateDocumentWidget() {
                   {
                     background: `var(--edifice-${colorVar}-200)`,
                     color: `var(--edifice-${colorVar}-800)`,
-                    '--edifice-btn-border-color': `var(--edifice-${colorVar}-300)`,
-                    '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-300)`,
+                    '--edifice-btn-border-color': `var(--edifice-${colorVar}-800)`,
+                    '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-800)`,
                   } as React.CSSProperties
                 }
                 icon={icon}
