@@ -1,4 +1,4 @@
-import { ButtonBeta, Flex, IconButton, useHasWorkflow } from '@edifice.io/react';
+import { Alert, ButtonBeta, Flex, IconButton, useHasWorkflow } from '@edifice.io/react';
 import {
   IconExternalLink,
   IconMic,
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import type { LoolDocTypeId } from '~/hooks/useLoolProviders';
 import { WidgetPanel } from '../WidgetPanel';
 import { LoolCreateModal } from './LoolCreateModal';
+import { MediaRecordModal } from './MediaRecordModal';
 import './CreateDocumentWidget.css';
 
 const LOOL_ACTIONS = [
@@ -23,21 +24,26 @@ const APP_ACTIONS = [
     label: 'Ajout Vidéo',
     icon: <IconRecordVideo width={20} height={20} color="var(--edifice-yellow-800)" />,
     colorVar: 'yellow',
-    href: '/formulaire',
+    mediaType: 'video' as const,
+    workflowKey: 'com.opendigitaleducation.video.controllers.VideoController|capture',
   },
   {
     labelKey: 'tiptap.toolbar.audio',
     label: 'Ajout Audio',
     icon: <IconMic width={20} height={20} color="var(--edifice-pink-800)" />,
     colorVar: 'pink',
-    href: '/mindmap',
+    mediaType: 'audio' as const,
+    workflowKey: null,
   },
 ] as const;
 
 export function CreateDocumentWidget() {
   const { t } = useTranslation();
   const hasLoolRight = useHasWorkflow("fr.openent.lool.controller.LoolController|createDocumentFromTemplate");
+  const hasVideoRight = useHasWorkflow("com.opendigitaleducation.video.controllers.VideoController|capture");
   const [selectedDocTypeId, setSelectedDocTypeId] = useState<LoolDocTypeId | null>(null);
+  const [mediaRecordType, setMediaRecordType] = useState<'video' | 'audio' | null>(null);
+  const [successType, setSuccessType] = useState<'video' | 'audio' | null>(null);
 
   return (
     <WidgetPanel
@@ -75,24 +81,27 @@ export function CreateDocumentWidget() {
               />
             ))}
 
-          {APP_ACTIONS.map(({ labelKey, label, icon, colorVar, href }) => (
-            <IconButton
-              key={labelKey}
-              onClick={() => window.open(href, '_self')}
-              title={t(labelKey, label)}
-              className="create-document-btn"
-              aria-label={t(labelKey, label)}
-              style={
-                {
-                  background: `var(--edifice-${colorVar}-200)`,
-                  color: `var(--edifice-${colorVar}-800)`,
-                  '--edifice-btn-border-color': `var(--edifice-${colorVar}-300)`,
-                  '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-300)`,
-                } as React.CSSProperties
-              }
-              icon={icon}
-            />
-          ))}
+          {APP_ACTIONS.map(({ labelKey, label, icon, colorVar, mediaType, workflowKey }) => {
+            if (workflowKey && hasVideoRight !== true) return null;
+            return (
+              <IconButton
+                key={labelKey}
+                onClick={() => setMediaRecordType(mediaType)}
+                title={t(labelKey, label)}
+                className="create-document-btn"
+                aria-label={t(labelKey, label)}
+                style={
+                  {
+                    background: `var(--edifice-${colorVar}-200)`,
+                    color: `var(--edifice-${colorVar}-800)`,
+                    '--edifice-btn-border-color': `var(--edifice-${colorVar}-300)`,
+                    '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-300)`,
+                  } as React.CSSProperties
+                }
+                icon={icon}
+              />
+            );
+          })}
         </Flex>
       </div>
 
@@ -101,6 +110,30 @@ export function CreateDocumentWidget() {
           isOpen={true}
           docTypeId={selectedDocTypeId}
           onClose={() => setSelectedDocTypeId(null)}
+        />
+      )}
+
+      {successType && (
+        <Alert
+          type="success"
+          isToast
+          position="top-right"
+          isDismissible
+          autoClose
+          onClose={() => setSuccessType(null)}
+        >
+          {successType === 'video'
+            ? t('homepage.widget.create.video.success', 'Votre vidéo a été enregistrée avec succès.')
+            : t('homepage.widget.create.audio.success', 'Votre audio a été enregistré avec succès.')}
+        </Alert>
+      )}
+
+      {mediaRecordType && (
+        <MediaRecordModal
+          type={mediaRecordType}
+          isOpen={true}
+          onClose={() => setMediaRecordType(null)}
+          onSuccess={() => setSuccessType(mediaRecordType)}
         />
       )}
     </WidgetPanel>
