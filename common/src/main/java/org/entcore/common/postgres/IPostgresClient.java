@@ -82,14 +82,11 @@ public interface IPostgresClient {
     static Future<Void> notify(final SqlConnection connection, final String channel, final String message) {
         final Promise<Void> future = Promise.promise();
         //prepareQuery not works with notify allow only internal safe message
+        System.out.println("NOTIFY " + channel + ", '" + message + "'");
         connection.query(
             "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
             future.handle(notified.mapEmpty());
-            if (notified.failed()) {
-                future.fail(notified.cause());
-            } else {
-                future.complete();
-            }
+
         });
         return future.future();
     }
