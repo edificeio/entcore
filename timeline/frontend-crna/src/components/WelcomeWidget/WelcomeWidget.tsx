@@ -33,13 +33,13 @@ export function WelcomeWidget({
 
   return (
     <WidgetCard className="welcome-widget">
-      <Grid className="welcome-widget-header mb-16 align-items-start">
-        <Grid.Col sm="3" md="3" lg="8">
+      <Grid className="welcome-widget-header mb-16 align-items-center">
+        <Grid.Col sm="12" md="8" lg="8">
           <Grid className="align-items-center">
-            <Grid.Col sm="1" md="1" lg="1">
+            <Grid.Col sm="2" md="2" lg="1">
               <Avatar alt={firstName} src={avatar} size="md" variant="circle" />
             </Grid.Col>
-            <Grid.Col sm="3" md="3" lg="11">
+            <Grid.Col sm="10" md="10" lg="11">
               <Heading level="h2" headingStyle="h4" className="mb-0 fw-bold">
                 {t('homepage.widget.welcome.greeting', 'Bonjour')} {firstName}
               </Heading>
@@ -50,12 +50,12 @@ export function WelcomeWidget({
           </Grid>
         </Grid.Col>
         <Grid.Col
-          sm="1"
-          md="1"
+          sm="12"
+          md="4"
           lg="4"
-          className="d-flex justify-content-end align-items-center"
+          className="welcome-widget-actions d-flex align-items-center"
         >
-          <Flex align="center" gap="12">
+          <Flex align="center" gap="12" className="flex-wrap">
             <a href="/classes" className="welcome-header-link">
               <IconUsers width={19} height={19} />
               <span>{t('homepage.widget.welcome.classes', 'Mes classes')}</span>

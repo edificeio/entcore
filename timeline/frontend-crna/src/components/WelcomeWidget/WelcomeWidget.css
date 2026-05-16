@@ -3,6 +3,18 @@
   margin-bottom: var(--primitive-spacer-16);
 }
 
+.welcome-widget-actions {
+  justify-content: flex-start;
+  margin-top: var(--primitive-spacer-8);
+}
+
+@media (min-width: 768px) {
+  .welcome-widget-actions {
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+}
+
 .welcome-header-link {
   display: flex;
   align-items: center;
