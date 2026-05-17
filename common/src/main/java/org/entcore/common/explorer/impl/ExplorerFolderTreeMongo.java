@@ -95,7 +95,7 @@ public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
                     new BsonDocument().append("$date", new BsonString(formatUtcDateTime(to))))));
             }
         }
-        final JsonObject queryJson = MongoQueryBuilder.build(Filters.and(indexFilters));
+        final JsonObject queryJson = indexFilters.isEmpty() ? new JsonObject() : MongoQueryBuilder.build(Filters.and(indexFilters));
         mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
             stream.add(result);
         }).endHandler(e->{
