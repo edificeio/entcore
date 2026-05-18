@@ -1,13 +1,8 @@
 import { odeServices } from '@edifice.io/client';
 import { useQuery } from '@tanstack/react-query';
+import type { LoolDocType, LoolDocTypeId } from '~/models/createDocument';
 
-export type LoolDocTypeId = 'word' | 'powerpoint' | 'excel';
-
-export interface LoolDocType {
-  id: LoolDocTypeId;
-  extension: 'docx' | 'pptx' | 'xlsx';
-  label: string;
-}
+export type { LoolDocType, LoolDocTypeId };
 
 interface RawProviderContext {
   provider: string;

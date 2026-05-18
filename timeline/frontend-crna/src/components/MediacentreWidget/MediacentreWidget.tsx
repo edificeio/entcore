@@ -1,18 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { ListWidget, type ListWidgetItem } from '../ListWidget';
-
-export interface MediacentreWidgetProps {
-  items?: ListWidgetItem[];
-  isLoading?: boolean;
-  onSeeMore?: () => void;
-}
+import { useMediacentre } from '~/hooks/useMediacentre';
+import { ListWidget } from '../ui/ListWidget';
 
 export function MediacentreWidget({
-  items = [],
-  isLoading = false,
   onSeeMore = () => window.open('/mediacentre', '_self'),
-}: MediacentreWidgetProps) {
+}: {
+  onSeeMore?: () => void;
+}) {
   const { t } = useTranslation();
+  const { data: items = [], isLoading } = useMediacentre();
 
   return (
     <ListWidget

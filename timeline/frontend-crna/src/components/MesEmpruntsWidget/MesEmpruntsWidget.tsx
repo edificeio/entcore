@@ -1,20 +1,16 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ListWidget, type ListWidgetItem } from '../ListWidget';
+import { useMesEmprunts } from '~/hooks/useMesEmprunts';
+import { ListWidget } from '../ui/ListWidget';
 import './MesEmpruntsWidget.css';
 
-export interface MesEmpruntsWidgetProps {
-  items?: ListWidgetItem[];
-  isLoading?: boolean;
-  onSeeMore?: () => void;
-}
-
 export function MesEmpruntsWidget({
-  items = [],
-  isLoading = false,
   onSeeMore = () => window.open('/mediacentre', '_self'),
-}: MesEmpruntsWidgetProps) {
+}: {
+  onSeeMore?: () => void;
+}) {
   const { t } = useTranslation();
+  const { data: items = [], isLoading } = useMesEmprunts();
 
   return (
     <div className="mes-emprunts-widget">

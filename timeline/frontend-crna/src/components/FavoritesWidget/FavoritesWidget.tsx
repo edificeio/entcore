@@ -1,7 +1,7 @@
 import { AppIcon, ButtonBeta, useBookmark } from '@edifice.io/react';
 import { IconArrowRight, IconStarFull } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { WidgetPanel } from '../WidgetPanel';
+import { WidgetPanel } from '../ui/WidgetPanel';
 import './FavoritesWidget.css';
 
 export function FavoritesWidget() {

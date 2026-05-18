@@ -1,4 +1,1 @@
-export interface WidgetBaseProps {
-  isLoading?: boolean;
-  onSeeMore?: () => void;
-}
+export type { WidgetBaseProps } from '~/models';

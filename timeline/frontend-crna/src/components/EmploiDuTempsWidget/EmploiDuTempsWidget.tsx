@@ -1,36 +1,24 @@
 import { ButtonBeta } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import type { WidgetBaseProps } from '../types';
-import { WidgetHeader } from '../WidgetHeader';
-import { WidgetSkeleton } from '../WidgetSkeleton';
+import type { EmploiDuTempsEntry } from '~/models';
+import { useEmploiDuTemps } from '~/hooks/useEmploiDuTemps';
+import { WidgetHeader } from '../ui/WidgetHeader';
+import { WidgetSkeleton } from '../ui/WidgetSkeleton';
 import './EmploiDuTempsWidget.css';
 
-export type EmploiDuTempsColor = 'green' | 'pink' | 'orange' | 'blue' | 'grey';
-
-export interface EmploiDuTempsEntry {
-  id: string;
-  subject: string;
-  room?: string;
-  teacher?: string;
-  startTime: string;
-  color?: EmploiDuTempsColor;
-}
-
-export interface EmploiDuTempsWidgetProps extends WidgetBaseProps {
-  date?: string;
-  entries?: EmploiDuTempsEntry[];
-  currentTimeIndex?: number;
-}
+export type { EmploiDuTempsColor, EmploiDuTempsEntry } from '~/models';
 
 export function EmploiDuTempsWidget({
-  date,
-  entries = [],
-  currentTimeIndex = 0,
-  isLoading = false,
   onSeeMore = () => window.open('/edt', '_self'),
-}: EmploiDuTempsWidgetProps) {
+}: {
+  onSeeMore?: () => void;
+}) {
   const { t } = useTranslation();
+  const { data, isLoading } = useEmploiDuTemps();
+  const date = data?.date;
+  const entries: EmploiDuTempsEntry[] = data?.entries ?? [];
+  const currentTimeIndex = data?.currentTimeIndex ?? 0;
 
   return (
     <div className="edt-widget">

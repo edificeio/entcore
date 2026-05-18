@@ -1,7 +1,8 @@
 import { FormControl, Input, Label, Modal, RadioCard } from '@edifice.io/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLoolProviders, type LoolDocTypeId } from '~/hooks/useLoolProviders';
+import type { LoolDocTypeId } from '~/models/createDocument';
+import { useLoolProviders } from '~/hooks/useLoolProviders';
 import { ButtonBeta } from '@edifice.io/react';
 
 const DOC_TYPE_TO_EXT: Record<LoolDocTypeId, 'docx' | 'pptx' | 'xlsx'> = {

@@ -3,9 +3,8 @@ import { IconSettings, IconUserSearch, IconUsers } from '@edifice.io/react/icons
 import { useTranslation } from 'react-i18next';
 import { CreateDocumentWidget } from '~/components/CreateDocumentWidget';
 import { FavoritesWidget } from '~/components/FavoritesWidget';
-import type { ListWidgetItem } from '../ListWidget';
 import { MediacentreWidget } from '../MediacentreWidget';
-import { WidgetCard } from '../WidgetCard';
+import { WidgetCard } from '../ui/WidgetCard';
 import './WelcomeWidget.css';
 
 const PROFILE_LABELS: Record<string, string> = {
@@ -16,15 +15,7 @@ const PROFILE_LABELS: Record<string, string> = {
   SUPERADMIN: 'Administrateur',
 };
 
-export interface WelcomeWidgetProps {
-  mediacentreItems?: ListWidgetItem[];
-  isMediacentreLoading?: boolean;
-}
-
-export function WelcomeWidget({
-  mediacentreItems = [],
-  isMediacentreLoading = false,
-}: WelcomeWidgetProps) {
+export function WelcomeWidget() {
   const { t } = useTranslation();
   const { user, avatar } = useUser();
 
@@ -80,7 +71,7 @@ export function WelcomeWidget({
           <CreateDocumentWidget />
         </Grid.Col>
         <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-          <MediacentreWidget items={mediacentreItems} isLoading={isMediacentreLoading} />
+          <MediacentreWidget />
         </Grid.Col>
       </Grid>
     </WidgetCard>

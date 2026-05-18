@@ -1,9 +1,2 @@
-/**
- * API
- */
-export * from './api';
-
-/**
- * Queries
- */
+export * from './api/preferenceService';
 export * from './queries/actions';

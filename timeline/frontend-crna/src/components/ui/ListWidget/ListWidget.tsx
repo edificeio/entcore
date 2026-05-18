@@ -1,19 +1,13 @@
 import { ButtonBeta } from '@edifice.io/react';
 import { IconExternalLink } from '@edifice.io/react/icons';
-import React, { type ReactNode } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { WidgetBaseProps } from '../types';
+import type { ListWidgetItem, WidgetBaseProps } from '~/models';
 import { WidgetHeader } from '../WidgetHeader';
 import { WidgetSkeleton } from '../WidgetSkeleton';
 import './ListWidget.css';
 
-export interface ListWidgetItem {
-  id: string;
-  icon?: ReactNode;
-  label: string;
-  sublabel?: string;
-  href?: string;
-}
+export type { ListWidgetItem } from '~/models';
 
 export interface ListWidgetProps extends WidgetBaseProps {
   title: string;

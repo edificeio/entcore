@@ -2,33 +2,16 @@ import { useMemo } from "react";
 import { useEdificeClient } from "@edifice.io/react";
 import { useQuery } from "@tanstack/react-query";
 import { carnetDeBordQueryOptions } from "~/services/queries/carnetDeBord.queries";
+import type {
+  ContentItem,
+  ContentTitle,
+  ContentType,
+  ParsedEleve,
+  Structure,
+  UseCarnetDeBordResult,
+} from "~/models/carnetDeBord";
 
-export type ContentTitle = "lateness" | "absences" | "grades" | "diary" | "skills";
-
-export type ContentItem = {
-  value: string;
-  pageUrl?: string;
-  subsections?: {
-    header: string;
-    content: string | null;
-    pageUrl?: string;
-  }[];
-};
-
-export type ContentType = {
-  title: ContentTitle;
-  compact: string | false;
-  full: ContentItem[] | false;
-  lightboxTitle: string;
-};
-
-export type ParsedEleve = {
-  element: Element;
-  name: string;
-  avatar: string;
-};
-
-import type { Structure } from "~/services/api/carnetDeBord.api";
+export type { ContentItem, ContentTitle, ContentType, ParsedEleve, UseCarnetDeBordResult };
 
 const INITIAL_CONTENT_TYPES: ContentType[] = [
   { title: "lateness", compact: false, full: false, lightboxTitle: "carnet-de-bord.widget.lateness.all" },
@@ -165,12 +148,6 @@ const computeForEleve = (contentType: ContentType, eleve: Element): ContentType 
 export const computeContentTypes = (eleve: ParsedEleve | null): ContentType[] => {
   if (!eleve) return INITIAL_CONTENT_TYPES;
   return INITIAL_CONTENT_TYPES.map((ct) => computeForEleve(ct, eleve.element));
-};
-
-export type UseCarnetDeBordResult = {
-  eleves: ParsedEleve[];
-  isLoading: boolean;
-  isError: boolean;
 };
 
 export const useCarnetDeBord = (): UseCarnetDeBordResult => {

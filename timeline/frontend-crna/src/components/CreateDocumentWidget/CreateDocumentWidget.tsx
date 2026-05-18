@@ -6,8 +6,8 @@ import {
 } from '@edifice.io/react/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LoolDocTypeId } from '~/hooks/useLoolProviders';
-import { WidgetPanel } from '../WidgetPanel';
+import type { LoolDocTypeId } from '~/models/createDocument';
+import { WidgetPanel } from '../ui/WidgetPanel';
 import { LoolCreateModal } from './LoolCreateModal';
 import { MediaRecordModal } from './MediaRecordModal';
 import './CreateDocumentWidget.css';

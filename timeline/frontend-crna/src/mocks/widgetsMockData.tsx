@@ -1,6 +1,5 @@
 import type { LastInfosProps } from '@edifice.io/react/homepage';
-import type { EmploiDuTempsEntry } from '~/components/EmploiDuTempsWidget';
-import type { ListWidgetItem } from '~/components/ListWidget';
+import type { EmploiDuTempsEntry, ListWidgetItem } from '~/models';
 
 function IconPlaceholder({ label, bg }: { label: string; bg: string }) {
   return (

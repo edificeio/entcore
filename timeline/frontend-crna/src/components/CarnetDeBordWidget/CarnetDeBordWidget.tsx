@@ -10,9 +10,9 @@ import {
 } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { computeContentTypes, useCarnetDeBord } from '~/hooks/useCarnetDeBord';
-import type { ContentTitle, ContentType } from '~/hooks/useCarnetDeBord';
-import { WidgetHeader } from '../WidgetHeader';
-import { WidgetSkeleton } from '../WidgetSkeleton';
+import type { ContentTitle, ContentType } from '~/models/carnetDeBord';
+import { WidgetHeader } from '../ui/WidgetHeader';
+import { WidgetSkeleton } from '../ui/WidgetSkeleton';
 import './CarnetDeBordWidget.css';
 
 const CONTENT_ICONS: Record<ContentTitle, JSX.Element> = {

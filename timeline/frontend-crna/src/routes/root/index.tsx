@@ -8,24 +8,16 @@ import { MessageFlashList, SchoolSpace } from '@edifice.io/react/homepage';
 import { useState } from 'react';
 import backgroundImage from '~/assets/background.png';
 import { AppFooter } from '~/components/AppFooter';
-import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
-import { WidgetCard } from '~/components/WidgetCard';
-import { WidgetErrorBoundary } from '~/components/WidgetErrorBoundary';
-import { WelcomeWidget } from '~/components/WelcomeWidget';
-import { LiensUtilesWidget } from '~/components/LiensUtilesWidget';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
+import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
 import { EmploiDuTempsWidget } from '~/components/EmploiDuTempsWidget';
 import { LastInfosWidget } from '~/components/LastInfosWidget';
+import { LiensUtilesWidget } from '~/components/LiensUtilesWidget';
 import { MesEmpruntsWidget } from '~/components/MesEmpruntsWidget/MesEmpruntsWidget';
-import {
-  useAvantages,
-  useEmploiDuTemps,
-  useLastInfos,
-  useLiensUtiles,
-  useMediacentre,
-  useMesEmprunts,
-} from '~/hooks/useWidgetData';
+import { WidgetCard } from '~/components/ui/WidgetCard';
+import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
+import { WelcomeWidget } from '~/components/WelcomeWidget';
 
 const MOCK_SCHOOLS = [
   {
@@ -53,13 +45,6 @@ export const Root = () => {
   const { init } = useEdificeClient();
   const [selectedSchool, setSelectedSchool] = useState(MOCK_SCHOOLS[1]);
 
-  const { data: emploiDuTemps, isLoading: isEdtLoading } = useEmploiDuTemps();
-  const { data: mesEmprunts, isLoading: isEmpruntsLoading } = useMesEmprunts();
-  const { data: liensUtiles, isLoading: isLiensLoading } = useLiensUtiles();
-  const { data: avantages, isLoading: isAvantagesLoading } = useAvantages();
-  const { data: mediacentre, isLoading: isMediacentreLoading } = useMediacentre();
-  const { data: lastInfos, isLoading: isLastInfosLoading } = useLastInfos();
-
   if (!init) return <LoadingScreen position={false} />;
 
   return (
@@ -81,7 +66,7 @@ export const Root = () => {
           onSelectedSchoolChange={(idx) => setSelectedSchool(MOCK_SCHOOLS[idx])}
         />
         <WidgetErrorBoundary>
-          <LastInfosWidget infos={lastInfos ?? []} isLoading={isLastInfosLoading} />
+          <LastInfosWidget />
         </WidgetErrorBoundary>
       </PageLayout.SidebarLeft>
       <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
@@ -104,10 +89,7 @@ export const Root = () => {
         />
 
         <WidgetErrorBoundary>
-          <WelcomeWidget
-            mediacentreItems={mediacentre ?? []}
-            isMediacentreLoading={isMediacentreLoading}
-          />
+          <WelcomeWidget />
         </WidgetErrorBoundary>
 
         <WidgetCard
@@ -117,12 +99,12 @@ export const Root = () => {
           <Grid>
             <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
               <WidgetErrorBoundary>
-                <LiensUtilesWidget items={liensUtiles ?? []} isLoading={isLiensLoading} />
+                <LiensUtilesWidget />
               </WidgetErrorBoundary>
             </Grid.Col>
             <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
               <WidgetErrorBoundary>
-                <AvantagesWidget items={avantages ?? []} isLoading={isAvantagesLoading} />
+                <AvantagesWidget />
               </WidgetErrorBoundary>
             </Grid.Col>
           </Grid>
@@ -138,17 +120,12 @@ export const Root = () => {
                 <CarnetDeBordWidget />
               </WidgetErrorBoundary>
               <WidgetErrorBoundary>
-                <MesEmpruntsWidget items={mesEmprunts ?? []} isLoading={isEmpruntsLoading} />
+                <MesEmpruntsWidget />
               </WidgetErrorBoundary>
             </Grid.Col>
             <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
               <WidgetErrorBoundary>
-                <EmploiDuTempsWidget
-                  date={emploiDuTemps?.date}
-                  entries={emploiDuTemps?.entries}
-                  currentTimeIndex={emploiDuTemps?.currentTimeIndex}
-                  isLoading={isEdtLoading}
-                />
+                <EmploiDuTempsWidget />
               </WidgetErrorBoundary>
             </Grid.Col>
           </Grid>

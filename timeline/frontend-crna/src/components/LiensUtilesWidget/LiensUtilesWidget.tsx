@@ -1,14 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ListWidget, type ListWidgetItem } from '../ListWidget';
+import { useLiensUtiles } from '~/hooks/useLiensUtiles';
+import { ListWidget } from '../ui/ListWidget';
 
-export interface LiensUtilesWidgetProps {
-  items?: ListWidgetItem[];
-  isLoading?: boolean;
-}
-
-export function LiensUtilesWidget({ items = [], isLoading = false }: LiensUtilesWidgetProps) {
+export function LiensUtilesWidget() {
   const { t } = useTranslation();
+  const { data: items = [], isLoading } = useLiensUtiles();
 
   return (
     <ListWidget

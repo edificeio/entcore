@@ -1,8 +1,6 @@
-export type Structure = {
-  structureId: string;
-  xmlResponse: string;
-  address: string;
-};
+import type { Structure } from '~/models/carnetDeBord';
+
+export type { Structure };
 
 export async function fetchCarnetDeBord(): Promise<Structure[]> {
   const response = await fetch("/sso/pronote");

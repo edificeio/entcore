@@ -1,18 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { ListWidget, type ListWidgetItem } from '../ListWidget';
-
-export interface AvantagesWidgetProps {
-  items?: ListWidgetItem[];
-  isLoading?: boolean;
-  onSeeMore?: () => void;
-}
+import { useAvantages } from '~/hooks/useAvantages';
+import { ListWidget } from '../ui/ListWidget';
 
 export function AvantagesWidget({
-  items = [],
-  isLoading = false,
   onSeeMore = () => window.open('/avantages', '_self'),
-}: AvantagesWidgetProps) {
+}: {
+  onSeeMore?: () => void;
+}) {
   const { t } = useTranslation();
+  const { data: items = [], isLoading } = useAvantages();
 
   return (
     <ListWidget
