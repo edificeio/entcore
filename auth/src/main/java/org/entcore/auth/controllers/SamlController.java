@@ -39,6 +39,7 @@ import org.entcore.auth.services.impl.FederationServiceImpl;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnStatement;
@@ -593,15 +594,20 @@ public class SamlController extends AbstractFederateController {
 				log.error("Error marshalling failed assertion", e);
 			}
 		}
-		if(federatedAuthenticateError) {
-			final JsonObject context = new JsonObject();
-			if (error != null && !error.trim().isEmpty()) {
-				context.put("error", new JsonObject()
-						.put("message", I18n.getInstance().translate(error, getHost(request), I18n.acceptLanguage(request))));
+		if (federatedAuthenticateError) {
+			final String externalRedirectErrorURL = config.getString("rerirect-failed-assertion-errors");
+			if (StringUtils.isEmpty(externalRedirectErrorURL)) {
+				final JsonObject context = new JsonObject();
+				if (error != null && !error.trim().isEmpty()) {
+					context.put("error", new JsonObject()
+							.put("message", I18n.getInstance().translate(error, getHost(request), I18n.acceptLanguage(request))));
+				}
+				context.put("notLoggedIn", true);
+				renderView(request, context, "login.html", null);
+			} else {
+				redirectionService.redirect(request, externalRedirectErrorURL, error);
 			}
-			context.put("notLoggedIn", true);
-			renderView(request, context, "login.html", null);
-		}else{
+		} else {
 			redirectionService.redirect(request, LOGIN_PAGE);
 		}
 	}
