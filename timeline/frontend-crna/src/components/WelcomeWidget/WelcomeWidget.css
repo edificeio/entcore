@@ -3,16 +3,10 @@
   margin-bottom: var(--primitive-spacer-16);
 }
 
-.welcome-widget-actions {
-  justify-content: flex-start;
-  margin-top: var(--primitive-spacer-8);
-}
-
-@media (min-width: 768px) {
-  .welcome-widget-actions {
-    justify-content: flex-end;
-    margin-top: 0;
-  }
+.welcome-widget-user {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-12);
 }
 
 .welcome-header-link {

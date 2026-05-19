@@ -1,10 +1,12 @@
 import {
+  Alert,
   LoadingScreen,
   PageLayout,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
   LastInfosContainer,
+  MessageFlashList,
   MessageFlashListContainer,
   SchoolSpace,
 } from '@edifice.io/react/homepage';
@@ -43,6 +45,14 @@ export const loader = async () => {
 export const Root = () => {
   const { init } = useEdificeClient();
   const [selectedSchool, setSelectedSchool] = useState(MOCK_SCHOOLS[1]);
+  const [pageErrors, setPageErrors] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleWidgetError = (message: string) => {
+    setPageErrors((prev) =>
+      prev.includes(message) ? prev : [...prev, message],
+    );
+  };
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -59,6 +69,30 @@ export const Root = () => {
     >
       <PageLayout.Header />
       <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
+        {pageErrors.map((msg) => (
+          <Alert
+            key={msg}
+            type="danger"
+            isToast
+            position="top-right"
+            isDismissible
+            autoClose
+          >
+            {msg}
+          </Alert>
+        ))}
+        {successMessage && (
+          <Alert
+            type="success"
+            isToast
+            position="top-right"
+            isDismissible
+            autoClose
+            onClose={() => setSuccessMessage(null)}
+          >
+            {successMessage}
+          </Alert>
+        )}
         <SchoolSpace
           schools={MOCK_SCHOOLS}
           selectedSchool={selectedSchool}
@@ -70,7 +104,7 @@ export const Root = () => {
       </PageLayout.SidebarLeft>
       <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
         <BetaSwitchContainer />
-        {/* <MessageFlashList
+        <MessageFlashList
           messages={[
             {
               author: 'Platform Team',
@@ -85,11 +119,11 @@ export const Root = () => {
               title: 'Welcome to the new platform!',
             },
           ]}
-        /> */}
+        />
         <MessageFlashListContainer />
 
         <WidgetErrorBoundary>
-          <WelcomeWidget />
+          <WelcomeWidget onCreateDocumentSuccess={setSuccessMessage} />
         </WidgetErrorBoundary>
 
         <WidgetMasonry>
@@ -98,47 +132,9 @@ export const Root = () => {
             <AvantagesWidget />
           </WidgetErrorBoundary>
           <WidgetErrorBoundary>
-            <CarnetDeBordWidget />
+            <CarnetDeBordWidget onError={handleWidgetError} />
           </WidgetErrorBoundary>
         </WidgetMasonry>
-        {/* <WidgetCard
-          title="Vos services"
-          style={{ marginBottom: '16px', marginTop: '16px' }}
-        >
-          <Grid>
-            <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-              <WidgetErrorBoundary>
-                <LiensUtilesWidget />
-              </WidgetErrorBoundary>
-            </Grid.Col>
-            <Grid.Col sm="12" lg="12" className="d-flex flex-column gap-16">
-              <WidgetErrorBoundary>
-                <AvantagesWidget />
-              </WidgetErrorBoundary>
-            </Grid.Col>
-          </Grid>
-        </WidgetCard>
-
-        <WidgetCard
-          title="Vie scolaire"
-          style={{ marginBottom: '16px', marginTop: '16px' }}
-        >
-          <Grid>
-            <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-              <WidgetErrorBoundary>
-                <CarnetDeBordWidget />
-              </WidgetErrorBoundary>
-              <WidgetErrorBoundary>
-                <MesEmpruntsWidget />
-              </WidgetErrorBoundary>
-            </Grid.Col>
-            <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-              <WidgetErrorBoundary>
-                <EmploiDuTempsWidget />
-              </WidgetErrorBoundary>
-            </Grid.Col>
-          </Grid>
-        </WidgetCard> */}
         <AppFooter />
       </PageLayout.Content>
     </PageLayout>

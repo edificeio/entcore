@@ -7,26 +7,6 @@
   background-color: var(--primitive-grey-100);
 }
 
-.widget-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--primitive-spacer-8);
-}
-
-.widget-panel-title {
-  margin: 0;
-  font-family: var(--primitive-font-family-urbanist);
-  font-weight: var(--primitive-font-weight-bold);
-  font-size: var(--primitive-font-size-default);
-  line-height: var(--primitive-font-lineheight-s);
-  color: var(--primitive-grey-900);
-}
-
-.widget-panel-action {
-  flex-shrink: 0;
-}
-
 .widget-panel-body {
   display: flex;
   flex-direction: column;

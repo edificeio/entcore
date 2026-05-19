@@ -1,4 +1,16 @@
-/* Base : !important centralisé ici pour battre Bootstrap .h5 (une seule source) */
+.widget-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--primitive-spacer-8);
+  min-height: 38px;
+}
+
+.widget-header-action {
+  flex-shrink: 0;
+}
+
+/* Override font-size — compound selector beats base WidgetHeader.css */
 .widget-header-title {
   margin: 0 !important;
   font-family: var(--primitive-font-family-urbanist) !important;

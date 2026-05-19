@@ -8,11 +8,6 @@
   background-color: var(--list-widget-bg, var(--primitive-white));
 }
 
-.list-widget-header {
-  padding: 0 var(--primitive-spacer-8);
-  min-height: 38px;
-}
-
 /* Override font-size — compound selector (0,2,0) + !important bat la base de WidgetHeader.css */
 .list-widget-title.widget-header-title {
   font-size: var(--primitive-font-size-default) !important;

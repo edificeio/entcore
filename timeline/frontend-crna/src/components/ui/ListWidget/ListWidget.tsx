@@ -3,6 +3,7 @@ import { IconExternalLink } from '@edifice.io/react/icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ListWidgetItem, WidgetBaseProps } from '~/models';
+import { WidgetEmptyState } from '../WidgetEmptyState';
 import { WidgetHeader } from '../WidgetHeader';
 import { WidgetSkeleton } from '../WidgetSkeleton';
 import './ListWidget.css';
@@ -46,9 +47,7 @@ export function ListWidget({
       {isLoading ? (
         <WidgetSkeleton />
       ) : items.length === 0 ? (
-        <p className="align-items-center gap-8 d-flex flex-column">
-          {t('homepage.widget.list.empty', 'Aucun élément à afficher')}
-        </p>
+        <WidgetEmptyState />
       ) : (
         <ul className="list-widget-list">
           {items.map((item) => {

@@ -1,6 +1,6 @@
-import { Heading } from '@edifice.io/react';
 import clsx from 'clsx';
 import React, { type ComponentPropsWithoutRef, type ReactNode } from 'react';
+import { WidgetHeader } from '../WidgetHeader';
 import './WidgetCard.css';
 
 export interface WidgetCardProps extends ComponentPropsWithoutRef<'div'> {
@@ -26,16 +26,7 @@ export function WidgetCard({
       style={style}
       {...props}
     >
-      {(title || action) && (
-        <div className="widget-card-header">
-          {title && (
-            <Heading level="h3" headingStyle="h6" className="widget-card-title">
-              {title}
-            </Heading>
-          )}
-          {action && <div className="widget-card-action">{action}</div>}
-        </div>
-      )}
+      <WidgetHeader title={title} action={action} />
       <div className="widget-card-body">{children}</div>
       {footerAction && (
         <div className="widget-card-footer" style={footerStyle}>

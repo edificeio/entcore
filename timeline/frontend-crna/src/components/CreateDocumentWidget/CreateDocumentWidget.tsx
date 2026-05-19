@@ -1,4 +1,4 @@
-import { Alert, ButtonBeta, Flex, IconButton, useHasWorkflow } from '@edifice.io/react';
+import { ButtonBeta, Flex, IconButton, useHasWorkflow } from '@edifice.io/react';
 import {
   IconExternalLink,
   IconMic,
@@ -37,13 +37,16 @@ const APP_ACTIONS = [
   },
 ] as const;
 
-export function CreateDocumentWidget() {
+interface CreateDocumentWidgetProps {
+  onSuccess?: (message: string) => void;
+}
+
+export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
   const { t } = useTranslation();
   const hasLoolRight = useHasWorkflow("fr.openent.lool.controller.LoolController|createDocumentFromTemplate");
   const hasVideoRight = useHasWorkflow("com.opendigitaleducation.video.controllers.VideoController|capture");
   const [selectedDocTypeId, setSelectedDocTypeId] = useState<LoolDocTypeId | null>(null);
   const [mediaRecordType, setMediaRecordType] = useState<'video' | 'audio' | null>(null);
-  const [successType, setSuccessType] = useState<'video' | 'audio' | null>(null);
 
   return (
     <WidgetPanel
@@ -113,27 +116,19 @@ export function CreateDocumentWidget() {
         />
       )}
 
-      {successType && (
-        <Alert
-          type="success"
-          isToast
-          position="top-right"
-          isDismissible
-          autoClose
-          onClose={() => setSuccessType(null)}
-        >
-          {successType === 'video'
-            ? t('homepage.widget.create.video.success', 'Votre vidéo a été enregistrée avec succès.')
-            : t('homepage.widget.create.audio.success', 'Votre audio a été enregistré avec succès.')}
-        </Alert>
-      )}
-
       {mediaRecordType && (
         <MediaRecordModal
           type={mediaRecordType}
           isOpen={true}
           onClose={() => setMediaRecordType(null)}
-          onSuccess={() => setSuccessType(mediaRecordType)}
+          onSuccess={() => {
+            const msg =
+              mediaRecordType === 'video'
+                ? t('homepage.widget.create.video.success', 'Votre vidéo a été enregistrée avec succès.')
+                : t('homepage.widget.create.audio.success', 'Votre audio a été enregistré avec succès.');
+            onSuccess?.(msg);
+            setMediaRecordType(null);
+          }}
         />
       )}
     </WidgetPanel>

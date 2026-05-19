@@ -8,9 +8,6 @@
   background-color: var(--primitive-white);
 }
 
-.carnet-de-bord-header {
-  padding: 0 var(--primitive-spacer-8);
-}
 
 .carnet-de-bord-list {
   display: flex;

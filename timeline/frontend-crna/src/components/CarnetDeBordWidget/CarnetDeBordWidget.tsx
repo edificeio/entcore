@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Alert, Avatar, ButtonBeta, Modal } from '@edifice.io/react';
+import { useEffect, useMemo, useState } from 'react';
+import { Avatar, ButtonBeta, Modal } from '@edifice.io/react';
 import {
   IconClockAlert,
   IconExternalLink,
@@ -11,6 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { computeContentTypes, useCarnetDeBord } from '~/hooks/useCarnetDeBord';
 import type { ContentTitle, ContentType } from '~/models/carnetDeBord';
+import { WidgetEmptyState } from '../ui/WidgetEmptyState';
 import { WidgetHeader } from '../ui/WidgetHeader';
 import { WidgetSkeleton } from '../ui/WidgetSkeleton';
 import './CarnetDeBordWidget.css';
@@ -31,9 +32,24 @@ const CONTENT_LABELS: Record<ContentTitle, string> = {
   skills:   'Compétences',
 };
 
-export function CarnetDeBordWidget() {
+interface CarnetDeBordWidgetProps {
+  onError?: (message: string) => void;
+}
+
+export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
   const { t } = useTranslation();
   const { eleves, isLoading, isError } = useCarnetDeBord();
+
+  useEffect(() => {
+    if (isError) {
+      onError?.(
+        t(
+          'homepage.widget.carnet-de-bord.error',
+          'Impossible de récupérer les données Pronote. Veuillez réessayer plus tard.',
+        ),
+      );
+    }
+  }, [isError]);
 
   const [currentEleveIndex, setCurrentEleveIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
@@ -56,9 +72,9 @@ export function CarnetDeBordWidget() {
   );
 
   const contentPanel = !hasContent ? (
-    <p className="d-flex align-items-center justify-content-center p-16">
-      {t('homepage.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
-    </p>
+    <WidgetEmptyState
+      text={t('homepage.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
+    />
   ) : (
     <ul className="carnet-de-bord-list">
       {contentTypes.map((ct) => {
@@ -120,21 +136,12 @@ export function CarnetDeBordWidget() {
         }
       />
 
-      {isError && (
-        <Alert type="danger">
-          {t(
-            'homepage.widget.carnet-de-bord.error',
-            'Impossible de récupérer les données Pronote. Veuillez réessayer plus tard.'
-          )}
-        </Alert>
-      )}
-
       {isLoading ? (
         <WidgetSkeleton />
-      ) : isError ? null : eleves.length === 0 ? (
-        <p className="d-flex align-items-center justify-content-center p-16">
-          {t('homepage.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
-        </p>
+      ) : isError || eleves.length === 0 ? (
+        <WidgetEmptyState
+          text={t('homepage.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
+        />
       ) : (
         <>
           {eleves.length > 1 && (

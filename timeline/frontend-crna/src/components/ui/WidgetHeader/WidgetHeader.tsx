@@ -1,10 +1,10 @@
-import { Grid, Heading } from '@edifice.io/react';
+import { Heading } from '@edifice.io/react';
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import './WidgetHeader.css';
 
 export interface WidgetHeaderProps {
-  title: string;
+  title?: string;
   action?: ReactNode;
   className?: string;
   titleClassName?: string;
@@ -16,9 +16,10 @@ export function WidgetHeader({
   className,
   titleClassName,
 }: WidgetHeaderProps) {
+  if (!title && !action) return null;
   return (
-    <Grid className={clsx('align-items-center', className)}>
-      <Grid.Col sm="2" lg="6">
+    <div className={clsx('widget-header-container', className)}>
+      {title && (
         <Heading
           level="h4"
           headingStyle="h5"
@@ -26,10 +27,8 @@ export function WidgetHeader({
         >
           {title}
         </Heading>
-      </Grid.Col>
-      <Grid.Col sm="2" lg="6" className="d-flex justify-content-end">
-        {action}
-      </Grid.Col>
-    </Grid>
+      )}
+      {action && <div className="widget-header-action">{action}</div>}
+    </div>
   );
 }
