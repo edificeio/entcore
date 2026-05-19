@@ -576,7 +576,9 @@ public class UserBookController extends BaseController {
 						message.body().getString("additionalMatch", "") +
 						"WHERE u.id IN {userIds} AND u.activationCode IS NULL " +
 						message.body().getString("additionalWhere", "") +
-						"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf)  " +
+						"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+						"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+						"WITH u, uac, collect(DISTINCT s.UAI) as uais " +
 						"RETURN COLLECT(DISTINCT {userId: u.id, userMail: u.email, lastDomain: u.lastDomain, preferences: uac"+
 						message.body().getString("additionalCollectFields", "") +
 						"}) AS preferences";
