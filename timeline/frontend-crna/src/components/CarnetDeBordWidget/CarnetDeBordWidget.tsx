@@ -163,7 +163,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
       ) : (
         <>
           {eleves.length > 1 && (
-            <div className="d-flex justify-content-center gap-8 flex-wrap">
+            <div className="gap-8 flex-wrap">
               {eleves.map((eleve, i) => (
                 <ButtonBeta
                   key={i}
