@@ -3,8 +3,9 @@
   flex-direction: column;
   gap: var(--primitive-spacer-12);
   border-radius: var(--primitive-border-radius-xl);
-  padding: var(--primitive-spacer-12) var(--primitive-spacer-16) var(--primitive-spacer-16);
-  background-color: var(--list-widget-bg, var(--primitive-grey-100));
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16)
+    var(--primitive-spacer-16);
+  background-color: var(--list-widget-bg, var(--primitive-white));
 }
 
 .list-widget-header {
@@ -30,12 +31,17 @@
   display: flex;
   align-items: center;
   gap: var(--primitive-spacer-8);
-  background: var(--primitive-white);
+  background: var(--primitive-grey-100);
   border: 1px solid var(--primitive-grey-200);
   border-radius: var(--primitive-border-radius-lg);
   padding: var(--primitive-spacer-8);
   text-decoration: none;
   color: inherit;
+}
+
+a.list-widget-item:hover {
+  background-color: var(--primitive-white);
+  border-color: var(--primitive-grey-300);
 }
 
 .list-widget-item-icon {
@@ -69,7 +75,7 @@
 .list-widget-item-sublabel {
   font-family: var(--primitive-legacy-font-family-roboto);
   font-weight: 400;
-  font-size: var(--primitive-font-size-caption);
+  font-size: var(--primitive-font-size-small);
   line-height: var(--primitive-font-lineheight-2xs);
   color: var(--primitive-grey-800);
   white-space: nowrap;

@@ -4,18 +4,18 @@ import {
   PageLayout,
   useEdificeClient,
 } from '@edifice.io/react';
-import { MessageFlashList, SchoolSpace } from '@edifice.io/react/homepage';
+import {
+  LastInfosContainer,
+  MessageFlashListContainer,
+  SchoolSpace,
+} from '@edifice.io/react/homepage';
 import { useState } from 'react';
 import backgroundImage from '~/assets/background.png';
+import { MediacentreWidget } from '~/components';
 import { AppFooter } from '~/components/AppFooter';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
-import { EmploiDuTempsWidget } from '~/components/EmploiDuTempsWidget';
-import { LastInfosWidget } from '~/components/LastInfosWidget';
-import { LiensUtilesWidget } from '~/components/LiensUtilesWidget';
-import { MesEmpruntsWidget } from '~/components/MesEmpruntsWidget/MesEmpruntsWidget';
-import { WidgetCard } from '~/components/ui/WidgetCard';
 import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
 
@@ -66,12 +66,12 @@ export const Root = () => {
           onSelectedSchoolChange={(idx) => setSelectedSchool(MOCK_SCHOOLS[idx])}
         />
         <WidgetErrorBoundary>
-          <LastInfosWidget />
+          <LastInfosContainer />
         </WidgetErrorBoundary>
       </PageLayout.SidebarLeft>
       <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
         <BetaSwitchContainer />
-        <MessageFlashList
+        {/* <MessageFlashList
           messages={[
             {
               author: 'Platform Team',
@@ -86,13 +86,31 @@ export const Root = () => {
               title: 'Welcome to the new platform!',
             },
           ]}
-        />
+        /> */}
+        <MessageFlashListContainer />
 
         <WidgetErrorBoundary>
           <WelcomeWidget />
         </WidgetErrorBoundary>
 
-        <WidgetCard
+        <Grid>
+          <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+            <MediacentreWidget />
+          </Grid.Col>
+          <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+            <WidgetErrorBoundary>
+              <AvantagesWidget />
+            </WidgetErrorBoundary>
+          </Grid.Col>
+        </Grid>
+        <Grid>
+          <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+            <WidgetErrorBoundary>
+              <CarnetDeBordWidget />
+            </WidgetErrorBoundary>
+          </Grid.Col>
+        </Grid>
+        {/* <WidgetCard
           title="Vos services"
           style={{ marginBottom: '16px', marginTop: '16px' }}
         >
@@ -102,7 +120,7 @@ export const Root = () => {
                 <LiensUtilesWidget />
               </WidgetErrorBoundary>
             </Grid.Col>
-            <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
+            <Grid.Col sm="12" lg="12" className="d-flex flex-column gap-16">
               <WidgetErrorBoundary>
                 <AvantagesWidget />
               </WidgetErrorBoundary>
@@ -129,7 +147,7 @@ export const Root = () => {
               </WidgetErrorBoundary>
             </Grid.Col>
           </Grid>
-        </WidgetCard>
+        </WidgetCard> */}
         <AppFooter />
       </PageLayout.Content>
     </PageLayout>

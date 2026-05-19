@@ -58,7 +58,7 @@ export function ListWidget({
                   <div className="list-widget-item-icon">{item.icon}</div>
                 ) : item.imageUrl ? (
                   <div className="list-widget-item-icon">
-                    <img src={item.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                    <img src={item.imageUrl} alt="" />
                   </div>
                 ) : null}
                 <div className="d-flex flex-column gap-4 list-widget-item-text">

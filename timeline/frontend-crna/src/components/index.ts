@@ -12,6 +12,5 @@ export * from './AvantagesWidget/AvantagesWidget';
 export * from './MesEmpruntsWidget/MesEmpruntsWidget';
 export * from './EmploiDuTempsWidget';
 export * from './MediacentreWidget';
-export * from './LastInfosWidget';
 export * from './CarnetDeBordWidget';
 export * from './types';

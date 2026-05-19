@@ -1,5 +1,16 @@
-import { Avatar, Flex, Grid, Heading, IconButton, useUser } from '@edifice.io/react';
-import { IconSettings, IconUserSearch, IconUsers } from '@edifice.io/react/icons';
+import {
+  Avatar,
+  Flex,
+  Grid,
+  Heading,
+  IconButton,
+  useUser,
+} from '@edifice.io/react';
+import {
+  IconSettings,
+  IconUserSearch,
+  IconUsers,
+} from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { CreateDocumentWidget } from '~/components/CreateDocumentWidget';
 import { FavoritesWidget } from '~/components/FavoritesWidget';
@@ -35,7 +46,10 @@ export function WelcomeWidget() {
                 {t('homepage.widget.welcome.greeting', 'Bonjour')} {firstName}
               </Heading>
               <span className="text-muted small">
-                {t(`homepage.profile.${profile.toLowerCase()}`, PROFILE_LABELS[profile] ?? profile)}
+                {t(
+                  `homepage.profile.${profile.toLowerCase()}`,
+                  PROFILE_LABELS[profile] ?? profile,
+                )}
               </span>
             </Grid.Col>
           </Grid>
@@ -47,14 +61,6 @@ export function WelcomeWidget() {
           className="welcome-widget-actions d-flex align-items-center"
         >
           <Flex align="center" gap="12" className="flex-wrap">
-            <a href="/classes" className="welcome-header-link">
-              <IconUsers width={19} height={19} />
-              <span>{t('homepage.widget.welcome.classes', 'Mes classes')}</span>
-            </a>
-            <a href="/annuaire" className="welcome-header-link">
-              <IconUserSearch width={19} height={19} />
-              <span>{t('homepage.widget.welcome.directory', 'Annuaire')}</span>
-            </a>
             <IconButton
               icon={<IconSettings width={20} height={20} />}
               variant="outline"
@@ -68,10 +74,9 @@ export function WelcomeWidget() {
       <Grid>
         <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
           <FavoritesWidget />
-          <CreateDocumentWidget />
         </Grid.Col>
         <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-          <MediacentreWidget />
+          <CreateDocumentWidget />
         </Grid.Col>
       </Grid>
     </WidgetCard>

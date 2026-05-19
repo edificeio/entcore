@@ -1,1 +1,0 @@
-export { LastInfosWidget } from './LastInfosWidget';
