@@ -72,7 +72,7 @@ public class NotificationHelper {
                     //Get users preferences (overrides notification properties)
                      NotificationUtils.getUsersPreferences(eb, json.getJsonArray("recipientsIds"),
                              "language: uac.language, displayName: u.displayName, tokens: uac.fcmTokens, " +
-                             "uai: head([(u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) | s.UAI]), " +
+                             "uai: head(uais), " +
                              "quietHours: uac.quietHours, " +
                              "timezone: uac.timezone ",
                             new Handler<JsonArray>() {
