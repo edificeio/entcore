@@ -1,6 +1,7 @@
 import { Grid, Heading } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import './AppFooter.css';
+import logoCRNA from '~/assets/jeune-nouvelle-aquitaine.svg';
 
 export interface FooterLink {
   label: string;
@@ -11,27 +12,25 @@ export interface FooterLink {
 export interface AppFooterProps {
   appName?: string;
   appDescription?: string;
-  logoSrc?: string;
   usefulLinks?: FooterLink[];
   legalLinks?: FooterLink[];
 }
 
 const DEFAULT_USEFUL_LINKS: FooterLink[] = [
-  { label: 'Signaler un problème', href: '#' },
-  { label: 'Site de la Région', href: '#' },
+  { label: 'Site de la Région', href: 'https://www.nouvelle-aquitaine.fr/', isExternal: true },
+  { label: 'Nous contacter', href: 'https://www.nouvelle-aquitaine.fr/contact', isExternal: true },
+  { label: 'Plan du site', href: 'https://www.nouvelle-aquitaine.fr/plan-du-site', isExternal: true },
 ];
 
 const DEFAULT_LEGAL_LINKS: FooterLink[] = [
-  { label: 'Mentions légales', href: '#' },
-  { label: 'Politique de confidentialité', href: '#' },
-  { label: "Charte d'utilisation", href: '#' },
-  { label: 'Accessibilité', href: '#' },
+  { label: 'Mentions légales', href: 'https://www.nouvelle-aquitaine.fr/mentions-legales', isExternal: true },
+  { label: 'Données personnelles', href: 'https://www.nouvelle-aquitaine.fr/donnees-personnelles', isExternal: true },
+  { label: 'Accessibilité : partiellement conforme', href: 'https://www.nouvelle-aquitaine.fr/accessibilite', isExternal: true },
 ];
 
 export function AppFooter({
   appName,
   appDescription,
-  logoSrc,
   usefulLinks = DEFAULT_USEFUL_LINKS,
   legalLinks = DEFAULT_LEGAL_LINKS,
 }: AppFooterProps) {
@@ -39,7 +38,12 @@ export function AppFooter({
 
   return (
     <footer className="grid app-footer">
-      <Grid.Col sm="4" lg="5" className="d-flex flex-column gap-8 app-footer-brand">
+      <Grid.Col
+        sm="4"
+        lg="5"
+        className="d-flex flex-column gap-8 app-footer-brand"
+      >
+        <a href="https://www.nouvelle-aquitaine.fr/" target="_blank" rel="noopener noreferrer">
         <Heading level="h2" headingStyle="h4" className="app-footer-brand-name">
           {appName ?? t('homepage.footer.app-name', 'Lycée Connecté')}
         </Heading>
@@ -50,17 +54,24 @@ export function AppFooter({
               "L'environnement numérique de travail de la Région Nouvelle-Aquitaine",
             )}
         </p>
-        {logoSrc && (
-          <img
-            src={logoSrc}
-            alt={t('homepage.footer.logo-alt', 'Logo Région')}
-            className="app-footer-brand-logo"
-          />
-        )}
+        <img
+          src={logoCRNA}
+          alt={t('homepage.footer.logo-alt', 'Logo Région')}
+          className="app-footer-brand-logo"
+        />
+        </a>
       </Grid.Col>
 
-      <Grid.Col sm="2" lg="3" className="d-flex flex-column gap-4 app-footer-section">
-        <Heading level="h3" headingStyle="h5" className="app-footer-section-title">
+      <Grid.Col
+        sm="2"
+        lg="3"
+        className="d-flex flex-column gap-4 app-footer-section"
+      >
+        <Heading
+          level="h3"
+          headingStyle="h5"
+          className="app-footer-section-title"
+        >
           {t('homepage.footer.useful-links', 'Liens utiles')}
         </Heading>
         <nav className="d-flex flex-column gap-4 app-footer-links">
@@ -78,8 +89,16 @@ export function AppFooter({
         </nav>
       </Grid.Col>
 
-      <Grid.Col sm="2" lg="4" className="d-flex flex-column gap-4 app-footer-section">
-        <Heading level="h3" headingStyle="h5" className="app-footer-section-title">
+      <Grid.Col
+        sm="2"
+        lg="4"
+        className="d-flex flex-column gap-4 app-footer-section"
+      >
+        <Heading
+          level="h3"
+          headingStyle="h5"
+          className="app-footer-section-title"
+        >
           {t('homepage.footer.legal', 'Informations légales')}
         </Heading>
         <nav className="d-flex flex-column gap-4 app-footer-links">
