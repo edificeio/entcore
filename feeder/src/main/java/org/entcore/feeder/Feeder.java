@@ -90,17 +90,35 @@ import org.entcore.feeder.dto.RemoveGroupUsersDTO;
 import org.entcore.feeder.dto.RelativeStudentDTO;
 import org.entcore.feeder.dto.UnlinkRelativeStudentDTO;
 import org.entcore.feeder.dto.CheckDuplicatesIntegrityDTO;
+import org.entcore.feeder.dto.ClassesMappingDTO;
+import org.entcore.feeder.dto.FindUsersOldPlatformDTO;
+import org.entcore.feeder.dto.UpdateUsersOldPlatformDTO;
+import org.entcore.feeder.dto.ColumnsMappingDTO;
 import org.entcore.feeder.dto.IgnoreDuplicateDTO;
 import org.entcore.feeder.dto.ListDuplicatesDTO;
 import org.entcore.feeder.dto.MergeByKeysDTO;
 import org.entcore.feeder.dto.MergeDuplicateDTO;
+import org.entcore.feeder.dto.ImportDTO;
+import org.entcore.feeder.dto.ImportWithIdDTO;
+import org.entcore.feeder.dto.InitTimetableStructureDTO;
 import org.entcore.feeder.dto.TransitionDTO;
 import org.entcore.feeder.dto.UnmergeByLoginsDTO;
+import org.entcore.feeder.dto.ValidateDTO;
+import org.entcore.feeder.dto.ValidateWithIdDTO;
 import org.entcore.feeder.mapper.ClassMapper;
 import org.entcore.feeder.mapper.FunctionMapper;
+import org.entcore.feeder.mapper.ClassesMappingMapper;
+import org.entcore.feeder.mapper.FindUsersOldPlatformMapper;
+import org.entcore.feeder.mapper.UpdateUsersOldPlatformMapper;
+import org.entcore.feeder.mapper.ColumnsMappingMapper;
+import org.entcore.feeder.mapper.ImportMapper;
+import org.entcore.feeder.mapper.ImportWithIdMapper;
 import org.entcore.feeder.mapper.StructureMapper;
 import org.entcore.feeder.mapper.SubjectMapper;
 import org.entcore.feeder.mapper.TenantMapper;
+import org.entcore.feeder.mapper.TimetableMapper;
+import org.entcore.feeder.mapper.ValidateMapper;
+import org.entcore.feeder.mapper.ValidateWithIdMapper;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionManager;
@@ -509,19 +527,19 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
                 break;
 			case "transition" : launchTransition(new TransitionDTO(message.body()), message::reply);
 				break;
-			case "import" : launchImport(message);
+			case "import" : launchImport(ImportMapper.toImportDTO(message.body()), message);
 				break;
-			case "importWithId" : importWithId(message);
+			case "importWithId" : importWithId(ImportWithIdMapper.toImportWithIdDTO(message.body()), message);
 				break;
 			case "export" : launchExport(message);
 				break;
-			case "validate" : launchImportValidation(message, null);
+			case "validate" : launchImportValidation(ValidateMapper.toValidateDTO(message.body()), message::reply);
 				break;
-			case "validateWithId" : validateWithId(message);
+			case "validateWithId" : validateWithId(ValidateWithIdMapper.toValidateWithIdDTO(message.body()), (JsonObject json) -> message.reply(json));
 				break;
-			case "columnsMapping" : csvColumnMapping(message);
+			case "columnsMapping" : csvColumnMapping(ColumnsMappingMapper.toColumnsMappingDTO(message.body()), (JsonObject json) -> message.reply(json));
 				break;
-			case "classesMapping" : csvClassesMapping(message);
+			case "classesMapping" : csvClassesMapping(ClassesMappingMapper.toClassesMappingDTO(message.body()), (JsonObject json) -> message.reply(json));
 				break;
 			case "ignore-duplicate" :
 				duplicateUsers.ignoreDuplicate(new IgnoreDuplicateDTO(message.body()), message::reply);
@@ -554,25 +572,28 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				DuplicateUsers.checkDuplicatesIntegrity(new CheckDuplicatesIntegrityDTO(message.body()), message::reply);
 				break;
 			case "manual-init-timetable-structure" :
-				AbstractTimetableImporter.initStructure(eb, message);
+				AbstractTimetableImporter.initStructure(eb, TimetableMapper.toInitTimetableStructureDTO(message.body()), message::reply);
 				break;
 			case "manual-edt":
-				EDTImporter.launchImport(vertx, storage, edtUtils, config.getString("mode", "prod"), message, postImport,
-						config.getBoolean("edt-user-creation", false), config.getLong("edt-udt-force-timestamp"));
+				EDTImporter.launchImport(vertx, storage, edtUtils, config.getString("mode", "prod"),
+						TimetableMapper.toEdtDTO(message.body()), postImport,
+						config.getBoolean("edt-user-creation", false), config.getLong("edt-udt-force-timestamp"),
+						message::reply);
 				break;
 			case "manual-udt":
-				UDTImporter.launchImport(vertx, storage, message, postImport,
-						config.getBoolean("udt-user-creation", false), config.getLong("edt-udt-force-timestamp"));
+				UDTImporter.launchImport(vertx, storage, TimetableMapper.toUdtDTO(message.body()), postImport,
+						config.getBoolean("udt-user-creation", false), config.getLong("edt-udt-force-timestamp"),
+						message::reply);
 				break;
 			case "reinit-logins" :
 				Validator.initLogin(neo4j, vertx);
 				message.reply(new JsonObject().put("status", "ok"));
 				break;
 			case "find-users-old-platform":
-				User.findAndModifyUserFromOldPlatform(message);
+				User.findAndModifyUserFromOldPlatform(FindUsersOldPlatformMapper.toFindUsersOldPlatformDTO(message.body()), (JsonObject json) -> message.reply(json));
 				break;
 			case "update-users-old-platform":
-				User.updateUsersFromOldPlatform(message);
+				User.updateUsersFromOldPlatform(UpdateUsersOldPlatformMapper.toUpdateUsersOldPlatformDTO(message.body()), (JsonObject json) -> message.reply(json));
 				break;
 			case "search-users-old-platform":
 				User.searchUserFromOldPlatform(vertx);
@@ -587,175 +608,148 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 	}
 
-	private void csvClassesMapping(final Message<JsonObject> message) {
-		final CsvValidator v = new CsvValidator(vertx, message.body().getString("langage"),message.body(), storage);
-		String path = message.body().getString("path");
-		v.classesMapping(path, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject event) {
-				JsonObject result = new JsonObject().put("result", v.getResult());
-				if (!v.containsErrors()) {
-					result.getJsonObject("result").remove("errors");
-				}
-				sendOK(message, result);
+	private void csvClassesMapping(final ClassesMappingDTO dto, final Handler<JsonObject> replyHandler) {
+		final CsvValidator v = new CsvValidator(vertx, dto.getLanguage(), dto.toJson(), storage);
+		v.classesMapping(dto.getPath(), event -> {
+			final JsonObject result = v.getResult();
+			if (!v.containsErrors()) {
+				result.remove("errors");
 			}
+			replyHandler.handle(new JsonObject().put("status", "ok").put("result", result));
 		});
 	}
 
-	private void importWithId(final Message<JsonObject> message) {
-		String importId = message.body().getString("id");
+	private void importWithId(final ImportWithIdDTO dto, final Message<JsonObject> message) {
+		final String importId = dto.getId();
 		if (isEmpty(importId)) {
 			sendError(message, "missing.import.id");
 			return;
 		}
-		validatorFactory.validator(importId, new Handler<AsyncResult<ImportValidator>>() {
-			@Override
-			public void handle(AsyncResult<ImportValidator> event) {
-				if (event.succeeded()) {
-					event.result().exportIfValid(new Handler<JsonObject>() {
-						@Override
-						public void handle(JsonObject event) {
-							final JsonObject errors = event.getJsonObject("errors");
-							if (errors != null && errors.size() > 0) {
-								sendOK(message, new JsonObject().put("result", event));
-							} else {
-								message.body().mergeIn(event);
-								message.body().put("not-persist-report", true);
-								launchImport(message);
-							}
-						}
-					});
-				} else {
-					sendError(message, event.cause().getMessage());
-				}
+		validatorFactory.validator(importId, event -> {
+			if (event.succeeded()) {
+				event.result().exportIfValid(exported -> {
+					final JsonObject errors = exported.getJsonObject("errors");
+					if (errors != null && errors.size() > 0) {
+						sendOK(message, new JsonObject().put("result", exported));
+					} else {
+						message.body().mergeIn(exported);
+						message.body().put("not-persist-report", true);
+						launchImport(message);
+					}
+				});
+			} else {
+				sendError(message, event.cause().getMessage());
 			}
 		});
 	}
 
-	private void validateWithId(final Message<JsonObject> message) {
-		String importId = message.body().getString("id");
+	private void validateWithId(final ValidateWithIdDTO dto, final Handler<JsonObject> replyHandler) {
+		final String importId = dto.getId();
 		if (isEmpty(importId)) {
-			sendError(message, "missing.import.id");
+			replyHandler.handle(new JsonObject().put("status", "error").put("message", "missing.import.id"));
 			return;
 		}
-		validatorFactory.validator(importId, new Handler<AsyncResult<ImportValidator>>() {
-			@Override
-			public void handle(final AsyncResult<ImportValidator> event) {
-				if (event.succeeded()) {
-					final List<String> admlStructures = (message.body().getJsonArray("adml-structures") != null) ?
-							message.body().getJsonArray("adml-structures").getList() : null;
-					event.result().validate(admlStructures, new Handler<JsonObject>() {
-						@Override
-						public void handle(JsonObject event2) {
-							sendOK(message, new JsonObject().put("result", ((Report) event.result()).getResult()));
-						}
-					});
-				} else {
-					sendError(message, event.cause().getMessage());
-				}
+		validatorFactory.validator(importId, event -> {
+			if (event.succeeded()) {
+				event.result().validate(dto.getAdmlStructures(), result ->
+						replyHandler.handle(new JsonObject().put("status", "ok")
+								.put("result", ((Report) event.result()).getResult())));
+			} else {
+				replyHandler.handle(new JsonObject().put("status", "error").put("message", event.cause().getMessage()));
 			}
 		});
 	}
 
-	private void csvColumnMapping(final Message<JsonObject> message) {
-		final String acceptLanguage = message.body().getString("language", "fr");
-		final CsvValidator v = new CsvValidator(vertx, acceptLanguage,
+	private void csvColumnMapping(final ColumnsMappingDTO dto, final Handler<JsonObject> replyHandler) {
+		final CsvValidator v = new CsvValidator(vertx, dto.getLanguage(),
 				this.config.getJsonObject("csvMappings", new JsonObject()), storage);
-		String path = message.body().getString("path");
-		v.columnsMapping(path, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject event) {
-				JsonObject result = v.getResult().put("availableFields", v.getColumnsMapper().availableFields());
-				if (!v.containsErrors()) {
-					result.remove("errors");
-				}
-				sendOK(message, result);
+		v.columnsMapping(dto.getPath(), event -> {
+			final JsonObject result = v.getResult().put("availableFields", v.getColumnsMapper().availableFields());
+			if (!v.containsErrors()) {
+				result.remove("errors");
 			}
+			replyHandler.handle(new JsonObject().put("status", "ok").mergeIn(result));
 		});
+	}
+
+	private void launchImportValidation(final ValidateDTO dto, final Handler<JsonObject> replyHandler) {
+		final String acceptLanguage = getOrElse(dto.getLanguage(), "fr");
+		final String source = getOrElse(dto.getFeeder(), defaultFeed);
+		// TODO make validator factory
+		switch (source) {
+			case "AAF":
+			case "AAF1D":
+			case "PRONOTE":
+				replyHandler.handle(new JsonObject().put("status", "ok").put("result", new Report(acceptLanguage).getResult()));
+				return;
+			case "CSV":
+				break;
+			default:
+				replyHandler.handle(new JsonObject().put("status", "error").put("message", "invalid.type"));
+				return;
+		}
+		final ImportValidator v = new CsvValidator(vertx, acceptLanguage, dto.toJson(), storage);
+		doValidate(v, source, dto.getStructureExternalId(), getOrElse(dto.getPreDelete(), false),
+				dto.getPath(), dto.getAdmlStructures(),
+				r -> replyHandler.handle(new JsonObject().put("status", "ok").put("result", r.getResult())));
 	}
 
 	private void launchImportValidation(final Message<JsonObject> message, final Handler<Report> handler) {
 		logger.info(message.body().encodePrettily());
 		final String acceptLanguage = getOrElse(message.body().getString("language"), "fr");
 		final String source = getOrElse(message.body().getString("feeder"), defaultFeed);
-
 		// TODO make validator factory
-		final ImportValidator v;
 		switch (source) {
-			case "CSV":
-				v = new CsvValidator(vertx, acceptLanguage, message.body(), storage);
-				break;
 			case "AAF":
 			case "AAF1D":
 			case "PRONOTE":
-				final Report report = new Report(acceptLanguage);
-				if (handler != null) {
-					handler.handle(report);
-				} else {
-					sendOK(message, new JsonObject().put("result", report.getResult()));
-				}
+				handler.handle(new Report(acceptLanguage));
 				return;
+			case "CSV":
+				break;
 			default:
 				sendError(message, "invalid.type");
 				return;
 		}
-
-		final String structureExternalId = message.body().getString("structureExternalId");
-		final boolean preDelete = getOrElse(message.body().getBoolean("preDelete"), false);
-		String path = message.body().getString("path");
-		if (path == null && !"CSV".equals(source)) {
-			path = config.getString("import-files");
-		}
-		final List<String> admlStructures = (message.body().getJsonArray("adml-structures") != null) ?
+		final ImportValidator v = new CsvValidator(vertx, acceptLanguage, message.body(), storage);
+		final List<String> admlStructures = message.body().getJsonArray("adml-structures") != null ?
 				message.body().getJsonArray("adml-structures").getList() : null;
-		v.validate(path, admlStructures, new Handler<JsonObject>() {
-			@Override
-			public void handle(final JsonObject result) {
-				final Report r = (Report) v;
-				final Handler<Message<JsonObject>> persistHandler = new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> event) {
+		doValidate(v, source, message.body().getString("structureExternalId"),
+				getOrElse(message.body().getBoolean("preDelete"), false),
+				message.body().getString("path"), admlStructures, handler);
+	}
 
-					}
-				};
-				if (preDelete && structureExternalId != null && !r.containsErrors()) {
-					final JsonArray externalIds = r.getUsersExternalId();
-					final JsonArray profiles = r.getResult().getJsonArray(Report.PROFILES);
-					new User.PreDeleteTask(0).findMissingUsersInStructure(
-							structureExternalId, source, externalIds, profiles, new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							final JsonArray res = event.body().getJsonArray("result");
-							if ("ok".equals(event.body().getString("status")) && res != null) {
-								for (Object o : res) {
-									if (!(o instanceof JsonObject)) continue;
-									JsonObject j = (JsonObject) o;
-									String filename = j.getString("profile");
-									r.addUser(filename, j.put("state", r.translate(Report.State.DELETED.name()))
-											.put("translatedProfile", r.translate(j.getString("profile")))
-											.put("oState", Report.State.DELETED.name())
-									);
-								}
-								r.getResult().put("usersExternalIds", externalIds);
-							} else {
-								r.addError("error.find.preDelete");
-							}
-							if (handler != null) {
-								handler.handle(r);
-							} else {
-								sendOK(message, new JsonObject().put("result", r.getResult()));
-							}
-							r.persist(persistHandler);
+	private void doValidate(final ImportValidator v, final String source, final String structureExternalId,
+			final boolean preDelete, final String path, final List<String> admlStructures,
+			final Handler<Report> reportHandler) {
+		v.validate(path, admlStructures, result -> {
+			final Report r = (Report) v;
+			final Handler<Message<JsonObject>> persistHandler = event -> {};
+			if (preDelete && structureExternalId != null && !r.containsErrors()) {
+				final JsonArray externalIds = r.getUsersExternalId();
+				final JsonArray profiles = r.getResult().getJsonArray(Report.PROFILES);
+				new User.PreDeleteTask(0).findMissingUsersInStructure(
+						structureExternalId, source, externalIds, profiles, event -> {
+					final JsonArray res = event.body().getJsonArray("result");
+					if ("ok".equals(event.body().getString("status")) && res != null) {
+						for (Object o : res) {
+							if (!(o instanceof JsonObject)) continue;
+							JsonObject j = (JsonObject) o;
+							r.addUser(j.getString("profile"), j
+									.put("state", r.translate(Report.State.DELETED.name()))
+									.put("translatedProfile", r.translate(j.getString("profile")))
+									.put("oState", Report.State.DELETED.name()));
 						}
-					});
-				} else {
-					if (handler != null) {
-						handler.handle(r);
+						r.getResult().put("usersExternalIds", externalIds);
 					} else {
-						sendOK(message, new JsonObject().put("result", r.getResult()));
+						r.addError("error.find.preDelete");
 					}
+					reportHandler.handle(r);
 					r.persist(persistHandler);
-				}
+				});
+			} else {
+				reportHandler.handle(r);
+				r.persist(persistHandler);
 			}
 		});
 	}
@@ -807,49 +801,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 	}
 
-	private void launchTransition(final Message<JsonObject> message, final Handler<Message<JsonObject>> handler) {
-		if (GraphData.isReady()) {
-			final String structureExternalId = message.body().getString("structureExternalId");
-			Transition transition = new Transition(vertx,
-					getOrElse(config.getLong("delayBetweenStructure"), 5000l),
-					getOrElse(message.body().getBoolean("onlyRemoveShare"), false));
-			transition.launch(structureExternalId, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> m) {
-					if (m != null && "ok".equals(m.body().getString("status"))) {
-						AbstractTimetableImporter.transition(structureExternalId);
-						if (handler != null) {
-							handler.handle(m);
-						} else {
-							sendOK(message, m.body());
-						}
-					} else if (m != null) {
-						logger.error(m.body().getString("message"));
-						if (handler != null) {
-							handler.handle(m);
-						} else {
-							sendError(message, m.body().getString("message"));
-						}
-					} else {
-						logger.error("Transition return null value.");
-						if (handler != null) {
-							handler.handle(new ResultMessage().error("transition.error"));
-						} else {
-							sendError(message, "Transition return null value.");
-						}
-					}
-					GraphData.clear();
-					checkEventQueue();
-				}
-			});
-		} else {
-			eventQueue.add(messageToReplyNotifier(message));
-		}
+	private void launchImport(final Message<JsonObject> message) {
+		launchImport(ImportMapper.toImportDTO(message.body()), message);
 	}
 
-	private void launchImport(final Message<JsonObject> message) {
+	private void launchImport(final ImportDTO dto, final Message<JsonObject> message) {
 		final FeederLogger logger = new FeederLogger(e -> "Feeder.launchImport");
-		final String source = getOrElse(message.body().getString("feeder"), defaultFeed);
+		final String source = getOrElse(dto.getFeeder(), defaultFeed);
 		final Feed feed = feeds.get(source);
 		if (feed == null) {
 			sendError(message, "invalid.feeder");
@@ -857,21 +815,19 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			return;
 		}
 
-		final boolean preDelete = getOrElse(message.body().getBoolean("preDelete"), false);
-		final String structureExternalId = message.body().getString("structureExternalId");
+		final boolean preDelete = getOrElse(dto.getPreDelete(), false);
+		final String structureExternalId = dto.getStructureExternalId();
 
-		if (message.body().getBoolean("transition", false)) {
+		if (getOrElse(dto.getTransition(), false)) {
 			logger.error(e -> "START transition");
-			launchTransition(message, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					if ("ok".equals(event.body().getString("status"))) {
-						validateAndImport(message, feed, preDelete, structureExternalId, source);
-						logger.error(e -> "SUCCEED transition");
-					} else {
-						sendError(message, "transition.error");
-						logger.error(e -> String.format("FAILED transition | details: %s", event.body()));
-					}
+			final TransitionDTO transitionDTO = new TransitionDTO().setStructureExternalId(structureExternalId);
+			launchTransition(transitionDTO, result -> {
+				if ("ok".equals(result.getString("status"))) {
+					validateAndImport(message, feed, preDelete, structureExternalId, source);
+					logger.error(e -> "SUCCEED transition");
+				} else {
+					sendError(message, "transition.error");
+					logger.error(e -> String.format("FAILED transition | details: %s", result));
 				}
 			});
 		} else {

@@ -46,6 +46,8 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserDataSync;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
+import org.entcore.feeder.dto.FindUsersOldPlatformDTO;
+import org.entcore.feeder.dto.UpdateUsersOldPlatformDTO;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 
@@ -1110,34 +1112,27 @@ public class User {
 
 	}
 
-	public static void findAndModifyUserFromOldPlatform(final Message<JsonObject> message) {
-		final JsonObject matcher = message.body().getJsonObject("matcher");
-		final JsonObject update = message.body().getJsonObject("update");
-		final JsonObject sort = message.body().getJsonObject("sort");
-		final JsonObject keys = message.body().getJsonObject("keys");
+	public static void findAndModifyUserFromOldPlatform(final FindUsersOldPlatformDTO dto, final Handler<JsonObject> replyHandler) {
 		// TO DO: ajouter une méthode dans le persisteur mongo qui prend la limit sans le skip ni le batchSize
-		MongoDb.getInstance().findAndModify(OLD_PLATFORM_USERS, matcher, update, sort, keys,  m -> {
+		MongoDb.getInstance().findAndModify(OLD_PLATFORM_USERS, dto.getMatcher(), dto.getUpdate(), dto.getSort(), dto.getKeys(), m -> {
 			if ("ok".equals(m.body().getString("status"))) {
-				final JsonObject res = m.body().getJsonObject("result");
-				message.reply(new JsonObject().put("result", res).put("status", "ok"));
+				replyHandler.handle(new JsonObject().put("status", "ok").put("result", m.body().getJsonObject("result")));
 			} else {
-				final String errorMmessage = m.body().getString("message");
-				log.error("Error find user old platform : " + errorMmessage);
-				message.reply(new JsonObject().put("status", "error").put("message", errorMmessage));
+				final String errorMessage = m.body().getString("message");
+				log.error("Error find user old platform : " + errorMessage);
+				replyHandler.handle(new JsonObject().put("status", "error").put("message", errorMessage));
 			}
 		});
 	}
 
-	public static void updateUsersFromOldPlatform(final Message<JsonObject> message) {
-		final JsonObject criteria = message.body().getJsonObject("criteria");
-		final JsonObject update = message.body().getJsonObject("update");
-		MongoDb.getInstance().update(OLD_PLATFORM_USERS, criteria, update, false, true, m -> {
+	public static void updateUsersFromOldPlatform(final UpdateUsersOldPlatformDTO dto, final Handler<JsonObject> replyHandler) {
+		MongoDb.getInstance().update(OLD_PLATFORM_USERS, dto.getCriteria(), dto.getUpdate(), false, true, m -> {
 			if ("ok".equals(m.body().getString("status"))) {
-				message.reply(new JsonObject().put("status", "ok"));
+				replyHandler.handle(new JsonObject().put("status", "ok"));
 			} else {
-				final String errorMmessage = m.body().getString("message");
-				log.error("Error find user old platform : " + errorMmessage);
-				message.reply(new JsonObject().put("status", "error").put("message", errorMmessage));
+				final String errorMessage = m.body().getString("message");
+				log.error("Error update users old platform : " + errorMessage);
+				replyHandler.handle(new JsonObject().put("status", "error").put("message", errorMessage));
 			}
 		});
 	}
