@@ -1,6 +1,6 @@
 import { ButtonBeta, Flex, IconButton, useHasWorkflow } from '@edifice.io/react';
 import {
-  IconExternalLink,
+  IconArrowRight,
   IconMic,
   IconRecordVideo,
 } from '@edifice.io/react/icons';
@@ -56,7 +56,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
           color="default"
           variant="ghost"
           onClick={() => window.open('/workspace', '_self')}
-          rightIcon={<IconExternalLink />}
+          rightIcon={<IconArrowRight />}
         >
           {t('homepage.widget.see.all', 'Voir tout')}
         </ButtonBeta>

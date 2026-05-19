@@ -32,6 +32,14 @@ const CONTENT_LABELS: Record<ContentTitle, string> = {
   skills:   'Compétences',
 };
 
+const CONTENT_EMPTY_LABELS: Record<ContentTitle, string> = {
+  lateness: 'Pas de retard disponible',
+  absences: "Pas d'absence disponible",
+  grades:   'Pas de note disponible',
+  diary:    'Pas de nouveau devoir disponible',
+  skills:   'Pas d\'évaluation disponible',
+};
+
 interface CarnetDeBordWidgetProps {
   onError?: (message: string) => void;
 }
@@ -67,11 +75,9 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
 
   const closeLightbox = () => setShowLightbox(false);
 
-  const hasContent = contentTypes.some(
-    (ct) => ct.compact !== false || (Array.isArray(ct.full) && ct.full.length > 0)
-  );
+  const hasContent = contentTypes.length > 0;
 
-  const contentPanel = !hasContent ? (
+  const list = !hasContent ? (
     <WidgetEmptyState
       text={t('homepage.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
     />
@@ -79,7 +85,13 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
     <ul className="carnet-de-bord-list">
       {contentTypes.map((ct) => {
         const itemCount = Array.isArray(ct.full) ? ct.full.length : 0;
-        if (ct.compact === false && itemCount === 0) return null;
+        const isEmpty = ct.compact === false && itemCount === 0;
+
+        const sublabel = isEmpty
+          ? t(`homepage.widget.carnet-de-bord.${ct.title}.empty`, CONTENT_EMPTY_LABELS[ct.title])
+          : ct.compact !== false
+            ? ct.compact
+            : null;
 
         const inner = (
           <>
@@ -90,11 +102,11 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
               <strong className="carnet-de-bord-entry-label">
                 {t(
                   `homepage.widget.carnet-de-bord.${ct.title}`,
-                  CONTENT_LABELS[ct.title] ?? ct.title
+                  CONTENT_LABELS[ct.title] ?? ct.title,
                 )}
               </strong>
-              {ct.compact !== false && (
-                <span className="carnet-de-bord-entry-sublabel">{ct.compact}</span>
+              {sublabel && (
+                <span className="carnet-de-bord-entry-sublabel">{sublabel}</span>
               )}
             </div>
           </>
@@ -111,13 +123,19 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
                 {inner}
               </button>
             ) : (
-              <div className="carnet-de-bord-entry">{inner}</div>
+              <div className={`carnet-de-bord-entry${isEmpty ? ' carnet-de-bord-entry--disabled' : ''}`}>
+                {inner}
+              </div>
             )}
           </li>
         );
       })}
     </ul>
   );
+
+  const contentPanel = eleves.length > 1
+    ? <div className="carnet-de-bord-list-card">{list}</div>
+    : list;
 
   return (
     <div className="carnet-de-bord-widget">

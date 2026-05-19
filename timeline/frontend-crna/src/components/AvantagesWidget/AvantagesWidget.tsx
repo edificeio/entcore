@@ -3,7 +3,7 @@ import { useAvantages } from '~/hooks/useAvantages';
 import { ListWidget } from '../ui/ListWidget';
 
 export function AvantagesWidget({
-  onSeeMore = () => window.open('/avantages', '_self'),
+  onSeeMore = () => window.open('https://jeunes.nouvelle-aquitaine.fr/', '_blank'),
 }: {
   onSeeMore?: () => void;
 }) {
@@ -16,6 +16,7 @@ export function AvantagesWidget({
       items={items}
       isLoading={isLoading}
       onSeeMore={onSeeMore}
+      externalLink={true}
     />
   );
 }

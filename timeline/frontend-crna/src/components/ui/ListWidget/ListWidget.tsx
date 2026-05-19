@@ -1,5 +1,5 @@
 import { ButtonBeta } from '@edifice.io/react';
-import { IconExternalLink } from '@edifice.io/react/icons';
+import { IconArrowRight, IconExternalLink } from '@edifice.io/react/icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ListWidgetItem, WidgetBaseProps } from '~/models';
@@ -14,6 +14,7 @@ export interface ListWidgetProps extends WidgetBaseProps {
   title: string;
   items: ListWidgetItem[];
   style?: React.CSSProperties;
+  externalLink?: boolean;
 }
 
 export function ListWidget({
@@ -21,6 +22,7 @@ export function ListWidget({
   items,
   isLoading = false,
   onSeeMore,
+  externalLink = false,
   style,
 }: ListWidgetProps) {
   const { t } = useTranslation();
@@ -35,7 +37,7 @@ export function ListWidget({
             <ButtonBeta
               color="default"
               variant="ghost"
-              rightIcon={<IconExternalLink />}
+              rightIcon={ externalLink ? <IconExternalLink /> : <IconArrowRight /> }
               onClick={onSeeMore}
             >
               {t('homepage.widget.see.more', 'Voir plus')}

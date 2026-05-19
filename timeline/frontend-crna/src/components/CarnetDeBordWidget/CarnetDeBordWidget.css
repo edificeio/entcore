@@ -9,6 +9,12 @@
 }
 
 
+.carnet-de-bord-list-card {
+  border-radius: var(--primitive-border-radius-xl);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16) var(--primitive-spacer-16);
+  background-color: var(--primitive-grey-100);
+}
+
 .carnet-de-bord-list {
   display: flex;
   flex-direction: column;
@@ -39,6 +45,17 @@ button.carnet-de-bord-entry {
 
 button.carnet-de-bord-entry:hover {
   background-color: var(--primitive-white);
+  border-color: var(--primitive-grey-300);
+}
+
+/* multi-élèves : entrées sur fond de card grise → blanc + hover gris */
+.carnet-de-bord-list-card .carnet-de-bord-entry {
+  background: var(--primitive-white);
+  border-color: var(--primitive-white);
+}
+
+.carnet-de-bord-list-card button.carnet-de-bord-entry:hover {
+  background-color: var(--primitive-grey-100);
   border-color: var(--primitive-grey-300);
 }
 
@@ -86,6 +103,10 @@ button.carnet-de-bord-entry:hover {
   color: var(--color-buttons-primary-dark);
 }
 
+.carnet-de-bord-entry--disabled {
+  background: var(--primitive-grey-50);
+  border-color: var(--primitive-grey-100);
+}
 .carnet-de-bord-entry-text {
   flex: 1;
   min-width: 0;
