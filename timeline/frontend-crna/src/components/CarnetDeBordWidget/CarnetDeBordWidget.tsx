@@ -143,14 +143,16 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
         className="carnet-de-bord-header"
         title={t('homepage.widget.carnet-de-bord.title', 'Carnet de bord')}
         action={
-          <ButtonBeta
-            color="default"
-            variant="ghost"
-            rightIcon={<IconExternalLink />}
-            onClick={() => window.open('/viescolaire', '_self')}
-          >
-            {t('homepage.widget.see.more', 'Voir plus')}
-          </ButtonBeta>
+          eleves[currentEleveIndex]?.address ? (
+            <ButtonBeta
+              color="default"
+              variant="ghost"
+              rightIcon={<IconExternalLink />}
+              onClick={() => window.open(eleves[currentEleveIndex].address, '_blank')}
+            >
+              {t('homepage.widget.see.more', 'Voir plus')}
+            </ButtonBeta>
+          ) : undefined
         }
       />
 
@@ -201,9 +203,9 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
                   <li key={i} className="carnet-de-bord-lightbox-item">
                     <div className="d-flex align-items-center gap-8">
                       <span className="carnet-de-bord-entry-sublabel flex-fill">{item.value}</span>
-                      {item.pageUrl && (
+                      {eleves[currentEleveIndex].address && item.pageUrl && (
                         <a
-                          href={item.pageUrl}
+                          href={`${eleves[currentEleveIndex].address}?page=${item.pageUrl}`}
                           target="_blank"
                           rel="noreferrer"
                           className="carnet-de-bord-lightbox-link"

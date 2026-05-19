@@ -54,7 +54,7 @@ const parseEleves = (
           child.lastName.toLowerCase() === nom.toLowerCase()
       )?.[0];
       const avatar = matchedId ? `/userbook/avatar/${matchedId}?thumbnail=100x100` : "";
-      return { element, name: prenom, avatar };
+      return { element, name: prenom, avatar, address: structure.address };
     });
   });
 };

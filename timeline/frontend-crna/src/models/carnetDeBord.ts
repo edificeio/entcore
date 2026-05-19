@@ -27,6 +27,7 @@ export type ParsedEleve = {
   element: Element;
   name: string;
   avatar: string;
+  address: string;
 };
 
 export type UseCarnetDeBordResult = {
