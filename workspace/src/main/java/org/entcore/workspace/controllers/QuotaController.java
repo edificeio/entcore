@@ -47,7 +47,15 @@ public class QuotaController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getQuota(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
-		quotaService.quotaAndUsage(userId, notEmptyResponseHandler(request));
+		quotaService.quotaAndUsage(userId, res -> {
+			if (res.isRight() && (res.right().getValue() == null || res.right().getValue().size() == 0)) {
+				// UserBook absent (utilisateur jamais activé) — on l'initialise et on renvoie les valeurs par défaut
+				quotaService.init(userId);
+				renderJson(request, new JsonObject().put("quota", 0L).put("storage", 0L));
+			} else {
+				notEmptyResponseHandler(request).handle(res);
+			}
+		});
 	}
 
 	@Get("/quota/structure/:structureId")
@@ -107,7 +115,8 @@ public class QuotaController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void initUserQuota(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
-		quotaService.quotaAndUsage(userId, notEmptyResponseHandler(request));
+		quotaService.init(userId);
+		request.response().setStatusCode(204).end();
 	}
 
 	@BusAddress("activation.ack")
