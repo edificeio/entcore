@@ -76,7 +76,11 @@ export function ListWidget({
             return (
               <li key={item.id}>
                 {item.href ? (
-                  <a href={item.href} className="list-widget-item link-discret">
+                  <a
+                    href={item.href}
+                    className="list-widget-item link-discret"
+                    {...(externalLink ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  >
                     {content}
                   </a>
                 ) : (

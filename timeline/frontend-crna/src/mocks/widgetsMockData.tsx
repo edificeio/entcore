@@ -70,30 +70,6 @@ export const MOCK_LIENS_UTILES: ListWidgetItem[] = [
   },
 ];
 
-export const MOCK_AVANTAGES: ListWidgetItem[] = [
-  {
-    id: '1',
-    icon: <IconPlaceholder label="J" bg="#e07a5f" />,
-    label: 'Jeunes en Nouvelle-Aquitaine',
-    sublabel: 'Accédez à tous vos avantages régionaux',
-    href: '#',
-  },
-  {
-    id: '2',
-    icon: <IconPlaceholder label="P" bg="#7b61ff" />,
-    label: 'Pass Culture',
-    sublabel: '300€ de crédit pour vos activités culturelles',
-    href: '#',
-  },
-  {
-    id: '3',
-    icon: <IconPlaceholder label="T" bg="#3d9a6d" />,
-    label: 'Transport scolaire',
-    sublabel: 'Réduction sur votre abonnement',
-    href: '#',
-  },
-];
-
 
 export const MOCK_EMPLOI_DU_TEMPS: EmploiDuTempsEntry[] = [
   { id: 'e1', subject: 'Spé-SVT',           room: 'Bat A - Salle 202', teacher: 'M.DUCHEMIN',  startTime: '8h30',  color: 'green'  },
