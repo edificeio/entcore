@@ -4,6 +4,7 @@ export * from './ui/WidgetHeader';
 export * from './ui/WidgetPanel';
 export * from './ui/WidgetSkeleton';
 export * from './ui/ListWidget';
+export * from './ui/WidgetMasonry';
 export * from './CreateDocumentWidget';
 export * from './FavoritesWidget';
 export * from './WelcomeWidget';

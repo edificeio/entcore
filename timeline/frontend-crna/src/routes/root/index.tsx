@@ -1,5 +1,4 @@
 import {
-  Grid,
   LoadingScreen,
   PageLayout,
   useEdificeClient,
@@ -11,7 +10,7 @@ import {
 } from '@edifice.io/react/homepage';
 import { useState } from 'react';
 import backgroundImage from '~/assets/background.png';
-import { MediacentreWidget } from '~/components';
+import { MediacentreWidget, WidgetMasonry } from '~/components';
 import { AppFooter } from '~/components/AppFooter';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
@@ -93,23 +92,15 @@ export const Root = () => {
           <WelcomeWidget />
         </WidgetErrorBoundary>
 
-        <Grid>
-          <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-            <MediacentreWidget />
-          </Grid.Col>
-          <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-            <WidgetErrorBoundary>
-              <AvantagesWidget />
-            </WidgetErrorBoundary>
-          </Grid.Col>
-        </Grid>
-        <Grid>
-          <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-            <WidgetErrorBoundary>
-              <CarnetDeBordWidget />
-            </WidgetErrorBoundary>
-          </Grid.Col>
-        </Grid>
+        <WidgetMasonry>
+          <MediacentreWidget />
+          <WidgetErrorBoundary>
+            <AvantagesWidget />
+          </WidgetErrorBoundary>
+          <WidgetErrorBoundary>
+            <CarnetDeBordWidget />
+          </WidgetErrorBoundary>
+        </WidgetMasonry>
         {/* <WidgetCard
           title="Vos services"
           style={{ marginBottom: '16px', marginTop: '16px' }}

@@ -1,0 +1,1 @@
+export { WidgetMasonry } from './WidgetMasonry';
