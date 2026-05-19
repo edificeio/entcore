@@ -16,6 +16,7 @@ export default ({ mode }: { mode: string }) => {
       '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
       '^/calendar/(?!public/)',
       '/sso/pronote',
+      '/mediacentre'
     ],
   });
 

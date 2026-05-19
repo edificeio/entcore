@@ -52,7 +52,7 @@ export function CreateDocumentWidget() {
         <ButtonBeta
           color="default"
           variant="ghost"
-          onClick={() => window.open('/welcome', '_self')}
+          onClick={() => window.open('/workspace', '_self')}
           rightIcon={<IconExternalLink />}
         >
           {t('homepage.widget.see.all', 'Voir tout')}
