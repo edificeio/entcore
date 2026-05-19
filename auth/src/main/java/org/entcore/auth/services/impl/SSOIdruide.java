@@ -22,7 +22,7 @@ public class SSOIdruide extends AbstractSSOProvider {
     @Override
     public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
         final String emailDomain = Vertx.currentContext().config().getJsonObject("idruide-email-domain-by-host", new JsonObject()).getString(host);
-        String query = "MATCH (u:User {id:{userId}}) RETURN u.displayName AS displayName, u.lastName AS lastName, u.firstName AS firstName";
+        String query = "MATCH (u:User {id:{userId}}) RETURN u.displayName AS displayName, u.lastName AS lastName, u.firstName AS firstName, u.emailAcademy AS mail, head(u.profiles) as profile";
 
         Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId), Neo4jResult.validUniqueResultHandler(evt -> {
             if (evt.isLeft()) {
@@ -32,11 +32,13 @@ public class SSOIdruide extends AbstractSSOProvider {
 
             JsonArray result = new JsonArray();
             JsonObject user = evt.right().getValue();
+            final String profile = user.getString("profile", "");
             result.add(new JsonObject().put("id", userId));
+            result.add(new JsonObject().put("sub", userId));
             result.add(new JsonObject().put("displayName", user.getString("displayName", "")));
             result.add(new JsonObject().put("lastName", user.getString("lastName", "")));
             result.add(new JsonObject().put("firstName", user.getString("firstName", "")));
-            result.add(new JsonObject().put("email", userId + "@" + emailDomain));
+            result.add(new JsonObject().put("email", ("Student".equals(profile)) ? userId + "@" + emailDomain : user.getString("mail","")));
             UserUtils.getUserInfos(eb, userId, userInfos -> {
                 if(userInfos != null) {
                     JsonObject customAttributes = new JsonObject().put("service", host).put("connector-type", "saml")
