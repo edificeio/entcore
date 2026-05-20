@@ -15,6 +15,7 @@ export interface ListWidgetProps extends WidgetBaseProps {
   items: ListWidgetItem[];
   style?: React.CSSProperties;
   externalLink?: boolean;
+  filter?: React.ReactNode;
 }
 
 export function ListWidget({
@@ -24,6 +25,7 @@ export function ListWidget({
   onSeeMore,
   externalLink = false,
   style,
+  filter,
 }: ListWidgetProps) {
   const { t } = useTranslation();
   return (
@@ -45,6 +47,8 @@ export function ListWidget({
           ) : undefined
         }
       />
+
+      {filter}
 
       {isLoading ? (
         <WidgetSkeleton />
