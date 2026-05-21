@@ -1,42 +1,35 @@
-:root {
-  --edifice-root-font-size: 16px;
-  --primitives-white: #fff;
-  --primitives-grey-300: #e4e4e4;
-  --primitives-grey-800: #4a4a4a;
-  --primitives-grey-900: #383838;
-  --primitives-blue-900: #1c1c73;
-  --primitives-blue-700: #3030d1;
-  --primitives-blue-500: #5555f7;
-  --primitives-orange-500: #fc5e29;
-  --primitives-green-500: #33c77d;
-  --primitives-pink-500: #fc94ff;
-  --primitives-yellow-500: #ffc403;
-  --border-radius-pill: 128px;
-}
-
 /* ═══════════════════════════════════════════
    Layout principal — Grid deux colonnes
    ═══════════════════════════════════════════ */
 .wayf-layout {
+  --wayf-editorial-fallback: linear-gradient(111deg, #b9e3f8 0%, #2a9cc8 100%);
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-template-areas: 'editorial selection';
   min-height: 100vh;
+  background: var(--wayf-editorial-fallback);
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
 }
 
 /* ═══════════════════════════════════════════
    Zone éditoriale (gauche)
-   ─ grille interne : message (1fr) / partenaires (auto)
+   ─ flex colonne : welcome (shrinkable) puis partenaires collés dessous
    ═══════════════════════════════════════════ */
 .wayf-editorial {
   grid-area: editorial;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 3rem;
-  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--primitives-spacer-48);
+  padding: var(--primitives-spacer-64);
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.wayf-editorial iframe {
+  max-width: 100%;
 }
 
 /* ═══════════════════════════════════════════
@@ -54,7 +47,7 @@
   border-bottom: 1px solid var(--primitives-grey-300);
   display: flex;
   justify-content: center;
-  padding: 1rem 3rem;
+  padding: var(--primitives-spacer-16) var(--primitives-spacer-48);
   flex-shrink: 0;
 }
 
@@ -69,31 +62,35 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
-  padding: 3rem 4rem;
-  overflow: auto;
+  gap: var(--primitives-spacer-24);
+  padding-block: var(--primitives-spacer-48);
+  overflow: hidden;
+}
+
+.wayf-view-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.wayf-view-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--primitives-spacer-32);
+  padding-inline: var(--primitives-spacer-64);
+  overflow-y: auto;
 }
 
 .wayf-title {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: var(--primitives-font-size-s);
+  font-weight: var(--primitives-font-weight-bold);
   color: var(--primitives-grey-900);
   text-align: center;
   margin: 0;
-}
-
-.wayf-help-btn {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--primitives-blue-900);
-  text-decoration: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: var(--border-radius-pill);
-  transition: background 0.15s ease;
-}
-
-.wayf-help-btn:hover {
-  background: rgba(28, 28, 115, 0.06);
 }
 
 /* ═══════════════════════════════════════════
@@ -104,21 +101,40 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 3rem;
+  gap: var(--primitives-spacer-12);
+  padding: var(--primitives-spacer-16);
   flex-shrink: 0;
+}
+
+.wayf-footer-links {
+  display: flex;
+  align-items: center;
+}
+
+.wayf-help-btn {
+  font-size: var(--primitives-font-size-default);
+  font-weight: var(--primitives-font-weight-bold);
+  color: var(--primitives-blue-900);
+  text-decoration: none;
+  padding: var(--primitives-spacer-8) var(--primitives-spacer-24);
+  border-radius: var(--primitives-border-radius-pill);
+  transition: background 0.15s ease;
+}
+
+.wayf-help-btn:hover {
+  background: rgba(28, 28, 115, 0.06);
 }
 
 .wayf-legal-link {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 1rem;
-  font-weight: 700;
+  gap: var(--primitives-spacer-8);
+  font-size: var(--primitives-font-size-default);
+  font-weight: var(--primitives-font-weight-bold);
   color: var(--primitives-blue-900);
   text-decoration: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: var(--border-radius-pill);
+  padding: var(--primitives-spacer-8) var(--primitives-spacer-24);
+  border-radius: var(--primitives-border-radius-pill);
   transition: background 0.15s ease;
 }
 
@@ -131,7 +147,7 @@
   border-radius: 120px;
   display: flex;
   align-items: center;
-  padding: 0.5rem 0.75rem;
+  padding: var(--primitives-spacer-8) var(--primitives-spacer-12);
   text-decoration: none;
 }
 
@@ -142,28 +158,55 @@
 }
 
 /* ═══════════════════════════════════════════
+   Responsive — tablette : colonnes égales
+   ═══════════════════════════════════════════ */
+@media (max-width: 1199px) {
+  .wayf-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════
    Responsive — une colonne sur mobile
    ═══════════════════════════════════════════ */
 @media (max-width: 767px) {
   .wayf-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto auto;
     grid-template-areas:
       'selection'
       'editorial';
-    min-height: 100svh;
   }
 
   .wayf-selection {
     min-height: unset;
   }
 
-  .wayf-editorial {
-    min-height: 300px;
-    padding: 2rem;
+  .wayf-selection__auth {
+    padding-block: var(--primitives-spacer-32);
+    overflow: visible;
   }
 
-  .wayf-selection__auth {
-    padding: 2rem 1.5rem;
+  .wayf-view-container {
+    display: grid;
+    overflow: visible;
+    position: static;
+  }
+
+  .wayf-view-slide {
+    grid-area: 1 / 1;
+    position: static;
+    padding-inline: var(--primitives-spacer-24);
+    overflow-y: visible;
+  }
+
+  .wayf-footer-links {
+    flex-direction: column;
+  }
+
+  .wayf-editorial {
+    min-height: 300px;
+    max-height: unset;
+    padding: var(--primitives-spacer-16);
   }
 }
