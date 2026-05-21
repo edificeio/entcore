@@ -54,7 +54,7 @@
       	"initialCountry": "{{ authPhoneInputInitialCountry|default("auto") }}"
       }
     },
-    {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
+    {% if withNewDeviceWarning is defined and withNewDeviceWarning %}
       "new-device-warning": {
         {% if authActivateNewDeviceWarning is defined and not(authActivateNewDeviceWarning) %}
           "cron": "0 */2 * * * ? 2099",
