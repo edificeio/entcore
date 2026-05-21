@@ -18,7 +18,13 @@ export const Root = () => {
   if (!init) return <LoadingScreen position={false} />;
 
   return (
-    <PageLayout scrollMode="columns" variant="fullpage">
+    <PageLayout
+      scrollMode="columns"
+      variant="fullpage"
+      noPadding={{
+        sidebarRight: true,
+      }}
+    >
       <PageLayout.Header />
       <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
         <SchoolSpaceContainer />
@@ -29,7 +35,11 @@ export const Root = () => {
         <MessageFlashListContainer />
       </PageLayout.Content>
       <PageLayout.SidebarRight>
-        <NotificationListContainer />
+        <NotificationListContainer
+          onCloseNotifications={() => {
+            console.log('Notifications closed - implement close logic here');
+          }}
+        />
       </PageLayout.SidebarRight>
     </PageLayout>
   );
