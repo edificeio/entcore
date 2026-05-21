@@ -989,7 +989,8 @@ public class CommunicationController extends BaseController {
 		.onSuccess(userInfos -> {
 			final String query = request.params().get("query");
 			final String mode = request.params().get("mode");
-			communicationService.searchVisibles(userInfos, query, mode, I18n.acceptLanguage(request))
+			final boolean includeHidden = "true".equalsIgnoreCase(request.params().get("includeHidden"));
+			communicationService.searchVisibles(userInfos, query, mode, I18n.acceptLanguage(request), includeHidden)
 				.onSuccess(visibles -> renderJson(request, visibles))
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 		});

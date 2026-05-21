@@ -1685,7 +1685,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public Future<JsonArray> searchVisibles(UserInfos user, String search, String mode, String language) {
+	public Future<JsonArray> searchVisibles(UserInfos user, String search, String mode, String language, boolean includeHidden) {
 		final Future<JsonArray> visibles;
 		final String modeType = !StringUtils.isEmpty(mode) ? mode : this.visiblesSearchType;
 
@@ -1694,16 +1694,16 @@ public class DefaultCommunicationService implements CommunicationService {
 				visibles = legacySearchVisible(user, search, language);
 				break;
 			case "complete":
-				visibles = searchVisibleContacts(user, search, language);
+				visibles = searchVisibleContacts(user, search, language, includeHidden);
 				break;
 			case "optimized":
-				visibles = searchVisibleContactsOptimized(user, search, language);
+				visibles = searchVisibleContactsOptimized(user, search, language, includeHidden);
 				break;
 			case "excludeFamily":
-				visibles = searchVisibleContactsExcludeFamily(user, search, language);
+				visibles = searchVisibleContactsExcludeFamily(user, search, language, includeHidden);
 				break;
 			default:
-				visibles = searchVisibleContactsLight(user, search, language);
+				visibles = searchVisibleContactsLight(user, search, language, includeHidden);
 		}
 		return visibles;
 	}
@@ -1785,6 +1785,10 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	public Future<JsonArray> searchVisibleContacts(UserInfos user, String search, String language) {
+		return searchVisibleContacts(user, search, language, false);
+	}
+
+	public Future<JsonArray> searchVisibleContacts(UserInfos user, String search, String language, boolean includeHidden) {
 		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 
@@ -1816,6 +1820,9 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		String preFilter = "";
 		JsonObject params = new JsonObject();
+		if (includeHidden) {
+			params.put("includeHidden", true);
+		}
 
 		if (!StringUtils.isEmpty(search)) {
 			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
@@ -1907,6 +1914,10 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	public Future<JsonArray> searchVisibleContactsLight(UserInfos user, String search, String language) {
+		return searchVisibleContactsLight(user, search, language, false);
+	}
+
+	public Future<JsonArray> searchVisibleContactsLight(UserInfos user, String search, String language, boolean includeHidden) {
 		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 
@@ -1921,6 +1932,9 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		String preFilter = "";
 		JsonObject params = new JsonObject();
+		if (includeHidden) {
+			params.put("includeHidden", true);
+		}
 
 		if (!StringUtils.isEmpty(search)) {
 			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
@@ -1991,6 +2005,10 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	public Future<JsonArray> searchVisibleContactsExcludeFamily(UserInfos user, String search, String language) {
+		return searchVisibleContactsExcludeFamily(user, search, language, false);
+	}
+
+	public Future<JsonArray> searchVisibleContactsExcludeFamily(UserInfos user, String search, String language, boolean includeHidden) {
 		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 				"WITH visibles ";
@@ -1998,6 +2016,9 @@ public class DefaultCommunicationService implements CommunicationService {
 		String preFilter = "";
 
 		JsonObject params = new JsonObject();
+		if (includeHidden) {
+			params.put("includeHidden", true);
+		}
 		if (!StringUtils.isEmpty(search)) {
 			preFilter += "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
 			String sanitizedSearch = StringValidation.sanitize(search);
@@ -2074,6 +2095,10 @@ public class DefaultCommunicationService implements CommunicationService {
 
 
 	public Future<JsonArray> searchVisibleContactsOptimized(UserInfos user, String search, String language) {
+		return searchVisibleContactsOptimized(user, search, language, false);
+	}
+
+	public Future<JsonArray> searchVisibleContactsOptimized(UserInfos user, String search, String language, boolean includeHidden) {
 		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 			"WITH visibles, HEAD(visibles.profiles) AS primaryProfile " +
@@ -2106,6 +2131,9 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		String preFilter = "";
 		JsonObject params = new JsonObject();
+		if (includeHidden) {
+			params.put("includeHidden", true);
+		}
 
 		if (!StringUtils.isEmpty(search)) {
 			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
