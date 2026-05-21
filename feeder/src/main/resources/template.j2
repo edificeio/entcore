@@ -12,8 +12,8 @@
     "allow-manual-actions-during-feeds": {{ feederAllowManualActionsDuringFeeds | default('false') }},
     "exclude-mark-duplicates-by-source" : ["CSV"],
     "ad-login-alias-validator": {{ feederADLoginAliasValidator | default('false') }},
-    {% if platform_name is defined and platform_name != 'prod-nc' -%}
-      "manual-group-link-users-auto-sources": ["AAF","AAF1D"],
+    {% if feederManualGroupLinkUsersAutoSources is defined -%}
+      "manual-group-link-users-auto-sources": {{feederManualGroupLinkUsersAutoSources}},
     {% endif -%}
     "fileAnalyzer": {
       "enabled": {{ fileAnalyzerOn | default('true') }},
