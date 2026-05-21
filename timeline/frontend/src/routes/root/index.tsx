@@ -2,6 +2,7 @@ import { LoadingScreen, PageLayout, useEdificeClient } from '@edifice.io/react';
 import {
   LastInfosContainer,
   MessageFlashListContainer,
+  NotificationListContainer,
   SchoolSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
@@ -27,6 +28,9 @@ export const Root = () => {
         <BetaSwitchContainer />
         <MessageFlashListContainer />
       </PageLayout.Content>
+      <PageLayout.SidebarRight>
+        <NotificationListContainer />
+      </PageLayout.SidebarRight>
     </PageLayout>
   );
 };
