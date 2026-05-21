@@ -205,7 +205,11 @@ public interface CommunicationService {
 	 * @param search Keyword to filter the search results
 	 * @param language User's language
 	 */
-	Future<JsonArray> searchVisibles(UserInfos user, String search, String mode, String language);
+	default Future<JsonArray> searchVisibles(UserInfos user, String search, String mode, String language) {
+		return searchVisibles(user, search, mode, language, false);
+	}
+
+	Future<JsonArray> searchVisibles(UserInfos user, String search, String mode, String language, boolean includeHidden);
 
 }
 
