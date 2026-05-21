@@ -217,12 +217,12 @@ buildBackend () {
   if [ "$NO_DOCKER" = "true" ] ; then
     mvn $MVN_OPTS install -DskipTests
   else
-    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests
+    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests -U
   fi
 }
 
 install () {
-  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests
+  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests -U
   cd broker-parent/broker-client/quarkus
   ./build.sh install
   cd -
