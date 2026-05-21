@@ -1,0 +1,140 @@
+html {
+  font-size: 10px;
+}
+
+/*
+ * Design tokens — WAYF v2
+ *
+ * Variables CSS générées à partir de _primitives.scss du design system edifice2d.
+ * Convention : --primitives-{nom-variable-scss}
+ * Préfixe défini dans abstracts/_variables.scss : $prefix: 'edifice-'
+ *
+ * Ce fichier a vocation à être remplacé par la sortie compilée de primitive-vars()
+ * dès que le build du design system sera disponible.
+ * À ce moment, seules les références var(--primitives-*) dans les CSS composants
+ * resteront à jour automatiquement.
+ */
+
+:root {
+  /* ─── Couleurs primitives ──────────────────────────────────────────────── */
+  --primitives-white: #fff;
+  --primitives-black: #000;
+
+  /* Gris */
+  --primitives-grey-100: #f7f7f7;
+  --primitives-grey-200: #f2f2f2;
+  --primitives-grey-300: #e4e4e4;
+  --primitives-grey-500: #c7c7c7;
+  --primitives-grey-700: #828282;
+  --primitives-grey-800: #696969;
+  --primitives-grey-900: #383838;
+
+  /* Bleu */
+  --primitives-blue-100: #f5f7ff;
+  --primitives-blue-200: #e6ebfe;
+  --primitives-blue-300: #c8d3fe;
+  --primitives-blue-400: #738efc;
+  --primitives-blue-500: #5555f7;
+  --primitives-blue-700: #3030d1;
+  --primitives-blue-900: #1c1c73;
+
+  /* Orange */
+  --primitives-orange-100: #fff7f5;
+  --primitives-orange-200: #ffebe5;
+  --primitives-orange-300: #ffc1b2;
+  --primitives-orange-400: #ff8261;
+  --primitives-orange-500: #fc5e29;
+  --primitives-orange-700: #e73404;
+  --primitives-orange-900: #a82400;
+
+  /* Jaune */
+  --primitives-yellow-100: #fefaec;
+  --primitives-yellow-200: #fcf3cf;
+  --primitives-yellow-300: #ffe5a3;
+  --primitives-yellow-400: #ffd357;
+  --primitives-yellow-500: #ffc403;
+  --primitives-yellow-700: #e5a800;
+  --primitives-yellow-900: #9e7400;
+
+  /* Vert */
+  --primitives-green-100: #f2fcf7;
+  --primitives-green-200: #e2f9ed;
+  --primitives-green-300: #bdf0d5;
+  --primitives-green-400: #64db9e;
+  --primitives-green-500: #33c77d;
+  --primitives-green-700: #2caa69;
+  --primitives-green-900: #238050;
+
+  /* Rose */
+  --primitives-pink-100: #fff5ff;
+  --primitives-pink-200: #feecfe;
+  --primitives-pink-300: #fdd7fe;
+  --primitives-pink-400: #fdbfff;
+  --primitives-pink-500: #fc94ff;
+  --primitives-pink-700: #e26ae2;
+  --primitives-pink-900: #9d399d;
+
+  /* Support */
+  --primitives-danger-200: #ffebeb;
+  --primitives-danger-300: #ffbdbd;
+  --primitives-danger-500: #f63131;
+  --primitives-danger-700: #dc0404;
+
+  --primitives-success-200: #e2f9ed;
+  --primitives-success-300: #bdf0d5;
+  --primitives-success-500: #33c77d;
+  --primitives-success-700: #2caa69;
+
+  --primitives-warning-200: #fcf3cf;
+  --primitives-warning-300: #ffe5a3;
+  --primitives-warning-500: #ffc403;
+  --primitives-warning-700: #e5a800;
+
+  --primitives-info-200: #e6ebfe;
+  --primitives-info-300: #c8d3fe;
+  --primitives-info-500: #5555f7;
+  --primitives-info-700: #3030d1;
+
+  /* ─── Espacements ──────────────────────────────────────────────────────── */
+  --primitives-spacer-0: 0;
+  --primitives-spacer-2: 0.2rem;
+  --primitives-spacer-4: 0.4rem;
+  --primitives-spacer-8: 0.8rem;
+  --primitives-spacer-12: 1.2rem;
+  --primitives-spacer-16: 1.6rem;
+  --primitives-spacer-24: 2.4rem;
+  --primitives-spacer-32: 3.2rem;
+  --primitives-spacer-40: 4rem;
+  --primitives-spacer-48: 4.8rem;
+  --primitives-spacer-64: 6.4rem;
+
+  /* ─── Rayons de bordure ────────────────────────────────────────────────── */
+  --primitives-border-radius-sm: 0.4rem;
+  --primitives-border-radius-md: 0.8rem;
+  --primitives-border-radius-lg: 1.2rem;
+  --primitives-border-radius-xl: 1.6rem;
+  --primitives-border-radius-2xl: 2.4rem;
+  --primitives-border-radius-3xl: 3.2rem;
+  --primitives-border-radius-pill: 12.8rem;
+
+  /* ─── Typographie ──────────────────────────────────────────────────────── */
+  --primitives-font-size-xl: 3.2rem;
+  --primitives-font-size-l: 2.6rem;
+  --primitives-font-size-m: 2.2rem;
+  --primitives-font-size-s: 1.8rem;
+  --primitives-font-size-default: 1.6rem;
+  --primitives-font-size-small: 1.4rem;
+  --primitives-font-size-caption: 1.2rem;
+
+  --primitives-font-weight-bold: 700;
+  --primitives-font-weight-medium: 600;
+  --primitives-font-weight-regular: 500;
+
+  --primitives-font-lineheight-xl: 3.6rem;
+  --primitives-font-lineheight-l: 3.2rem;
+  --primitives-font-lineheight-m: 2.8rem;
+  --primitives-font-lineheight-s: 2.6rem;
+  --primitives-font-lineheight-xs: 2.2rem;
+  --primitives-font-lineheight-2xs: 2rem;
+  --primitives-font-lineheight-3xs: 1.8rem;
+}

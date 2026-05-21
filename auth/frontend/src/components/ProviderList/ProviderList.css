@@ -5,5 +5,31 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--primitives-spacer-12);
+}
+
+.wayf-back-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--primitives-spacer-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--primitives-spacer-8) var(--primitives-spacer-12);
+  font-size: var(--primitives-font-size-default);
+  font-weight: var(--primitives-font-weight-bold);
+  color: var(--primitives-blue-900);
+  border-radius: var(--primitives-border-radius-pill);
+  transition: background 0.15s ease;
+  min-height: 48px;
+}
+
+.wayf-back-btn:hover {
+  background: rgba(28, 28, 115, 0.06);
+}
+
+.wayf-back-btn:focus-visible {
+  outline: 2px solid var(--primitives-blue-900);
+  outline-offset: 2px;
 }
