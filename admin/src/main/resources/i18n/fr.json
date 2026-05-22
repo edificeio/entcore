@@ -1613,7 +1613,7 @@
   "user.merge.oldmerge.button": "Ne pas conserver",
   "user.predeleted": "Utilisateur pré-supprimé. Suppression effective dans {{numberOfDays}} jour(s).",
   "user.predeleted.waiting": "Utilisateur en attente de pré-suppression. Il sera pré-supprimé dans {{numberOfDays}} jour(s).",
-  "user.predeleted.waiting.help": "Le statut 'en attente de pré-suppression' signifie que l'utilisateur n'apparaît plus dans les données d'alimentation fournies par l'académie pour votre établissement.",
+  "user.predeleted.waiting.help": "Le statut 'en attente de pré-suppression' signifie que l'utilisateur n'apparaît plus dans les données d'alimentation fournies par l'académie pour votre établissement. Pensez à vérifier votre base de données (AGAPE, ONDE, STS-Web et SIECLE).",
   "user.remove.adml.disclaimer.confirm": "Confirmez-vous cette action ?",
   "user.remove.adml.disclaimer.info": "Vous allez retirer le droit d'Administration local à {{ username ? $username : null }} sur tous les établissements auxquels cet utilisateur est rattaché. ",
   "user.remove.disclaimer.confirm": "Confirmez-vous cette action ?",
