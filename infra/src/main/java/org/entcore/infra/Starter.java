@@ -75,11 +75,8 @@ public class Starter extends BaseServer {
 						});
 			}).onFailure(th -> log.error("Error getting server map", th));
 
-			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().consumer("app-registry.loaded");
-			messageConsumer.handler(message -> {
-				loadInvalidEmails(); // TODO change map loadding if needed
-				messageConsumer.unregister();
-			});
+			loadInvalidEmails(); // TODO change map loadding if needed
+
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
