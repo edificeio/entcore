@@ -54,13 +54,9 @@
       	"initialCountry": "{{ authPhoneInputInitialCountry|default("auto") }}"
       }
     },
-    {% if withNewDeviceWarning is defined and withNewDeviceWarning %}
+    {% if withNewDeviceWarning is defined and (withNewDeviceWarning or withNewDeviceWarning == 'true') %}
       "new-device-warning": {
-        {% if authActivateNewDeviceWarning is defined and not(authActivateNewDeviceWarning) %}
-          "cron": "0 */2 * * * ? 2099",
-        {% else %}
-          "cron": "0 */2 * * * ? *",
-        {% endif %}
+        "cron": "{{authActivateNewDeviceWarningCronExpression | default('0 */2 * * * ? 2099')}}",
         "warn-admc": true, 
         "warn-adml": true, 
         "warn-users": {{ authNewDeviceWarnUser | default('true') }},
