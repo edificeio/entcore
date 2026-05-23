@@ -27,10 +27,15 @@ public class S3FallbackS3FSStorage implements FallbackStorage {
     private static final Logger log = LoggerFactory.getLogger(S3FallbackS3FSStorage.class);
 
     public S3FallbackS3FSStorage(Vertx vertx, String uri, String bucket, String region, String accessKey, String secretKey, String ssecKey, int bucketMaxAge) {
+        this(vertx, uri, bucket, region, accessKey, secretKey, ssecKey, bucketMaxAge, false);
+    }
+
+    public S3FallbackS3FSStorage(Vertx vertx, String uri, String bucket, String region, String accessKey, String secretKey, String ssecKey, int bucketMaxAge, boolean trustAll) {
         this.bucket = bucket;
         this.bucketMaxAge = bucketMaxAge;
 
-        this.s3Client = new S3Client(vertx, URI.create(uri), accessKey, secretKey, region, bucket, ssecKey);
+        this.s3Client = new S3Client(vertx, URI.create(uri), accessKey, secretKey, region, bucket, ssecKey,
+                false, 10000, 100, 10000L, 16, trustAll);
         this.fs = vertx.fileSystem();
     }
 

@@ -25,11 +25,16 @@ public class ResilientHttpClient implements HttpClient {
 	private final URI uri;
 	private final boolean keepAlive;
     private final int poolSize;
+	private final boolean trustAll;
 	private AtomicInteger errorsCount = new AtomicInteger(0);
 	private AtomicBoolean closedCircuit = new AtomicBoolean(false);
 	private Handler<HalfOpenResult> halfOpenHandler;
 
 	public ResilientHttpClient(Vertx vertx, URI uri, boolean keepAlive, int timeout, int threshold, long openDelay, int poolSize) {
+		this(vertx, uri, keepAlive, timeout, threshold, openDelay, poolSize, false);
+	}
+
+	public ResilientHttpClient(Vertx vertx, URI uri, boolean keepAlive, int timeout, int threshold, long openDelay, int poolSize, boolean trustAll) {
 		this.vertx = vertx;
 		this.timeout = timeout;
 		this.threshold = threshold;
@@ -37,6 +42,7 @@ public class ResilientHttpClient implements HttpClient {
 		this.uri = uri;
 		this.keepAlive = keepAlive;
         this.poolSize = poolSize;
+		this.trustAll = trustAll;
 		reconfigure();
 	}
 
@@ -232,6 +238,8 @@ public class ResilientHttpClient implements HttpClient {
 				.setDefaultPort(port)
 				.setMaxPoolSize(poolSize)
 				.setSsl("https".equals(uri.getScheme()))
+				.setTrustAll(trustAll)
+				.setVerifyHost(!trustAll)
 				.setKeepAlive(keepAlive)
 				.setConnectTimeout(timeout);
 		this.httpClient = vertx.createHttpClient(options);

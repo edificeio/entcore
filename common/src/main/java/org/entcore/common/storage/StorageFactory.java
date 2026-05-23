@@ -148,8 +148,9 @@ public class StorageFactory {
 			int threshold = s3.getInteger("threshold", 100);
 			long openDelay = s3.getLong("openDelay", 10000l);
 			int poolSize = s3.getInteger("poolSize", 16);
+			boolean trustAll = s3.getBoolean("trustAll", false);
 			try {
-				storage = new S3Storage(vertx, new URI(uri), accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay, poolSize);
+				storage = new S3Storage(vertx, new URI(uri), accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay, poolSize, trustAll);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
@@ -205,8 +206,9 @@ public class StorageFactory {
 				final String accessKey = s3fallback.getString("access-key");
 				final String secretKey = s3fallback.getString("secret-key");
 				if (isNotEmpty(host) && isNotEmpty(name) && isNotEmpty(region) && isNotEmpty(accessKey) && isNotEmpty(secretKey)) {
+					final boolean trustAllFallback = s3fallback.getBoolean("trustAll", false);
 					S3FallbackStorage s3FallbackStorage = new S3FallbackStorage(
-							vertx, host, name, multiBuckets, nbStorageFolder, region, accessKey, secretKey);
+							vertx, host, name, multiBuckets, nbStorageFolder, region, accessKey, secretKey, trustAllFallback);
 					((FileStorage) storage).setFallbackStorage(s3FallbackStorage);
 				}
 			}
@@ -220,8 +222,9 @@ public class StorageFactory {
 				final int bucketMaxAge = s3fallbacks3fs.getInteger("bucketMaxAge", 2);
 
 				if (isNotEmpty(uri) && isNotEmpty(bucket) && isNotEmpty(region) && isNotEmpty(accessKey) && isNotEmpty(secretKey)) {
+					final boolean trustAllS3fs = s3fallbacks3fs.getBoolean("trustAll", false);
 					S3FallbackS3FSStorage s3FallbackS3FSStorage = new S3FallbackS3FSStorage(
-							vertx, uri, bucket, region, accessKey, secretKey, ssecKey, bucketMaxAge);
+							vertx, uri, bucket, region, accessKey, secretKey, ssecKey, bucketMaxAge, trustAllS3fs);
 					((FileStorage) storage).setFallbackStorage(s3FallbackS3FSStorage);
 				}
 			}
