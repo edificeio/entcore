@@ -155,8 +155,6 @@ public class Timeline extends BaseServer {
 			}
 		}
 
-
-		final String purgeMessagesReadCron = config.getString("purge-messages-read-cron", "0 0 2 * * ?");
 		if (purgeMessagesReadCron != null) {
 			try {
 				new CronTrigger(vertx, purgeMessagesReadCron).schedule(purgeMessageCronTask);
