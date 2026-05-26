@@ -95,8 +95,14 @@ public class FolderManagerMongoImpl implements FolderManager {
 	protected boolean allowDuplicate = false;
 	protected final FolderImporterZip zipImporter;
 	protected final ResourceBrokerPublisher resourcePublisher;
+	protected final String exportPath;
 
 	public FolderManagerMongoImpl(String collection, Storage sto, Vertx vertx, FileSystem fs, EventBus eb, ShareService shareService, String imageResizerAddress, boolean useOldChildrenQuery)
+	{
+		this(collection, sto, vertx, fs, eb, shareService, imageResizerAddress, useOldChildrenQuery, null);
+	}
+
+	public FolderManagerMongoImpl(String collection, Storage sto, Vertx vertx, FileSystem fs, EventBus eb, ShareService shareService, String imageResizerAddress, boolean useOldChildrenQuery, String exportPath)
 	{
 		this.storage = sto;
 		this.vertx = vertx;
@@ -104,6 +110,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		this.eb = eb;
 		this.shareService = shareService;
 		this.imageResizerAddress = imageResizerAddress;
+		this.exportPath = (exportPath != null && !exportPath.trim().isEmpty()) ? exportPath : System.getProperty("java.io.tmpdir");
 		this.queryHelper = new QueryHelper(collection, useOldChildrenQuery);
 		this.inheritShareComputer = new InheritShareComputer(queryHelper);
 		this.zipImporter = new FolderImporterZip(vertx, this);
@@ -667,7 +674,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					future.onComplete(result -> {
 						if (result.succeeded()) {
 							List<JsonObject> rows = result.result();
-							FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false);
+							FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false, this.exportPath);
 							zipBuilder.exportAndSendZip(bodyRoot, rows, request, true).onComplete(zipEvent -> {
 								if (zipEvent.failed()) {
 									request.response().setStatusCode(500).end();
@@ -711,7 +718,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					return;
 				}
 				// download multiple files
-				FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false);
+				FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false, this.exportPath);
 				zipBuilder.exportAndSendZip(all, request, true).onComplete(zipEvent -> {
 					if (zipEvent.failed()) {
 						request.response().setStatusCode(500).end();

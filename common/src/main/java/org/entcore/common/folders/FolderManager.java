@@ -24,14 +24,24 @@ public interface FolderManager {
 	String FOLDER_TYPE = "folder";
 	String FILE_TYPE = "file";
 	void setAllowDuplicate(boolean allowDuplicate);
+
 	static FolderManager mongoManager(String collection, Storage sto, Vertx vertx, ShareService shareService, String imageResizerAddress, boolean useOldQueryChildren) {
-		return new FolderManagerMongoImpl(collection, sto, vertx, vertx.fileSystem(), vertx.eventBus(), shareService, imageResizerAddress, useOldQueryChildren);
+		return mongoManager(collection, sto, vertx, shareService, imageResizerAddress, useOldQueryChildren, null);
+	}
+
+	static FolderManager mongoManager(String collection, Storage sto, Vertx vertx, ShareService shareService, String imageResizerAddress, boolean useOldQueryChildren, String exportPath) {
+		return new FolderManagerMongoImpl(collection, sto, vertx, vertx.fileSystem(), vertx.eventBus(), shareService, imageResizerAddress, useOldQueryChildren, exportPath);
 	}
 
 	static FolderManager mongoManagerWithQuota(String collection, Storage sto, Vertx vertx,
 			ShareService shareService, String imageResizerAddress, QuotaService quota, int quotaTreshold, boolean useOldQueryChildren) {
+		return mongoManagerWithQuota(collection, sto, vertx, shareService, imageResizerAddress, quota, quotaTreshold, useOldQueryChildren, null);
+	}
+
+	static FolderManager mongoManagerWithQuota(String collection, Storage sto, Vertx vertx,
+			ShareService shareService, String imageResizerAddress, QuotaService quota, int quotaTreshold, boolean useOldQueryChildren, String exportPath) {
 		return new FolderManagerWithQuota(collection, quotaTreshold, quota,
-				mongoManager(collection, sto, vertx, shareService, imageResizerAddress, useOldQueryChildren), vertx,useOldQueryChildren);
+				mongoManager(collection, sto, vertx, shareService, imageResizerAddress, useOldQueryChildren, exportPath), vertx, useOldQueryChildren);
 	}
 
 	/**

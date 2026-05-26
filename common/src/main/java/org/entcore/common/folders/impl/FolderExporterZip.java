@@ -34,6 +34,8 @@ class FolderExporterZip extends FolderExporter {
 		}
 	}
 
+	private final String exportBasePath;
+
 	private Future<JsonObject> createZip(ZipContext context) {
 		Promise<JsonObject> future = Promise.promise();
 		Zip.getInstance().zipFolder(context.basePath, context.zipFullPath, true, Deflater.NO_COMPRESSION, res -> {
@@ -47,19 +49,25 @@ class FolderExporterZip extends FolderExporter {
 	}
 
 	public FolderExporterZip(Storage storage, FileSystem fs) {
-		super(storage, fs);
+		this(storage, fs, true);
 	}
 
 	public FolderExporterZip(Storage storage, FileSystem fs, boolean throwErrors) {
+		this(storage, fs, throwErrors, null);
+	}
+
+	public FolderExporterZip(Storage storage, FileSystem fs, boolean throwErrors, String exportBasePath) {
 		super(storage, fs, throwErrors);
+		this.exportBasePath = (exportBasePath != null && !exportBasePath.trim().isEmpty())
+				? exportBasePath
+				: System.getProperty("java.io.tmpdir");
 	}
 
 	public Future<ZipContext> exportToZip(Optional<JsonObject> root, List<JsonObject> rows) {
 		UUID uuid = UUID.randomUUID();
 		String baseName = root.isPresent() ? root.get().getString("name", "archive") : "archive";
-		String rootBase = Paths.get(System.getProperty("java.io.tmpdir"), uuid.toString()).normalize().toString();
-		String basePath = Paths.get(System.getProperty("java.io.tmpdir"), uuid.toString(), baseName).normalize()
-				.toString();
+		String rootBase = Paths.get(this.exportBasePath, uuid.toString()).normalize().toString();
+		String basePath = Paths.get(this.exportBasePath, uuid.toString(), baseName).normalize().toString();
 		ZipContext context = new ZipContext(rootBase, basePath, baseName);
 		return this.export(context, rows).compose(res -> {
 			return this.createZip(context);

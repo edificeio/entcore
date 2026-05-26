@@ -41,6 +41,7 @@
       "use-nextcloud-sniplet": {{ nextcloudSniplet | default('false') }},
     {% endif %}
     "searching-event": {{ workspaceSearchingEvent | default('true') }},
+    "export-path": {{ archiveExportPath | default('/srv/vertx/tmp_storage') }},
     "publicConf": {
       "lazy-mode": {{ workspaceLazyMode | default('true') }},
       {% if nextcloudHost is defined or nextcloudProviders is defined %}"folder-service": ["nextcloud"],{% endif %}

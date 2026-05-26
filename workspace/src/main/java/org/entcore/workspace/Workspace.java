@@ -99,14 +99,15 @@ public class Workspace extends BaseServer {
 		 * Folder manager
 		 */
 		final boolean useOldQueryChildren = config.getBoolean("old-query", false);
+		final String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		FolderManager folderManagerWithQuota = FolderManager.mongoManagerWithQuota(DocumentDao.DOCUMENTS_COLLECTION, storage,
-				vertx, shareService, imageResizerAddress, quotaService, threshold, useOldQueryChildren);
+				vertx, shareService, imageResizerAddress, quotaService, threshold, useOldQueryChildren, exportPath);
 		resourceProvider.setFolderManager(folderManagerWithQuota);
 		/**
 		 * Repo events
 		 */
 		FolderManager folderManagerRevision = FolderManager.mongoManagerWithQuota(REVISIONS_COLLECTION, storage, vertx,
-				shareService, imageResizerAddress, quotaService, threshold, useOldQueryChildren);
+				shareService, imageResizerAddress, quotaService, threshold, useOldQueryChildren, exportPath);
 		boolean shareOldGroups = config.getBoolean("share-old-groups-to-users", false);
 		setRepositoryEvents(
 				new WorkspaceRepositoryEvents(vertx, storage, shareOldGroups, folderManagerWithQuota, folderManagerRevision));
@@ -123,7 +124,7 @@ public class Workspace extends BaseServer {
 		/**
 		 * Controllers
 		 */
-		FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage, vertx, shareService, imageResizerAddress, useOldQueryChildren);
+		FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage, vertx, shareService, imageResizerAddress, useOldQueryChildren, exportPath);
 		WorkspaceService workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold,
 				imageResizerAddress, quotaService, folderManager, vertx, shareService, useOldQueryChildren);
 
