@@ -255,26 +255,39 @@ public abstract class GenericEventStore implements EventStore {
 
 	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
 		if (accessDedupEnabled && EventHelper.ACCESS_EVENT.equals(eventType) && request != null) {
-			checkAndStoreAccessEvent(user, request, customAttributes);
+			checkAndStoreAccessEvent(user, eventType, request, customAttributes);
 			return;
 		}
 		doStore(user, eventType, request, customAttributes);
 	}
 
-	private void checkAndStoreAccessEvent(UserInfos user, HttpServerRequest request, JsonObject customAttributes) {
-		if (request != null && module != null) {
-			final Object lastAccessModuleObj = user.getAttribute("lastAccessModule");
-			final String lastAccessModule = lastAccessModuleObj != null ? lastAccessModuleObj.toString() : null;
-			if (Objects.equals(module, lastAccessModule)) {
-				logger.warn("Skipping duplicate ACCESS event - same module as last access. module=" + module + ", url=" + request.uri());
-				return;
-			}
-			final String userId = user.getUserId();
-			if (userId != null) {
-				UserUtils.addSessionAttribute(eventBus, userId, "lastAccessModule", module, ok -> {});
-			}
+	/**
+	 * Checks session to detect a duplicate ACCESS event for the same module.
+	 * Side effect: updates "lastAccessModule" in session if not a duplicate.
+	 * Returns true if the event is a duplicate and should be skipped.
+	 */
+	public static boolean isDuplicateAccessModule(EventBus eventBus, UserInfos user, String module, String eventType) {
+		if (!EventHelper.ACCESS_EVENT.equals(eventType)) {
+			return false;
 		}
-		doStore(user, EventHelper.ACCESS_EVENT, request, customAttributes);
+		final Object lastAccessModuleObj = user.getAttribute("lastAccessModule");
+		final String lastAccessModule = lastAccessModuleObj != null ? lastAccessModuleObj.toString() : null;
+		if (Objects.equals(module, lastAccessModule)) {
+			return true;
+		}
+		final String userId = user.getUserId();
+		if (userId != null) {
+			UserUtils.addSessionAttribute(eventBus, userId, "lastAccessModule", module, ok -> {});
+		}
+		return false;
+	}
+
+	private void checkAndStoreAccessEvent(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
+		if (request != null && module != null && isDuplicateAccessModule(eventBus, user, module, eventType)) {
+			logger.warn("Skipping duplicate ACCESS event - same module as last access. module=" + module + ", url=" + request.uri());
+			return;
+		}
+		doStore(user, eventType, request, customAttributes);
 	}
 
 	private void doStore(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
@@ -360,7 +373,7 @@ public abstract class GenericEventStore implements EventStore {
 		return event;
 	}
 
-	private String getSessionId(HttpServerRequest request) {
+	public static String getSessionId(HttpServerRequest request) {
 		// Priority: UserUtils.getSessionId() -> Authorization header
 		final Optional<String> userUtilsSessionId = UserUtils.getSessionId(request);
 		if (userUtilsSessionId.isPresent()) {
@@ -373,7 +386,7 @@ public abstract class GenericEventStore implements EventStore {
 		return null;
 	}
 
-	private String hashSessionId(String value) {
+	private static String hashSessionId(String value) {
 		try {
 			return Hash.sha256(value);
 		} catch (Exception e) {

@@ -39,6 +39,30 @@ public interface EventStoreService {
 
 	void store(JsonObject event, Handler<Either<String, Void>> handler);
 
+	/**
+	 * Stores an event after checking for duplicates.
+	 * <p>
+	 * For ACCESS events, this method checks whether the same user has already accessed
+	 * the same module recently (via session attribute {@code lastAccessModule}). If a
+	 * duplicate is detected the event is silently dropped and the handler is called with
+	 * a successful result, avoiding double-counting in analytics.
+	 * </p>
+	 * <p>
+	 * The default implementation performs no deduplication and delegates directly to
+	 * {@link #store(JsonObject, Handler)}. Override to provide deduplication logic.
+	 * </p>
+	 *
+	 * @param event     the event payload to store
+	 * @param user      the authenticated user, used to read and update the session dedup state
+	 * @param module    the application module name (passed explicitly to avoid unreliable JSON extraction)
+	 * @param eventType the event type (e.g. {@code "ACCESS"}); non-ACCESS events are always stored
+	 * @param handler   called with {@code Right<Void>} on success (including skipped duplicates),
+	 *                  or {@code Left<String>} on storage error
+	 */
+	default void storeWithCheck(JsonObject event, UserInfos user, String module, String eventType, Handler<Either<String, Void>> handler) {
+		store(event, handler);
+	}
+
 	void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request, String module, final Handler<Either<String, Void>> handler);
 
 	void storeCustomEvent(String baseEventType, JsonObject payload);
