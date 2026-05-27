@@ -25,6 +25,7 @@ import org.entcore.common.user.UserInfos;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -108,5 +109,40 @@ public interface SchoolService {
 	void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, JsonObject raAssignmentPolicy, Handler<Either<String, JsonObject>> handler);
 
     Future<JsonArray> listContacts(String structureId);
+
+    /**
+     * Retrieve structure quiet hours preferences (notificationTimezone + notificationQuietHours).
+     */
+    void getQuietHoursPreferences(String structureId, Handler<Either<String, JsonObject>> handler);
+
+    /**
+     * Save structure-level quiet hours/timezone preferences.
+     * Normalizes input: adds managedBy=STRUCTURE, handles empty schedule -> enabled=false.
+     */
+    void setQuietHoursPreferences(String structureId, JsonObject body, Handler<Either<String, JsonObject>> handler);
+
+    default Future<JsonObject> getQuietHoursPreferences(String structureId) {
+        Promise<JsonObject> promise = Promise.promise();
+        getQuietHoursPreferences(structureId, result -> {
+            if (result.isRight()) {
+                promise.complete(result.right().getValue());
+            } else {
+                promise.fail(result.left().getValue());
+            }
+        });
+        return promise.future();
+    }
+
+    default Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body) {
+        Promise<JsonObject> promise = Promise.promise();
+        setQuietHoursPreferences(structureId, body, result -> {
+            if (result.isRight()) {
+                promise.complete(result.right().getValue());
+            } else {
+                promise.fail(result.left().getValue());
+            }
+        });
+        return promise.future();
+    }
 
 }
