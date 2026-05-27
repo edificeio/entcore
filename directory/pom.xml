@@ -13,7 +13,7 @@
     <artifactId>directory</artifactId>
 
     <properties>
-        <modPdfGeneratorVersion>2.1-separation-SNAPSHOT</modPdfGeneratorVersion>
+        <modPdfGeneratorVersion>2.1-SNAPSHOT</modPdfGeneratorVersion>
     </properties>
     <dependencies>
         <dependency>

@@ -12,7 +12,7 @@
 
     <artifactId>workspace</artifactId>
     <properties>
-        <imageResizerVersion>3.2-separation-SNAPSHOT</imageResizerVersion>
+        <imageResizerVersion>3.2-SNAPSHOT</imageResizerVersion>
     </properties>
 
     <dependencies>
