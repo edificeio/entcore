@@ -11,16 +11,6 @@ import java.util.Set;
 public class QuietHoursPreference implements Preference {
 
     /**
-     * Indicates who manages the quiet hours configuration.
-     */
-    public enum ManagedBy {
-        /** Set by the user themselves */
-        USER,
-        /** Set by the structure (school/organization) */
-        STRUCTURE
-    }
-
-    /**
      * Weekly schedule of quiet hours.
      * Array of 7 days (0=Monday, 6=Sunday), each containing the hours (0-23) that are quiet.
      * Null means no schedule is defined.
@@ -71,6 +61,7 @@ public class QuietHoursPreference implements Preference {
     @Override
     public boolean validate() {
         if (schedule == null) return true;
+        if (schedule.length == 0) return !enabled;
         if (schedule.length != 7) return false;
         for (int[] day : schedule) {
             if (day == null) return false;

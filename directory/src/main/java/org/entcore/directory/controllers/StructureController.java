@@ -19,6 +19,7 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -33,7 +34,15 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -45,20 +54,13 @@ import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.pojo.Ent;
 import org.entcore.directory.security.AdminStructureFilter;
 import org.entcore.directory.security.AnyAdminOfUser;
 import org.entcore.directory.services.MassMailService;
 import org.entcore.directory.services.SchoolService;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import javax.xml.bind.JAXBContext;
@@ -954,5 +956,78 @@ public class StructureController extends BaseController {
 		});
 	}
 
-}
+	@BusAddress("directory.structure.quiethours.preferences")
+	public void structureQuietHoursPreferences(final Message<JsonObject> message) {
+		final String action = message.body().getString("action", "");
+		final String structureId = message.body().getString("structureId");
 
+		switch (action) {
+			case "get":
+				structureService.getQuietHoursPreferences(structureId, event -> {
+					if (event.isRight()) {
+						message.reply(new JsonObject()
+						        .put("status", "ok")
+								.put("message", toQuietHoursPreferencesResponse(event.right().getValue(), structureId)));
+					} else {
+						message.reply(new JsonObject()
+						        .put("status", "error")
+								.put("message", event.left().getValue()));
+					}
+				});
+				break;
+			case "set":
+				final JsonObject preferences = message.body().getJsonObject("preferences", new JsonObject());
+				structureService.setQuietHoursPreferences(structureId, preferences, event -> {
+					if (event.isRight()) {
+						message.reply(new JsonObject()
+						        .put("status", "ok")
+								.put("message", toQuietHoursPreferencesResponse(event.right().getValue(), structureId)));
+					} else {
+						message.reply(new JsonObject()
+						        .put("status", "error")
+								.put("message", event.left().getValue()));
+					}
+				});
+				break;
+			default:
+				message.reply(new JsonObject()
+				        .put("status", "error")
+						.put("message", "Invalid action: " + action));
+		}
+	}
+
+	private JsonObject toQuietHoursPreferencesResponse(JsonObject data, String structureId) {
+		final JsonObject output = new JsonObject();
+		
+		if (data == null) {
+			return output;
+		}
+		
+		final String timezoneStr = data.getString("notificationTimezone");
+		if (timezoneStr != null) {
+			try {
+				final JsonObject parsedTimezone = new JsonObject(timezoneStr);
+				final String timezone = parsedTimezone.getString("timezone");
+				if (timezone != null) {
+					output.put("timezone", timezone);
+				}
+			} catch (Exception decodeException) {
+				log.error("Failed to decode timezone preference for structure " + structureId, decodeException);
+			}
+		}
+
+		final String quietHoursStr = data.getString("notificationQuietHours");
+		if (quietHoursStr != null) {
+			try {
+				final JsonObject quietHours = new JsonObject(quietHoursStr);
+				quietHours.remove("managedBy");
+				output.put("quietHours", quietHours);
+			} catch (Exception decodeException) {
+				log.error("Failed to decode quietHours preference for structure " + structureId, decodeException);
+			}
+		}
+		
+		return output;
+	}
+
+}

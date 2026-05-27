@@ -163,11 +163,15 @@ public class NotificationHelper {
      * Returns null if absent or malformed.
      */
     static TimezonePreference parseTimezone(JsonObject user) {
-        String tz = user.getString("timezone");
-        if (tz == null) return null;
-        TimezonePreference pref = new TimezonePreference();
-        pref.setTimezone(tz);
-        return pref;
+        String json = user.getString("timezone");
+        if (json == null) return null;
+
+        try {
+            return Json.decodeValue(json, TimezonePreference.class);
+        } catch (Exception e) {
+            log.warn("[NotificationHelper] Cannot parse timezone preference: " + e.getMessage());
+            return null;
+        }
     }
 
 
