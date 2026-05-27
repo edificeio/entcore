@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 
 public class PostgresEmailDto {
@@ -22,6 +23,7 @@ public class PostgresEmailDto {
     private String body;
     private Map<String, String> headers = new HashMap<>();
     private int priority;
+    private OffsetDateTime scheduleAt;
     private List<Attachment> attachments = new ArrayList<>();
 
     @JsonIgnore
@@ -131,6 +133,15 @@ public class PostgresEmailDto {
 
     public PostgresEmailDto setUserId(String userId) {
         this.userId = userId;
+        return this;
+    }
+
+    public OffsetDateTime getScheduleAt() {
+        return scheduleAt;
+    }
+
+    public PostgresEmailDto setScheduleAt(OffsetDateTime scheduleAt) {
+        this.scheduleAt = scheduleAt;
         return this;
     }
 

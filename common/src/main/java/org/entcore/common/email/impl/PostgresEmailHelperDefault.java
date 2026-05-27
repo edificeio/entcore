@@ -27,6 +27,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
     final String attachementTableName;
     final MongoDb mongoDb;
 
+
     public PostgresEmailHelperDefault(Vertx vertx, JsonObject pgConfig) {
         final SslMode sslMode = SslMode.valueOf(pgConfig.getString("ssl-mode", "DISABLE"));
         final PgConnectOptions options = new PgConnectOptions()
@@ -176,7 +177,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
             JsonArray logmails = new JsonArray();
 
             StringBuilder queryMail = new StringBuilder("INSERT INTO ").append(tableName)
-                    .append("(id, date, profile, module, platform_id, platform_url, receivers, from_mail, from_name, cc, bcc, subject, headers, body, priority) VALUES ");
+                    .append("(id, date, profile, module, platform_id, platform_url, receivers, from_mail, from_name, cc, bcc, subject, headers, body, priority, schedule_at) VALUES ");
             StringBuilder queryAttachement = new StringBuilder("INSERT INTO ").append(attachementTableName)
                     .append("(id, date, mail_id, name, content) VALUES ");
 
@@ -188,7 +189,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 queryMail.append("($").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
                         .append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
                         .append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
-                        .append("),");
+                        .append(",$").append(index++).append("),");
                 tuple.addValue(mail.getId());
                 tuple.addValue(now);
                 tuple.addValue(mail.getProfile());
@@ -204,6 +205,7 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
                 tuple.addValue(mail.getHeadersJson());
                 tuple.addValue(mail.getBody());
                 tuple.addValue(mail.getPriority());
+                tuple.addValue(mail.getScheduleAt());
                 if (!mail.getAttachments().isEmpty()) {
                     for (PostgresEmailDto.Attachment attachment: mail.getAttachments()) {
                         queryAttachement.append("($").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
