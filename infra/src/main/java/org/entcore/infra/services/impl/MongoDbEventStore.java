@@ -114,6 +114,16 @@ public class MongoDbEventStore implements EventStoreService {
 	}
 
 	@Override
+	public void storeWithCheck(JsonObject event, UserInfos user, String module, String eventType, final Handler<Either<String, Void>> handler) {
+		if (user != null && module != null && isDuplicateAccessModule(this.vertx.eventBus(), user, module, eventType)) {
+			log.warn("Skipping duplicate ACCESS event - module=" + module);
+			handler.handle(new Either.Right<>(null));
+			return;
+		}
+		store(event, handler);
+	}
+
+	@Override
 	public void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request,
 									 String module, final Handler<Either<String, Void>> handler) {
 		JsonObject event = new JsonObject();
@@ -140,14 +150,17 @@ public class MongoDbEventStore implements EventStoreService {
 		}
 		if (request != null) {
 			event.put("referer", request.headers().get("Referer"));
-			event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
+			final String sessionId = getSessionId(request);
+			if (sessionId != null) {
+				event.put("sessionId", sessionId);
+			}
 
 			final String ip = Renders.getIp(request);
 			if (ip != null) {
 				event.put("ip", ip);
 			}
 		}
-		store(event, handler);
+		storeWithCheck(event, user, module, eventType, handler);
 	}
 
 	@Override

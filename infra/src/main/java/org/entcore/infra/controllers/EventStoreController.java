@@ -116,7 +116,7 @@ public class EventStoreController extends BaseController {
 							event.put("ip", Renders.getIp(request));
 						}
 
-						eventStoreService.store(event, voidResponseHandler(request));
+						eventStoreService.storeWithCheck(event, user, event.getString("module"), eventType, voidResponseHandler(request));
 					} else {
 						Renders.badRequest(request, "bad event:"+eventType);
 					}
