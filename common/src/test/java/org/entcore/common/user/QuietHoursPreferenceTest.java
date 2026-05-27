@@ -1,7 +1,7 @@
 package org.entcore.common.user;
 
 import org.entcore.common.user.dto.QuietHoursPreference;
-import org.entcore.common.user.dto.QuietHoursPreference.ManagedBy;
+import org.entcore.common.user.dto.ManagedBy;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -120,5 +120,31 @@ public class QuietHoursPreferenceTest {
         QuietHoursPreference pref = new QuietHoursPreference();
         pref.setManagedBy(ManagedBy.USER);
         assertEquals(ManagedBy.USER, pref.getManagedBy());
+    }
+
+    // --- validate with empty schedule ---
+
+    @Test
+    public void testValidate_EmptySchedule_Disabled_Valid() {
+        QuietHoursPreference pref = new QuietHoursPreference();
+        pref.setSchedule(new int[0][]);
+        pref.setEnabled(false);
+        assertTrue(pref.validate());
+    }
+
+    @Test
+    public void testValidate_EmptySchedule_Enabled_Invalid() {
+        QuietHoursPreference pref = new QuietHoursPreference();
+        pref.setSchedule(new int[0][]);
+        pref.setEnabled(true);
+        assertFalse(pref.validate());
+    }
+
+    @Test
+    public void testValidate_EmptySchedule_NullEnabled_Valid() {
+        // enabled defaults to false, empty schedule should be valid
+        QuietHoursPreference pref = new QuietHoursPreference();
+        pref.setSchedule(new int[0][]);
+        assertTrue(pref.validate());
     }
 }
