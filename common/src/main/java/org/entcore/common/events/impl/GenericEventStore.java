@@ -25,9 +25,13 @@ import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.*;
 import io.vertx.core.file.FileSystem;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventHelper;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.Hash;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -40,9 +44,11 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 import static io.vertx.core.Future.succeededFuture;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.net.URLDecoder;
@@ -59,6 +65,8 @@ public abstract class GenericEventStore implements EventStore {
 	private static Validator eventsValidator;
 	private static boolean validatorInitialized = false;
 
+
+	private boolean accessDedupEnabled = true;
 
 	@Override
 	public void createAndStoreEvent(String eventType, UserInfos user) {
@@ -246,6 +254,43 @@ public abstract class GenericEventStore implements EventStore {
 	}
 
 	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
+		if (accessDedupEnabled && EventHelper.ACCESS_EVENT.equals(eventType) && request != null) {
+			checkAndStoreAccessEvent(user, eventType, request, customAttributes);
+			return;
+		}
+		doStore(user, eventType, request, customAttributes);
+	}
+
+	/**
+	 * Checks session to detect a duplicate ACCESS event for the same module.
+	 * Side effect: updates "lastAccessModule" in session if not a duplicate.
+	 * Returns true if the event is a duplicate and should be skipped.
+	 */
+	public static boolean isDuplicateAccessModule(EventBus eventBus, UserInfos user, String module, String eventType) {
+		if (!EventHelper.ACCESS_EVENT.equals(eventType)) {
+			return false;
+		}
+		final Object lastAccessModuleObj = user.getAttribute("lastAccessModule");
+		final String lastAccessModule = lastAccessModuleObj != null ? lastAccessModuleObj.toString() : null;
+		if (Objects.equals(module, lastAccessModule)) {
+			return true;
+		}
+		final String userId = user.getUserId();
+		if (userId != null) {
+			UserUtils.addSessionAttribute(eventBus, userId, "lastAccessModule", module, ok -> {});
+		}
+		return false;
+	}
+
+	private void checkAndStoreAccessEvent(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
+		if (request != null && module != null && isDuplicateAccessModule(eventBus, user, module, eventType)) {
+			logger.warn("Skipping duplicate ACCESS event - same module as last access. module=" + module + ", url=" + request.uri());
+			return;
+		}
+		doStore(user, eventType, request, customAttributes);
+	}
+
+	private void doStore(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
 		if (user == null || !userBlacklist.contains(user.getUserId())) {
 			final JsonObject event = generateEvent(eventType, user, request, customAttributes);
 			validateEvent(event, this.vertx)
@@ -320,8 +365,34 @@ public abstract class GenericEventStore implements EventStore {
 			if (ip != null) {
 				event.put("ip", ip);
 			}
+			final String sessionId = getSessionId(request);
+			if (sessionId != null) {
+				event.put("sessionId", sessionId);
+			}
 		}
 		return event;
+	}
+
+	public static String getSessionId(HttpServerRequest request) {
+		// Priority: UserUtils.getSessionId() -> Authorization header
+		final Optional<String> userUtilsSessionId = UserUtils.getSessionId(request);
+		if (userUtilsSessionId.isPresent()) {
+			return hashSessionId(userUtilsSessionId.get());
+		}
+		final String token = request.headers().get("Authorization");
+		if (token != null && !token.isEmpty()) {
+			return hashSessionId(token);
+		}
+		return null;
+	}
+
+	private static String hashSessionId(String value) {
+		try {
+			return Hash.sha256(value);
+		} catch (Exception e) {
+			logger.warn("Failed to hash sessionId", e);
+			return null;
+		}
 	}
 	
 	private String decodeCookie(String value) {
@@ -362,6 +433,16 @@ public abstract class GenericEventStore implements EventStore {
 
 	public void setVertx(Vertx vertx) {
 		this.vertx = vertx;
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
+			.compose(serverMap -> serverMap.get("event-store"))
+			.onSuccess(eventStoreConf -> {
+				if (eventStoreConf != null) {
+					final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+					accessDedupEnabled = eventStoreConfig.getBoolean("access-dedup-enabled", true);
+					logger.info("Event store ACCESS dedup (web) : " + (accessDedupEnabled ? "ENABLED" : "DISABLED"));
+				}
+			})
+			.onFailure(ex -> logger.warn("Could not read event-store config for access-dedup-*", ex));
 	}
 
 	public static Future<Validator> loadJsonSchema(final Vertx vertx) {

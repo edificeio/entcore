@@ -64,6 +64,7 @@ public class MongoDbEventStore implements EventStoreService {
 	private static final String FORMAT_ERROR_COLLECTION = "events_format_error";
     private int eventsBatchSize;
     private static final int DEFAULT_EVENT_BATCH_SIZE = 50_000;
+    private boolean accessMobileDedupEnabled = false;
     private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 	private final Vertx vertx;
 
@@ -82,9 +83,11 @@ public class MongoDbEventStore implements EventStoreService {
 						pgEventStore.setVertx(vertx);
 						pgEventStore.init();
 					}
-					eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
-				} else {
-					eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+				eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
+				accessMobileDedupEnabled = eventStoreConfig.getBoolean("access-mobile-dedup-enabled", false);
+				log.info("Event store ACCESS dedup (mobile) : " + (accessMobileDedupEnabled ? "ENABLED" : "DISABLED"));
+			} else {
+				eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;
 				}
 			}).onFailure(ex -> log.error("Error when get event-store conf in server map", ex));
 	}
@@ -114,6 +117,16 @@ public class MongoDbEventStore implements EventStoreService {
 	}
 
 	@Override
+	public void storeWithCheck(JsonObject event, UserInfos user, String module, String eventType, final Handler<Either<String, Void>> handler) {
+		if (user != null && module != null && isDuplicateAccessModule(this.vertx.eventBus(), user, module, eventType)) {
+			log.warn("Skipping duplicate ACCESS event - module=" + module);
+			handler.handle(new Either.Right<>(null));
+			return;
+		}
+		store(event, handler);
+	}
+
+	@Override
 	public void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request,
 									 String module, final Handler<Either<String, Void>> handler) {
 		JsonObject event = new JsonObject();
@@ -140,14 +153,21 @@ public class MongoDbEventStore implements EventStoreService {
 		}
 		if (request != null) {
 			event.put("referer", request.headers().get("Referer"));
-			event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
+			final String sessionId = getSessionId(request);
+			if (sessionId != null) {
+				event.put("sessionId", sessionId);
+			}
 
 			final String ip = Renders.getIp(request);
 			if (ip != null) {
 				event.put("ip", ip);
 			}
 		}
-		store(event, handler);
+		if (accessMobileDedupEnabled) {
+			storeWithCheck(event, user, module, eventType, handler);
+		} else {
+			store(event, handler);
+		}
 	}
 
 	@Override
