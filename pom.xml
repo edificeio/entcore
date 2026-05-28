@@ -54,7 +54,7 @@
 
     <properties>
         <revision>6.14-SNAPSHOT</revision>
-        <entcore-libs.version>6.14-SNAPSHOT</entcore-libs.version>
+        <entCoreLibsVersion>6.14-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.1-SNAPSHOT</modPostgresVersion>
@@ -83,13 +83,13 @@
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
-            <version>${entcore-libs.version}</version>
+            <version>${entCoreLibsVersion}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>session</artifactId>
-            <version>${entcore-libs.version}</version>
+            <version>${entCoreLibsVersion}</version>
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>

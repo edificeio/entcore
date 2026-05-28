@@ -19,13 +19,13 @@
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
-            <version>${entcore-libs.version}</version>
+            <version>${entCoreLibsVersion}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>session</artifactId>
-            <version>${entcore-libs.version}</version>
+            <version>${entCoreLibsVersion}</version>
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
