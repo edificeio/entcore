@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.broker.api.dto.session.*;
 import org.entcore.broker.proxy.SessionBrokerListener;
+import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BasicFilter;
 import org.entcore.common.http.QueryParamTokenFilter;
@@ -23,6 +24,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +43,7 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
     private static final Logger log = LoggerFactory.getLogger(SessionBrokerListenerImpl.class);
     private final AuthManager authManager;
     private final LocalMap<Object, Object> serverConfig;
+    private final Map<String, EventStore> eventStoreCache = new HashMap<>();
     /**
      * Constructor for SessionBrokerListenerImpl with AuthManager dependency.
      *
@@ -138,10 +141,14 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
         final Optional<Integer> oauthTtl = oauthConfigJson.map(e -> e.getInteger("ttlSeconds"));
         // Create the filter with the path prefix and OAuth TTL
         // Note: oauthTtl is optional, if not present, it will be set to default value in AppOAuthResourceProvider
+        final String module = AppOAuthResourceProvider.moduleFromPrefix(pathPrefix);
+        final EventStore eventStore = eventStoreCache.computeIfAbsent(
+            module, m -> EventStoreFactory.getFactory().getEventStore(m));
         final UserAuthFilter userAuth = new UserAuthWithQueryParamFilter(
             new AppOAuthResourceProvider(
                 authManager.getVertx().eventBus(),
                 pathPrefix,
+                eventStore,
                 // we dont need to cache "oauth sessions"
                 Optional::empty,
                 oauthTtl
