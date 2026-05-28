@@ -439,6 +439,7 @@ public abstract class GenericEventStore implements EventStore {
 				if (eventStoreConf != null) {
 					final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
 					accessDedupEnabled = eventStoreConfig.getBoolean("access-dedup-enabled", true);
+					logger.info("Event store ACCESS dedup (web) : " + (accessDedupEnabled ? "ENABLED" : "DISABLED"));
 				}
 			})
 			.onFailure(ex -> logger.warn("Could not read event-store config for access-dedup-*", ex));

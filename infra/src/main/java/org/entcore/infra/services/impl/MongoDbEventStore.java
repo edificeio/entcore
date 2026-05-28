@@ -64,6 +64,7 @@ public class MongoDbEventStore implements EventStoreService {
 	private static final String FORMAT_ERROR_COLLECTION = "events_format_error";
     private int eventsBatchSize;
     private static final int DEFAULT_EVENT_BATCH_SIZE = 50_000;
+    private boolean accessMobileDedupEnabled = false;
     private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 	private final Vertx vertx;
 
@@ -82,9 +83,11 @@ public class MongoDbEventStore implements EventStoreService {
 						pgEventStore.setVertx(vertx);
 						pgEventStore.init();
 					}
-					eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
-				} else {
-					eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+				eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
+				accessMobileDedupEnabled = eventStoreConfig.getBoolean("access-mobile-dedup-enabled", false);
+				log.info("Event store ACCESS dedup (mobile) : " + (accessMobileDedupEnabled ? "ENABLED" : "DISABLED"));
+			} else {
+				eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;
 				}
 			}).onFailure(ex -> log.error("Error when get event-store conf in server map", ex));
 	}
@@ -160,7 +163,11 @@ public class MongoDbEventStore implements EventStoreService {
 				event.put("ip", ip);
 			}
 		}
-		storeWithCheck(event, user, module, eventType, handler);
+		if (accessMobileDedupEnabled) {
+			storeWithCheck(event, user, module, eventType, handler);
+		} else {
+			store(event, handler);
+		}
 	}
 
 	@Override
