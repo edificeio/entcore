@@ -36,6 +36,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
@@ -621,6 +622,22 @@ public class UserBookController extends BaseController {
 										.put("message", e.getMessage()));
 							});
 				break;
+			case "cascade.structure.quiethours.preferences":
+				final String structureId = message.body().getString("structureId");
+				if (structureId == null) {
+					message.reply(new JsonObject()
+							.put("status", "error")
+							.put("message", "structureId is required"));
+					break;
+				}
+				schoolService.cascadeQuietHoursPreferences(structureId)
+						.onSuccess(result -> message.reply(new JsonObject()
+								.put("status", "ok")
+								.put("message", result)))
+						.onFailure(error -> message.reply(new JsonObject()
+								.put("status", "error")
+								.put("message", error.getMessage())));
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "Invalid action."));
@@ -629,6 +646,8 @@ public class UserBookController extends BaseController {
 
 
 	}
+
+
 
 	@Get("/avatar/")
 	public void getAvatarNotFound(final HttpServerRequest request) {

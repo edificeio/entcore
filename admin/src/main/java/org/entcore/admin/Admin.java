@@ -27,6 +27,7 @@ import org.entcore.admin.controllers.AdminController;
 import org.entcore.admin.controllers.BlockProfileTraceController;
 import org.entcore.admin.controllers.PlatformInfoController;
 import org.entcore.admin.controllers.ConfigController;
+import org.entcore.admin.controllers.StructureQuietHoursController;
 import org.entcore.admin.services.BlockProfileTraceService;
 import org.entcore.admin.services.impl.DefaultBlockProfileTraceService;
 import org.entcore.common.http.BaseServer;
@@ -58,7 +59,9 @@ public class Admin extends BaseServer {
 		blockProfileTraceController.setBlockProfileTraceService(blockProfileTraceService);
 		addController(blockProfileTraceController);
 		addController(new ConfigController());
-		
+
+		addController(new StructureQuietHoursController());
+
 		final PlatformInfoController platformInfoController = new PlatformInfoController();
 		platformInfoController.setHidePersonalData((Boolean) adminMap.get("hidePersonalData"));
 

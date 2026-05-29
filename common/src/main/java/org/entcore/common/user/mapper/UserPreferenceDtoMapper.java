@@ -50,8 +50,8 @@ public final class UserPreferenceDtoMapper {
         }
         if (pref.containsKey(TIMEZONE.getMappingName())) {
            dto.getPreferences().add(TIMEZONE);
-           dto.setTimezone(new TimezonePreference());
-           dto.getTimezone().setTimezone(pref.getString(TIMEZONE.getMappingName()));
+           String encoded = pref.getString(TIMEZONE.getMappingName());
+           dto.setTimezone(decodeSafely(encoded, TimezonePreference.class));
         }
         if (pref.containsKey(QUIET_HOURS.getMappingName())) {
            dto.getPreferences().add(QUIET_HOURS);
