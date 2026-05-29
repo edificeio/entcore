@@ -805,29 +805,51 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void getQuietHoursPreferences(String structureId, Handler<Either<String, JsonObject>> handler) {
+	public Future<JsonObject> getQuietHoursPreferences(String structureId) {
+		Promise<JsonObject> promise = Promise.promise();
 		String query = "MATCH (s:Structure {id: {structureId}}) RETURN s.notificationTimezone as notificationTimezone, s.notificationQuietHours as notificationQuietHours";
 		JsonObject params = new JsonObject().put("structureId", structureId);
-		neo.execute(query, params, validUniqueResultHandler(handler));
+		neo.execute(query, params, validUniqueResultHandler(either -> {
+			if (either.isRight()) {
+				promise.complete(either.right().getValue());
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		}));
+		return promise.future();
 	}
 
 	@Override
-	public void setQuietHoursPreferences(String structureId, JsonObject body, Handler<Either<String, JsonObject>> handler) {
+	public Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body) {
+		Promise<JsonObject> promise = Promise.promise();
+
 		final QuietHoursPreference quietHours = buildQuietHoursPreference(body);
 		if (quietHours == null) {
-			handler.handle(new Either.Left<>("invalid.preference.data"));
-			return;
-		}
-
-		final TimezonePreference timezone = buildTimezonePreferenceFromBody(body);
-
-		if (!timezone.validate() || !quietHours.validate()) {
-			handler.handle(new Either.Left<>("invalid.preference.data"));
-			return;
+			promise.fail("invalid.preference.data");
+			return promise.future();
 		}
 
 		final boolean overwriteTimezone = hasExplicitTimezone(body);
-		doUpdate(structureId, timezone, quietHours, overwriteTimezone, handler);
+		final TimezonePreference timezonePreference = overwriteTimezone ? buildTimezonePreferenceFromBody(body) : null;
+
+		if (timezonePreference != null && !timezonePreference.validate()) {
+			promise.fail("invalid.preference.data");
+			return promise.future();
+		}
+		
+		if (!quietHours.validate()) {
+			promise.fail("invalid.preference.data");
+			return promise.future();
+		}
+
+		doUpdate(structureId, timezonePreference, quietHours, either -> {
+			if (either.isRight()) {
+				promise.complete(either.right().getValue());
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		});
+		return promise.future();
 	}
 
 	private static boolean hasExplicitTimezone(JsonObject body) {
@@ -868,28 +890,84 @@ public class DefaultSchoolService implements SchoolService {
 		return quietHours;
 	}
 
-	private void doUpdate(String structureId, TimezonePreference timezonePreference, QuietHoursPreference quietHoursPreference, boolean overwriteTimezone, Handler<Either<String, JsonObject>> handler) {
+	private void doUpdate(String structureId, TimezonePreference timezonePreference,
+			QuietHoursPreference quietHoursPreference, Handler<Either<String, JsonObject>> handler) {
+
 		final JsonObject params = new JsonObject()
 				.put("structureId", structureId)
 				.put("notificationQuietHours", quietHoursPreference.encode());
 
-		final String query;
-		if (overwriteTimezone) {
-			query = "MATCH (s:Structure {id: {structureId}}) " +
-					"SET s.notificationTimezone = {notificationTimezone}, " +
-					"    s.notificationQuietHours = {notificationQuietHours} " +
-					"RETURN s.notificationTimezone as notificationTimezone, s.notificationQuietHours as notificationQuietHours";
-			params.put("notificationTimezone", timezonePreference.encode());
-		} else {
-			query = "MATCH (s:Structure {id: {structureId}}) " +
-					"SET s.notificationTimezone = CASE WHEN s.notificationTimezone IS NOT NULL AND s.notificationTimezone <> '' " +
-					"  THEN s.notificationTimezone ELSE {notificationTimezone} END, " +
-					"    s.notificationQuietHours = {notificationQuietHours} " +
-					"RETURN s.notificationTimezone as notificationTimezone, s.notificationQuietHours as notificationQuietHours";
+		final StringBuilder setClauses = new StringBuilder("s.notificationQuietHours = {notificationQuietHours}");
+		if (timezonePreference != null) {
+			setClauses.append(", s.notificationTimezone = {notificationTimezone}");
 			params.put("notificationTimezone", timezonePreference.encode());
 		}
 
+		final String query = "MATCH (s:Structure {id: {structureId}}) SET " + setClauses + " RETURN s.notificationTimezone as notificationTimezone, s.notificationQuietHours as notificationQuietHours";
 		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	// CONTAINS is supported since Neo4j 2.3, safe for our target version
+	private static final String USER_MANAGED_MARKER = "\"managedBy\":\"USER\"";
+
+	@Override
+	public Future<JsonObject> cascadeQuietHoursPreferences(String structureId) {
+		Promise<JsonObject> promise = Promise.promise();
+
+		// Step 1: count total users in the structure
+		final String countQuery =
+			"MATCH (s:Structure {id: {structureId}}) " +
+			"WHERE s.notificationTimezone IS NOT NULL OR s.notificationQuietHours IS NOT NULL " +
+			"WITH s " +
+			"MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+			"RETURN count(DISTINCT u) AS totalUsers";
+
+		// Step 2: cascade update (only users not managed by themselves)
+		final String updateQuery =
+			"MATCH (s:Structure {id: {structureId}}) " +
+			"WHERE s.notificationTimezone IS NOT NULL OR s.notificationQuietHours IS NOT NULL " +
+			"WITH s " +
+			"MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+			"WITH s, collect(DISTINCT u) AS allUsers " +
+			"UNWIND allUsers AS u " +
+			"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+			"WITH s, u, uac, " +
+			"  (s.notificationTimezone IS NOT NULL AND (uac IS NULL OR uac.timezone IS NULL OR NOT uac.timezone CONTAINS {userManagedMarker})) AS shouldUpdateTimezone, " +
+			"  (s.notificationQuietHours IS NOT NULL AND (uac IS NULL OR uac.quietHours IS NULL OR NOT uac.quietHours CONTAINS {userManagedMarker})) AS shouldUpdateQuietHours " +
+			"WHERE shouldUpdateTimezone OR shouldUpdateQuietHours " +
+			"MERGE (u)-[:PREFERS]->(uac2:UserAppConf) " +
+			"FOREACH (_ IN CASE WHEN shouldUpdateTimezone THEN [1] ELSE [] END | SET uac2.timezone = s.notificationTimezone) " +
+			"FOREACH (_ IN CASE WHEN shouldUpdateQuietHours THEN [1] ELSE [] END | SET uac2.quietHours = s.notificationQuietHours) " +
+			"RETURN count(DISTINCT u) AS updatedUsers";
+
+		final JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("userManagedMarker", USER_MANAGED_MARKER);
+
+		// Count first, then cascade
+		neo.execute(countQuery, params, validUniqueResultHandler(countEvent -> {
+			final int totalUsers;
+			if (countEvent.isRight() && countEvent.right().getValue() != null) {
+				totalUsers = countEvent.right().getValue().getInteger("totalUsers", 0);
+			} else {
+				totalUsers = 0;
+			}
+
+			neo.execute(updateQuery, params, validUniqueResultHandler(updateEvent -> {
+				final int updatedUsers;
+				if (updateEvent.isRight() && updateEvent.right().getValue() != null) {
+					updatedUsers = updateEvent.right().getValue().getInteger("updatedUsers", 0);
+				} else {
+					updatedUsers = 0;
+				}
+
+				promise.complete(new JsonObject()
+						.put("updatedUsers", updatedUsers)
+						.put("skippedUsers", totalUsers - updatedUsers));
+			}));
+		}));
+
+		return promise.future();
 	}
 
 	private static int[][] convertSchedule(JsonArray schedule) {

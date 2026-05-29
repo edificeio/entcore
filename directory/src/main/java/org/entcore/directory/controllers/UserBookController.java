@@ -626,11 +626,11 @@ public class UserBookController extends BaseController {
 				final String structureId = message.body().getString("structureId");
 				if (structureId == null) {
 					message.reply(new JsonObject()
-					        .put("status", "error")
+							.put("status", "error")
 							.put("message", "structureId is required"));
 					break;
 				}
-				cascadeQuietHoursPreferences(structureId)
+				schoolService.cascadeQuietHoursPreferences(structureId)
 						.onSuccess(result -> message.reply(new JsonObject()
 								.put("status", "ok")
 								.put("message", result)))
@@ -647,52 +647,7 @@ public class UserBookController extends BaseController {
 
 	}
 
-	private static final String USER_MANAGED_MARKER = "\"managedBy\":\"USER\"";
 
-	private Future<JsonObject> cascadeQuietHoursPreferences(String structureId) {
-		final Promise<JsonObject> promise = Promise.promise();
-
-		final String query =
-			"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-			"WITH s, collect(DISTINCT u) AS allUsers " +
-			"WITH s, allUsers, size(allUsers) AS totalUsers " +
-			"WHERE s.notificationTimezone IS NOT NULL OR s.notificationQuietHours IS NOT NULL " +
-			"UNWIND allUsers AS u " +
-			"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
-			"WITH s, u, uac, totalUsers, " +
-			"  (s.notificationTimezone IS NOT NULL AND (uac IS NULL OR uac.timezone IS NULL OR NOT uac.timezone CONTAINS {userManagedMarker})) AS shouldUpdateTimezone, " +
-			"  (s.notificationQuietHours IS NOT NULL AND (uac IS NULL OR uac.quietHours IS NULL OR NOT uac.quietHours CONTAINS {userManagedMarker})) AS shouldUpdateQuietHours " +
-			"WHERE shouldUpdateTimezone OR shouldUpdateQuietHours " +
-			"MERGE (u)-[:PREFERS]->(uac2:UserAppConf) " +
-			"FOREACH (_ IN CASE WHEN shouldUpdateTimezone THEN [1] ELSE [] END | SET uac2.timezone = s.notificationTimezone) " +
-			"FOREACH (_ IN CASE WHEN shouldUpdateQuietHours THEN [1] ELSE [] END | SET uac2.quietHours = s.notificationQuietHours) " +
-			"RETURN totalUsers, count(DISTINCT u) AS updatedUsers";
-
-		final JsonObject params = new JsonObject()
-				.put("structureId", structureId)
-				.put("userManagedMarker", USER_MANAGED_MARKER);
-
-		Neo4j.getInstance().execute(query, params, validUniqueResultHandler(event -> {
-			if (event.isRight()) {
-				final JsonObject row = event.right().getValue();
-				if (row == null || row.isEmpty()) {
-					promise.complete(new JsonObject()
-							.put("updatedUsers", 0)
-							.put("skippedUsers", 0));
-				} else {
-					final int updated = row.getInteger("updatedUsers", 0);
-					final int total = row.getInteger("totalUsers", 0);
-					promise.complete(new JsonObject()
-							.put("updatedUsers", updated)
-							.put("skippedUsers", Math.max(total - updated, 0)));
-				}
-			} else {
-				promise.fail(event.left().getValue());
-			}
-		}));
-
-		return promise.future();
-	}
 
 	@Get("/avatar/")
 	public void getAvatarNotFound(final HttpServerRequest request) {

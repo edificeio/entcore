@@ -112,27 +112,11 @@ public class DefaultSchoolServiceTest {
     // -----------------------------------------------------------------------
 
     private Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body) {
-        final Promise<JsonObject> promise = Promise.promise();
-        defaultSchoolService.setQuietHoursPreferences(structureId, body, result -> {
-            if (result.isRight()) {
-                promise.complete(result.right().getValue());
-            } else {
-                promise.fail(result.left().getValue());
-            }
-        });
-        return promise.future();
+        return defaultSchoolService.setQuietHoursPreferences(structureId, body);
     }
 
     private Future<JsonObject> getQuietHoursPreferences(String structureId) {
-        final Promise<JsonObject> promise = Promise.promise();
-        defaultSchoolService.getQuietHoursPreferences(structureId, result -> {
-            if (result.isRight()) {
-                promise.complete(result.right().getValue());
-            } else {
-                promise.fail(result.left().getValue());
-            }
-        });
-        return promise.future();
+        return defaultSchoolService.getQuietHoursPreferences(structureId);
     }
 
     // -----------------------------------------------------------------------
@@ -231,11 +215,12 @@ public class DefaultSchoolServiceTest {
                         .put("schedule", badSchedule)
                         .put("enabled", true));
 
-        defaultSchoolService.setQuietHoursPreferences(structureId, body, result -> {
-            context.assertTrue(result.isLeft(), "schedule with >7 days should be rejected");
-            context.assertEquals("invalid.preference.data", result.left().getValue());
-            async.complete();
-        });
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.failed(), "schedule with >7 days should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
     }
 
     @Test
@@ -254,11 +239,12 @@ public class DefaultSchoolServiceTest {
                         .put("schedule", badSchedule)
                         .put("enabled", true));
 
-        defaultSchoolService.setQuietHoursPreferences(structureId, body, result -> {
-            context.assertTrue(result.isLeft(), "schedule with non-integer values should be rejected");
-            context.assertEquals("invalid.preference.data", result.left().getValue());
-            async.complete();
-        });
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.failed(), "schedule with non-integer values should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
     }
 
     // -----------------------------------------------------------------------
@@ -276,11 +262,12 @@ public class DefaultSchoolServiceTest {
                         .put("schedule", new JsonArray()));
         // No "enabled" in quietHours
 
-        defaultSchoolService.setQuietHoursPreferences(structureId, body, result -> {
-            context.assertTrue(result.isLeft(), "missing 'enabled' should be rejected");
-            context.assertEquals("invalid.preference.data", result.left().getValue());
-            async.complete();
-        });
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.failed(), "missing 'enabled' should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
     }
 
     @Test
@@ -294,10 +281,11 @@ public class DefaultSchoolServiceTest {
                         .put("schedule", new JsonArray())
                         .put("enabled", false));
 
-        defaultSchoolService.setQuietHoursPreferences(structureId, body, result -> {
-            context.assertTrue(result.isRight(), "enabled=false with empty schedule should be accepted");
-            async.complete();
-        });
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.succeeded(), "enabled=false with empty schedule should be accepted");
+                    async.complete();
+                });
     }
 
     @Test
@@ -311,11 +299,12 @@ public class DefaultSchoolServiceTest {
                         .put("schedule", new JsonArray())
                         .put("enabled", true));
 
-        defaultSchoolService.setQuietHoursPreferences(structureId, body, result -> {
-            // validate() returns false when enabled=true and schedule.length==0
-            context.assertTrue(result.isLeft(), "enabled=true with empty schedule should be rejected");
-            context.assertEquals("invalid.preference.data", result.left().getValue());
-            async.complete();
-        });
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    // validate() returns false when enabled=true and schedule.length==0
+                    context.assertTrue(ar.failed(), "enabled=true with empty schedule should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
     }
 }

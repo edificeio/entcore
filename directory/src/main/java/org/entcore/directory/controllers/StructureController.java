@@ -963,35 +963,27 @@ public class StructureController extends BaseController {
 
 		switch (action) {
 			case "get":
-				structureService.getQuietHoursPreferences(structureId, event -> {
-					if (event.isRight()) {
-						message.reply(new JsonObject()
-						        .put("status", "ok")
-								.put("message", toQuietHoursPreferencesResponse(event.right().getValue(), structureId)));
-					} else {
-						message.reply(new JsonObject()
-						        .put("status", "error")
-								.put("message", event.left().getValue()));
-					}
-				});
+				structureService.getQuietHoursPreferences(structureId)
+						.onSuccess(prefs -> message.reply(new JsonObject()
+								.put("status", "ok")
+								.put("message", toQuietHoursPreferencesResponse(prefs, structureId))))
+						.onFailure(error -> message.reply(new JsonObject()
+								.put("status", "error")
+								.put("message", error.getMessage())));
 				break;
 			case "set":
 				final JsonObject preferences = message.body().getJsonObject("preferences", new JsonObject());
-				structureService.setQuietHoursPreferences(structureId, preferences, event -> {
-					if (event.isRight()) {
-						message.reply(new JsonObject()
-						        .put("status", "ok")
-								.put("message", toQuietHoursPreferencesResponse(event.right().getValue(), structureId)));
-					} else {
-						message.reply(new JsonObject()
-						        .put("status", "error")
-								.put("message", event.left().getValue()));
-					}
-				});
+				structureService.setQuietHoursPreferences(structureId, preferences)
+						.onSuccess(prefs -> message.reply(new JsonObject()
+								.put("status", "ok")
+								.put("message", toQuietHoursPreferencesResponse(prefs, structureId))))
+						.onFailure(error -> message.reply(new JsonObject()
+								.put("status", "error")
+								.put("message", error.getMessage())));
 				break;
 			default:
 				message.reply(new JsonObject()
-				        .put("status", "error")
+						.put("status", "error")
 						.put("message", "Invalid action: " + action));
 		}
 	}
