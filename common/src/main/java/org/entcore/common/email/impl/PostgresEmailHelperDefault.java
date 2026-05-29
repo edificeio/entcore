@@ -27,7 +27,6 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
     final String attachementTableName;
     final MongoDb mongoDb;
 
-
     public PostgresEmailHelperDefault(Vertx vertx, JsonObject pgConfig) {
         final SslMode sslMode = SslMode.valueOf(pgConfig.getString("ssl-mode", "DISABLE"));
         final PgConnectOptions options = new PgConnectOptions()
