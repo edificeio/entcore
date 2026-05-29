@@ -1,4 +1,5 @@
 import {
+  ButtonBeta,
   LoadingScreen,
   PageLayout,
   useBreakpoint,
@@ -8,9 +9,12 @@ import {
 import {
   LastInfosContainer,
   MessageFlashListContainer,
+  NotificationListContainer,
   SchoolSpaceContainer,
 } from '@edifice.io/react/homepage';
+import { IconClose } from '@edifice.io/react/icons';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 
 /** Check old format URL and redirect if needed */
@@ -23,6 +27,7 @@ export const Root = () => {
   const [openSidebar, setOpenSidebar] = useState(false);
   const { md } = useBreakpoint();
   const { toggleOverlay } = useOverlay();
+  const { t } = useTranslation();
 
   const handleNotificationsToggle = () => {
     if (md) {
@@ -53,11 +58,19 @@ export const Root = () => {
       </PageLayout.Content>
 
       {openSidebar ? (
-        <PageLayout.SidebarRight>
-          <div></div>
-          {/* <NotificationListContainer
-            onCloseNotifications={handleNotificationsToggle} 
-        />  */}
+        <PageLayout.SidebarRight className="position-relative">
+          <ButtonBeta
+            aria-label={t('close')}
+            color="tertiary"
+            leftIcon={<IconClose />}
+            type="button"
+            variant="ghost"
+            title={t('close')}
+            onClick={handleNotificationsToggle}
+            className="pagelayout-sidebar-close-button"
+            data-testid="pagelayout-sidebar-close-button"
+          />
+          <NotificationListContainer />
         </PageLayout.SidebarRight>
       ) : (
         <PageLayout.Overlay
@@ -65,10 +78,7 @@ export const Root = () => {
           onClose={handleNotificationsToggle}
           backdrop={true}
         >
-          <div></div>
-          {/* <NotificationListContainer
-          onCloseNotifications={handleNotificationsToggle} 
-        /> */}
+          <NotificationListContainer />
         </PageLayout.Overlay>
       )}
     </PageLayout>
