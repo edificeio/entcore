@@ -59,6 +59,7 @@
     "get-visible-strategy": "{{ conversationGetVisibleStrategy | default('all-at-once') }}",
     "inactive-user-threshold": {{ conversationInactiveUserThreshold | default('50') }},
     "publicConf": {
+      "screeb-app-id": "{{ screebAppId | default('') }}",
     	"debounce-time-to-auto-save": {{ conversationDebounceTimeToAutoSave | default('5000') }},
     	"mail-to-exercizer": {{ mailToExercizer | default('false') }},
     	"purge-grace-period": {{ conversationPurgeGracePeriod | default('24') }}      

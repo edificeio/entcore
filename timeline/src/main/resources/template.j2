@@ -34,6 +34,7 @@
       "weekly-mailing-cron": "{{ timelineWeeklyCron | default('0 30 7 ? * 1 *') }}",
     {% endif %}
     "mode": "prod",
+    "use-optimized" : {{ timelineUseOptimizedPeriodicMailer|default('true') }},
     "log-push-notifs": {{ timelineLogPushNotifs | default('false') }},
     "remove-push-notifs-404-tokens": {{ timelinePushNotifs404 | default('true') }}
   }

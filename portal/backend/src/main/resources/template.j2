@@ -173,7 +173,8 @@
   	  "collaborativewall",
 		  "exercizer",
 		  "formulaire",
-		  "magneto" {{ resourcesApplicationExt | default('') }}
+		  "magneto",
+      "appointments" {{ resourcesApplicationExt | default('') }}
     ],
     {% if matomoODEEnabled is defined and matomoODEEnabled %}
       "tracker": {
