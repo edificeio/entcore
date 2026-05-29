@@ -15,6 +15,7 @@ export default ({ mode }: { mode: string }) => {
       '^/(?=theme|locale|i18n|skin)',
       '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
       '^/calendar/(?!public/)',
+      '^/actualites/api/',
     ],
   });
 
