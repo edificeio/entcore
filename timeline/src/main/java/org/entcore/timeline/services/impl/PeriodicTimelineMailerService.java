@@ -35,6 +35,7 @@ import org.entcore.timeline.services.CronMailerService;
 import org.entcore.timeline.services.TimelineConfigService;
 
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
