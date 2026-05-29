@@ -1,10 +1,16 @@
-import { LoadingScreen, PageLayout, useEdificeClient } from '@edifice.io/react';
+import {
+  LoadingScreen,
+  PageLayout,
+  useBreakpoint,
+  useEdificeClient,
+  useOverlay,
+} from '@edifice.io/react';
 import {
   LastInfosContainer,
   MessageFlashListContainer,
-  NotificationListContainer,
   SchoolSpaceContainer,
 } from '@edifice.io/react/homepage';
+import { useState } from 'react';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 
 /** Check old format URL and redirect if needed */
@@ -14,6 +20,17 @@ export const loader = async () => {
 
 export const Root = () => {
   const { init } = useEdificeClient();
+  const [openSidebar, setOpenSidebar] = useState(false);
+  const { md } = useBreakpoint();
+  const { toggleOverlay } = useOverlay();
+
+  const handleNotificationsToggle = () => {
+    if (md) {
+      setOpenSidebar((prev) => !prev);
+    } else {
+      toggleOverlay();
+    }
+  };
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -25,7 +42,7 @@ export const Root = () => {
         sidebarRight: true,
       }}
     >
-      <PageLayout.Header />
+      <PageLayout.Header onNotificationsClick={handleNotificationsToggle} />
       <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
         <SchoolSpaceContainer />
         <LastInfosContainer />
@@ -34,13 +51,26 @@ export const Root = () => {
         <BetaSwitchContainer />
         <MessageFlashListContainer />
       </PageLayout.Content>
-      <PageLayout.SidebarRight>
-        <NotificationListContainer
-          onCloseNotifications={() => {
-            console.log('Notifications closed - implement close logic here');
-          }}
-        />
-      </PageLayout.SidebarRight>
+
+      {openSidebar ? (
+        <PageLayout.SidebarRight>
+          <div></div>
+          {/* <NotificationListContainer
+            onCloseNotifications={handleNotificationsToggle} 
+        />  */}
+        </PageLayout.SidebarRight>
+      ) : (
+        <PageLayout.Overlay
+          closeButton={true}
+          onClose={handleNotificationsToggle}
+          backdrop={true}
+        >
+          <div></div>
+          {/* <NotificationListContainer
+          onCloseNotifications={handleNotificationsToggle} 
+        /> */}
+        </PageLayout.Overlay>
+      )}
     </PageLayout>
   );
 };
