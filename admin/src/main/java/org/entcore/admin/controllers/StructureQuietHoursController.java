@@ -24,8 +24,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
+import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdmlOfStructure;
@@ -36,7 +35,7 @@ public class StructureQuietHoursController extends BaseController {
     private static final String STRUCTURE_PREFERENCES_ADDRESS = "directory.structure.quiethours.preferences";
     private static final String USERBOOK_PREFERENCES_ADDRESS  = "userbook.preferences";
 
-    @Get("api/structure/:structureId/quiethours-preferences")
+    @Get("api/structures/:structureId/quiethours-preferences")
     @SecuredAction(type = ActionType.RESOURCE, value = "")
     @ResourceFilter(AdmlOfStructure.class)
     @MfaProtected()
@@ -45,85 +44,74 @@ public class StructureQuietHoursController extends BaseController {
         final JsonObject message = new JsonObject()
                 .put("action", "get")
                 .put("structureId", structureId);
-        sendAndReply(request, STRUCTURE_PREFERENCES_ADDRESS, message);
-    }
-
-    @Post("api/structure/:structureId/quiethours-preferences")
-    @SecuredAction(type = ActionType.RESOURCE, value = "")
-    @ResourceFilter(AdmlOfStructure.class)
-    @MfaProtected()
-    public void setPreferences(HttpServerRequest request) {
-        final String structureId = request.params().get("structureId");
-        bodyToJson(request).compose(preferences -> {
-            final JsonObject saveMessage = new JsonObject()
-                    .put("action", "set")
-                    .put("structureId", structureId)
-                    .put("preferences", preferences);
-            return busRequest(STRUCTURE_PREFERENCES_ADDRESS, saveMessage);
-        }).compose(savedPreferences -> {
-            final JsonObject cascadeMessage = new JsonObject()
-                    .put("action", "cascade.structure.quiethours.preferences")
-                    .put("structureId", structureId);
-            return busRequest(USERBOOK_PREFERENCES_ADDRESS, cascadeMessage)
-                    .map(cascadeResult -> new JsonObject().put("preferences", savedPreferences).put("cascade", cascadeResult))
-                    .recover(error -> Future.succeededFuture(
-                            new JsonObject()
-                                    .put("preferences", savedPreferences)
-                                    .put("cascade", new JsonObject().put("error", error.getMessage()))));
-        }).onSuccess(result -> renderJson(request, result))
-          .onFailure(failure -> renderJson(request, new JsonObject().put("error", failure.getMessage()), 400));
-    }
-
-    private void sendAndReply(HttpServerRequest request, String address, JsonObject message) {
-        busRequest(address, message)
-                .onSuccess(payload -> renderJson(request, payload))
-                .onFailure(failure -> renderJson(request, new JsonObject().put("error", failure.getMessage()), 400));
-    }
-
-    private Future<JsonObject> busRequest(String address, JsonObject message) {
-        Promise<JsonObject> promise = Promise.promise();
-        
-        vertx.eventBus().request(address, message, reply -> {
+        vertx.eventBus().request(STRUCTURE_PREFERENCES_ADDRESS, message, reply -> {
             if (reply.failed()) {
-                promise.fail(reply.cause());
-                return;
-            }
-            
-            if (!(reply.result().body() instanceof JsonObject)) {
-                promise.fail("invalid.bus.response");
+                renderJson(request, new JsonObject().put("error", reply.cause().getMessage()), 400);
                 return;
             }
             
             JsonObject response = (JsonObject) reply.result().body();
             if (!"ok".equals(response.getString("status"))) {
-                promise.fail(response.getString("message", "bus.error"));
+                renderJson(request, new JsonObject().put("error", response.getString("message", "bus.error")), 400);
                 return;
             }
             
             Object payload = response.getValue("message");
-            promise.complete(payload instanceof JsonObject ? (JsonObject) payload : new JsonObject());
+            renderJson(request, payload instanceof JsonObject ? (JsonObject) payload : new JsonObject());
         });
-        
-        return promise.future();
     }
 
-    private Future<JsonObject> bodyToJson(HttpServerRequest request) {
-        Promise<JsonObject> promise = Promise.promise();
-        
-        request.bodyHandler(buffer -> {
-            if (buffer == null || buffer.length() == 0) {
-                promise.fail("body is missing");
+    @Post("api/structures/:structureId/quiethours-preferences")
+    @SecuredAction(type = ActionType.RESOURCE, value = "")
+    @ResourceFilter(AdmlOfStructure.class)
+    @MfaProtected()
+    public void setPreferences(HttpServerRequest request) {
+        final String structureId = request.params().get("structureId");
+        RequestUtils.bodyToJson(request, preferences -> {
+            if (preferences == null) {
+                renderJson(request, new JsonObject().put("error", "Invalid or empty JSON body"), 400);
                 return;
             }
             
-            try {
-                promise.complete(buffer.toJsonObject());
-            }
-            catch (Exception exception) {
-                promise.fail("invalid json body");
-            }
+            final JsonObject saveMessage = new JsonObject()
+                    .put("action", "set")
+                    .put("structureId", structureId)
+                    .put("preferences", preferences);
+            vertx.eventBus().request(STRUCTURE_PREFERENCES_ADDRESS, saveMessage, saveReply -> {
+                if (saveReply.failed()) {
+                    renderJson(request, new JsonObject().put("error", saveReply.cause().getMessage()), 400);
+                    return;
+                }
+                
+                JsonObject saveResponse = (JsonObject) saveReply.result().body();
+                if (!"ok".equals(saveResponse.getString("status"))) {
+                    renderJson(request, new JsonObject().put("error", saveResponse.getString("message", "bus.error")), 400);
+                    return;
+                }
+                
+                Object savedPayload = saveResponse.getValue("message");
+                JsonObject savedPreferences = savedPayload instanceof JsonObject ? (JsonObject) savedPayload : new JsonObject();
+
+                // Cascade — never fails the HTTP response
+                final JsonObject cascadeMessage = new JsonObject()
+                        .put("action", "cascade.structure.quiethours.preferences")
+                        .put("structureId", structureId);
+                vertx.eventBus().request(USERBOOK_PREFERENCES_ADDRESS, cascadeMessage, cascadeReply -> {
+                    JsonObject result = new JsonObject().put("preferences", savedPreferences);
+                    if (cascadeReply.failed()) {
+                        result.put("cascade", new JsonObject().put("error", cascadeReply.cause().getMessage()));
+                    } else {
+                        JsonObject cascadeResponse = (JsonObject) cascadeReply.result().body();
+                        if (!"ok".equals(cascadeResponse.getString("status"))) {
+                            result.put("cascade", new JsonObject().put("error", cascadeResponse.getString("message", "bus.error")));
+                        } else {
+                            Object cascadePayload = cascadeResponse.getValue("message");
+                            result.put("cascade", cascadePayload instanceof JsonObject ? (JsonObject) cascadePayload : new JsonObject());
+                        }
+                    }
+                    renderJson(request, result);
+                });
+            });
         });
-        
-        return promise.future();
     }
 }
