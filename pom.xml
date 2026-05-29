@@ -53,22 +53,22 @@
     </modules>
 
     <properties>
-        <revision>6.15.1</revision>
-        <entCoreLibsVersion>6.15.0</entCoreLibsVersion>
+        <revision>6.15-SNAPSHOT</revision>
+        <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.2.0</modPostgresVersion>
-        <modMongoVersion>4.2.0</modMongoVersion>
-        <modSmsProxyVersion>2.2.0</modSmsProxyVersion>
-        <webUtilsVersion>3.4.0</webUtilsVersion>
-        <mongodbHelperVersion>3.1.1</mongodbHelperVersion>
+        <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
+        <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
+        <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
+        <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.15.2</jacksonVersion>
-        <casVersion>0.3.0</casVersion>
-        <vertxCronTimerVersion>3.0.0</vertxCronTimerVersion>
+        <casVersion>0.3-SNAPSHOT</casVersion>
+        <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
         <opencsvVersion>3.9</opencsvVersion>
