@@ -146,7 +146,8 @@ public abstract class AbstractFederateController extends BaseController {
 	}
 
 	protected void sloUser(final HttpServerRequest request) {
-		final String c = request.params().get("callback");
+		// lougout callback unused by IDP and potentially make an issue
+		// final String c = request.params().get("callback");
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
@@ -158,14 +159,14 @@ public abstract class AbstractFederateController extends BaseController {
 							if (event != null) {
 								CookieHelper.set("oneSessionId", "", 0l, request);
 								CookieHelper.set("authenticated", "", 0l, request);
-								afterDropSession(event, request, user, c);
+								afterDropSession(event, request, user, "");
 							} else {
-								AuthController.logoutCallback(request, c, config, eb);
+								AuthController.logoutCallback(request, "", config, eb);
 							}
 						}
 					});
 				} else {
-					AuthController.logoutCallback(request, c, config, eb);
+					AuthController.logoutCallback(request, "", config, eb);
 				}
 			}
 		});
