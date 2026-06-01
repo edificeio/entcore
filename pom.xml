@@ -57,18 +57,18 @@
         <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
+        <modPostgresVersion>2.2-develop-b2school-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
-        <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
-        <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
-        <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
+        <modSmsProxyVersion>2.2-develop-b2school-SNAPSHOT</modSmsProxyVersion>
+        <webUtilsVersion>3.4-develop-b2school-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>3.1-develop-b2school-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.15.2</jacksonVersion>
         <casVersion>0.3-SNAPSHOT</casVersion>
-        <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
+        <vertxCronTimerVersion>3.0-develop-b2school-SNAPSHOT</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
         <opencsvVersion>3.9</opencsvVersion>
