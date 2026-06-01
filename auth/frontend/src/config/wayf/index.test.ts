@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_WAYF_CONFIG, wayfConfig } from './wayf.config';
+import { DEFAULT_WAYF_CONFIG, wayfConfig } from '.';
 
 describe('wayfConfig', () => {
   it('has a wayf-v2 key', () => {
@@ -29,12 +29,12 @@ describe('DEFAULT_WAYF_CONFIG', () => {
     });
   });
 
-  it('includes teacher, student, parent, personnel, guest', () => {
+  it('includes teacher, student, relative, perseducnat, other', () => {
     const keys = DEFAULT_WAYF_CONFIG.providers.map((p) => p.i18n);
     expect(keys).toContain('wayf.teacher');
     expect(keys).toContain('wayf.student');
-    expect(keys).toContain('wayf.parent');
-    expect(keys).toContain('wayf.personnel');
-    expect(keys).toContain('wayf.guest');
+    expect(keys).toContain('wayf.relative');
+    expect(keys).toContain('wayf.perseducnat');
+    expect(keys).toContain('wayf.other');
   });
 });

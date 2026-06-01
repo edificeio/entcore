@@ -68,12 +68,18 @@ En dev, le dev server Vite redirige `/` et `/saml/wayf` vers `wayfv2.html`.
 ### i18n
 - Namespace `common` → `/i18n`
 - Namespace `auth` → `/auth/i18n` (contient les clés `wayf.*`)
-- Clés WAYF utilisées : `wayf.select.profile`, `wayf.teacher`, `wayf.student`, `wayf.parent`, `wayf.personnel`, `wayf.guest`
+- Clés WAYF profils : `wayf.select.profile`, `wayf.teacher`, `wayf.student`, `wayf.relative`, `wayf.perseducnat`, `wayf.other`
 - Utiliser `useTranslation('auth')` dans les composants WAYF
 
 ### Configuration WAYF v2
-Fichier statique `src/config/wayf.config.ts` indexé par `window.location.hostname`.
-Fallback sur `DEFAULT_WAYF_CONFIG` si le domaine n'est pas trouvé.
+Configurations statiques rangées dans `src/config/wayf/` :
+- `default.ts` → `DEFAULT_WAYF_CONFIG` (fallback)
+- `domains/<nom>.ts` → une conf par domaine (ex. `hdf.ts`)
+- `index.ts` → mappe `hostname → conf` (`wayfConfig`) et ré-exporte le défaut
+
+Le hook `useWayfConfig()` résout la conf via le **cookie `wayf-domain`** s'il est présent (surcharge QA, à poser depuis les devtools : `document.cookie = 'wayf-domain=connexion.enthdf.fr'`), sinon via `window.location.hostname`. Fallback sur `DEFAULT_WAYF_CONFIG` si le domaine n'est pas mappé.
+
+**Ajouter un domaine** : créer `domains/<nom>.ts` exportant un `WayfDomainConfig`, l'importer dans `index.ts` et mapper son/ses hostname(s).
 Format JSON validé dans l'US1 :
 ```json
 {

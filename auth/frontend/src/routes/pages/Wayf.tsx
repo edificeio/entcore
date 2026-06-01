@@ -23,14 +23,19 @@ export const WayfPage = () => {
   const welcomeState = useWelcomeMessage();
 
   useEffect(() => {
+    let theme = '';
     try {
       const content = document.getElementById('saml-wayf')?.textContent ?? '{}';
       const data = JSON.parse(content);
-      if (data.childTheme) setChildTheme(data.childTheme);
+      if (typeof data.childTheme === 'string') theme = data.childTheme;
     } catch {
-      if (import.meta.env.DEV) {
-        setChildTheme('theme-open-ent');
-      }
+      // Malformed JSON — keep theme empty and fall back below.
+    }
+    // In dev the backend isn't there, so the Mustache placeholder is left as-is.
+    if (theme && !theme.includes('{{')) {
+      setChildTheme(theme);
+    } else if (import.meta.env.DEV) {
+      setChildTheme('theme-open-ent');
     }
   }, []);
 
@@ -63,7 +68,7 @@ export const WayfPage = () => {
 
   const backgroundStyle = childTheme
     ? {
-        backgroundImage: `url(/assets/themes/${childTheme}/img/background.png), var(--primitives-editorial-fallback)`,
+        backgroundImage: `url(/assets/themes/${childTheme}/img/background.png), var(--wayf-editorial-fallback)`,
       }
     : undefined;
 

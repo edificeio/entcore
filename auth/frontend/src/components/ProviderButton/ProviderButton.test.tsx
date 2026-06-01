@@ -7,7 +7,7 @@ import { ProviderButton } from '.';
 const provider: WayfProvider = {
   i18n: 'wayf.teacher',
   acs: '/auth/saml/teacher',
-  color: '#c53030',
+  color: 'teacher',
 };
 
 describe('ProviderButton', () => {
@@ -16,13 +16,17 @@ describe('ProviderButton', () => {
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('strips wayf. prefix for CSS modifier class', () => {
+  it('applies the provider color as CSS modifier class', () => {
     render(<ProviderButton provider={provider} onClick={vi.fn()} />);
     expect(screen.getByRole('button')).toHaveClass('wayf-provider-btn--teacher');
   });
 
-  it('uses bare key as CSS modifier when no wayf. prefix', () => {
-    const student: WayfProvider = { i18n: 'student', acs: '/auth/login' };
+  it('uses provider.color for the modifier regardless of i18n key', () => {
+    const student: WayfProvider = {
+      i18n: 'student',
+      acs: '/auth/login',
+      color: 'student',
+    };
     render(<ProviderButton provider={student} onClick={vi.fn()} />);
     expect(screen.getByRole('button')).toHaveClass('wayf-provider-btn--student');
   });
@@ -32,6 +36,7 @@ describe('ProviderButton', () => {
       i18n: 'anything',
       icon: 'student',
       acs: '/auth/login',
+      color: 'student',
     };
     render(<ProviderButton provider={withIcon} onClick={vi.fn()} />);
     expect(
@@ -40,7 +45,11 @@ describe('ProviderButton', () => {
   });
 
   it('renders no icon when neither provider.icon nor parentIconKey is set', () => {
-    const plain: WayfProvider = { i18n: 'student', acs: '/auth/login' };
+    const plain: WayfProvider = {
+      i18n: 'student',
+      acs: '/auth/login',
+      color: 'student',
+    };
     render(<ProviderButton provider={plain} onClick={vi.fn()} />);
     expect(
       document.querySelector('.wayf-provider-btn__icon-wrap svg'),
@@ -51,6 +60,7 @@ describe('ProviderButton', () => {
     const child: WayfProvider = {
       i18n: 'wayf.student.ecole',
       acs: '/auth/saml/student-ecole',
+      color: 'student',
     };
     render(
       <ProviderButton
@@ -68,6 +78,8 @@ describe('ProviderButton', () => {
     const withBoth: WayfProvider = {
       i18n: 'anything',
       icon: 'teacher',
+      acs: '/auth/login',
+      color: 'teacher',
     };
     render(
       <ProviderButton
@@ -82,18 +94,13 @@ describe('ProviderButton', () => {
     ).toBeInTheDocument();
   });
 
-  it('applies parent CSS modifier class when parentColorKey is set', () => {
+  it('applies the child own color as CSS modifier class', () => {
     const childOfStudent: WayfProvider = {
       i18n: 'student.primary',
       acs: '/auth/saml/student-primary',
+      color: 'student',
     };
-    render(
-      <ProviderButton
-        provider={childOfStudent}
-        onClick={vi.fn()}
-        parentColorKey="student"
-      />,
-    );
+    render(<ProviderButton provider={childOfStudent} onClick={vi.fn()} />);
     expect(screen.getByRole('button')).toHaveClass('wayf-provider-btn--student');
   });
 

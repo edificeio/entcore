@@ -1,88 +1,6 @@
-import type { WayfConfig, WayfDomainConfig } from '~/models/wayf';
+import type { WayfDomainConfig } from '~/models/wayf';
 
-export const DEFAULT_WAYF_CONFIG: WayfDomainConfig = {
-  providers: [
-    {
-      i18n: 'wayf.teacher',
-      color: 'teacher',
-      icon: 'teacher',
-      acs: '/auth/saml/default-teacher',
-    },
-    {
-      i18n: 'wayf.student',
-      color: 'student',
-      icon: 'student',
-      acs: '/auth/saml/default-student',
-    },
-    {
-      i18n: 'wayf.parent',
-      color: 'relative',
-      icon: 'relative',
-      acs: '/auth/saml/default-parent',
-    },
-    {
-      i18n: 'wayf.personnel',
-      color: 'perseducnat',
-      icon: 'perseducnat',
-      acs: '/auth/saml/default-personnel',
-    },
-    {
-      i18n: 'wayf.guest',
-      color: 'other',
-      icon: 'other',
-      acs: '/auth/saml/default-guest',
-    },
-  ],
-};
-
-const reunionProviders: WayfDomainConfig = {
-  providers: [
-    {
-      i18n: 'wayf.student',
-      color: 'student',
-      icon: 'student',
-      acs: '/auth/saml/authn/student',
-    },
-    {
-      i18n: 'wayf.relative',
-      color: 'relative',
-      icon: 'relative',
-      acs: '/auth/saml/authn/relative',
-    },
-    {
-      i18n: 'wayf.teacher',
-      color: 'teacher',
-      icon: 'teacher',
-      acs: '/auth/saml/teacher-reunion',
-    },
-    {
-      i18n: 'wayf.perseducnat',
-      color: 'perseducnat',
-      icon: 'perseducnat',
-      children: [
-        {
-          i18n: 'wayf.perseducnat.collectivite',
-          color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-collectivite',
-        },
-        {
-          i18n: 'wayf.perseducnat.academie',
-          color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-academie',
-        },
-      ],
-    },
-    {
-      i18n: 'wayf.other',
-      color: 'other',
-      icon: 'other',
-      acs: '/auth/saml/other',
-    },
-  ],
-  partners: [],
-};
-
-const hdfProviders: WayfDomainConfig = {
+export const hdfConfig: WayfDomainConfig = {
   providers: [
     {
       i18n: 'wayf.student',
@@ -230,11 +148,4 @@ const hdfProviders: WayfDomainConfig = {
     },
     { logoI18n: 'wayf.partner.logo.ue' },
   ],
-};
-
-export const wayfConfig: WayfConfig = {
-  'wayf-v2': {
-    'connexion.enthdf.fr': hdfProviders,
-    'localhost': hdfProviders,
-  },
 };
