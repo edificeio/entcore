@@ -282,18 +282,34 @@ public class DefaultUserValidationService implements UserValidationService {
             logger.warn("needMFA called with null UserInfos - this should not happen");
             return Future.succeededFuture(Boolean.FALSE);
         }
-        
+
         // As of 2023-01-27, an MFA is needed to access protected zones if and only if :
         // - no MFA has already been performed during this session, and
         // - user is ADMx, and
         // - MFA is activated at platform-level, and
         // - all structures, the user is attached to, are not ignoring MFA
         // - at least one MFA method is available for the user
-        if( Boolean.TRUE.equals(getIsMFA(session))
-         || !(infos.isADMC() || infos.isADML())
-         || Mfa.isNotActivatedForUser(infos)
-         || (Mfa.withTotp() && !Mfa.withSms() && !Mfa.withEmail() && !Boolean.TRUE.equals(infos.getHasTotp()))
-            ) {
+        //
+        // Read hasTotp from session JSON directly in addition to infos, to be resilient to any
+        // Jackson deserialization edge case (e.g. @JsonAnySetter interaction).
+        final Boolean sessionHasTotp = (session != null) ? session.getBoolean("hasTotp") : null;
+        final boolean hasTotp = Boolean.TRUE.equals(infos.getHasTotp()) || Boolean.TRUE.equals(sessionHasTotp);
+
+        final boolean isMFADone           = Boolean.TRUE.equals(getIsMFA(session));
+        final boolean notAdmin            = !(infos.isADMC() || infos.isADML());
+        final boolean mfaDisabled         = Mfa.isNotActivatedForUser(infos);
+        final boolean totpOnlyNotEnrolled = Mfa.withTotp() && !Mfa.withSms() && !Mfa.withEmail() && !hasTotp;
+
+        logger.info("[needMFA] isMFADone=" + isMFADone
+                + " notAdmin=" + notAdmin
+                + " mfaDisabled=" + mfaDisabled
+                + " totpOnlyNotEnrolled=" + totpOnlyNotEnrolled
+                + " | withTotp=" + Mfa.withTotp() + " withSms=" + Mfa.withSms() + " withEmail=" + Mfa.withEmail()
+                + " | infos.hasTotp=" + infos.getHasTotp() + " session.hasTotp=" + sessionHasTotp
+                + " | ignoreMFA=" + infos.getIgnoreMFA()
+                + " | isADML=" + infos.isADML() + " isADMC=" + infos.isADMC());
+
+        if( isMFADone || notAdmin || mfaDisabled || totpOnlyNotEnrolled ) {
             return Future.succeededFuture(Boolean.FALSE);
         }
 
