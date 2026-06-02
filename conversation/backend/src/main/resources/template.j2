@@ -43,6 +43,7 @@
     },
     "sql": true,
     "db-schema": "conversation",
+    "purge-grace-period": {{ conversationPurgeGracePeriod | default('36') }},
     {% if mailToExercizer is defined and mailToExercizer == 'true'  %}
       "mail-to-exercizer": {
     		"langfuse_public_key": "{{ langfuse_public_key }}",
@@ -61,8 +62,7 @@
     "publicConf": {
       "screeb-app-id": "{{ screebAppId | default('') }}",
     	"debounce-time-to-auto-save": {{ conversationDebounceTimeToAutoSave | default('5000') }},
-    	"mail-to-exercizer": {{ mailToExercizer | default('false') }},
-    	"purge-grace-period": {{ conversationPurgeGracePeriod | default('24') }}      
+    	"mail-to-exercizer": {{ mailToExercizer | default('false') }}    
     }
   }
 }
