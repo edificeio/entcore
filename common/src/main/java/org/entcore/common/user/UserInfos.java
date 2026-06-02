@@ -556,7 +556,7 @@ public class UserInfos {
 		this.mobile = mobile;
 	}
 
-	public Boolean hasTotp() {
+	public Boolean getHasTotp() {
 		return hasTotp;
 	}
 

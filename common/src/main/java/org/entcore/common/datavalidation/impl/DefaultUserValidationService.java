@@ -292,7 +292,7 @@ public class DefaultUserValidationService implements UserValidationService {
         if( Boolean.TRUE.equals(getIsMFA(session))
          || !(infos.isADMC() || infos.isADML())
          || Mfa.isNotActivatedForUser(infos)
-         || (Mfa.withTotp() && !Mfa.withSms() && !Mfa.withEmail() && !Boolean.TRUE.equals(infos.hasTotp()))
+         || (Mfa.withTotp() && !Mfa.withSms() && !Mfa.withEmail() && !Boolean.TRUE.equals(infos.getHasTotp()))
             ) {
             return Future.succeededFuture(Boolean.FALSE);
         }
