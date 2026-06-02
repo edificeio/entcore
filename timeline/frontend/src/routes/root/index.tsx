@@ -2,9 +2,7 @@ import {
   ButtonBeta,
   LoadingScreen,
   PageLayout,
-  useBreakpoint,
   useEdificeClient,
-  useOverlay,
 } from '@edifice.io/react';
 import {
   LastInfosContainer,
@@ -13,9 +11,9 @@ import {
   SchoolSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { IconClose } from '@edifice.io/react/icons';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
+import { useNotificationsLayout } from './hooks/useNotificationsLayout';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -24,18 +22,9 @@ export const loader = async () => {
 
 export const Root = () => {
   const { init } = useEdificeClient();
-  const [openSidebar, setOpenSidebar] = useState(false);
-  const { md } = useBreakpoint();
-  const { toggleOverlay } = useOverlay();
+  const { isSidebarOpen, toggleNotifications, closeNotifications } =
+    useNotificationsLayout();
   const { t } = useTranslation();
-
-  const handleNotificationsToggle = () => {
-    if (md) {
-      setOpenSidebar((prev) => !prev);
-    } else {
-      toggleOverlay();
-    }
-  };
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -47,7 +36,7 @@ export const Root = () => {
         sidebarRight: true,
       }}
     >
-      <PageLayout.Header onNotificationsClick={handleNotificationsToggle} />
+      <PageLayout.Header onNotificationsClick={toggleNotifications} />
       <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
         <SchoolSpaceContainer />
         <LastInfosContainer />
@@ -57,7 +46,7 @@ export const Root = () => {
         <MessageFlashListContainer />
       </PageLayout.Content>
 
-      {openSidebar ? (
+      {isSidebarOpen ? (
         <PageLayout.SidebarRight className="position-relative">
           <ButtonBeta
             aria-label={t('close')}
@@ -66,7 +55,7 @@ export const Root = () => {
             type="button"
             variant="ghost"
             title={t('close')}
-            onClick={handleNotificationsToggle}
+            onClick={closeNotifications}
             className="pagelayout-sidebar-close-button"
             data-testid="pagelayout-sidebar-close-button"
           />
@@ -75,7 +64,7 @@ export const Root = () => {
       ) : (
         <PageLayout.Overlay
           closeButton={true}
-          onClose={handleNotificationsToggle}
+          onClose={closeNotifications}
           backdrop={true}
         >
           <NotificationListContainer />
