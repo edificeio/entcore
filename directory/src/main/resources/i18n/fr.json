@@ -17,7 +17,7 @@
   "accessibility.schema.link": "Schéma pluriannuel de mise en accessibilité - Edifice",
   "accessibility.second.text": "Pour cela, le site doit respecter des normes rigoureuses lors de sa réalisation et de ses mises à jour. Rendre ce site accessible au plus grand nombre est un objectif qui nous tient à coeur et pour cette raison les développements de ce site tiennent progressivement en compte les recommandations du gouvernement.",
   "accessibility.title": "Accessibilité",
-  "account.mergebykey.placeholder": "Veuillez saisir une clé valide puis cliquer sur le lien qui s'affichera à droite pour valider",
+  "account.mergebykey.placeholder": "Veuillez saisir la clé de fusion puis valider en cliquant sur le lien qui s'affichera à gauche",
   "account.myaccount": "Mon compte",
   "account.useraccount": "Compte utilisateur",
   "admin.block": "Bloquer",
