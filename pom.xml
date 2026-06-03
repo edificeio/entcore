@@ -53,15 +53,15 @@
     </modules>
 
     <properties>
-        <revision>6.15-SNAPSHOT</revision>
-        <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
+        <revision>6.15-develop-pedago-SNAPSHOT</revision>
+        <entCoreLibsVersion>6.15-develop-pedago-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
-        <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
+        <modMongoVersion>4.2-develop-pedago-SNAPSHOT</modMongoVersion>
         <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
-        <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
-        <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
+        <webUtilsVersion>3.4-develop-pedago-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>3.1-develop-pedago-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
