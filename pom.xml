@@ -53,14 +53,14 @@
     </modules>
 
     <properties>
-        <revision>6.15-SNAPSHOT</revision>
-        <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
+        <revision>6.15-develop-integration-SNAPSHOT</revision>
+        <entCoreLibsVersion>6.15-develop-integration-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
         <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
-        <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
+        <webUtilsVersion>3.4-develop-integration-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
