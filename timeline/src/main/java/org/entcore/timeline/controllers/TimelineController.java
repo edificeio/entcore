@@ -269,12 +269,11 @@ public class TimelineController extends BaseController {
 	public void i18n(HttpServerRequest request) {
 		String language = Utils.getOrElse(
 				I18n.acceptLanguage(request), "fr", false);
-		String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-		if (i18n == null) {
-			i18n = eventsI18n.get("fr");
+		language = language.split(",")[0].split("-")[0];
+		if (!eventsI18n.containsKey(language)) {
+			language = "fr";
 		}
-		final JsonObject i18Notif = new JsonObject(
-			"{" + i18n.substring(0, i18n.length() - 1) + "}");
+		final JsonObject i18Notif = TimelineLambda.getTimelineI18n(language, eventsI18n, lazyEventsI18n).copy();
 		if("true".equals(request.params().get("mergeall"))){
 			final JsonObject original = this.i18n.load(request);
 			renderJson(request, i18Notif.mergeIn(original));
