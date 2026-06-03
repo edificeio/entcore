@@ -269,7 +269,7 @@ public class TimelineController extends BaseController {
 	public void i18n(HttpServerRequest request) {
 		String language = Utils.getOrElse(
 				I18n.acceptLanguage(request), "fr", false);
-		language = language.split(",")[0].split("-")[0];
+		language = I18n.getLocale(language).getLanguage();
 		if (!eventsI18n.containsKey(language)) {
 			language = "fr";
 		}
