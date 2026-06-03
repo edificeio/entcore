@@ -5,6 +5,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -77,7 +78,7 @@ public class TaskController extends BaseController {
 					.put("feeder", feederType)
 					.put("autoExport", jsonBody.getBoolean("auto-export", false))
 					.put("autoExportDelay", jsonBody.getLong("auto-export-delay", 1800000l));
-			eb.request(Directory.FEEDER, message)
+			eb.request(Directory.FEEDER, message, new DeliveryOptions().setLocalOnly(true))
 					.onSuccess(e -> {
 						log.info("Triggered import task for feeder: " + feederType);
 						render(request, e.body(), 202);
@@ -130,7 +131,7 @@ public class TaskController extends BaseController {
 						.put("action", "import-csv")
 						.put("path", csvPath)
 						.put("config", config);
-				eb.request(Directory.FEEDER, message)
+				eb.request(Directory.FEEDER, message, new DeliveryOptions().setLocalOnly(true))
 						.onSuccess(e -> {
 							log.info("Triggered CSV import task");
 							render(request, e.body(), 202);
