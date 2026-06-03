@@ -53,8 +53,8 @@
     </modules>
 
     <properties>
-        <revision>6.15-SNAPSHOT</revision>
-        <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
+        <revision>6.15-develop-b2school-SNAPSHOT</revision>
+        <entCoreLibsVersion>6.15-develop-b2school-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
