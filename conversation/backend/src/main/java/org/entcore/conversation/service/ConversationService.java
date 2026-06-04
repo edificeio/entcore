@@ -49,17 +49,18 @@ public interface ConversationService {
 	 * 
 	 * For example, listing folders with a depth of 2 => returning MAX_FOLDER_NUMBER^2 =2500 folders at once in the worst case.
 	 */
-	public static final int MAX_FOLDERS_LEVEL = 3;
+	int MAX_FOLDERS_LEVEL = 3;
 
-	enum State { DRAFT, SENT, RECALL }
+	enum State { DRAFT, SENT, RECALL, SCHEDULE }
 
-	static final String[] SYSTEM_FOLDER_NAMES = {"INBOX", "OUTBOX", "DRAFT", "TRASH"};
-	static public boolean isSystemFolder(final String folder) {
-		return folder!=null && Stream.of(SYSTEM_FOLDER_NAMES).anyMatch(sysFolder -> folder.equalsIgnoreCase(sysFolder));
+	String[] SYSTEM_FOLDER_NAMES = {"INBOX", "OUTBOX", "DRAFT", "TRASH", "SCHEDULE"};
+
+	static boolean isSystemFolder(final String folder) {
+		return folder!=null && Stream.of(SYSTEM_FOLDER_NAMES).anyMatch(folder::equalsIgnoreCase);
 	}
 
 	List<String> MESSAGE_FIELDS = Arrays.asList("id", "subject", "body", "from", "to", "cc", "date", "state",
-            "displayNames", "noReply");
+            "displayNames", "noReply", "scheduleAt");
 
 	List<String> DRAFT_REQUIRED_FIELDS = Arrays.asList("id", "from", "date", "state");
 
