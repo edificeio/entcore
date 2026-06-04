@@ -1929,17 +1929,20 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public Future<JsonArray> getMessagesToPurge() {
-		final int months = Math.max(24, Config.getConf().getInteger("purge-grace-period", 0));
+		final int months = Math.max(36, Config.getConf().getInteger("purge-grace-period", 0));
+		final int timeout = Config.getConf().getInteger("purge-query-timeout", 300000);
+		
 		String query =
 			"SELECT DISTINCT um.message_id " +
 			"FROM conversation.usermessages um " +
 			"JOIN conversation.messages m ON um.message_id = m.id " +
 			"WHERE um.folder_id IS NULL AND m.date > (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400));";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		DeliveryOptions deliveryOptions = new DeliveryOptions();
+		deliveryOptions.setSendTimeout(timeout);
 
 		Promise<JsonArray> promise = Promise.promise();
-		sql.prepared(query, values, SqlResult.validResultHandler(result -> {
+		sql.prepared(query, new JsonArray(), deliveryOptions, SqlResult.validResultHandler(result -> {
 			if (result.isRight() && result.right().getValue() != null) {
 				promise.complete(result.right().getValue());
 			} else {
@@ -1953,14 +1956,17 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public Future<JsonArray> purgeMessages(final List<String> messagesId) {
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-		String query = "DELETE FROM conversation.messages CASCADE WHERE id IN " + generateInVars(messagesId, values);
+	    final int timeout = Config.getConf().getInteger("purge-query-timeout", 300000);
 
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
-		builder.prepared(query, values);
+		JsonArray values = new JsonArray();
+		builder.prepared("DELETE FROM conversation.usermessages WHERE message_id IN " + generateInVars(messagesId, values), values);
+
+		DeliveryOptions deliveryOptions = new DeliveryOptions();
+		deliveryOptions.setSendTimeout(timeout);
 
 		Promise<JsonArray> promise = Promise.promise();
-		sql.transaction(builder.build(), SqlResult.validResultsHandler(result -> {
+		sql.transaction(builder.build(), deliveryOptions, SqlResult.validResultsHandler(result -> {
 			if (result.isRight() && result.right().getValue() != null) {
 				promise.complete(result.right().getValue());
 			} else {

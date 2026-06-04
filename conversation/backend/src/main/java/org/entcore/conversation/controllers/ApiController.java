@@ -24,6 +24,8 @@ import java.util.Optional;
 
 import fr.wseduc.security.MfaProtected;
 import io.vertx.core.json.JsonArray;
+
+import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -204,6 +206,7 @@ public class ApiController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
 	@MfaProtected()
+	@IgnoreCsrf
 	public void purgeMessages(final HttpServerRequest request) {
 		bodyToJson(request, body -> {
 			JsonArray ids = body.getJsonArray("id");
