@@ -468,7 +468,7 @@ public class ConversationController extends BaseController {
 								message.mergeIn(userDetails);
 
 								conversationService.send(parentMessageId, id, message, user, event1 -> {
-                                    if(event1.isRight()){
+                                    if(event1.isRight() && StringUtils.isEmpty(message.getString("scheduleAt"))){
                                         for(Object recipient : message.getJsonArray("allUsers", new JsonArray())){
                                             if(recipient.toString().equals(user.getUserId()))
                                                 continue;
@@ -508,7 +508,6 @@ public class ConversationController extends BaseController {
                             return;
                         }
 
-
                         final String threadId = ConversationController.getShouldCreateThread(parentMsg, message, user)
                                 ? null
                                 : parentMsg != null ? parentMsg.getString("thread_id") : null;
@@ -517,13 +516,15 @@ public class ConversationController extends BaseController {
                                     if (event.isRight()) {
                                         eventHelper.onCreateResource(request, RESOURCE_NAME);
                                         JsonObject result = event.right().getValue();
-                                        JsonObject timelineParams = new JsonObject()
-                                            .put("subject", result.getString("subject"))
-                                            .put("body", StringUtils.stripHtmlTag(result.getString("body")))
-                                            .put("id", result.getString("id"))
-                                            .put("thread_id", result.getString("thread_id"))
-                                            .put("sentIds", message1.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
-                                        timelineNotification(request, timelineParams, user);
+										if(StringUtils.isEmpty(message.getString("scheduleAt"))) {
+											JsonObject timelineParams = new JsonObject()
+													.put("subject", result.getString("subject"))
+													.put("body", StringUtils.stripHtmlTag(result.getString("body")))
+													.put("id", result.getString("id"))
+													.put("thread_id", result.getString("thread_id"))
+													.put("sentIds", message1.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
+											timelineNotification(request, timelineParams, user);
+										}
                                         JsonArray inactive = message1.getJsonArray("inactives", new JsonArray());
                                         message1.put("inactivesCount", inactive.size());
                                         if (inactive.size() > inactiveUserThreshold) {
