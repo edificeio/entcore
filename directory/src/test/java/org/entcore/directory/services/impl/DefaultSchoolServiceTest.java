@@ -1,7 +1,9 @@
 package org.entcore.directory.services.impl;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -9,6 +11,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.dto.TimezonePreference;
 import org.entcore.test.TestHelper;
 import org.entcore.test.preparation.*;
 import org.junit.BeforeClass;
@@ -102,5 +105,206 @@ public class DefaultSchoolServiceTest {
                 .withUser(adml)
                     .adml(adml.getId(), "my-structure-01")
                 .execute();
+    }
+
+    // -----------------------------------------------------------------------
+    //  Helper methods for quiet hours / timezone preference tests
+    // -----------------------------------------------------------------------
+
+    private Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body) {
+        return defaultSchoolService.setQuietHoursPreferences(structureId, body);
+    }
+
+    private Future<JsonObject> getQuietHoursPreferences(String structureId) {
+        return defaultSchoolService.getQuietHoursPreferences(structureId);
+    }
+
+    // -----------------------------------------------------------------------
+    //  Timezone preservation tests
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testSetQuietHoursPreferences_timezoneAbsent_preservesExisting(final TestContext context) {
+        final Async async = context.async();
+        final String structureId = "my-structure-01";
+
+        final JsonObject initialBody = new JsonObject()
+                .put("timezone", "Europe/Paris")
+                .put("quietHours", new JsonObject()
+                        .put("schedule", new JsonArray())
+                        .put("enabled", true));
+
+        // Update without any "timezone" key at all
+        final JsonObject updateBody = new JsonObject()
+                .put("quietHours", new JsonObject()
+                        .put("schedule", new JsonArray())
+                        .put("enabled", true));
+
+        setQuietHoursPreferences(structureId, initialBody)
+                .compose(ignored -> setQuietHoursPreferences(structureId, updateBody))
+                .compose(ignored -> getQuietHoursPreferences(structureId))
+                .onComplete(asyncResult -> {
+                    if (asyncResult.succeeded()) {
+                        final JsonObject preferences = asyncResult.result();
+                        final String timezoneJson = preferences.getString("notificationTimezone");
+                        context.assertNotNull(timezoneJson, "timezone should be preserved when absent from request");
+                        final TimezonePreference timezone = Json.decodeValue(timezoneJson, TimezonePreference.class);
+                        context.assertEquals("Europe/Paris", timezone.getTimezone());
+                    } else {
+                        context.fail(asyncResult.cause());
+                    }
+                    async.complete();
+                });
+    }
+
+
+
+    @Test
+    public void testSetQuietHoursPreferences_explicitTimezoneUpdate_works(final TestContext context) {
+        final Async async = context.async();
+        final String structureId = "my-structure-01";
+
+        final JsonObject initialBody = new JsonObject()
+                .put("timezone", "Europe/Paris")
+                .put("quietHours", new JsonObject()
+                        .put("schedule", new JsonArray())
+                        .put("enabled", true));
+
+        // Update with a different explicit timezone
+        final JsonObject updateBody = new JsonObject()
+                .put("timezone", "America/Chicago")
+                .put("quietHours", new JsonObject()
+                        .put("schedule", new JsonArray())
+                        .put("enabled", true));
+
+        setQuietHoursPreferences(structureId, initialBody)
+                .compose(ignored -> setQuietHoursPreferences(structureId, updateBody))
+                .compose(ignored -> getQuietHoursPreferences(structureId))
+                .onComplete(asyncResult -> {
+                    if (asyncResult.succeeded()) {
+                        final JsonObject preferences = asyncResult.result();
+                        final String timezoneJson = preferences.getString("notificationTimezone");
+                        context.assertNotNull(timezoneJson);
+                        final TimezonePreference timezone = Json.decodeValue(timezoneJson, TimezonePreference.class);
+                        context.assertEquals("America/Chicago", timezone.getTimezone(),
+                                "explicit timezone update should replace previous value");
+                    } else {
+                        context.fail(asyncResult.cause());
+                    }
+                    async.complete();
+                });
+    }
+
+    // -----------------------------------------------------------------------
+    //  Schedule validation hardening tests
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testSetQuietHoursPreferences_invalidScheduleTooManyDays_rejected(final TestContext context) {
+        final Async async = context.async();
+        final String structureId = "my-structure-01";
+
+        // More than 7 days is invalid
+        final JsonArray badSchedule = new JsonArray();
+        for (int dayCounter = 0; dayCounter < 8; dayCounter++) {
+            badSchedule.add(new JsonArray());
+        }
+
+        final JsonObject body = new JsonObject()
+                .put("quietHours", new JsonObject()
+                        .put("schedule", badSchedule)
+                        .put("enabled", true));
+
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.failed(), "schedule with >7 days should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
+    }
+
+    @Test
+    public void testSetQuietHoursPreferences_invalidScheduleNonInteger_rejected(final TestContext context) {
+        final Async async = context.async();
+        final String structureId = "my-structure-01";
+
+        // 7 days but with non-integer hour values
+        final JsonArray badSchedule = new JsonArray();
+        for (int dayCounter = 0; dayCounter < 7; dayCounter++) {
+            badSchedule.add(new JsonArray().add("not-a-number"));
+        }
+
+        final JsonObject body = new JsonObject()
+                .put("quietHours", new JsonObject()
+                        .put("schedule", badSchedule)
+                        .put("enabled", true));
+
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.failed(), "schedule with non-integer values should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
+    }
+
+    // -----------------------------------------------------------------------
+    //  Enabled validation tests
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testSetQuietHoursPreferences_enabledAbsent_rejected(final TestContext context) {
+        final Async async = context.async();
+        final String structureId = "my-structure-01";
+
+        final JsonObject body = new JsonObject()
+                .put("timezone", "Europe/Paris")
+                .put("quietHours", new JsonObject()
+                        .put("schedule", new JsonArray()));
+        // No "enabled" in quietHours
+
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.failed(), "missing 'enabled' should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
+    }
+
+    @Test
+    public void testSetQuietHoursPreferences_enabledFalse_emptySchedule_accepted(final TestContext context) {
+        final Async async = context.async();
+        final String structureId = "my-structure-01";
+
+        final JsonObject body = new JsonObject()
+                .put("timezone", "Europe/Paris")
+                .put("quietHours", new JsonObject()
+                        .put("schedule", new JsonArray())
+                        .put("enabled", false));
+
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    context.assertTrue(ar.succeeded(), "enabled=false with empty schedule should be accepted");
+                    async.complete();
+                });
+    }
+
+    @Test
+    public void testSetQuietHoursPreferences_enabledTrue_emptySchedule_rejected(final TestContext context) {
+        final Async async = context.async();
+        final String structureId = "my-structure-01";
+
+        final JsonObject body = new JsonObject()
+                .put("timezone", "Europe/Paris")
+                .put("quietHours", new JsonObject()
+                        .put("schedule", new JsonArray())
+                        .put("enabled", true));
+
+        defaultSchoolService.setQuietHoursPreferences(structureId, body)
+                .onComplete(ar -> {
+                    // validate() returns false when enabled=true and schedule.length==0
+                    context.assertTrue(ar.failed(), "enabled=true with empty schedule should be rejected");
+                    context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
     }
 }
