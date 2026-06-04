@@ -26,6 +26,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -34,6 +35,9 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.dto.ManagedBy;
+import org.entcore.common.user.dto.QuietHoursPreference;
+import org.entcore.common.user.dto.TimezonePreference;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
@@ -798,6 +802,199 @@ public class DefaultSchoolService implements SchoolService {
 			}
 		}));
 		return promise.future();
+	}
+
+	@Override
+	public Future<JsonObject> getQuietHoursPreferences(String structureId) {
+		Promise<JsonObject> promise = Promise.promise();
+		String query = "MATCH (s:Structure {id: {structureId}}) RETURN s.notificationTimezone as notificationTimezone, s.notificationQuietHours as notificationQuietHours";
+		JsonObject params = new JsonObject().put("structureId", structureId);
+		neo.execute(query, params, validUniqueResultHandler(either -> {
+			if (either.isRight()) {
+				promise.complete(either.right().getValue());
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
+	@Override
+	public Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body) {
+		Promise<JsonObject> promise = Promise.promise();
+
+		final QuietHoursPreference quietHours = buildQuietHoursPreference(body);
+		if (quietHours == null) {
+			promise.fail("invalid.preference.data");
+			return promise.future();
+		}
+
+		final boolean overwriteTimezone = hasExplicitTimezone(body);
+		final TimezonePreference timezonePreference = overwriteTimezone ? buildTimezonePreferenceFromBody(body) : null;
+
+		if (timezonePreference != null && !timezonePreference.validate()) {
+			promise.fail("invalid.preference.data");
+			return promise.future();
+		}
+		
+		if (!quietHours.validate()) {
+			promise.fail("invalid.preference.data");
+			return promise.future();
+		}
+
+		doUpdate(structureId, timezonePreference, quietHours, either -> {
+			if (either.isRight()) {
+				promise.complete(either.right().getValue());
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		});
+		return promise.future();
+	}
+
+	private static boolean hasExplicitTimezone(JsonObject body) {
+		final String value = body.getString("timezone");
+		return !StringUtils.isEmpty(value);
+	}
+
+	private static TimezonePreference buildTimezonePreferenceFromBody(JsonObject body) {
+		final TimezonePreference timezone = new TimezonePreference();
+		final String value = body.getString("timezone");
+		if (!StringUtils.isEmpty(value)) {
+			timezone.setTimezone(value);
+		}
+		timezone.setManagedBy(ManagedBy.STRUCTURE);
+		return timezone;
+	}
+
+	private QuietHoursPreference buildQuietHoursPreference(JsonObject body) {
+		final JsonObject quietHoursBody = body.getJsonObject("quietHours", new JsonObject());
+		final JsonArray schedule = quietHoursBody.getJsonArray("schedule", new JsonArray());
+		if (schedule.size() > 7) return null;
+
+		final Boolean enabled = quietHoursBody.getBoolean("enabled");
+		if (enabled == null) return null;
+
+		final int[][] converted;
+		try {
+			converted = convertSchedule(schedule);
+		} catch (IllegalArgumentException parsingError) {
+			return null;
+		}
+
+		final QuietHoursPreference quietHours = new QuietHoursPreference();
+		quietHours.setSchedule(converted);
+		quietHours.setEnabled(enabled);
+		quietHours.setManagedBy(ManagedBy.STRUCTURE);
+		
+		return quietHours;
+	}
+
+	private void doUpdate(String structureId, TimezonePreference timezonePreference,
+			QuietHoursPreference quietHoursPreference, Handler<Either<String, JsonObject>> handler) {
+
+		final JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("notificationQuietHours", quietHoursPreference.encode());
+
+		final StringBuilder setClauses = new StringBuilder("s.notificationQuietHours = {notificationQuietHours}");
+		if (timezonePreference != null) {
+			setClauses.append(", s.notificationTimezone = {notificationTimezone}");
+			params.put("notificationTimezone", timezonePreference.encode());
+		}
+
+		final String query = "MATCH (s:Structure {id: {structureId}}) SET " + setClauses + " RETURN s.notificationTimezone as notificationTimezone, s.notificationQuietHours as notificationQuietHours";
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	// CONTAINS is supported since Neo4j 2.3, safe for our target version
+	private static final String USER_MANAGED_MARKER = "\"managedBy\":\"USER\"";
+
+	@Override
+	public Future<JsonObject> cascadeQuietHoursPreferences(String structureId) {
+		Promise<JsonObject> promise = Promise.promise();
+
+		// Step 1: count total users in the structure
+		final String countQuery =
+			"MATCH (s:Structure {id: {structureId}}) " +
+			"WHERE s.notificationTimezone IS NOT NULL OR s.notificationQuietHours IS NOT NULL " +
+			"WITH s " +
+			"MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+			"RETURN count(DISTINCT u) AS totalUsers";
+
+		// Step 2: cascade update (only users not managed by themselves)
+		final String updateQuery =
+			"MATCH (s:Structure {id: {structureId}}) " +
+			"WHERE s.notificationTimezone IS NOT NULL OR s.notificationQuietHours IS NOT NULL " +
+			"WITH s " +
+			"MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+			"WITH s, collect(DISTINCT u) AS allUsers " +
+			"UNWIND allUsers AS u " +
+			"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+			"WITH s, u, uac, " +
+			"  (s.notificationTimezone IS NOT NULL AND (uac IS NULL OR uac.timezone IS NULL OR NOT uac.timezone CONTAINS {userManagedMarker})) AS shouldUpdateTimezone, " +
+			"  (s.notificationQuietHours IS NOT NULL AND (uac IS NULL OR uac.quietHours IS NULL OR NOT uac.quietHours CONTAINS {userManagedMarker})) AS shouldUpdateQuietHours " +
+			"WHERE shouldUpdateTimezone OR shouldUpdateQuietHours " +
+			"MERGE (u)-[:PREFERS]->(uac2:UserAppConf) " +
+			"FOREACH (_ IN CASE WHEN shouldUpdateTimezone THEN [1] ELSE [] END | SET uac2.timezone = s.notificationTimezone) " +
+			"FOREACH (_ IN CASE WHEN shouldUpdateQuietHours THEN [1] ELSE [] END | SET uac2.quietHours = s.notificationQuietHours) " +
+			"RETURN count(DISTINCT u) AS updatedUsers";
+
+		final JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("userManagedMarker", USER_MANAGED_MARKER);
+
+		// Count first, then cascade
+		neo.execute(countQuery, params, validUniqueResultHandler(countEvent -> {
+			final int totalUsers;
+			if (countEvent.isRight() && countEvent.right().getValue() != null) {
+				totalUsers = countEvent.right().getValue().getInteger("totalUsers", 0);
+			} else {
+				totalUsers = 0;
+			}
+
+			neo.execute(updateQuery, params, validUniqueResultHandler(updateEvent -> {
+				final int updatedUsers;
+				if (updateEvent.isRight() && updateEvent.right().getValue() != null) {
+					updatedUsers = updateEvent.right().getValue().getInteger("updatedUsers", 0);
+				} else {
+					updatedUsers = 0;
+				}
+
+				promise.complete(new JsonObject()
+						.put("updatedUsers", updatedUsers)
+						.put("skippedUsers", totalUsers - updatedUsers));
+			}));
+		}));
+
+		return promise.future();
+	}
+
+	private static int[][] convertSchedule(JsonArray schedule) {
+		if (schedule == null || schedule.isEmpty()) {
+			return new int[0][];
+		}
+		
+		int[][] result = new int[schedule.size()][];
+		for (int dayIndex = 0; dayIndex < result.length; dayIndex++) {
+			final Object dayValue = schedule.getValue(dayIndex);
+			if (!(dayValue instanceof JsonArray)) {
+				throw new IllegalArgumentException("Each day must be an array");
+			}
+
+			JsonArray day = (JsonArray) dayValue;
+			result[dayIndex] = new int[day.size()];
+			
+			for (int hourIndex = 0; hourIndex < day.size(); hourIndex++) {
+				final Integer hour = day.getInteger(hourIndex);
+				if (hour == null) {
+					throw new IllegalArgumentException("Schedule must contain integers only");
+				}
+				result[dayIndex][hourIndex] = hour;
+			}
+		}
+		
+		return result;
 	}
 
 }

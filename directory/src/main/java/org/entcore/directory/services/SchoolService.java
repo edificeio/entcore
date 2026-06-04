@@ -109,4 +109,20 @@ public interface SchoolService {
 
     Future<JsonArray> listContacts(String structureId);
 
+    /**
+     * Retrieve structure quiet hours preferences (notificationTimezone + notificationQuietHours).
+     */
+    Future<JsonObject> getQuietHoursPreferences(String structureId);
+
+    /**
+     * Save structure-level quiet hours/timezone preferences.
+     */
+    Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body);
+
+    /**
+     * Cascade structure quiet hours/timezone preferences to all users in the structure.
+     * Only updates users whose preferences are not managed by the user themselves (managedBy=USER).
+     */
+    Future<JsonObject> cascadeQuietHoursPreferences(String structureId);
+
 }
