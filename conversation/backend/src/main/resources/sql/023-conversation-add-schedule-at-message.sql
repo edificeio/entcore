@@ -1,0 +1,1 @@
+ALTER TABLE conversation.messages ADD COLUMN IF NOT EXISTS schedule_at TIMESTAMP WITH TIME ZONE;
