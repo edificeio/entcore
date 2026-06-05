@@ -5,10 +5,12 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import {
+  FavoritesContainer,
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
   SchoolSpaceContainer,
+  UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { IconClose } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +49,9 @@ export const Root = () => {
         <div className="d-flex flex-column py-16  gap-16">
           <BetaSwitchContainer />
           <MessageFlashListContainer />
+          <UserSpaceContainer>
+            <FavoritesContainer />
+          </UserSpaceContainer>
         </div>
       </PageLayout.Content>
 
