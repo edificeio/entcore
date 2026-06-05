@@ -37,13 +37,17 @@ export const Root = () => {
       }}
     >
       <PageLayout.Header onNotificationsClick={toggleNotifications} />
-      <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
-        <SchoolSpaceContainer />
-        <LastInfosContainer />
+      <PageLayout.SidebarLeft>
+        <div className="bg-white py-16 gap-16 d-flex flex-column">
+          <SchoolSpaceContainer />
+          <LastInfosContainer />
+        </div>
       </PageLayout.SidebarLeft>
-      <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
-        <BetaSwitchContainer />
-        <MessageFlashListContainer />
+      <PageLayout.Content>
+        <div className="d-flex flex-column py-16  gap-16">
+          <BetaSwitchContainer />
+          <MessageFlashListContainer />
+        </div>
       </PageLayout.Content>
 
       {isSidebarOpen ? (
