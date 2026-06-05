@@ -51,6 +51,7 @@ public class NotificationHelper {
     private List<TimelinePushNotifService> pushNotifServices;
     private TimelineMailerService mailerService;
     private TimelineConfigService configService;
+    private static final String DEFERRED_TO_DAILY = "deferredToDaily";
     private final EventBus eb;
 
 
@@ -112,7 +113,7 @@ public class NotificationHelper {
 
                         if (isQuiet) {
                             JsonObject recipient = recipientById.get(userId);
-                            if (recipient != null) recipient.put("deferredToDaily", true);
+                            if (recipient != null) recipient.put(DEFERRED_TO_DAILY, true);
                         }
                     }
                     handler.handle(userList);
@@ -124,7 +125,7 @@ public class NotificationHelper {
         final JsonArray recipients = notification.getJsonArray("recipients", new JsonArray());
         for (int i = 0; i < recipients.size(); i++) {
             JsonObject recipient = recipients.getJsonObject(i);
-            if (recipient != null) recipient.put("deferredToDaily", true);
+            if (recipient != null) recipient.put(DEFERRED_TO_DAILY, true);
         }
     }
 
@@ -134,7 +135,7 @@ public class NotificationHelper {
         final JsonArray recipients = notification.getJsonArray("recipients", new JsonArray());
         for (int i = 0; i < recipients.size(); i++) {
             JsonObject recipient = recipients.getJsonObject(i);
-            if (recipient != null && recipient.getBoolean("deferredToDaily", false)) {
+            if (recipient != null && recipient.getBoolean(DEFERRED_TO_DAILY, false)) {
                 String uid = recipient.getString("userId");
                 if (uid != null) deferred.add(uid);
             }
