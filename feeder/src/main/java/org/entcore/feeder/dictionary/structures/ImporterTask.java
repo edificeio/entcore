@@ -48,12 +48,12 @@ public class ImporterTask implements Handler<Long> {
 	@Override
 	public void handle(Long event) {
 		eb.request(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "import").put("feeder", feeder),
-				new DeliveryOptions().setSendTimeout(5400000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+				new DeliveryOptions().setSendTimeout(5400000l).setLocalOnly(true), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && export) {
 					vertx.setTimer(autoExportDelay, timerId ->
-							eb.request(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "export")));
+							eb.request(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "export"), new DeliveryOptions().setLocalOnly(true)));
 				}
 			}
 		}));
