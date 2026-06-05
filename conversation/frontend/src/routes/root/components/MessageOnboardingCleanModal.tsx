@@ -43,7 +43,7 @@ export default function MessageOnboardingCleanModal() {
           src: illuOnboardingClean,
           title: t('onboarding.modal.clean.title'),
           alt: t('onboarding.modal.clean.title'),
-          text: "<strong>L’application Messagerie intégrera bientôt une automatisation de suppression des anciens messages.</strong><br />Afin de limiter l'utilisation d'espace de stockage, les messages de plus de 2 ans seront supprimés s’ils ne sont classés dans aucun dossier.Cette action se fera automatiquement et régulièrement tout au long de l'année. <br />Cela libérera de l'espace sur votre quota de stockage. Cette mesure permettra de libérer jusqu’à 8 tonnes d’équivalent CO2 par an sur toutes nos plateformes. Un bon geste pour la planète ! <br />Cette automatisation sera appliquée à partir du xxx 2026. Pensez à faire du tri dès que possible !",
+          text: t('onboarding.modal.clean.text'),
         },
       ]}
       onDisplayRuleCheck={onDisplayRuleCheck}
