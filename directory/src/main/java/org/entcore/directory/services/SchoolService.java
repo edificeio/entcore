@@ -20,13 +20,12 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
-
-import org.entcore.common.user.UserInfos;
-
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 
 import java.util.List;
 
@@ -109,6 +108,7 @@ public interface SchoolService {
 
     Future<JsonArray> listContacts(String structureId);
 
+<<<<<<< HEAD
     /**
      * Retrieve structure quiet hours preferences (notificationTimezone + notificationQuietHours).
      */
@@ -125,4 +125,9 @@ public interface SchoolService {
      */
     Future<JsonObject> cascadeQuietHoursPreferences(String structureId);
 
+=======
+    Future<Void> updateDefaultAuth(UserInfos user, String structureId, DefaultAuthModeConfig body);
+
+	Future<DefaultAuthModeConfig> getDefaultAuth(String structureId);
+>>>>>>> 374ec0bcb (feat(directory): #IMPULS-5911 add endpoint to update and retreive default auth configuration)
 }

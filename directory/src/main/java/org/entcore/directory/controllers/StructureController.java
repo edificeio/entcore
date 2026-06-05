@@ -28,16 +28,13 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
-
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
@@ -46,17 +43,17 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.appregistry.ApplicationUtils;
-import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.pojo.Ent;
+import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 import org.entcore.directory.security.AdminStructureFilter;
 import org.entcore.directory.security.AnyAdminOfUser;
 import org.entcore.directory.services.MassMailService;
@@ -66,18 +63,14 @@ import org.vertx.java.core.http.RouteMatcher;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-
-import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToClass;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
@@ -121,6 +114,31 @@ public class StructureController extends BaseController {
 				});
 			}
 		});
+	}
+
+	@Put("/structure/:structureId/default-auth-config")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	@ResourceFilter(SuperAdminFilter.class)
+	public void updateDefaultAuth(final HttpServerRequest request) {
+		bodyToClass(request, DefaultAuthModeConfig.class)
+				.onSuccess(	body -> UserUtils.getUserInfos(eb, request, user -> {
+            String structureId = request.params().get("structureId");
+			log.info(String.format("Updating default auth config by %s for structure %s", user.getUserId(), structureId));
+            structureService.updateDefaultAuth(user, structureId, body)
+					.onSuccess( v -> ok(request))
+					.onFailure( th -> new JsonObject().put("error", th.getMessage()));
+        })).onFailure(th -> badRequest(request));
+	}
+
+	@Get("/structure/:structureId/default-auth-config")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void getDefaultAuth(final HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		structureService.getDefaultAuth(structureId)
+				.onSuccess( (defaultAuth) -> renderJson(request, JsonObject.mapFrom(defaultAuth)))
+				.onFailure( th -> new JsonObject().put("error", th.getMessage()));
 	}
 
 	@Put("/structure/:structureId/link/:userId")
@@ -750,7 +768,7 @@ public class StructureController extends BaseController {
 									if (block) {
 										NotificationUtils.deleteFcmTokens(usersId, ar -> {
 											if (ar.isLeft()) {
-												log.error("Failed to delete FCM tokens when block structure : " + structureId, ar.left().getValue());
+												log.error("Failed to delete FCM tokens when block structure : " + structureId + " " + ar.left().getValue());
 											}
 										});
 									}
@@ -990,11 +1008,11 @@ public class StructureController extends BaseController {
 
 	private JsonObject toQuietHoursPreferencesResponse(JsonObject data, String structureId) {
 		final JsonObject output = new JsonObject();
-		
+
 		if (data == null) {
 			return output;
 		}
-		
+
 		final String timezoneStr = data.getString("notificationTimezone");
 		if (timezoneStr != null) {
 			try {
@@ -1018,7 +1036,7 @@ public class StructureController extends BaseController {
 				log.error("Failed to decode quietHours preference for structure " + structureId, decodeException);
 			}
 		}
-		
+
 		return output;
 	}
 
