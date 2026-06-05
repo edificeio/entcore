@@ -39,14 +39,14 @@ export const Root = () => {
       }}
     >
       <PageLayout.Header onNotificationsClick={toggleNotifications} />
-      <PageLayout.SidebarLeft>
-        <div className="bg-white py-16 gap-16 d-flex flex-column">
+      <PageLayout.SidebarLeft className="bg-white">
+        <div className="d-flex flex-column py-16 gap-16 ">
           <SchoolSpaceContainer />
           <LastInfosContainer />
         </div>
       </PageLayout.SidebarLeft>
       <PageLayout.Content>
-        <div className="d-flex flex-column py-16  gap-16">
+        <div className="d-flex flex-column py-16 gap-16">
           <BetaSwitchContainer />
           <MessageFlashListContainer />
           <UserSpaceContainer>
@@ -56,7 +56,7 @@ export const Root = () => {
       </PageLayout.Content>
 
       {isSidebarOpen ? (
-        <PageLayout.SidebarRight className="position-relative">
+        <PageLayout.SidebarRight>
           <ButtonBeta
             aria-label={t('close')}
             color="tertiary"
@@ -68,7 +68,9 @@ export const Root = () => {
             className="pagelayout-sidebar-close-button"
             data-testid="pagelayout-sidebar-close-button"
           />
-          <NotificationListContainer />
+          <NotificationListContainer
+            onCloseNotifications={closeNotifications}
+          />
         </PageLayout.SidebarRight>
       ) : (
         <PageLayout.Overlay
@@ -76,7 +78,9 @@ export const Root = () => {
           onClose={closeNotifications}
           backdrop={true}
         >
-          <NotificationListContainer />
+          <NotificationListContainer
+            onCloseNotifications={closeNotifications}
+          />
         </PageLayout.Overlay>
       )}
     </PageLayout>
