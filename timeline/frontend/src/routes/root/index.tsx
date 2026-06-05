@@ -1,9 +1,4 @@
-import {
-  ButtonBeta,
-  LoadingScreen,
-  PageLayout,
-  useEdificeClient,
-} from '@edifice.io/react';
+import { LoadingScreen, PageLayout, useEdificeClient } from '@edifice.io/react';
 import {
   FavoritesContainer,
   LastInfosContainer,
@@ -12,8 +7,6 @@ import {
   SchoolSpaceContainer,
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
-import { IconClose } from '@edifice.io/react/icons';
-import { useTranslation } from 'react-i18next';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
 
@@ -26,7 +19,6 @@ export const Root = () => {
   const { init } = useEdificeClient();
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
     useNotificationsLayout();
-  const { t } = useTranslation();
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -57,17 +49,6 @@ export const Root = () => {
 
       {isSidebarOpen ? (
         <PageLayout.SidebarRight>
-          <ButtonBeta
-            aria-label={t('close')}
-            color="tertiary"
-            leftIcon={<IconClose />}
-            type="button"
-            variant="ghost"
-            title={t('close')}
-            onClick={closeNotifications}
-            className="pagelayout-sidebar-close-button"
-            data-testid="pagelayout-sidebar-close-button"
-          />
           <NotificationListContainer
             onCloseNotifications={closeNotifications}
           />
@@ -78,9 +59,7 @@ export const Root = () => {
           onClose={closeNotifications}
           backdrop={true}
         >
-          <NotificationListContainer
-            onCloseNotifications={closeNotifications}
-          />
+          <NotificationListContainer />
         </PageLayout.Overlay>
       )}
     </PageLayout>
