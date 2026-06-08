@@ -54,7 +54,7 @@
 
     <properties>
         <revision>6.15-develop-enabling-SNAPSHOT</revision>
-        <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
+        <entCoreLibsVersion>6.15-develop-enabling-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>

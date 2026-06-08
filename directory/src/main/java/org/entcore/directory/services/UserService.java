@@ -20,7 +20,9 @@
 package org.entcore.directory.services;
 
 import java.util.List;
+import java.util.Set;
 
+import org.entcore.broker.api.dto.directory.ClassIncludeField;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.TransversalSearchQuery;
 
@@ -30,6 +32,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import static java.util.Collections.emptySet;
 
 public interface UserService {
 
@@ -155,7 +159,16 @@ public interface UserService {
 
 	void listChildren(String userId, Handler<Either<String,JsonArray>> eitherHandler);
 
-	void getUserInfos(String userId, Handler<Either<String,JsonObject>> handler);
+	default void getUserInfos(final String userId, Handler<Either<String,JsonObject>> handler) {
+		getUserInfos(userId, emptySet(), handler);
+	}
+	/**
+	 *
+	 * @param userId Id of the user whose information we want
+	 * @param fields Extra fields that should be included in the results
+	 * @param handler Callback with the results
+	 */
+	void getUserInfos(final String userId, final Set<ClassIncludeField> fields, Handler<Either<String,JsonObject>> handler);
 
 	void listByLevel(String levelContains, String levelNotContains, String profile, String structureId, boolean stream,
 					 Handler<Either<String, JsonArray>> handler);
