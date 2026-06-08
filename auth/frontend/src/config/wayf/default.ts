@@ -14,10 +14,34 @@ export const DEFAULT_WAYF_CONFIG: WayfDomainConfig = {
       acs: '/auth/login',
     },
     {
+      // Level 2 example: student → ecole / college-lycee
       i18n: 'wayf.student',
       color: 'student',
       icon: 'student',
-      acs: '/auth/login',
+      children: [
+        {
+          i18n: 'wayf.student.ecole',
+          color: 'student',
+          acs: '/auth/login',
+        },
+        {
+          // Level 3 example: college-lycee → public / prive
+          i18n: 'wayf.student.college-lycee',
+          color: 'student',
+          children: [
+            {
+              i18n: 'wayf.student.college-lycee.public',
+              color: 'student',
+              acs: '/auth/login',
+            },
+            {
+              i18n: 'wayf.student.college-lycee.prive',
+              color: 'student',
+              acs: '/auth/login',
+            },
+          ],
+        },
+      ],
     },
     {
       i18n: 'wayf.relative',

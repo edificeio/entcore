@@ -1,4 +1,5 @@
 import type { WayfConfig } from '~/models/wayf';
+import { DEFAULT_WAYF_CONFIG } from './default';
 import { hdfConfig } from './domains/hdf';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
@@ -16,6 +17,6 @@ export { reunionConfig } from './domains/reunion';
 export const wayfConfig: WayfConfig = {
   'wayf-v2': {
     'connexion.enthdf.fr': hdfConfig,
-    'localhost': hdfConfig,
+    'localhost': DEFAULT_WAYF_CONFIG,
   },
 };

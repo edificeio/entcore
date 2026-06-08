@@ -11,12 +11,10 @@ import { useWelcomeMessage } from '~/hooks/useWelcomeMessage';
 import type { WayfParentProvider, WayfProvider } from '~/models/wayf';
 import './Wayf.css';
 
-type WayfView = { level: 1 } | { level: 2; parent: WayfParentProvider };
-
 export const WayfPage = () => {
   const { t } = useTranslation('auth');
   const [childTheme, setChildTheme] = useState<string | undefined>();
-  const [view, setView] = useState<WayfView>({ level: 1 });
+  const [breadcrumb, setBreadcrumb] = useState<WayfParentProvider[]>([]);
   const dirRef = useRef<1 | -1>(1);
 
   const { providers, partners } = useWayfConfig();
@@ -44,16 +42,24 @@ export const WayfPage = () => {
       window.location.href = provider.acs;
     } else {
       dirRef.current = 1;
-      setView({ level: 2, parent: provider });
+      setBreadcrumb((prev) => [...prev, provider]);
     }
   };
 
   const handleBack = () => {
     dirRef.current = -1;
-    setView({ level: 1 });
+    setBreadcrumb((prev) => prev.slice(0, -1));
   };
 
-  const transitions = useTransition(view, {
+  const currentParent = breadcrumb[breadcrumb.length - 1];
+  const transitionItem = {
+    depth: breadcrumb.length,
+    providers: currentParent ? currentParent.children : providers,
+    parentIconKey: currentParent?.icon,
+  };
+
+  const transitions = useTransition(transitionItem, {
+    keys: (item) => item.depth,
     from: () => ({
       transform: `translateX(${dirRef.current * 100}%)`,
       opacity: 0,
@@ -97,21 +103,14 @@ export const WayfPage = () => {
         <div className="wayf-selection__auth">
           <h1 className="wayf-title" data-testid="wayf-label-choice">{t('wayf.choice')}</h1>
           <div className="wayf-view-container">
-            {transitions((style, v) => (
+            {transitions((style, item) => (
               <animated.div style={style} className="wayf-view-slide">
-                {v.level === 2 ? (
-                  <ProviderList
-                    providers={v.parent.children}
-                    onProviderClick={handleProviderClick}
-                    parentIconKey={v.parent.icon}
-                    onBack={handleBack}
-                  />
-                ) : (
-                  <ProviderList
-                    providers={providers}
-                    onProviderClick={handleProviderClick}
-                  />
-                )}
+                <ProviderList
+                  providers={item.providers}
+                  onProviderClick={handleProviderClick}
+                  parentIconKey={item.parentIconKey}
+                  onBack={item.depth > 0 ? handleBack : undefined}
+                />
               </animated.div>
             ))}
           </div>
