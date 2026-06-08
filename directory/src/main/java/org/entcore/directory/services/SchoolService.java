@@ -20,13 +20,12 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
-
-import org.entcore.common.user.UserInfos;
-
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 
 import java.util.List;
 
@@ -125,4 +124,19 @@ public interface SchoolService {
      */
     Future<JsonObject> cascadeQuietHoursPreferences(String structureId);
 
+	/**
+	 * Add default autheentication method of the structure
+	 * @param user Current user
+	 * @param structureId target structure
+	 * @param config List of authentication method by profile
+	 * @return
+	 */
+    Future<Void> updateDefaultAuth(UserInfos user, String structureId, DefaultAuthModeConfig config);
+
+	/**
+	 * Get current authentication default method by structure
+	 * @param structureId
+	 * @return
+	 */
+	Future<DefaultAuthModeConfig> getDefaultAuth(String structureId);
 }
