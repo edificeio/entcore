@@ -821,6 +821,7 @@ public class DefaultSchoolService implements SchoolService {
 		return promise.future();
 	}
 
+	@Override
 	public Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body) {
 		Promise<JsonObject> promise = Promise.promise();
 
