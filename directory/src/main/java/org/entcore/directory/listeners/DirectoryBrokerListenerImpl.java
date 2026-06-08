@@ -2,7 +2,6 @@ package org.entcore.directory.listeners;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -543,7 +542,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         }
 
         // The boolean params might be used to filter deleted users
-        // TODO: update the method to find if the user is an admc or not (third params) 
+        // TODO: update the method to find if the user is an admc or not (third params)
         // As we do not have acces to the user informations in the broker
         // we default to false for now
         // In directory > src > ... > controllers > StructureController.java:
@@ -574,6 +573,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         });
         return promise.future();
     }
+
 
 
     @Override
