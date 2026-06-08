@@ -807,7 +807,6 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-<<<<<<< HEAD
 	public Future<JsonObject> getQuietHoursPreferences(String structureId) {
 		Promise<JsonObject> promise = Promise.promise();
 		String query = "MATCH (s:Structure {id: {structureId}}) RETURN s.notificationTimezone as notificationTimezone, s.notificationQuietHours as notificationQuietHours";
@@ -817,33 +816,11 @@ public class DefaultSchoolService implements SchoolService {
 				promise.complete(either.right().getValue());
 			} else {
 				promise.fail(either.left().getValue());
-=======
-	public Future<Void> updateDefaultAuth(UserInfos user, String structureId, DefaultAuthModeConfig body) {
-		final Promise<Void> promise = Promise.promise();
-		final StringBuilder query = new StringBuilder(
-				"MATCH (s:Structure {id: {structureId}}) ")
-		.append("OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(d:AuthDefault) ")
-		.append("DETACH DELETE d ");
-		for (Map.Entry<DefaultAuthModeConfig.Profile, DefaultAuthModeConfig.DefaultAuthMode> entry : body.getDefaultAuthModes().entrySet()) {
-			query.append(String.format(" MERGE (s)-[:HAS_AUTH_DEFAULT]->(:AuthDefault { profile: '%s', auth: '%s' }) ",
-					entry.getKey().getNeo4jName(),
-					entry.getValue().name()));
-		}
-		final JsonObject params = new JsonObject().put("structureId", structureId);
-
-		neo.execute(query.toString(), params, validResultHandler(results -> {
-			if (results.isRight()) {
-				promise.complete();
-			} else {
-				promise.fail(results.left().getValue());
->>>>>>> 374ec0bcb (feat(directory): #IMPULS-5911 add endpoint to update and retreive default auth configuration)
 			}
 		}));
 		return promise.future();
 	}
 
-	@Override
-<<<<<<< HEAD
 	public Future<JsonObject> setQuietHoursPreferences(String structureId, JsonObject body) {
 		Promise<JsonObject> promise = Promise.promise();
 
@@ -1021,7 +998,6 @@ public class DefaultSchoolService implements SchoolService {
 		return result;
 	}
 
-=======
 	public Future<DefaultAuthModeConfig> getDefaultAuth(String structureId) {
 		final Promise<DefaultAuthModeConfig> promise = Promise.promise();
 		final StringBuilder query = new StringBuilder(
@@ -1048,5 +1024,27 @@ public class DefaultSchoolService implements SchoolService {
 		return promise.future();
 	}
 
->>>>>>> 374ec0bcb (feat(directory): #IMPULS-5911 add endpoint to update and retreive default auth configuration)
+	public Future<Void> updateDefaultAuth(UserInfos user, String structureId, DefaultAuthModeConfig body) {
+		final Promise<Void> promise = Promise.promise();
+		final StringBuilder query = new StringBuilder(
+				"MATCH (s:Structure {id: {structureId}}) ")
+				.append("OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(d:AuthDefault) ")
+				.append("DETACH DELETE d ");
+		for (Map.Entry<DefaultAuthModeConfig.Profile, DefaultAuthModeConfig.DefaultAuthMode> entry : body.getDefaultAuthModes().entrySet()) {
+			query.append(String.format(" MERGE (s)-[:HAS_AUTH_DEFAULT]->(:AuthDefault { profile: '%s', auth: '%s' }) ",
+					entry.getKey().getNeo4jName(),
+					entry.getValue().name()));
+		}
+		final JsonObject params = new JsonObject().put("structureId", structureId);
+
+		neo.execute(query.toString(), params, validResultHandler(results -> {
+			if (results.isRight()) {
+				promise.complete();
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
 }

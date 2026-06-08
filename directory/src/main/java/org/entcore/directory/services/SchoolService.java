@@ -108,7 +108,6 @@ public interface SchoolService {
 
     Future<JsonArray> listContacts(String structureId);
 
-<<<<<<< HEAD
     /**
      * Retrieve structure quiet hours preferences (notificationTimezone + notificationQuietHours).
      */
@@ -125,9 +124,19 @@ public interface SchoolService {
      */
     Future<JsonObject> cascadeQuietHoursPreferences(String structureId);
 
-=======
-    Future<Void> updateDefaultAuth(UserInfos user, String structureId, DefaultAuthModeConfig body);
+	/**
+	 * Add default autheentication method of the structure
+	 * @param user Current user
+	 * @param structureId target structure
+	 * @param config List of authentication method by profile
+	 * @return
+	 */
+    Future<Void> updateDefaultAuth(UserInfos user, String structureId, DefaultAuthModeConfig config);
 
+	/**
+	 * Get current authentication default method by structure
+	 * @param structureId
+	 * @return
+	 */
 	Future<DefaultAuthModeConfig> getDefaultAuth(String structureId);
->>>>>>> 374ec0bcb (feat(directory): #IMPULS-5911 add endpoint to update and retreive default auth configuration)
 }
