@@ -95,7 +95,7 @@ export const WayfPage = () => {
 
         {/* Espace authentification */}
         <div className="wayf-selection__auth">
-          <h1 className="wayf-title">{t('wayf.choice')}</h1>
+          <h1 className="wayf-title" data-testid="wayf-label-choice">{t('wayf.choice')}</h1>
           <div className="wayf-view-container">
             {transitions((style, v) => (
               <animated.div style={style} className="wayf-view-slide">
@@ -120,12 +120,13 @@ export const WayfPage = () => {
         {/* Pied de page */}
         <div className="wayf-selection__footer">
           <div className="wayf-footer-links">
-            <a href={t('wayf.link.help.url')} className="wayf-help-btn">
+            <a href={t('wayf.link.help.url')} className="wayf-help-btn" data-testid="wayf-link-help">
               {t('wayf.link.help.text') || "Besoin d'aide ?"}
             </a>
             <a
               href={t('auth.charter')}
               className="wayf-legal-link"
+              data-testid="wayf-link-cgu"
               target="_blank"
               rel="noreferrer"
             >
@@ -137,6 +138,7 @@ export const WayfPage = () => {
             href="https://edifice.io/"
             target="_blank"
             className="wayf-edifice-badge"
+            data-testid="wayf-link-edifice"
           >
             <img
               src={edificeLogoUrl}

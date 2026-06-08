@@ -22,10 +22,10 @@ export const ProviderList = ({
   const { t } = useTranslation('auth');
 
   return (
-    <ul className="wayf-provider-list">
+    <ul className="wayf-provider-list" data-testid="wayf-list-providers">
       {onBack && (
         <li>
-          <button type="button" className="wayf-back-btn" onClick={onBack}>
+          <button type="button" className="wayf-back-btn" onClick={onBack} data-testid="wayf-button-back">
             <IconRafterLeft aria-hidden="true" width={20} height={20} />
             <span>{t('wayf.link.back') || 'Retour'}</span>
           </button>

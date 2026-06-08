@@ -13,7 +13,7 @@ export const NotFound = () => {
         {t('oops')}
       </Heading>
       <div className="text">{t('e404.page')}</div>
-      <Button color="primary" onClick={() => navigate(-1)}>
+      <Button color="primary" onClick={() => navigate(-1)} data-testid="wayf-button-back">
         {t('back')}
       </Button>
     </div>

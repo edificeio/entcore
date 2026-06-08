@@ -52,6 +52,7 @@ export const ProviderButton = ({
       className={`wayf-provider-btn wayf-provider-btn--${colorKey}`}
       onClick={() => onClick(provider)}
       type="button"
+      data-testid={`wayf-button-${provider.i18n.split('.').pop()}`}
     >
       <span className="wayf-provider-btn__icon-wrap">
         {provider.iconSrc ? (
