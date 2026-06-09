@@ -1,5 +1,8 @@
 package org.entcore.directory.pojo.structure;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +33,7 @@ public class DefaultAuthModeConfig {
             this.neo4jName = neo4jName;
         }
 
+        @JsonCreator
         public static Profile fromNeo4j(String profile) {
             for (Profile p : Profile.values()) {
                 if (p.neo4jName.equals(profile)) {
@@ -39,6 +43,7 @@ public class DefaultAuthModeConfig {
             return null;
         }
 
+        @JsonValue
         public String getNeo4jName(){
             return neo4jName;
         }
