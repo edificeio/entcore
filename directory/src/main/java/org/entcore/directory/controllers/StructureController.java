@@ -132,7 +132,7 @@ public class StructureController extends BaseController {
 	}
 
 	@Get("/structure/:structureId/default-auth-config")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	@MfaProtected()
 	public void getDefaultAuth(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
