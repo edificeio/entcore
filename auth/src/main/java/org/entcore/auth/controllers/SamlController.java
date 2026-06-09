@@ -236,15 +236,19 @@ public class SamlController extends AbstractFederateController {
 
 			final String userAgent = request.getHeader("User-Agent");
 			final String xRequestedWith = request.getHeader("X-Requested-With");
+			// FIXME: Remplacer par la solution choisie pour l'activation de la WAYF
+			// Check wayf-beta cookie to switch between old and new WAYF
+			final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
+			final boolean wayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
 			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
 					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
 					("true".equals(request.params().get("mobile")))) {
-				renderView(request, swmf, "wayf-mobile.html", null);
+				if(wayfBeta) {
+					renderView(request, swmf, "wayfv2.html", null);
+				} else {
+					renderView(request, swmf, "wayf-mobile.html", null);
+				}
 			} else {
-				// FIXME: Remplacer par la solution choisie pour l'activation de la WAYF
-				// Check wayf-beta cookie to switch between old and new WAYF
-				final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
-				final boolean wayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
 				if(wayfBeta) {
 					renderView(request, swmf, "wayfv2.html", null);
 				} else {
