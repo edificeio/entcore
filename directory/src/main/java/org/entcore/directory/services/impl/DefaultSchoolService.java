@@ -1017,6 +1017,11 @@ public class DefaultSchoolService implements SchoolService {
 							DefaultAuthModeConfig.Profile.fromNeo4j(json.getString("profile")),
 							DefaultAuthModeConfig.DefaultAuthMode.valueOf(json.getString("auth")));
 				}
+				for (DefaultAuthModeConfig.Profile profile : DefaultAuthModeConfig.Profile.values()){
+					if (!config.getDefaultAuthModes().containsKey(profile)){
+						config.getDefaultAuthModes().put(profile, DefaultAuthModeConfig.DefaultAuthMode.ENT);
+					}
+				}
 				promise.complete(config);
 			} else {
 				promise.fail(results.left().getValue());
