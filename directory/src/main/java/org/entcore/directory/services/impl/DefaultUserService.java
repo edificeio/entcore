@@ -412,7 +412,7 @@ public class DefaultUserService implements UserService {
 		}
 
 		query += " (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR " +
-				"  size(auths) > 0 as hasFederatedIdentity, ";
+				"  size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) as hasFederatedIdentity, ";
 
 		if (getManualGroups)
 			query += "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
