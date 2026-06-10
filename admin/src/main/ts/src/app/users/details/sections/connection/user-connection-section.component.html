@@ -293,7 +293,7 @@
             </span>
             <button 
               type="button"
-              *ngIf="!details.hasTotp"
+              *ngIf="isAdmc && !details.hasTotp"
               (click)="openTotpInput()"
               [disabled]="isForbidden"
             >
@@ -301,7 +301,7 @@
             </button>
             <button 
               type="button" 
-              *ngIf="details.hasTotp"
+              *ngIf="isAdmc && details.hasTotp"
               (click)="removeTotpSecret()"
               [disabled]="isForbidden"
               class="is-danger"
