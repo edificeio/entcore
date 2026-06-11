@@ -76,11 +76,13 @@ export function ApplicationIcon({
         )}
       </span>
 
-      {data.version === 'BETA' && (
+      {(data.version === 'BETA' || data.version === 'NEW') && (
         <Badge
           variant={{ type: 'beta', app: webapp }}
           className="myapps-beta-badge"
-        />
+        >
+          {data.version === 'NEW' ? 'New' : undefined}
+        </Badge>
       )}
     </span>
   );

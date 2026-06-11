@@ -20,6 +20,7 @@ export type Application = {
 
 export type APP_VERSION =
   | 'BETA'
+  | 'NEW'
   | 'ALPHA'
   | 'STABLE'
   | 'DEPRECATED'
