@@ -97,7 +97,7 @@ public class DefaultClassService implements ClassService {
 				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
 				"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User)-[:IN]->spg " +
 						filterPart + collectPart +
-				" OPTIONAL MATCH m-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, m, p, relativeList 	" +
+				" OPTIONAL MATCH m-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, m, p, relativeList " +
 				" OPTIONAL MATCH (sAuth:Structure)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(m.profiles), auth: 'FEDERATED' }) WHERE sAuth IN structureNodes " +
 				" WITH COLLECT(auths) as auths, m, p, relativeList "	+
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
