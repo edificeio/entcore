@@ -3,9 +3,13 @@ package org.entcore.workspace.service.impl;
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.s3.S3Client;
 import org.entcore.common.service.impl.MongoDbCrudService;
+import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.service.CaptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,29 +17,57 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.util.function.Function;
 
+enum TaskType {
+    CAPTION("caption"),
+    OCR("ocr");
+
+    private final String value;
+
+    TaskType(String value) {
+        this.value = value;
+    }
+
+    public String value() {
+        return value;
+    }
+}
+
 public class DefaultCaptionService extends MongoDbCrudService implements CaptionService {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCaptionService.class);
 
-    MongoDb mongo;
+    private static final String NATS_SUBJECT = "ia.caption.process";
+    private static final String BROKER_ADDRESS = "broker.request";
+    private static final long REQUEST_TIMEOUT_MS = 30000;
+    private static final String DEFAULT_SIZE = "medium";
+    private static final String UNKNOWN_BROWSER = "Unknown";
 
-    public DefaultCaptionService(MongoDb mongo, final String MONGO_DOCUMENTS_COLLECTION) {
+    private final Vertx vertx;
+    private final MongoDb mongo;
+
+    public DefaultCaptionService(MongoDb mongo, final String MONGO_DOCUMENTS_COLLECTION, Vertx vertx) {
         super(MONGO_DOCUMENTS_COLLECTION);
         this.mongo = mongo;
+        this.vertx = vertx;
     }
 
     @Override
-    public Future<String> getCaption(String documentId, String sessionId, String userAgent) {
-        return getOrGenerate(documentId, "caption", doc -> generate(doc, "caption"));
+    public Future<String> getCaption(UserInfos user, String documentId, String sessionId, String userAgent, String language) {
+        return getOrGenerate(documentId, TaskType.CAPTION, doc ->
+                generate(doc, TaskType.CAPTION, user, sessionId, userAgent, language)
+        );
     }
 
     @Override
-    public Future<String> getOcr(String documentId, String sessionId, String userAgent) {
-        return getOrGenerate(documentId, "ocr", doc -> generate(doc, "ocr"));
+    public Future<String> getOcr(UserInfos user, String documentId, String sessionId, String userAgent, String language) {
+        return getOrGenerate(documentId, TaskType.OCR,
+                             doc -> generate(doc, TaskType.OCR, user, sessionId, userAgent, language)
+        );
     }
 
-    private Future<String> getOrGenerate(String documentId, String field, Function<JsonObject, Future<String>> generator) {
+    private Future<String> getOrGenerate(String documentId, TaskType taskType, Function<JsonObject, Future<String>> generator) {
         final Promise<String> promise = Promise.promise();
         final JsonObject matcher = new JsonObject().put("_id", documentId);
+        final String taskField = taskType.value();
 
         mongo.findOne(collection, matcher, message -> {
             final JsonObject body = message.body();
@@ -53,25 +85,25 @@ public class DefaultCaptionService extends MongoDbCrudService implements Caption
                 return;
             }
 
-            if (document.containsKey(field)) {
-                promise.complete(document.getString(field));
+            if (document.containsKey(taskField)) {
+                promise.complete(document.getString(taskField));
                 return;
             }
 
             generator.apply(document).onSuccess(fresh -> {
-                final JsonObject update = new JsonObject().put("$set", new JsonObject().put(field, fresh));
+                final JsonObject update = new JsonObject().put("$set", new JsonObject().put(taskField, fresh));
 
                 mongo.update(collection, matcher, update, updateResult -> {
                     JsonObject result = updateResult.body();
                     if (result != null && "ok".equals(result.getString("status"))) {
                         promise.complete(fresh);
                     } else {
-                        logger.error("Error while creating the {} for ID: {}", field, documentId);
-                        promise.fail("Failed to store " + field + " for document ID: " + documentId);
+                        logger.error("Error while creating the {} for ID: {}", taskField, documentId);
+                        promise.fail("Failed to store " + taskField + " for document ID: " + documentId);
                     }
                 });
             }).onFailure(err -> {
-                logger.error("Error while generating the {} for ID: {}", field, documentId, err);
+                logger.error("Error while generating the {} for ID: {}", taskField, documentId, err);
                 promise.fail(err);
             });
         });
@@ -80,37 +112,45 @@ public class DefaultCaptionService extends MongoDbCrudService implements Caption
     }
 
     /**
-     * Builds the NATS request payload for the caption/OCR model.
-     *
-     * @param fileId   the storage file id (document's "file" field), NOT the workspace document id
-     * @param taskType "caption" or "ocr"
-     */
-    private JsonObject createPayload(String fileId, String taskType) {
-        final String s3Path = S3Client.getPath(fileId);
-
-        return new JsonObject()
-                .put("userId", "123")            // TODO real value (requesting user)
-                .put("session", "sess-abc")      // TODO real value
-                .put("browser", "Chrome")        // TODO real value
-                .put("taskType", taskType)
-                .put("language", "fr")           // TODO real value (document/user locale)
-                .put("s3Path", s3Path)
-                .put("pfId", "plateform-id")     // TODO real value (platform id)
-                .put("size", "medium");
-    }
-
-    /**
      * Calls the caption/OCR model over NATS (subject {@code ia.caption.process}) and returns the generated text.
      */
-    private Future<String> generate(JsonObject document, String taskType) {
+    private Future<String> generate(JsonObject document, TaskType taskType, UserInfos user, String sessionId, String userAgent, String language) {
         final String fileId = document.getString("file");
         if (fileId == null || fileId.isEmpty()) {
             return Future.failedFuture("Document has no associated file for " + taskType);
         }
 
-        final JsonObject payload = createPayload(fileId, taskType);
+        final JsonObject payload = createPayload(taskType.value(), user, sessionId, fileId, userAgent, language);
+        JsonObject requestBody = new JsonObject().put("subject", NATS_SUBJECT).put("message", payload);
+        DeliveryOptions deliveryOptions = new DeliveryOptions().setSendTimeout(REQUEST_TIMEOUT_MS);
 
-        // TODO send payload over NATS subject "ia.caption.process"
-        return Future.failedFuture("NATS call to ia.caption.process not implemented yet");
+        return this.vertx
+                .eventBus()
+                .<String>request(BROKER_ADDRESS, requestBody, deliveryOptions)
+                .map(Message::body)
+                .onFailure(err -> logger.error("Error while calling NATS for {}: {}", taskType, err.getMessage()));
+    }
+
+    /**
+     * Builds the NATS request payload for the caption/OCR model.
+     *
+     * @param taskType  "caption" or "ocr"
+     * @param user      the requesting user
+     * @param sessionId the user's session id
+     * @param fileId    the storage file id (document's "file" field), NOT the workspace document id
+     * @param userAgent the request User-Agent header
+     * @param language  the request language code (primary Accept-Language subtag)
+     */
+    private JsonObject createPayload(String taskType, UserInfos user, String sessionId, String fileId, String userAgent, String language) {
+        final String s3Path = S3Client.getPath(fileId);
+
+        return new JsonObject().put("userId", user.getUserId())
+                               .put("session", sessionId)
+                               .put("browser", UNKNOWN_BROWSER)
+                               .put("taskType", taskType)
+                               .put("language", language)
+                               .put("s3Path", s3Path)
+                               .put("pfId", "plateform-id")     // TODO real value (platform id)
+                               .put("size", DEFAULT_SIZE);
     }
 }

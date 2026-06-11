@@ -19,11 +19,14 @@
 
 package org.entcore.workspace;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.collections.SharedDataHelper;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
@@ -38,6 +41,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.workspace.controllers.AudioRecorderHandler;
+import org.entcore.workspace.controllers.CaptionController;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
@@ -46,13 +50,9 @@ import org.entcore.workspace.listeners.WorkspaceShareBrokerListener;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.*;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
-import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.webutils.collections.SharedDataHelper;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.http.HttpServerOptions;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Workspace extends BaseServer {
 
@@ -136,13 +136,17 @@ public class Workspace extends BaseServer {
 			workspaceController.setDisableFullTextSearch(true);
 		}
 		addController(workspaceController);
-		//
 
 		QuotaController quotaController = new QuotaController();
 		quotaController.setQuotaService(quotaService);
 		addController(quotaController);
 
-		if (config.getInteger("wsPort") != null) {
+        DefaultCaptionService captionService = new DefaultCaptionService(MongoDb.getInstance(),
+                                                                         DocumentDao.DOCUMENTS_COLLECTION, vertx);
+        CaptionController captionController = new CaptionController(captionService);
+        addController(captionController);
+
+        if (config.getInteger("wsPort") != null) {
 			vertx.deployVerticle(AudioRecorderWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
 			HttpServerOptions options = new HttpServerOptions().setMaxWebSocketFrameSize(1024 * 1024);
 			vertx.createHttpServer(options).webSocketHandler(new AudioRecorderHandler(vertx))
