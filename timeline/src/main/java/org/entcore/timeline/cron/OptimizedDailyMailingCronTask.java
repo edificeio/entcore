@@ -25,23 +25,28 @@ import io.vertx.core.logging.LoggerFactory;
 
 import org.entcore.timeline.services.impl.PeriodicTimelineMailerService;
 
+import java.time.Instant;
+
+/**
+ * Hourly cron task: each run processes only the users whose local hour is 06:00,
+ * so every timezone gets its daily mail batch once a day, sent at 07:00 local time.
+ * The cron expression (daily-mailing-cron) must therefore fire every hour.
+ */
 public class OptimizedDailyMailingCronTask implements Handler<Long> {
 
 	private static final Logger log = LoggerFactory.getLogger(OptimizedDailyMailingCronTask.class);
 	private final PeriodicTimelineMailerService mailerService;
-	private final int dayDelta;
 
-	public OptimizedDailyMailingCronTask(PeriodicTimelineMailerService mailerService, int dayDelta){
+	public OptimizedDailyMailingCronTask(PeriodicTimelineMailerService mailerService){
 		this.mailerService = mailerService;
-		this.dayDelta = dayDelta;
 	}
 
 	@Override
 	public void handle(Long event) {
 		log.info("[Daily mailing] Starting ...");
-		mailerService.sendDailyMails(dayDelta).onSuccess( result ->
+		mailerService.sendDailyMailsByTimezone(Instant.now()).onSuccess( result ->
 					log.info("[Daily mailing] Completed : " + result.encodePrettily())
-				).onFailure(t -> log.error("[Daily mailing] Failed : " + t.getMessage(), t));;
+				).onFailure(t -> log.error("[Daily mailing] Failed : " + t.getMessage(), t));
 	}
 
 }
