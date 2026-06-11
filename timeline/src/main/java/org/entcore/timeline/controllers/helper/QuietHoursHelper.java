@@ -51,12 +51,32 @@ public final class QuietHoursHelper {
     }
 
     /** Returns the next send instant using an already-resolved ZoneId. Returns notificationTime if zone is null. */
-    static Instant computeNextSendTime(Instant notificationTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
+    public static Instant computeNextSendTime(Instant notificationTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
         if (zone == null) return notificationTime;
         if (userPrefQuietHours == null || !userPrefQuietHours.isEnabled() || userPrefQuietHours.getSchedule() == null) {
             return notificationTime;
         }
         return computeNextSendTime(notificationTime.atZone(zone), userPrefQuietHours.getSchedule());
+    }
+
+    /**
+     * Computes the scheduleAt instant for the daily mail of a user processed at runTime.
+     *
+     * <p>Base send time is the next local hour after runTime (run at 06:00 local -> mail at 07:00 local).
+     * If quiet hours are active at the base time, the send time is pushed to the first non-quiet slot.
+     * The mail must be sent before the next daily run of the user's timezone (runTime + 24h local):
+     * past that point a fresher digest takes over, so the mail is dropped instead.</p>
+     *
+     * @return the send instant, or null if no valid slot exists before the next run (mail must be skipped)
+     */
+    public static Instant computeDailyMailScheduleAt(Instant runTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
+        if (zone == null) return null;
+        final ZonedDateTime localRun = runTime.atZone(zone).truncatedTo(ChronoUnit.HOURS);
+        final Instant base = localRun.plusHours(1).toInstant();
+        final Instant nextRun = localRun.plusHours(24).toInstant();
+        final Instant scheduleAt = computeNextSendTime(base, userPrefQuietHours, zone);
+        if (scheduleAt == null || !scheduleAt.isBefore(nextRun)) return null;
+        return scheduleAt;
     }
 
     /**
@@ -94,7 +114,7 @@ public final class QuietHoursHelper {
      * 2. Fallback from UAI (structure code)
      * 3. null if no fallback (foreign structure -> no quiet hours applied)
      */
-    static ZoneId resolveTimezone(TimezonePreference userPrefTimezone, String userPrefUai) {
+    public static ZoneId resolveTimezone(TimezonePreference userPrefTimezone, String userPrefUai) {
         if (userPrefTimezone != null && userPrefTimezone.getTimezone() != null) {
             try {
                 return ZoneId.of(userPrefTimezone.getTimezone());

@@ -127,7 +127,7 @@ public class Timeline extends BaseServer {
 		periodicTimelineMailerService.setLazyEventsI18n(lazyEventsI18n);
 		periodicTimelineMailerService.setRegisteredNotifications(registeredNotificationsCache);
 
-		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 2 * * ?");
+		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 * * * ?");
 		final String weeklyMailingCron = config.getString("weekly-mailing-cron", "0 0 5 ? * MON");
 		final String purgeMessagesReadCron = config.getString("purge-messages-read-cron", "0 0 2 * * ?");
 		final int dailyDayDelta = config.getInteger("daily-day-delta", -1);
@@ -141,7 +141,7 @@ public class Timeline extends BaseServer {
 		addController(new TaskController(dailyMailingCronTask, weeklyMailingCronTask, purgeMessageCronTask));
 		if (useOptimized) {
 			try {
-				new CronTrigger(vertx, dailyMailingCron).schedule(new OptimizedDailyMailingCronTask(periodicTimelineMailerService, dailyDayDelta));
+				new CronTrigger(vertx, dailyMailingCron).schedule(new OptimizedDailyMailingCronTask(periodicTimelineMailerService));
 				new CronTrigger(vertx, weeklyMailingCron).schedule(new OptimizedWeeklyMailingCronTask(periodicTimelineMailerService, weeklyDayDelta));
 			} catch (ParseException e) {
 				log.error("Failed to start mailing crons.");
