@@ -23,16 +23,15 @@ import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.collections.SharedDataHelper;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.bus.MessageReplyNotifier;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
@@ -90,7 +89,6 @@ import static java.io.File.separator;
 import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
 import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
 import static org.entcore.feeder.csv.CsvReport.MAPPINGS;
-import static org.entcore.feeder.utils.Report.log;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 

@@ -85,11 +85,23 @@ public interface GroupService {
 	Future<JsonObject> getGroupByExternalId(String externalId);
 
 	/**
+	 * Add multiple labels to a Group node identified by its ID
+	 *
+	 * @param groupId The ID of the group to modify
+	 * @param labels The list of labels to add to the group
+	 * @return Future with the modified group information or failure
+	 */
+	Future<JsonObject> addLabelsToGroup(String groupId, List<String> labels);
+	/**
 	 * Add a label to a Group node identified by its ID
-	 * 
 	 * @param groupId The ID of the group to modify
 	 * @param label The label to add to the group
 	 * @return Future with the modified group information or failure
 	 */
-	Future<JsonObject> addLabelToGroup(String groupId, String label);
+	default Future<JsonObject> addLabelToGroup(String groupId, String label) {
+		if (label == null || label.trim().isEmpty()) {
+			return Future.failedFuture("invalid.label");
+		}
+		return addLabelsToGroup(groupId, Collections.singletonList(label));
+	}
 }

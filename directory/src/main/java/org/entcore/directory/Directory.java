@@ -33,6 +33,7 @@ import io.vertx.core.json.JsonObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
@@ -89,7 +90,6 @@ public class Directory extends BaseServer {
 
 	public Future<Void> initDirectory(final StorageFactory storageFactory, final Map<String, Object> serverMap) {
 		final EventBus eb = getEventBus(vertx);
-		super.start(startPromise);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
@@ -267,6 +267,7 @@ public class Directory extends BaseServer {
 		// add the directory broker listener
 		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService), vertx);
 		BrokerProxyUtils.addBrokerProxy(new LoadTestProxyImpl(vertx), vertx);
+		return Future.succeededFuture();
 	}
 	private ClassService getClassService(final EventBus eb) {
 		final ClassService classService = new DefaultClassService(eb);

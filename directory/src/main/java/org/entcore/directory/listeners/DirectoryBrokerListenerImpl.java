@@ -67,6 +67,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         // Create group data
         final JsonObject group = new JsonObject()
                 .put("name", request.getName())
+                .put("filter", request.getFilter())
                 // an empty id means a new group
                 .put("id", "");
         // an empty externalId means no externalId
@@ -83,21 +84,21 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             if (event.isRight()) {
                 final String id = event.right().getValue().getString("id");
                 
-                // Check if label is provided in the request
-                if (request.getLabel() != null && !request.getLabel().trim().isEmpty()) {
-                    // Add the label to the created group
-                    groupService.addLabelToGroup(id, request.getLabel())
+                // Check if labels are provided in the request
+                if (request.getLabels() != null && !request.getLabels().isEmpty()) {
+                    // Add the labels to the created group
+                    groupService.addLabelsToGroup(id, request.getLabels())
                         .onSuccess(labelResult -> {
-                            log.debug("Successfully added label {} to group {}", request.getLabel(), id);
+                            log.debug("Successfully added labels {} to group {}", request.getLabels(), id);
                             promise.complete(new CreateGroupResponseDTO(id));
                         })
                         .onFailure(error -> {
-                            log.error("Failed to add label {} to group {}: {}", request.getLabel(), id, error.getMessage());
+                            log.error("Failed to add labels {} to group {}: {}", request.getLabels(), id, error.getMessage());
                             // We still consider the group creation as successful even if label addition fails
                             promise.complete(new CreateGroupResponseDTO(id));
                         });
                 } else {
-                    // No label to add, complete directly
+                    // No labels to add, complete directly
                     promise.complete(new CreateGroupResponseDTO(id));
                 }
             } else {
@@ -397,6 +398,51 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                 log.error("Error retrieving users by IDs: ", error);
                 promise.fail(error);
             });
+
+        return promise.future();
+    }
+    @Override
+    public Future<GetUsersFromGroupsResponseDTO> getUsersFromGroups(GetUsersFromGroupsRequestDTO request) {
+        final Promise<GetUsersFromGroupsResponseDTO> promise = Promise.promise();
+
+        // Check if the request is valid
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUsersFromGroups: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        // Convert list of group IDs to JsonArray
+        final JsonArray groupIdsArray = new JsonArray(request.getGroupIds());
+
+        userService.list(groupIdsArray, new JsonArray(), true, null, event -> {
+            if(event.isRight()) {
+                JsonArray usersArray = event.right().getValue();
+                try {
+                    // Transform JsonArray of users to List<UserDTO> (using util method)
+                    List<UserDTO> usersList = new ArrayList<>();
+                    for (int i = 0; i < usersArray.size(); i++) {
+                        JsonObject userJson = usersArray.getJsonObject(i);
+
+                        String id = userJson.getString("id");
+                        String displayName = userJson.getString("username");
+                        String profile = userJson.getString("type");
+
+                        // functions are not returned by the query inside "userService.list" : use empty map
+                        Map<String, List<String>> functions = new HashMap<>();
+
+                        usersList.add(new UserDTO(id, displayName, profile, functions));
+}
+                    promise.complete(new GetUsersFromGroupsResponseDTO(usersList));
+                } catch (Exception err) {
+                    log.error("Error while parsing user array", err);
+                    promise.fail(err);
+                }
+            } else {
+                log.error("Error getting users from groups", event.left().getValue());
+                promise.fail(event.left().getValue());
+            }
+        });
 
         return promise.future();
     }

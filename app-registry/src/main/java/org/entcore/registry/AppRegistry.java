@@ -37,12 +37,23 @@ public class AppRegistry extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().compose(init -> initAppRegistry()).onComplete(startPromise);
+	}
+
+	public Future<Void> initAppRegistry() {
+    final List<Future<?>> futures = new ArrayList<>();
 		final AppRegistryController appRegistryController = new AppRegistryController();
-		addController(appRegistryController);
-		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
-		addController(new WidgetController());
-		addController(new LibraryController(vertx, config()));
+    futures.add(addController(appRegistryController));
+
+    futures.add(addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000))));
+    futures.add(addController(new WidgetController()));
+		try {
+      futures.add(addController(new LibraryController(vertx, config())));
+		} catch (Exception e) {
+			return Future.failedFuture(e);
+		}
 		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx, new AddressParameter("application", "appregistry"));
 		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
 		if(eduMalinConf != null)

@@ -34,6 +34,7 @@ public class PostImportActionsTest {
 
     private static MockedStatic<EventStoreFactory> staticMockEventStoreFactory;
 
+    private static MockedStatic<TransactionManager> staticMockTransactionManager;
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {

@@ -10,12 +10,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.migration.BrokerSwitchConfiguration;
-import org.entcore.common.migration.BrokerSwitchType;
 import org.entcore.common.user.UserInfos;
 import org.entcore.communication.services.CommunicationService;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This service acts as a switch between the new and legacy communication services.
@@ -489,24 +487,45 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
   }
 
   @Override
-  public void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler) {
-    delegate.getDiscoverVisibleAcceptedProfile(handler);
+  public void getDiscoverVisibleAcceptedProfile(final UserInfos user, Handler<Either<String, JsonArray>> handler) {
+    delegate.getDiscoverVisibleAcceptedProfile(user, handler);
   }
 
+
   @Override
-  public Future<JsonArray> searchVisibles(UserInfos user, String search, String language) {
+  public Future<JsonArray> searchVisibles(UserInfos user, String search, String mode, String language, boolean includeHidden) {
     final Future<JsonArray> future;
     if(appMigrationConfiguration.isReadEnabled("searchVisibles")) {
       final Promise<JsonArray> promise = Promise.promise();
       sendToBroker("searchVisibles", new JsonObject()
-        .put("user", JsonObject.mapFrom(user))
-        .put("search", search)
-        .put("language", language), promise);
+              .put("user", JsonObject.mapFrom(user))
+              .put("search", search)
+              .put("language", language)
+              .put("includeHidden", includeHidden)
+              .put("mode", mode), promise);
       future = promise.future();
     } else {
-      future = delegate.searchVisibles(user, search, language);
+      future = delegate.searchVisibles(user, search, mode, language);
     }
     return future;
+  }
+
+  @Override
+  public void visibleUsersForShare(String userId, String search, JsonArray userIds, Handler<Either<String, JsonArray>> responseHandler) {
+    // TODO use facade
+    delegate.visibleUsersForShare(userId, search, userIds, responseHandler);
+  }
+
+  @Override
+  public void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler) {
+    // TODO use facade
+    delegate.resetRules(structureId, eitherHandler);
+  }
+
+  @Override
+  public void setDirectCommunication(String startUser, String endUser, Direction directionEnum, Handler<Either<String, JsonObject>> eitherHandler) {
+    // TODO use facade
+    delegate.setDirectCommunication(startUser, endUser, directionEnum, eitherHandler);
   }
 
   private <T> void sendToBroker(final String action, final JsonObject params, final Handler handler) {

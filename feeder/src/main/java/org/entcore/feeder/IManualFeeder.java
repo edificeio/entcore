@@ -81,4 +81,7 @@ public interface IManualFeeder {
 
 	void unlinkRelativeStudent(Message<JsonObject> message);
 
+	void setManualGroupAutolinkUsersPositions(Message<JsonObject> message);
+
+	void updateManualGroupsByUserPositions(Message<JsonObject> message);
 }

@@ -260,11 +260,25 @@ public class BrokerSwitchManualFeeder implements IManualFeeder {
 
 	@Override
 	public void relativeStudent(Message<JsonObject> message) {
+		// TODO use facade
 		message.fail(500, "Not implemented yet");
 	}
 
 	@Override
 	public void unlinkRelativeStudent(Message<JsonObject> message) {
+		// TODO use facade
+		message.fail(500, "Not implemented yet");
+	}
+
+	@Override
+	public void setManualGroupAutolinkUsersPositions(Message<JsonObject> message) {
+		// TODO use facade
+		message.fail(500, "Not implemented yet");
+	}
+
+	@Override
+	public void updateManualGroupsByUserPositions(Message<JsonObject> message) {
+		// TODO use facade
 		message.fail(500, "Not implemented yet");
 	}
 }

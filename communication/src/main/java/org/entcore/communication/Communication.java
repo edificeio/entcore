@@ -43,9 +43,14 @@ public class Communication extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
-    TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
-		CommunicationController communicationController = new CommunicationController();
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().compose(init -> initCommunication()).onComplete(startPromise);
+	}
+
+	public Future<Void> initCommunication() {
+    	final TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
+		final CommunicationController communicationController = new CommunicationController();
 		final DefaultCommunicationService communicationService = new DefaultCommunicationService(vertx, helper, config);
 		final CommunicationService brokerSwitchCommunicationService = getSwitchservice(communicationService, vertx);
 		communicationController.setCommunicationService(brokerSwitchCommunicationService);
@@ -54,6 +59,7 @@ public class Communication extends BaseServer {
 		setDefaultResourceFilter(new CommunicationFilter());
 
 		BrokerProxyUtils.addBrokerProxy(new CommunicationBrokerListenerImpl(brokerSwitchCommunicationService), vertx);
+		return Future.succeededFuture();
 	}
 
 	private CommunicationService getSwitchservice(final CommunicationService communicationService,

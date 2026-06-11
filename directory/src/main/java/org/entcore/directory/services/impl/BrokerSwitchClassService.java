@@ -42,11 +42,11 @@ public class BrokerSwitchClassService implements ClassService {
   }
 
   @Override
-  public void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, Handler<Either<String, JsonArray>> results) {
+  public void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, boolean ine, Handler<Either<String, JsonArray>> results) {
     if (appMigrationConfiguration.isReadEnabled("class.findUsers")) {
       results.handle(new Either.Left<>("class.findUsers is not yet implemented"));
     } else {
-      delegate.findUsers(classId, expectedTypes, collectRelative, results);
+      delegate.findUsers(classId, expectedTypes, collectRelative, ine, results);
     }
   }
 
