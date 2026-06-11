@@ -1271,9 +1271,13 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(Profile), cpg<-[:IN]-u-[:IN]->spg WITH s, COLLECT(distinct {name: c.name, id: c.id}) as c, motto, health, mood, hobbies, u " +
 				"WITH COLLECT(distinct {name: s.name, id: s.id, classes: c, source: s.source}) as schools, motto, health, mood, hobbies, u " +
 				"OPTIONAL MATCH u-[:RELATED]-(u2: User) WITH COLLECT(distinct {relatedName: u2.displayName, relatedId: u2.id, relatedType: u2.profiles}) as relativeList, schools, motto, health, mood, hobbies, u " +
+				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, relativeList, schools, motto, health, mood, hobbies, u 	" +
+				"OPTIONAL MATCH (sAuth:Structure)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(u.profiles), auth: 'FEDERATED' }) WHERE sAuth IN structureNodes " +
+				" WITH COLLECT(auths) as auths, schools, motto, health, mood, hobbies, u, relativeList "	+
 				"RETURN DISTINCT u.profiles as profiles, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
 				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +
 				"motto, health, mood, hobbies, " +
+				" (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) as hasFederatedIdentity, " +
 				"CASE WHEN u.totp IS NOT NULL AND u.totp <> '' THEN true ELSE false END as hasTotp, " +
 				"CASE WHEN schools IS NULL THEN [] ELSE schools END as schools ";
 		} catch (ValidationException exception) {

@@ -97,13 +97,18 @@ public class DefaultClassService implements ClassService {
 				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
 				"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User)-[:IN]->spg " +
 						filterPart + collectPart +
+				" OPTIONAL MATCH m-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, m, p, relativeList 	" +
+				" OPTIONAL MATCH (sAuth:Structure)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(m.profiles), auth: 'FEDERATED' }) WHERE sAuth IN structureNodes " +
+				" WITH COLLECT(auths) as auths, m, p, relativeList "	+
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
 				"(LENGTH(m.email)>0 AND EXISTS(m.email)) as hasEmail, " +
 				"CASE WHEN m.loginAlias IS NOT NULL THEN m.loginAlias ELSE m.login END as login, m.login as originalLogin, m.activationCode as activationCode, m.displayName as displayName, m.birthDate as birthDate, m.lastLogin as lastLogin, " +
 				(ine 
 					? "m.ine as ine, " 
 					: "") +
-				"p.name as type, m.blocked as blocked, m.source as source, relativeList " +
+				"p.name as type, m.blocked as blocked, m.source as source, relativeList, " +
+				" (HAS(m.federatedIDP) AND NOT(m.federatedIDP IS NULL) AND HAS(m.federated) AND m.federated = true) OR " +
+				"  size(auths) > 0 AND (m.source in ['AAF', 'AAF1D', 'CSV']) as hasFederatedIdentity " +
 				"ORDER BY type, lastName ";
 		neo.execute(query, params, validResultHandler(results));
 	}
