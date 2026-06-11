@@ -12,7 +12,7 @@ export const useNotificationsLayout = () => {
   const { updateOverlayOpen } = useOverlay();
 
   const toggleNotifications = () => {
-    setIsNotificationsOpen(!isNotificationsOpen);
+    setIsNotificationsOpen((prev) => !prev);
   };
 
   const closeNotifications = () => {
