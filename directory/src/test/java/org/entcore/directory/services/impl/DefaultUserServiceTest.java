@@ -46,6 +46,18 @@ public class DefaultUserServiceTest {
             .firstName("prenom").lastName("NdF")
             .displayName("Prenom NdF")
             .build();
+    static final UserTest userFederated = UserTestBuilder.anUserTest().id("simple-user-fedreated")
+            .login("simple.user.federated")
+            .firstName("prenom").lastName("NdF")
+            .displayName("Prenom NdF")
+            .federated(true)
+            .build();
+    static final UserTest userOnStructureWithIdp = UserTestBuilder.anUserTest().id("simple-user-structure-with-idp")
+            .login("simple.user.structure.with.idp")
+            .firstName("prenom").lastName("NdF")
+            .displayName("Prenom NdF")
+            .profile(Profile.Student)
+            .build();
     static final UserTest child1 = UserTestBuilder.anUserTest().id("child")
             .login("child")
             .firstName("Enfant").lastName("Child")
@@ -140,8 +152,45 @@ public class DefaultUserServiceTest {
             testContext.assertEquals(user0.getId(), userInfos.getString("id"));
             testContext.assertEquals(user0.getFirstName(), userInfos.getString("firstName"));
             testContext.assertEquals(user0.getLastName(), userInfos.getString("lastName"));
+            testContext.assertEquals(Boolean.FALSE, userInfos.getBoolean("hasFederatedIdentity"));
             testContext.assertEquals(null, userInfos.getString("profiles"));
             testContext.assertEquals(null, userInfos.getJsonArray("schools").getJsonObject(0).getString("id"));
+            async.complete();
+        });
+    }
+
+    /**
+     * <h1>Goal</h1>
+     * <p>Ensures that the function returns user's info with federated flag = true when federated = true and federatedIDP != null.</p>
+     */
+    @Test
+    public void testGetUserInfosUserFederated(final TestContext testContext) {
+        final Async async = testContext.async();
+        defaultUserService.getUserInfos(userFederated.getId(), h -> {
+            testContext.assertTrue(h.isRight(), "Failed to get user infos of existing user " + h);
+            final JsonObject userInfos = h.right().getValue();
+            testContext.assertTrue(!userInfos.containsKey("lockedEmail") || userInfos.getBoolean("lockedEmail"));
+            testContext.assertFalse(userInfos.isEmpty(), "Should not have returned data for the user");
+            testContext.assertEquals(userFederated.getId(), userInfos.getString("id"));
+            testContext.assertEquals(userFederated.getFirstName(), userInfos.getString("firstName"));
+            testContext.assertEquals(userFederated.getLastName(), userInfos.getString("lastName"));
+            testContext.assertEquals(Boolean.TRUE, userInfos.getBoolean("hasFederatedIdentity"));
+            async.complete();
+        });
+    }
+
+
+    /**
+     * <h1>Goal</h1>
+     * <p>Ensures that the function returns user's info with federated flag = true when the user is in federated structure.</p>
+     */
+    @Test
+    public void testGetUserInfosUserOnFederatedStructure(final TestContext testContext) {
+        final Async async = testContext.async();
+        defaultUserService.getUserInfos(userOnStructureWithIdp.getId(), h -> {
+            testContext.assertTrue(h.isRight(), "Failed to get user infos of existing user " + h);
+            final JsonObject userInfos = h.right().getValue();
+            testContext.assertEquals(Boolean.TRUE, userInfos.getBoolean("hasFederatedIdentity"));
             async.complete();
         });
     }
@@ -293,6 +342,7 @@ public class DefaultUserServiceTest {
             .withStructure(new StructureTest("my-structure-02", "my structure 02"))
                 .withClass(new ClassTest("my-structure-02-class-01", "my structure 02 class 01"), "my-structure-02")
                 .withClass(new ClassTest("my-structure-02-class-02", "my structure 02 class 02"), "my-structure-02")
+            .withStructure(new StructureTest("my-structure-03", "my structure 03", true))
             .withUser(user0)
             .withUser(child1)
                 .studentInClass(child1.getId(), "my-structure-01-class-02")
@@ -301,6 +351,8 @@ public class DefaultUserServiceTest {
                 .teacherInClass(teacher.getId(), "my-structure-02-class-01")
             .withUser(parent)
                 .parentOf(parent.getId(), child1.getId())
+            .withUser(userFederated)
+            .withUser(userOnStructureWithIdp, "my-structure-03")
             .withUser(adml)
                 .adml(adml.getId(), "my-structure-01");
         return dataHelper.execute();
