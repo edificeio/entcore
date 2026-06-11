@@ -75,7 +75,7 @@ public class NotificationHelper {
                 "language: uac.language, " +
                 "displayName: u.displayName, " +
                 "tokens: uac.fcmTokens, " +
-                "uai: head([(u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) | s.UAI]), " +
+                "uai: head(uais), " +
                 "quietHours: uac.quietHours, " +
                 "timezone: uac.timezone ",
                 userList -> {
@@ -253,7 +253,7 @@ public class NotificationHelper {
      * Parses the quietHours preference from the user JSON object.
      * Returns null if absent or malformed.
      */
-    static QuietHoursPreference parseQuietHours(JsonObject user) {
+    public static QuietHoursPreference parseQuietHours(JsonObject user) {
         String json = user.getString("quietHours");
         if (json == null) return null;
         
@@ -269,7 +269,7 @@ public class NotificationHelper {
      * Parses the timezone preference from the user JSON object.
      * Returns null if absent or malformed.
      */
-    static TimezonePreference parseTimezone(JsonObject user) {
+    public static TimezonePreference parseTimezone(JsonObject user) {
         String json = user.getString("timezone");
         if (json == null) return null;
 
