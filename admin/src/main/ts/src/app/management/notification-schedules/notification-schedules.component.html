@@ -32,8 +32,8 @@
           ><s5l>management.structure.notification.schedules.title</s5l>
           <input
             type="checkbox"
-            name="activateCB"
-            [(ngModel)]="activated"
+            name="enableCB"
+            [(ngModel)]="enabled"
             class="is-pulled-right"
           />
         </label>
@@ -50,7 +50,7 @@
           name="timezone"
           [options]="timezones"
           [(ngModel)]="timezone"
-          [disabled]="!activated"
+          [disabled]="!enabled"
           [translateOptions]="false"
         ></ode-mono-select>
       </ode-form-field>
@@ -69,7 +69,7 @@
     lightboxTitle="management.structure.notification.schedules.confirm.title"
     [show]="showConfirmLightbox"
     (onCancel)="showConfirmLightbox = false"
-    (onConfirm)="updateHours(); showConfirmLightbox = false"
+    (onConfirm)="save(); showConfirmLightbox = false"
   >
     <p>
       <b><s5l>management.structure.notification.schedules.confirm.text</s5l></b>
