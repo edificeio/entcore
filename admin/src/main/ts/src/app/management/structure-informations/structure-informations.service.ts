@@ -1,9 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { SpinnerService } from 'ngx-ode-ui';
+import { Observable } from 'rxjs';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { DuplicationSettings } from './structure-informations.component';
+
+
 
 @Injectable({
   providedIn: 'root',
