@@ -1,6 +1,5 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { SpinnerService } from "ngx-ode-ui";
 import { Observable } from "rxjs";
 
 export type QuietHoursPreferences = {
