@@ -32,8 +32,111 @@
   border-radius: 4px;
 }
 
-.wayf-welcome img,
-.wayf-welcome table {
+.wayf-welcome img {
   max-width: 100%;
   height: auto;
+}
+
+/*
+ * Editorial content typography — LEGACY content only.
+ *
+ * The welcome message is admin-authored rich HTML. Legacy content (old Edifice
+ * editor) uses bare classes/elements — info/warning banners, column templates,
+ * attachments — that WAYF v1 styled via the full theme stylesheet but that are
+ * absent from WAYF v2 (which only loads @edifice.io/bootstrap, whose editor
+ * styles are scoped to `.ProseMirror`).
+ *
+ * These rules are scoped to `:not(.ProseMirror)` so they apply to legacy
+ * content only. When modern Tiptap content is rendered later, the container
+ * must carry the `.ProseMirror` class: the design system then styles it and
+ * these legacy fallbacks step aside automatically (ENABLING-896).
+ */
+.wayf-welcome__scroll:not(.ProseMirror) {
+  /* Headings — default theme color (legacy content carries no inline color) */
+  & :is(h1, h2, h3) {
+    font-weight: 700;
+    color: var(--edifice-secondary, #2a9cc8);
+  }
+
+  /* Information / warning banners (legacy uses <p>; modern uses <div>) */
+  & p.info,
+  & p.warning {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-block: 1rem;
+    word-break: break-word;
+  }
+
+  & p.info {
+    color: var(--edifice-info, #4bafd5);
+    background: var(--edifice-info-200, #d7e8ee);
+    text-align: left;
+  }
+
+  & p.warning {
+    color: var(--edifice-warning, #f59700);
+    background: var(--edifice-warning-200, #fdecd2);
+    text-align: center;
+  }
+
+  /* Tables */
+  & table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  & table :is(td, th) {
+    border: 2px solid #ced4da;
+    padding: 3px 5px;
+    vertical-align: top;
+  }
+
+  & table th {
+    background-color: #f1f3f5;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  /* Column templates (modèles) */
+  & .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  & .row .cell.column {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  & .column article {
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    padding: 0.8rem;
+  }
+
+  /* Attachments block */
+  & .download-attachments {
+    background: #eee;
+    color: #666;
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  & .download-attachments h2 {
+    color: #666;
+  }
+
+  & .download-attachments .attachments {
+    border: 1px solid #fff;
+    padding: 0.5rem;
+  }
+
+  & .download-attachments a {
+    display: block;
+    margin: 0.2rem 0;
+  }
 }
