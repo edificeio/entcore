@@ -119,7 +119,13 @@ export const WayfPage = () => {
         {/* Pied de page */}
         <div className="wayf-selection__footer">
           <div className="wayf-footer-links">
-            <a href={t('wayf.link.help.url')} className="wayf-help-btn" data-testid="wayf-link-help">
+            <a
+              href={t('wayf.link.help.url')}
+              className="wayf-help-btn"
+              data-testid="wayf-link-help"
+              target="_blank"
+              rel="noreferrer"
+            >
               {t('wayf.link.help.text') || "Besoin d'aide ?"}
             </a>
             <a
