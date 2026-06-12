@@ -198,6 +198,12 @@
     </div>
   </div>
 </div>
+
+<ode-structure-auth-mode
+  [structureId]="structure.id"
+  [isADMC]="isADMC"
+></ode-structure-auth-mode>
+
 <div class="container has-shadow settings" *ngIf="isADMC == true">
   <h2>
     <s5l>management.structure.informations.duplication.setting</s5l>
@@ -320,6 +326,8 @@
     </p>
   </ode-lightbox-confirm>
 </div>
+
+
 
 
 <div class="container has-shadow settings" *ngIf="isADMC == true">

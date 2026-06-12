@@ -39,6 +39,7 @@ import {ZimbraService} from './zimbra/zimbra.service';
 import {CalendarService} from './calendar/calendar.service';
 import {ImportEDTReportsService} from './import-edt/import-edt-reports.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
+import { AuthModeComponent } from './structure-informations/auth-mode/auth-mode.component';
 import { StructureAttachmentComponent } from './structure-attachment/structure-attachment.component';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
 import { StructureUserPositionComponent } from './structure-user-positions/structure-user-position/structure-user-position.component';
@@ -81,6 +82,7 @@ import {CommunicationRulesService} from "../communication/communication-rules.se
         ZimbraComponent,
         ManagementRootComponent,
         StructureInformationsComponent,
+        AuthModeComponent,
         MessageFlashComponent,
         MessageFlashListComponent,
         EditMessageFlashComponent,
