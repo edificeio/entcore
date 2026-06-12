@@ -28,17 +28,15 @@
 
     <form #tzForm="ngForm" class="has-vertical-padding-10">
       <h2>
-        <ode-form-field
-          label="management.structure.notification.schedules.title"
-          class="is-block is-flex-none"
-        >
+        <label
+          ><s5l>management.structure.notification.schedules.title</s5l>
           <input
             type="checkbox"
             name="activateCB"
             [(ngModel)]="activated"
             class="is-pulled-right"
           />
-        </ode-form-field>
+        </label>
       </h2>
 
       <p>
@@ -52,6 +50,8 @@
           name="timezone"
           [options]="timezones"
           [(ngModel)]="timezone"
+          [disabled]="!activated"
+          [translateOptions]="false"
         ></ode-mono-select>
       </ode-form-field>
 

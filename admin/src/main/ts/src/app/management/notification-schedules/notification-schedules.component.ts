@@ -1,9 +1,10 @@
 import { Component, Injector, OnDestroy, OnInit } from "@angular/core";
 import { Data } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
-import { SelectOption } from "ngx-ode-ui";
+import { SelectOption, SpinnerService } from "ngx-ode-ui";
 import { NotifyService } from "src/app/core/services/notify.service";
 import { routing } from "src/app/core/services/routing.service";
+import { TimezoneService } from "src/app/core/services/timezone.service";
 import { StructureModel } from "src/app/core/store/models/structure.model";
 
 @Component({
@@ -15,24 +16,23 @@ export class NotificationSchedulesComponent
   extends OdeComponent
   implements OnInit, OnDestroy
 {
-  //Angular hack to access the enum in the HTML
-  //  public EDTImportFlux = EDTImportFlux;
-  //  public EDTImportMode = EDTImportMode;
-
   public structure: StructureModel;
-  public activated = false;
   public timezones: SelectOption<String>[] = [
     {
       value: "Europe/Paris",
       label: "Europe/Paris (GMT+1)",
     },
   ];
-  public timezone = this.timezones[0].value;
   public showConfirmLightbox = false;
+
+  public activated = false;
+  public timezone = this.timezones[0].value;
 
   constructor(
     injector: Injector,
+    public spinner: SpinnerService,
     private notify: NotifyService,
+    private timezoneService: TimezoneService,
   ) {
     super(injector);
   }
@@ -49,30 +49,35 @@ export class NotificationSchedulesComponent
   }
 
   private _getTimezones(): void {
-    /*
-    this.timetableService.getClassesMapping(this.structure.id).subscribe({
-      next: (data) =>
-      {
-        this.unknownClasses = data.unknownClasses == null ? [] : data.unknownClasses.sort();
-
-        if(data.classNames != null)
-        {
-          this.classNames = new Array<SelectOption<String>>(data.classNames.length);
-
-          data.classNames = data.classNames.sort();
-          for(let i = this.classNames.length; i-- > 0;)
-            this.classNames[i] = { label: data.classNames[i].toString(), value: data.classNames[i], };
-        }
-        else
-          this.classNames = [];
-
-        this.classesMapping = data.classesMapping == null ? {} : data.classesMapping;
-
-        this.changeDetector.markForCheck();
-      }
-    });
-        */
+    this.timezones = this.timezoneService.getAvailableTimezones().map(
+      (tz) =>
+        ({
+          value: tz,
+          label: tz,
+        }) as SelectOption<string>,
+    );
+    //this.changeDetector.markForCheck();
   }
 
-  updateHours() {}
+  updateHours() {
+    const promise = this.timezoneService
+      .setStructureUsersTzAndQuietHours(this.structure.id)
+      .toPromise();
+    this.spinner
+      .perform("portal-content", promise)
+      .then((u) => {
+        this.notify.success(
+          "management.structure.informations.attach.parent.success.content",
+          "management.structure.informations.attach.parent.success.title",
+        );
+      })
+      .catch((error) => {
+        this.notify.notify(
+          "management.structure.informations.attach.parent.error.content",
+          "management.structure.informations.attach.parent.error.title",
+          error.statusText,
+          "error",
+        );
+      });
+  }
 }
