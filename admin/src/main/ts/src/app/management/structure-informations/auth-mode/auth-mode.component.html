@@ -1,0 +1,46 @@
+<div class="container has-shadow structure-informations-auth-mode">
+  <h2>
+    <s5l>management.structure.informations.authMode.title</s5l>
+  </h2>
+  <p>
+    <s5l>management.structure.informations.authMode.description.intro</s5l>
+  </p>
+  <ul>
+    <li><s5l>management.structure.informations.authMode.description.modeLocal</s5l></li>
+    <li><s5l>management.structure.informations.authMode.description.modeFederated</s5l></li>
+  </ul>
+  <p><s5l>management.structure.informations.authMode.description.outro</s5l></p>
+
+  <form (ngSubmit)="showConfirmModal = true" *ngIf="authConfig">
+    <ode-form-field *ngFor="let profile of AUTH_PROFILES" label="{{profile}}">
+      <ode-mono-select
+        *ngIf="isADMC"
+        [(ngModel)]="authModes[profile]"
+        [name]="'authMode_' + profile"
+        [options]="[
+          { value: 'ENT', label: 'management.structure.informations.authMode.mode.ENT' },
+          { value: 'FEDERATED', label: 'management.structure.informations.authMode.mode.FEDERATED' }
+        ]"
+      ></ode-mono-select>
+      <span *ngIf="!isADMC">
+        <s5l>management.structure.informations.authMode.mode.{{authConfig.defaultAuthModes[profile]}}</s5l>
+      </span>
+    </ode-form-field>
+    <div class="action" *ngIf="isADMC">
+      <button class="create confirm" [disabled]="!isAuthConfigValid || !isAuthConfigDirty || isSaving">
+        <s5l>management.structure.informations.authMode.save</s5l>
+      </button>
+    </div>
+  </form>
+</div>
+
+<ode-lightbox-confirm lightboxTitle="management.structure.informations.authMode.confirm.title"
+                      [show]="showConfirmModal"
+                      [disableConfirm]="isSaving"
+                      [confirmText]="isSaving ? 'management.structure.informations.authMode.confirm.button.saving' : 'management.structure.informations.authMode.confirm.button.default'"
+                      (onCancel)="showConfirmModal = false"
+                      (onConfirm)="saveAuthConfig();">
+  <p>
+    <b><s5l>management.structure.informations.authMode.confirm.content</s5l></b>
+  </p>
+</ode-lightbox-confirm>
