@@ -3,6 +3,14 @@ import { Injectable } from "@angular/core";
 import { SpinnerService } from "ngx-ode-ui";
 import { Observable } from "rxjs";
 
+export type QuietHoursPreferences = {
+  timezone: string;
+  quietHours: {
+    enabled: boolean;
+    schedule: Array<number[]>;
+  };
+};
+
 @Injectable()
 export class TimezoneService {
   constructor(
@@ -31,6 +39,8 @@ export class TimezoneService {
         "Europe/Rome",
         "Europe/Berlin",
         "Europe/London",
+        "Indian/Mayotte",
+        "Indian/Reunion",
         "Pacific/Noumea",
         "Pacific/Tahiti",
         "Pacific/Wallis",
@@ -38,17 +48,58 @@ export class TimezoneService {
         "America/Cayenne",
         "America/Guadeloupe",
         "America/Guyana",
+        "America/Marigot",
         "America/Martinique",
         "America/Mexico_City",
+        "America/Miquelon",
+        "America/St_Barthelemy",
       ];
     }
 
     return this.availableTimezones;
   }
 
-  setStructureUsersTzAndQuietHours(structureId: string): Observable<string[]> {
-    return this.httpClient.get<string[]>(
-      `/directory/timetable/classes/${structureId}`,
+  getStructureQuietHours(
+    structureId: string,
+  ): Observable<QuietHoursPreferences> {
+    return this.httpClient.get<QuietHoursPreferences>(
+      `/admin/api/structures/${structureId}/quiethours-preferences`,
+    );
+  }
+
+  setStructureQuietHours(
+    structureId: string,
+    timezone: string,
+    enabled: boolean,
+  ): Observable<void> {
+    // By default, not quiet hours from 8h to 20h
+    const defaultSchedule: Array<number[]> = [
+      [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 22, 23],
+      [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 22, 23],
+      [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 22, 23],
+      [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 22, 23],
+      [0, 1, 2, 3, 4, 5, 6, 7, 20, 21, 22, 23],
+      [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+        20, 21, 22, 23,
+      ],
+      [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+        20, 21, 22, 23,
+      ],
+    ];
+
+    const payload: QuietHoursPreferences = {
+      timezone,
+      quietHours: {
+        enabled,
+        schedule: defaultSchedule,
+      },
+    };
+
+    return this.httpClient.post<void>(
+      `/admin/api/structures/${structureId}/quiethours-preferences`,
+      payload,
     );
   }
 }

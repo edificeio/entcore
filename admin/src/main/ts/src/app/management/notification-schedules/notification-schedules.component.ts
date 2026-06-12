@@ -17,7 +17,7 @@ export class NotificationSchedulesComponent
   implements OnInit, OnDestroy
 {
   public structure: StructureModel;
-  public timezones: SelectOption<String>[] = [
+  public timezones: SelectOption<string>[] = [
     {
       value: "Europe/Paris",
       label: "Europe/Paris (GMT+1)",
@@ -25,7 +25,7 @@ export class NotificationSchedulesComponent
   ];
   public showConfirmLightbox = false;
 
-  public activated = false;
+  public enabled = false;
   public timezone = this.timezones[0].value;
 
   constructor(
@@ -42,10 +42,18 @@ export class NotificationSchedulesComponent
       routing.observe(this.route, "data").subscribe((data: Data) => {
         if (data.structure) {
           this.structure = data.structure;
+          this._resetForm();
           this._getTimezones();
+          this._getQuietHours();
+          this.changeDetector.markForCheck();
         }
       }),
     );
+  }
+
+  private _resetForm() {
+    this.enabled = false;
+    this.timezone = "Europe/Paris";
   }
 
   private _getTimezones(): void {
@@ -59,24 +67,34 @@ export class NotificationSchedulesComponent
     //this.changeDetector.markForCheck();
   }
 
-  updateHours() {
+  private _getQuietHours() {
+    this.timezoneService.getStructureQuietHours(this.structure.id).subscribe({
+      next: (data) => {
+        if (data != null && typeof data === "object" && data.timezone) {
+          this.enabled = data.quietHours.enabled;
+          this.timezone = data.timezone;
+        }
+        this.changeDetector.markForCheck();
+      },
+    });
+  }
+
+  public save() {
     const promise = this.timezoneService
-      .setStructureUsersTzAndQuietHours(this.structure.id)
+      .setStructureQuietHours(this.structure.id, this.timezone, this.enabled)
       .toPromise();
     this.spinner
       .perform("portal-content", promise)
       .then((u) => {
         this.notify.success(
-          "management.structure.informations.attach.parent.success.content",
-          "management.structure.informations.attach.parent.success.title",
+          "management.structure.notification.schedules.save.success.content",
+          "management.structure.notification.schedules.save.success.title",
         );
       })
       .catch((error) => {
-        this.notify.notify(
-          "management.structure.informations.attach.parent.error.content",
-          "management.structure.informations.attach.parent.error.title",
-          error.statusText,
-          "error",
+        this.notify.error(
+          "management.structure.notification.schedules.save.error.content",
+          "management.structure.notification.schedules.save.error.title",
         );
       });
   }
