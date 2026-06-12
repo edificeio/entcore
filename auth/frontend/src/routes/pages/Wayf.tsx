@@ -11,6 +11,12 @@ import { useWelcomeMessage } from '~/hooks/useWelcomeMessage';
 import type { WayfParentProvider, WayfProvider } from '~/models/wayf';
 import './Wayf.css';
 
+// Fallback help URL used when the current language has no `wayf.link.help.url`
+// translation (e.g. unsupported browser language), to avoid a broken/404 link
+// (ENABLING-897). Mirrors the French (default) help target.
+const DEFAULT_HELP_URL =
+  'https://help.edifice.io/hc/fr/articles/18163736376604-Connexion-%C3%A0-votre-ENT';
+
 export const WayfPage = () => {
   const { t } = useTranslation('auth');
   const [childTheme, setChildTheme] = useState<string | undefined>();
@@ -120,13 +126,13 @@ export const WayfPage = () => {
         <div className="wayf-selection__footer">
           <div className="wayf-footer-links">
             <a
-              href={t('wayf.link.help.url')}
+              href={t('wayf.link.help.url', { defaultValue: DEFAULT_HELP_URL })}
               className="wayf-help-btn"
               data-testid="wayf-link-help"
               target="_blank"
               rel="noreferrer"
             >
-              {t('wayf.link.help.text') || "Besoin d'aide ?"}
+              {t('wayf.link.help.text', { defaultValue: "Besoin d'aide ?" })}
             </a>
             <a
               href={t('auth.charter')}
