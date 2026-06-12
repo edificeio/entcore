@@ -5,6 +5,16 @@ import type { WelcomeResponse, WelcomeState } from '~/models/welcome';
 
 const TIMEOUT_MS = 5000;
 
+// DOMPurify strips the `target` attribute by default, which made editorial
+// links configured to open in a new tab open in the current one (ENABLING-895).
+// We allow `target` back and enforce `rel="noopener noreferrer"` on those links
+// to guard against reverse tabnabbing.
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'A' && node.getAttribute('target')) {
+    node.setAttribute('rel', 'noopener noreferrer');
+  }
+});
+
 function pickContent(response: WelcomeResponse, lang: string): string | null {
   if (!response.enabled) return null;
   const candidate = response[lang];
@@ -46,7 +56,14 @@ export function useWelcomeMessage(): WelcomeState {
           status: 'ready',
           html: DOMPurify.sanitize(content, {
             ADD_TAGS: ['iframe'],
-            ADD_ATTR: ['allowfullscreen', 'frameborder', 'src', 'width', 'height'],
+            ADD_ATTR: [
+              'allowfullscreen',
+              'frameborder',
+              'src',
+              'width',
+              'height',
+              'target',
+            ],
           }),
         });
       } catch (err) {

@@ -72,6 +72,23 @@ describe('useWelcomeMessage', () => {
     expect(html).toContain('<p>Hello</p>');
   });
 
+  it('keeps target="_blank" on links and enforces a safe rel', async () => {
+    server.use(
+      http.get(WELCOME_URL, () =>
+        HttpResponse.json({
+          enabled: true,
+          fr: '<a href="https://edifice.io" target="_blank">aide</a>',
+        }),
+      ),
+    );
+
+    const { result } = renderHook(() => useWelcomeMessage());
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    const { html } = result.current as { status: 'ready'; html: string };
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+  });
+
   it('returns hidden when enabled is false', async () => {
     server.use(
       http.get(WELCOME_URL, () =>
