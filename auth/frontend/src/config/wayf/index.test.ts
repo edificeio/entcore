@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
+import type { WayfProvider } from '~/models/wayf';
 import { DEFAULT_WAYF_CONFIG, wayfConfig } from '.';
+
+/**
+ * A provider is valid when it has an i18n key and is either a leaf (with an
+ * `acs` target) or a parent (with non-empty `children`, themselves valid).
+ */
+function expectValidProvider(provider: WayfProvider) {
+  expect(provider.i18n).toBeTruthy();
+  if ('children' in provider && provider.children) {
+    expect(provider.children.length).toBeGreaterThan(0);
+    provider.children.forEach(expectValidProvider);
+  } else {
+    expect(provider.acs).toBeTruthy();
+  }
+}
 
 describe('wayfConfig', () => {
   it('has a wayf-v2 key', () => {
@@ -22,11 +37,8 @@ describe('DEFAULT_WAYF_CONFIG', () => {
     expect(DEFAULT_WAYF_CONFIG.providers).toHaveLength(5);
   });
 
-  it('every provider has an i18n key and an acs', () => {
-    DEFAULT_WAYF_CONFIG.providers.forEach((p) => {
-      expect(p.i18n).toBeTruthy();
-      expect(p.acs).toBeTruthy();
-    });
+  it('every provider has an i18n key and either an acs or children', () => {
+    DEFAULT_WAYF_CONFIG.providers.forEach(expectValidProvider);
   });
 
   it('includes teacher, student, relative, perseducnat, other', () => {

@@ -6,7 +6,13 @@ import { ProviderList } from '.';
 
 const providers: WayfProvider[] = [
   { i18n: 'wayf.teacher', acs: '/auth/saml/teacher', color: '#c53030' },
-  { i18n: 'wayf.student', children: [{ i18n: 'wayf.student', acs: '/auth/saml/student' }] },
+  {
+    i18n: 'wayf.student',
+    color: '#3889c1',
+    children: [
+      { i18n: 'wayf.student', acs: '/auth/saml/student', color: '#3889c1' },
+    ],
+  },
 ];
 
 describe('ProviderList', () => {

@@ -38,11 +38,11 @@ export const WayfPage = () => {
   }, []);
 
   const handleProviderClick = (provider: WayfProvider) => {
-    if ('acs' in provider) {
-      window.location.href = provider.acs;
-    } else {
+    if (provider.children) {
       dirRef.current = 1;
       setBreadcrumb((prev) => [...prev, provider]);
+    } else {
+      window.location.href = provider.acs;
     }
   };
 
