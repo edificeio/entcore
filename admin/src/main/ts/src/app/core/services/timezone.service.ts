@@ -13,10 +13,7 @@ export type QuietHoursPreferences = {
 
 @Injectable()
 export class TimezoneService {
-  constructor(
-    private httpClient: HttpClient,
-    private spinner: SpinnerService,
-  ) {}
+  constructor(private httpClient: HttpClient) {}
 
   private availableTimezones: string[] | null = null;
 
