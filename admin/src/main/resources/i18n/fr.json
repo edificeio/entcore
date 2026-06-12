@@ -769,7 +769,7 @@
   "management.structure.notification.schedules.paragraph": "Lorsqu’ils sont activés, les horaires de notification sont du lundi au vendredi de 07h00 à 20h00. En dehors de ces horaires, les notifications (mails et mobiles) sont bloquées et transmises dans un mail récapitulatif ou une push notification à la reprise des temps de notification.",
   "management.structure.notification.schedules.save": "Enregistrer",
   "management.structure.notification.schedules.confirm.title": "Plage silencieuse",
-  "management.structure.notification.schedules.confirm.text": "Êtes-vous sur de vouloir activer les plages silencieuses pour tous les utilisateur de l’établissement ?",
+  "management.structure.notification.schedules.confirm.text": "Êtes-vous sûr de vouloir activer les plages silencieuses pour tous les utilisateurs de l’établissement ?",
   "management.structure.notification.schedules.save.error.content": "La nouvelle plage silencieuse n'a pas été enregistrée.",
   "management.structure.notification.schedules.save.error.title": "Erreur d'enregistrement",
   "management.structure.notification.schedules.save.success.content": "La nouvelle plage silencieuse a bien été prise en compte.",
