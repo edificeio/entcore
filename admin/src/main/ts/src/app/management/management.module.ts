@@ -23,6 +23,7 @@ import {BlockProfilesComponent} from './block-profile/block-profiles.component';
 import {BlockProfilesService} from './block-profile/block-profiles.service';
 import {ZimbraComponent} from './zimbra/zimbra.component';
 import {ImportEDTComponent} from './import-edt/import-edt.component';
+import {NotificationSchedulesComponent} from './notification-schedules/notification-schedules.component';
 import {SubjectsComponent} from './subjects/subjects.component';
 import { MatPaginatorIntlService } from './block-profile/MatPaginatorIntl.service';
 import { NgxTrumbowygModule } from 'ngx-trumbowyg';
@@ -90,6 +91,7 @@ import {CommunicationRulesService} from "../communication/communication-rules.se
         MessageFlashPreviewComponent,
         BlockProfilesComponent,
         ImportEDTComponent,
+        NotificationSchedulesComponent,
         SubjectsComponent,
         SubjectCreate,
         SubjectDetails,
