@@ -23,7 +23,7 @@ export class TimezoneService {
   getAvailableTimezones(): string[] {
     if (this.availableTimezones !== null) return this.availableTimezones;
 
-    const availablePrefixes = ["Eur", "Pac", "Afr", "Ame", "Asi", "Aus"];
+    const availablePrefixes = ["Eur", "Pac", "Afr", "Ame", "Asi", "Aus", "Ind"];
     try {
       this.availableTimezones = (Intl as any)
         .supportedValuesOf("timeZone")
