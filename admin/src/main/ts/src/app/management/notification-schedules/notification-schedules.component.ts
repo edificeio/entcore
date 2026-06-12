@@ -64,7 +64,6 @@ export class NotificationSchedulesComponent
           label: tz,
         }) as SelectOption<string>,
     );
-    //this.changeDetector.markForCheck();
   }
 
   private _getQuietHours() {
