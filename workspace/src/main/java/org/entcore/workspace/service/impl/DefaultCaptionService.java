@@ -5,7 +5,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.s3.S3Client;
 import org.entcore.common.service.impl.MongoDbCrudService;
@@ -127,8 +127,38 @@ public class DefaultCaptionService extends MongoDbCrudService implements Caption
         return this.vertx
                 .eventBus()
                 .<String>request(BROKER_ADDRESS, requestBody, deliveryOptions)
-                .map(Message::body)
+                .compose(reply -> parseWorkerResponse(reply.body(), taskType))
                 .onFailure(err -> logger.error("Error while calling NATS for {}: {}", taskType, err.getMessage()));
+    }
+
+    private Future<String> parseWorkerResponse(String body, TaskType taskType) {
+        if (body == null || body.isEmpty()) {
+            return Future.failedFuture("Empty response from IA worker for " + taskType);
+        }
+
+        final JsonObject json;
+        try {
+            json = new JsonObject(body);
+        } catch (DecodeException e) {
+            return Future.failedFuture("Invalid IA worker response for " + taskType + ": " + body);
+        }
+
+        if (Boolean.FALSE.equals(json.getBoolean("success")) || json.containsKey("error")) {
+            return Future.failedFuture(json.getString("error", "IA worker error for " + taskType));
+        }
+
+        final String status = json.getString("status");
+        if (status != null && !"success".equals(status)) {
+            return Future.failedFuture(
+                    json.getString("message", "IA worker returned status '" + status + "' for " + taskType));
+        }
+
+        final String result = json.getString("result");
+        if (result == null || result.isEmpty()) {
+            return Future.failedFuture("IA worker returned an empty result for " + taskType);
+        }
+
+        return Future.succeededFuture(result);
     }
 
     /**
