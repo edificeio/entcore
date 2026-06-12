@@ -8,6 +8,16 @@ import { WidgetCollection } from '../collections/widget.collection';
 import { UserPosition } from './userPosition.model';
 import { UserPositionService } from '../../services/user-position.service';
 import { Level } from './level.model';
+import { Profile } from '../../../imports-exports/import/user.model';
+
+export type AuthMode = 'ENT' | 'FEDERATED';
+export type AuthConfig = Record<Profile, AuthMode>;
+export interface DefaultAuthConfig {
+    defaultAuthModes: AuthConfig;
+}
+export const DEFAULT_AUTH_CONFIG: DefaultAuthConfig = {
+    defaultAuthModes: { Student: 'ENT', Teacher: 'ENT', Relative: 'ENT', Personnel: 'ENT', Guest: 'ENT' }
+};
 
 export type ClassModel = { id: string, name: string };
 
@@ -31,6 +41,7 @@ export class StructureModel extends Model<StructureModel> {
     aafFunctions: Array<Array<Array<string>>> = [];
     userPositions: Array<UserPosition> = [];
     levels: Array<Level> = [];
+    authConfig: DefaultAuthConfig | null = null;
     levelsOfEducation: number[] = [];
     distributions: string[];
     timetable: string;
@@ -133,6 +144,21 @@ export class StructureModel extends Model<StructureModel> {
                 .then(res => {
                     this.userPositions = res;
                 });
+        }
+        return Promise.resolve();
+    }
+
+    getAuthConfig(): DefaultAuthConfig {
+        return this.authConfig ?? DEFAULT_AUTH_CONFIG;
+    }
+
+    syncAuthMode(force?: boolean) {
+        if (!this.authConfig || force === true) {
+            return this.http.get(`/directory/structure/${this.id}/default-auth-config`)
+                .then(res => {
+                    this.authConfig = res.data;
+                })
+                .catch(() => {});
         }
         return Promise.resolve();
     }
