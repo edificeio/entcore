@@ -1,0 +1,48 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features",
+    },
+    "[scss]": {
+      "editor.defaultFormatter": "vscode.css-language-features",
+    },
+    "editor.accessibilitySupport": "off",
+    "editor.minimap.enabled": false,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "extensions.ignoreRecommendations": true,
+    "workbench.tree.indent": 15,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit",
+    },
+
+    "git.openRepositoryInParentFolders": "never",
+    "workbench.startupEditor": "none",
+    "scss.format.spaceAroundSelectorSeparator": true,
+    "scss.format.enable": false,
+    "search.exclude": {
+      ".angular": true,
+      "node_modules": true,
+      "dist": true,
+    },
+    "window.commandCenter": false,
+  },
+  "extensions": {
+    "recommendations": [
+      "formulahendry.auto-rename-tag",
+      "aaron-bond.better-comments",
+      "angular.ng-template",
+      "wix.vscode-import-cost",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+    ],
+  },
+}
