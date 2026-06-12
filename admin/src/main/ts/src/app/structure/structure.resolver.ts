@@ -26,12 +26,13 @@ export class StructureResolver implements Resolve<StructureModel> {
 
 export function sync(structure: StructureModel, force?: boolean): Promise<StructureModel> {
     return Promise.all<any>([
-        structure.syncClasses(force), 
-        structure.syncGroups(force), 
-        structure.syncSources(force), 
-        structure.syncAafFunctions(force), 
-        ProfilesService.getProfiles().then(p => structure.profiles = p), 
-        structure.syncPositions(force), 
+        structure.syncClasses(force),
+        structure.syncGroups(force),
+        structure.syncSources(force),
+        structure.syncAafFunctions(force),
+        ProfilesService.getProfiles().then(p => structure.profiles = p),
+        structure.syncPositions(force),
+        structure.syncAuthMode(force),
         /* COCO-3782 this sync is too eager for high-level structures. 
          * Instead, it is synced where required => in BroadcastGroup tab for now.
         structure.syncLevels(force),
