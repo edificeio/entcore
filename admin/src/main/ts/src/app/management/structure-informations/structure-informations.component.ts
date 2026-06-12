@@ -1,17 +1,17 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
-import { BundlesService } from 'ngx-ode-sijil';
-import { Config } from 'src/app/core/resolvers/Config';
-import { NotifyService } from 'src/app/core/services/notify.service';
 import { routing } from 'src/app/core/services/routing.service';
-import { Context } from 'src/app/core/store/mappings/context';
+import { StructureModel } from 'src/app/core/store/models/structure.model';
+import { StructureInformationsService } from './structure-informations.service';
+import { NotifyService } from 'src/app/core/services/notify.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
-import { StructureModel } from 'src/app/core/store/models/structure.model';
-import { CommunicationRulesService } from "../../communication/communication-rules.service";
-import { StructureInformationsService } from './structure-informations.service';
+import { BundlesService } from 'ngx-ode-sijil';
+import { Context } from 'src/app/core/store/mappings/context';
+import { Config } from 'src/app/core/resolvers/Config';
+import { HttpClient } from '@angular/common/http';
+import {CommunicationRulesService} from "../../communication/communication-rules.service";
 
 class UserMetric {
   active: number = 0;
@@ -111,7 +111,6 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
         this.structUAI = this.structure.UAI;
         this.structHasApp = this.structure.hasApp;
         this.structEnableMFA = this.initialStructEnableMFA = !this.structure.ignoreMFA;
-
         this.infoService.getMetrics(this.structure.id).subscribe(
           {
             next: (data) =>
