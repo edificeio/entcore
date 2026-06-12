@@ -10,6 +10,7 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import { BlockProfilesComponent } from './block-profile/block-profiles.component';
 import { ZimbraComponent } from './zimbra/zimbra.component';
 import { ImportEDTComponent } from './import-edt/import-edt.component';
+import { NotificationSchedulesComponent } from './notification-schedules/notification-schedules.component';
 import {CalendarComponent} from './calendar/calendar.component';
 import { SubjectsComponent} from './subjects/subjects.component';
 import {SubjectsResolver} from './subjects/subjects.resolver';
@@ -81,6 +82,10 @@ export let routes: Routes = [
                 path: 'import-edt',
                 //canActivate : [ImportEdtGuardService],
                 component: ImportEDTComponent
+            },
+            {
+                path: 'notification-schedules',
+                component: NotificationSchedulesComponent
             },
             {
                 path: 'calendar',

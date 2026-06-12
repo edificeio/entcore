@@ -6,15 +6,16 @@ import { NgxOdeSijilModule } from 'ngx-ode-sijil';
 import { LabelsService, NgxOdeUiModule, SpinnerService } from 'ngx-ode-ui';
 import { throwIfAlreadyLoaded } from './module-import.guard';
 import { ConfigResolver } from './resolvers/config.resolver';
+import { FavIconResolver } from './resolvers/favicon.resolver';
 import { I18nResolver } from './resolvers/i18n.resolver';
 import { SessionResolver } from './resolvers/session.resolver';
 import { StructuresResolver } from './resolvers/structures.resolver';
 import { NotifyService } from './services/notify.service';
 import { SijilLabelsService } from './services/sijil.labels.service';
+import { TimezoneService } from './services/timezone.service';
+import { UserPositionService } from './services/user-position.service';
 import { UserService } from './services/user.service';
 import { WidgetService } from './services/widgets.service';
-import { UserPositionService } from './services/user-position.service';
-import { FavIconResolver } from './resolvers/favicon.resolver';
 
 @NgModule({
     imports: [
@@ -38,6 +39,7 @@ import { FavIconResolver } from './resolvers/favicon.resolver';
         ConfigResolver,
         UserService,
         UserPositionService,
+        TimezoneService,
         FavIconResolver
     ],
 })

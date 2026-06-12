@@ -1,0 +1,78 @@
+<div>
+  <div class="cell flashmsg blue">
+    <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
+      <use href="/admin/public/icons/icons.svg#info-circle"></use>
+    </svg>
+    <div class="flash-content">
+      <b>
+        <s5l>management.structure.notification.schedules.info.title</s5l>
+      </b>
+      <p><s5l>management.structure.notification.schedules.info.text</s5l></p>
+    </div>
+  </div>
+
+  <div class="container has-shadow">
+    <!--
+    <h2>
+      <label>
+        <s5l>management.structure.notification.schedules.title</s5l>
+        <input
+          type="checkbox"
+          name="activateCB"
+          [(ngModel)]="activated"
+          class="is-pulled-right"
+        />
+      </label>
+    </h2>
+-->
+
+    <form #tzForm="ngForm" class="has-vertical-padding-10">
+      <h2>
+        <label
+          ><s5l>management.structure.notification.schedules.title</s5l>
+          <input
+            type="checkbox"
+            name="enableCB"
+            [(ngModel)]="enabled"
+            class="is-pulled-right"
+          />
+        </label>
+      </h2>
+
+      <p>
+        <s5l>management.structure.notification.schedules.paragraph</s5l>
+      </p>
+
+      <ode-form-field
+        label="management.structure.notification.schedules.timezone"
+      >
+        <ode-mono-select
+          name="timezone"
+          [options]="timezones"
+          [(ngModel)]="timezone"
+          [disabled]="!enabled"
+          [translateOptions]="false"
+        ></ode-mono-select>
+      </ode-form-field>
+
+      <button type="button"
+        class="is-pulled-right"
+        [disabled]="tzForm.pristine || tzForm.invalid || timezone == null"
+        (click)="showConfirmLightbox = true"
+      >
+        <s5l>management.structure.notification.schedules.save</s5l>
+      </button>
+    </form>
+  </div>
+
+  <ode-lightbox-confirm
+    lightboxTitle="management.structure.notification.schedules.confirm.title"
+    [show]="showConfirmLightbox"
+    (onCancel)="showConfirmLightbox = false"
+    (onConfirm)="save(); showConfirmLightbox = false"
+  >
+    <p>
+      <b><s5l>management.structure.notification.schedules.confirm.text</s5l></b>
+    </p>
+  </ode-lightbox-confirm>
+</div>
