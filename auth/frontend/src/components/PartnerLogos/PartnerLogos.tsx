@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import type { WayfPartner } from '~/models/wayf';
 import './PartnerLogos.css';
 
@@ -7,24 +6,18 @@ interface PartnerLogosProps {
 }
 
 export const PartnerLogos = ({ partners }: PartnerLogosProps) => {
-  const { t } = useTranslation('auth');
-
   if (!partners?.length) return null;
 
   return (
     <div className="wayf-partners">
       {partners.map((partner) => {
         const img = (
-          <img
-            src={t(partner.logoI18n)}
-            alt=""
-            className="wayf-partners__logo"
-          />
+          <img src={partner.logo} alt="" className="wayf-partners__logo" />
         );
 
         return partner.url ? (
           <a
-            key={partner.logoI18n}
+            key={partner.logo}
             href={partner.url}
             target="_blank"
             rel="noreferrer"
@@ -33,7 +26,7 @@ export const PartnerLogos = ({ partners }: PartnerLogosProps) => {
             {img}
           </a>
         ) : (
-          <span key={partner.logoI18n} className="wayf-partners__link">
+          <span key={partner.logo} className="wayf-partners__link">
             {img}
           </span>
         );

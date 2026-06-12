@@ -113,39 +113,54 @@ export const hdfConfig: WayfDomainConfig = {
     },
   ],
   partners: [
-    { logoI18n: 'wayf.partner.logo.hdf', url: 'https://www.hautsdefrance.fr/' },
-    { logoI18n: 'wayf.partner.logo.aisne', url: 'https://www.aisne.com/' },
     {
-      logoI18n: 'wayf.partner.logo.nord',
+      logo: '/assets/themes/cg77/img/partners/logo-hdf.png',
+      url: 'https://www.hautsdefrance.fr/',
+    },
+    {
+      logo: '/assets/themes/cg77/img/partners/logo-aisne.png',
+      url: 'https://www.aisne.com/',
+    },
+    {
+      logo: '/assets/themes/cg77/img/partners/logo-nord.jpg',
       url: 'https://nordcolleges.enthdf.fr/',
     },
-    { logoI18n: 'wayf.partner.logo.oise', url: 'https://www.oise.fr/' },
     {
-      logoI18n: 'wayf.partner.logo.pas-de-calais',
+      logo: '/assets/themes/cg77/img/partners/logo-oise.jpg',
+      url: 'https://www.oise.fr/',
+    },
+    {
+      logo: '/assets/themes/cg77/img/partners/logo-pasdecalais.jpg',
       url: 'https://www.pasdecalais.fr/colleges',
     },
-    { logoI18n: 'wayf.partner.logo.somme', url: 'https://www.somme.fr/' },
     {
-      logoI18n: 'wayf.partner.logo.adica',
+      logo: '/assets/themes/cg77/img/partners/logo-somme.png',
+      url: 'https://www.somme.fr/',
+    },
+    {
+      logo: '/assets/themes/cg77/img/partners/logo-adica.png',
       url: 'https://www.adica.fr/assistance-conseil-informatique',
     },
-    { logoI18n: 'wayf.partner.logo.oise-hd', url: 'https://oise-thd.fr/' },
     {
-      logoI18n: 'wayf.partner.logo.fibrenum',
+      logo: '/assets/themes/cg77/img/partners/logo-oisehd.jpg',
+      url: 'https://oise-thd.fr/',
+    },
+    {
+      logo: '/assets/themes/cg77/img/partners/logo-fibrenum.png',
       url: 'https://www.lafibrenumerique5962.fr/',
     },
     {
-      logoI18n: 'wayf.partner.logo.somme-numerique',
+      logo: '/assets/themes/cg77/img/partners/logo-somme-numerique.png',
       url: 'https://www.sommenumerique.fr/',
     },
     {
-      logoI18n: 'wayf.partner.logo.agricole',
+      logo: '/assets/themes/cg77/img/partners/logo-argicole.png',
       url: 'https://draaf.hauts-de-france.agriculture.gouv.fr/',
     },
     {
-      logoI18n: 'wayf.partner.logo.rectorat-hdf',
+      logo: '/assets/themes/cg77/img/partners/logo_RA_HAUTS-DE-FRANCE.png',
       url: 'https://www1.ac-lille.fr/la-region-academique-hauts-de-france-121434',
     },
-    { logoI18n: 'wayf.partner.logo.ue' },
+    { logo: '/assets/themes/cg77/img/partners/logo-ue.jpg' },
   ],
 };
