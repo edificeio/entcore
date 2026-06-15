@@ -23,7 +23,7 @@ export function MessageAttachments({
   message,
   editMode = false,
 }: MessageAttachmentsProps) {
-  const { common_t, t } = useI18n();
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { downloadAllUrl, attachFiles, detachFiles, isMutating, detachFile } =
     useMessageAttachments();
@@ -75,9 +75,7 @@ export function MessageAttachments({
       {!!attachments.length && (
         <>
           <div className="d-flex align-items-center justify-content-between border-bottom">
-            <span className="caption fw-bold my-8">
-              {common_t('attachments')}
-            </span>
+            <span className="caption fw-bold my-8">{t('attachments')}</span>
             {attachments.length > 1 && (
               <div>
                 <IconButton
@@ -90,7 +88,7 @@ export function MessageAttachments({
                 />
                 <a href={downloadAllUrl} download>
                   <IconButton
-                    title={common_t('download.all.attachment')}
+                    title={t('download.all.attachment')}
                     color="tertiary"
                     type="button"
                     icon={<IconDownload />}
