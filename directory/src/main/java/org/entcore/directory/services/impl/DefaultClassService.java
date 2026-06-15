@@ -108,7 +108,7 @@ public class DefaultClassService implements ClassService {
 					: "") +
 				"p.name as type, m.blocked as blocked, m.source as source, relativeList, " +
 				" (HAS(m.federatedIDP) AND NOT(m.federatedIDP IS NULL) AND HAS(m.federated) AND m.federated = true) OR " +
-				"  size(auths) > 0 AND (m.source in ['AAF', 'AAF1D', 'CSV']) as hasFederatedIdentity " +
+				"  size(auths) > 0 AND (m.source in ['AAF', 'AAF1D', 'CSV']) AND m.activationCode IS NULL as hasFederatedIdentity " +
 				"ORDER BY type, lastName ";
 		neo.execute(query, params, validResultHandler(results));
 	}
