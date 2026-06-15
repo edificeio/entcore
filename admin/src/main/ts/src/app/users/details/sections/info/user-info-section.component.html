@@ -1,4 +1,15 @@
 <ode-panel-section section-title="users.details.section.infos" [folded]="false">
+  <div class="cell flashmsg blue" *ngIf="details.hasFederatedIdentity">
+        <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
+      <use [attr.href]="'/admin/public/icons/icons.svg#alert-triangle'"></use>
+    </svg>
+    <div class="flash-content">
+      <!-- <p></p> -->
+      <h3><s5l>users.details.section.infos.federatedInfo.title</s5l></h3> 
+      <p><s5l>users.details.section.infos.federatedInfo.content</s5l></p>
+    </div>
+
+  </div>
   <form>
     <fieldset>
       <ode-form-field label="profile">

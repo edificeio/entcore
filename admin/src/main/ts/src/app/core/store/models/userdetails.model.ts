@@ -43,6 +43,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     mobile?: string;
     totp?: string;
     hasTotp?: boolean;
+    hasFederatedIdentity?: boolean;
     profiles: Array<String> = [];
     type?: Array<string>;
     functions?: Array<[string, Array<string>]>;
