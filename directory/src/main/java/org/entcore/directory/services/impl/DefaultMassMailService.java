@@ -400,6 +400,10 @@ public class DefaultMassMailService extends Renders implements MassMailService {
               +"c IN (collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name})) WHERE not(c.firstName is null)"
            +") END as children ";
 
+        if (!filterObj.containsKey("includeFederated")) {
+            withStr += " WHERE NOT ((HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV'])) ";
+        }
+
         //Return clause
         String returnStr =
             " RETURN distinct collect(p.name)[0] as profile"
