@@ -401,7 +401,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
            +") END as children ";
 
         if (!filterObj.containsKey("includeFederated")) {
-            withStr += " WHERE NOT ((HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV'])) ";
+            withStr += " WHERE NOT ((HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NULL) ";
         }
 
         //Return clause
