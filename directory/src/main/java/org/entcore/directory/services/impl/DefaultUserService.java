@@ -412,7 +412,7 @@ public class DefaultUserService implements UserService {
 		}
 
 		query += " (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR " +
-				"  size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) as hasFederatedIdentity, ";
+				"  size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NULL as hasFederatedIdentity, ";
 
 		if (getManualGroups)
 			query += "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
@@ -1277,7 +1277,7 @@ public class DefaultUserService implements UserService {
 				"RETURN DISTINCT u.profiles as profiles, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
 				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +
 				"motto, health, mood, hobbies, " +
-				" (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) as hasFederatedIdentity, " +
+				" (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NULL as hasFederatedIdentity, " +
 				"CASE WHEN u.totp IS NOT NULL AND u.totp <> '' THEN true ELSE false END as hasTotp, " +
 				"CASE WHEN schools IS NULL THEN [] ELSE schools END as schools ";
 		} catch (ValidationException exception) {
