@@ -5,11 +5,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.s3.S3Client;
-import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.common.user.UserInfos;
+import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.CaptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +31,9 @@ enum TaskType {
     }
 }
 
-public class DefaultCaptionService extends MongoDbCrudService implements CaptionService {
+public class DefaultCaptionService implements CaptionService {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCaptionService.class);
+    private final DocumentDao documentDao;
 
     private static final String NATS_SUBJECT = "ia.caption.process";
     private static final String BROKER_ADDRESS = "broker.request";
@@ -42,11 +42,9 @@ public class DefaultCaptionService extends MongoDbCrudService implements Caption
     private static final String UNKNOWN_BROWSER = "Unknown";
 
     private final Vertx vertx;
-    private final MongoDb mongo;
 
-    public DefaultCaptionService(MongoDb mongo, final String MONGO_DOCUMENTS_COLLECTION, Vertx vertx) {
-        super(MONGO_DOCUMENTS_COLLECTION);
-        this.mongo = mongo;
+    public DefaultCaptionService(MongoDb mongo, Vertx vertx) {
+        this.documentDao = new DocumentDao(mongo);
         this.vertx = vertx;
     }
 
@@ -66,19 +64,12 @@ public class DefaultCaptionService extends MongoDbCrudService implements Caption
 
     private Future<String> getOrGenerate(String documentId, TaskType taskType, Function<JsonObject, Future<String>> generator) {
         final Promise<String> promise = Promise.promise();
-        final JsonObject matcher = new JsonObject().put("_id", documentId);
         final String taskField = taskType.value();
 
-        mongo.findOne(collection, matcher, message -> {
-            final JsonObject body = message.body();
-
-            if (body == null || !"ok".equals(body.getString("status"))) {
-                logger.error("Mongo error while fetching document ID {}: {}", documentId, body);
-                promise.fail("Mongo error for document ID: " + documentId);
-                return;
-            }
-
-            final JsonObject document = body.getJsonObject("result");
+        documentDao.findById(documentId).onFailure(err -> {
+            logger.error("Mongo error while fetching document ID {}: {}", documentId, err.getMessage());
+            promise.fail("Mongo error for document ID: " + documentId);
+        }).onSuccess(document -> {
             if (document == null || document.isEmpty()) {
                 logger.error("No document found for ID: {}", documentId);
                 promise.fail(new FileNotFoundException("No document found for ID: " + documentId));
@@ -91,17 +82,17 @@ public class DefaultCaptionService extends MongoDbCrudService implements Caption
             }
 
             generator.apply(document).onSuccess(fresh -> {
-                final JsonObject update = new JsonObject().put("$set", new JsonObject().put(taskField, fresh));
-
-                mongo.update(collection, matcher, update, updateResult -> {
-                    JsonObject result = updateResult.body();
-                    if (result != null && "ok".equals(result.getString("status"))) {
-                        promise.complete(fresh);
-                    } else {
-                        logger.error("Error while creating the {} for ID: {}", taskField, documentId);
-                        promise.fail("Failed to store " + taskField + " for document ID: " + documentId);
-                    }
-                });
+                promise.complete(fresh);
+//                final JsonObject update = new JsonObject().put("$set", new JsonObject().put(taskField, fresh));
+//
+//                documentDao.update(documentId, update, result -> {
+//                    if ("ok".equals(result.getString("status"))) {
+//                        promise.complete(fresh);
+//                    } else {
+//                        logger.error("Error while creating the {} for ID: {}", taskField, documentId);
+//                        promise.fail("Failed to store " + taskField + " for document ID: " + documentId);
+//                    }
+//                });
             }).onFailure(err -> {
                 logger.error("Error while generating the {} for ID: {}", taskField, documentId, err);
                 promise.fail(err);
@@ -132,33 +123,8 @@ public class DefaultCaptionService extends MongoDbCrudService implements Caption
     }
 
     private Future<String> parseWorkerResponse(String body, TaskType taskType) {
-        if (body == null || body.isEmpty()) {
-            return Future.failedFuture("Empty response from IA worker for " + taskType);
-        }
-
-        final JsonObject json;
-        try {
-            json = new JsonObject(body);
-        } catch (DecodeException e) {
-            return Future.failedFuture("Invalid IA worker response for " + taskType + ": " + body);
-        }
-
-        if (Boolean.FALSE.equals(json.getBoolean("success")) || json.containsKey("error")) {
-            return Future.failedFuture(json.getString("error", "IA worker error for " + taskType));
-        }
-
-        final String status = json.getString("status");
-        if (status != null && !"success".equals(status)) {
-            return Future.failedFuture(
-                    json.getString("message", "IA worker returned status '" + status + "' for " + taskType));
-        }
-
-        final String result = json.getString("result");
-        if (result == null || result.isEmpty()) {
-            return Future.failedFuture("IA worker returned an empty result for " + taskType);
-        }
-
-        return Future.succeededFuture(result);
+        logger.info("Raw response for {}: {}", taskType, body);
+        return Future.succeededFuture(String.valueOf(body));
     }
 
     /**

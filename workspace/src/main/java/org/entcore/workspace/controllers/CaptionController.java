@@ -25,8 +25,8 @@ public class CaptionController extends BaseController {
         final String userAgent = Optional.ofNullable(request.getHeader("User-Agent")).orElse("");
         final String sessionId = UserUtils.getSessionId(request).orElse("");
         final String acceptLanguage = I18n.acceptLanguage(request);
-        final String language = (acceptLanguage == null || acceptLanguage.isEmpty()) ? DEFAULT_LANGUAGE : acceptLanguage.split(
-                ",")[0].split("-")[0];
+        final String language = (acceptLanguage == null || acceptLanguage.isEmpty()) ?
+                DEFAULT_LANGUAGE : acceptLanguage.split(",")[0].split("-")[0];
 
         UserUtils.getUserInfos(eb, request, userInfo -> {
             captionService.getCaption(userInfo, documentId, sessionId, userAgent, language)
@@ -47,8 +47,8 @@ public class CaptionController extends BaseController {
         final String userAgent = Optional.ofNullable(request.getHeader("User-Agent")).orElse("");
         final String sessionId = UserUtils.getSessionId(request).orElse("");
         final String acceptLanguage = I18n.acceptLanguage(request);
-        final String language = (acceptLanguage == null || acceptLanguage.isEmpty()) ? DEFAULT_LANGUAGE : acceptLanguage.split(
-                ",")[0].split("-")[0];
+        final String language = (acceptLanguage == null || acceptLanguage.isEmpty()) ?
+                DEFAULT_LANGUAGE : acceptLanguage.split(",")[0].split("-")[0];
 
         UserUtils.getUserInfos(eb, request, userInfo -> {
             captionService.getOcr(userInfo, documentId, sessionId, userAgent, language)
