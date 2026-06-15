@@ -507,7 +507,7 @@ public class StructureController extends BaseController {
 			filter.put("activated", request.params().get("a"));
 		}
 
-		if (request.params().contains("includeFederated")) {
+		if (request.params().contains("includeFederated") && Boolean.parseBoolean(request.params().get("includeFederated"))) {
 			filter.put("includeFederated", true);
 		}
 
