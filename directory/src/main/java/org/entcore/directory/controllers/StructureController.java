@@ -346,48 +346,41 @@ public class StructureController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void getMassmailUsers(final HttpServerRequest request){
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos infos) {
-				final JsonObject filter = new JsonObject();
-				final String structureId = request.params().get("structureId");
-				final List<String> sorts = request.params().getAll("s");
-				final Boolean filterMail = request.params().contains("mail") ?
-						new Boolean(request.params().get("mail")) :
-						null;
+		UserUtils.getUserInfos(eb, request, infos -> {
+            final JsonObject filter = new JsonObject();
+            final String structureId = request.params().get("structureId");
+            final List<String> sorts = request.params().getAll("s");
+            final Boolean filterMail = request.params().contains("mail") ?
+                    new Boolean(request.params().get("mail")) :
+                    null;
 
-				filter
-					.put("profiles", new JsonArray(request.params().getAll("p")))
-					.put("levels", new JsonArray(request.params().getAll("l")))
-					.put("classes", new JsonArray(request.params().getAll("c")))
-					.put("sort", new JsonArray(sorts));
+            filter
+                .put("profiles", new JsonArray(request.params().getAll("p")))
+                .put("levels", new JsonArray(request.params().getAll("l")))
+                .put("classes", new JsonArray(request.params().getAll("c")))
+                .put("sort", new JsonArray(sorts));
 
-				if(request.params().contains("a")){
-					filter.put("activated", request.params().get("a"));
-				}
+            if(request.params().contains("a")){
+                filter.put("activated", request.params().get("a"));
+            }
 
-				if(request.params().contains("dateFilter") && request.params().contains("date")) {
-				    filter.put("dateFilter", request.params().get("dateFilter"));
-				    filter.put("date", request.params().get("date"));
-                }
+            if(request.params().contains("dateFilter") && request.params().contains("date")) {
+                filter.put("dateFilter", request.params().get("dateFilter"));
+                filter.put("date", request.params().get("date"));
+}
 
-				massMailService.massmailUsers(structureId, filter, filterMail, true, infos, arrayResponseHandler(request));
-			}
-		});
+            massMailService.massmailUsers(structureId, filter, filterMail, true, infos, arrayResponseHandler(request));
+        });
 	}
 
 	@Get("/structure/:structureId/massMail/allUsers")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void getMassMailUsersList(final HttpServerRequest request){
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos infos) {
-				final String structureId = request.params().get("structureId");
-
-				massMailService.massMailAllUsersByStructure(structureId, infos, arrayResponseHandler(request));
-			}
-		});
+		UserUtils.getUserInfos(eb, request, infos -> {
+            final String structureId = request.params().get("structureId");
+            massMailService.massMailAllUsersByStructure(structureId, infos, arrayResponseHandler(request));
+        });
 	}
 
 	@Get("/structure/massmessaging/template")
