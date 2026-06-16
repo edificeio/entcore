@@ -1,4 +1,4 @@
-import { ng, template, idiom as lang, http, $, skin } from 'entcore';
+import { ng, template, idiom as lang, http, skin } from 'entcore';
 
 export let loginController = ng.controller('LoginController', ['$scope', ($scope) => {
 	$scope.template = template;
@@ -117,14 +117,16 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 		if (window.location.href.split('activationCode=').length > 1) {
 			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
 		}
-		if (window.location.href.split('callback=').length > 1) {
-			let details = window.location.href.split('callback=')[1].split('&')[0].split('#');
-			_callback = details[0];
-			$scope.details = details.length > 1 ? details[1] : "";
-		} else if (window.location.href.split('callBack=').length > 1) {
-			let details = window.location.href.split('callBack=')[1].split('&')[0].split('#');
-			_callback = details[0];
-			$scope.details = details.length > 1 ? details[1] : "";
+		if (window.location.search.split('callback=').length > 1) {
+		    const raw = window.location.search.split('callback=')[1].split('&')[0];
+		    const hashIdx = raw.indexOf('#');
+		    _callback = hashIdx === -1 ? raw : raw.substring(0, hashIdx);
+		    $scope.details = hashIdx === -1 ? "" : raw.substring(hashIdx + 1);
+		} else if (window.location.search.split('callBack=').length > 1) {
+		    const raw = window.location.search.split('callBack=')[1].split('&')[0];
+		    const hashIdx = raw.indexOf('#');
+		    _callback = hashIdx === -1 ? raw : raw.substring(0, hashIdx);
+		    $scope.details = hashIdx === -1 ? "" : raw.substring(hashIdx + 1);
 		}
 	}
 
@@ -146,33 +148,19 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 	};
 	xhr.send();
 
-	$scope.connect = function () {
-		console.log('connect');
-		// picking up values manually because the browser autofill isn't registered by angular
-		http().post('/auth/login', http().serialize({
-			email: $('#email').val(),
-			password: $('#password').val(),
-			rememberMe: $scope.user.rememberMe,
-			secureLocation: $scope.user.secureLocation,
-			callBack: $scope.callBack,
-			details: $scope.details
-		}))
-			.done(function (data) {
-				if (typeof data !== 'object') {
-					if (window.location.href.indexOf('callback=') !== -1) {
-						window.location.href = (window as any).unescape(window.location.href.split('callback=')[1]);
-					}
-					else {
-						window.location.href = $scope.callBack;
-					}
-				}
-				if (data.error) {
-					$scope.error = data.error.message;
-				}
-				if (!$scope.$$phase) {
-					$scope.$apply();
-				}
-			});
+	$scope.connecting = false;
+
+	$scope.onLoginSubmit = function (event) {
+		// The form does a native POST to /auth/login: the server renders the
+		// activation/reset pages and issues the success redirect itself. We only
+		// guard here against multiple submissions (double-click, rapid Enter).
+		if ($scope.connecting) {
+			if (event) {
+				event.preventDefault();
+			}
+			return;
+		}
+		$scope.connecting = true;
 	};
 
 	for (var i = 0; i < 10; i++) {

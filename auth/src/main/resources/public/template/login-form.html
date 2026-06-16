@@ -62,7 +62,7 @@
                         <div class="twelve cell" bind-html="welcome.content"></div>
                     </div>
                 </div>
-                <form method="post" action="/auth/login">
+                <form method="post" action="/auth/login" ng-submit="onLoginSubmit($event)">
                     <p>
                         <label><i18n>auth.email</i18n></label>
                         <input type="text" ng-model="user.email" ng-keydown="noSpace($event)" ng-change="noUpperCase()" name="email" id="email" autofocus tabindex=1 />
@@ -82,7 +82,7 @@
 													<a class="forgot-link" href="/auth/forgot#/id"><small><i18n>missing.id</i18n></small></a>
 													<a class="forgot-link" href="/auth/forgot#/password"><small><i18n>missing.password</i18n></small></a>
 												</div>
-                        <button tabindex="3" class="flex-magnet-bottom-right"><i18n>auth.login</i18n></button>
+                        <button type="submit" ng-disabled="connecting" tabindex="3" class="flex-magnet-bottom-right"><i18n>auth.login</i18n></button>
                     </div>
                 </form>
             </div>
