@@ -75,7 +75,6 @@ public class NotificationHelper {
                 "language: uac.language, " +
                 "displayName: u.displayName, " +
                 "tokens: uac.fcmTokens, " +
-                "uai: head(uais), " +
                 "quietHours: uac.quietHours, " +
                 "timezone: uac.timezone ",
                 userList -> {
@@ -108,8 +107,7 @@ public class NotificationHelper {
 
                         QuietHoursPreference quietHoursPreference = parseQuietHours(user);
                         TimezonePreference timezonePreference = parseTimezone(user);
-                        String uai = user.getString("uai");
-                        boolean isQuiet = QuietHoursHelper.isQuietHour(now, quietHoursPreference, timezonePreference, uai);
+                        boolean isQuiet = QuietHoursHelper.isQuietHour(now, quietHoursPreference, timezonePreference);
 
                         if (isQuiet) {
                             JsonObject recipient = recipientById.get(userId);
