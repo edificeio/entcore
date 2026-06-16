@@ -3,7 +3,7 @@ import { Observable, Subject } from "rxjs";
 import { ClassRoom, User, UserTypes } from "../model";
 import { directoryService } from "../service";
 import { EventDelegateScope, TRACK } from "./events";
-import moment = require("moment");
+import { moment } from "entcore";
 
 export enum UserCreateField {
   Name,
