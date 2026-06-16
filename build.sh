@@ -165,6 +165,19 @@ buildFrontend () {
     fi
   fi
 
+  # --- Build directory frontend (Vite)
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "directory" ]; then
+    echo "[buildFrontend] Building directory with Vite..."
+    if [ "$NO_DOCKER" = "true" ] ; then
+      npm run build:directory
+    else
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm run build:directory"
+    fi
+    if [ $? -ne 0 ] ; then
+      exit 1
+    fi
+  fi
+
   # --- Build react-based frontends
   local modules
   if [ "$MODULE" = "" ]; then
