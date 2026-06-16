@@ -1,8 +1,11 @@
 import { check } from "k6";
 import {
+  getHeaders,
     Visible,
   } from "../../../node_modules/edifice-k6-commons/dist/index.js";
+import http from "k6/http";
 
+const rootUrl = __ENV.ROOT_URL;
 
 export function checkSearchVisible(res, expectedUserFields:string[], expectedGroupFields:string[], checkName) {
   const checks = {}
@@ -20,4 +23,12 @@ export function checkSearchVisible(res, expectedUserFields:string[], expectedGro
   if(!ok) {
     console.error(checkName, res)
   }
+}
+
+export function checkUsersCanCommunicate(user1Id: string, user2Id: string, expectedCanCommunicate: boolean) {
+  const res = http.get(
+    `${rootUrl}/communication/verify/${user1Id}/${user2Id}`,
+    { headers: getHeaders() },
+  );
+  return res.status === 200 && JSON.parse(<string>res.body).canCommunicate === expectedCanCommunicate;
 }
