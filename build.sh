@@ -167,6 +167,15 @@ buildFrontend () {
 
   # --- Build directory frontend (Vite)
   if [ "$MODULE" = "" ] || [ "$MODULE" = "directory" ]; then
+    if [ ! -e "./directory/src/main/resources/view" ] ; then
+      mkdir "./directory/src/main/resources/view"
+    fi
+    VERSION=$(date +%s)
+    find ./directory/src/main/resources/view-src -type f \( -name "*.html" -o -name "*.json" \) | while read -r file; do
+      dest="./directory/src/main/resources/view/${file#./directory/src/main/resources/view-src/}"
+      mkdir -p "$(dirname "$dest")"
+      sed "s/@@VERSION/$VERSION/g" "$file" > "$dest"
+    done
     echo "[buildFrontend] Building directory with Vite..."
     if [ "$NO_DOCKER" = "true" ] ; then
       npm run build:directory
