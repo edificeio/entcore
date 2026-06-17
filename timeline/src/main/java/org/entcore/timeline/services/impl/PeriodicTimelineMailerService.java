@@ -798,15 +798,15 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             if (notificationPreference == null){
                 continue;
             }
-            notificationPreference.getJsonObject("preferences", new JsonObject())
+            JsonObject userNotificationPref = notificationPreference.getJsonObject("preferences", new JsonObject())
                     .getJsonObject("config", new JsonObject())
                     .getJsonObject(notificationName, new JsonObject());
             if (TimelineNotificationsLoader.Frequencies.DAILY.name().equals(
-                    notificationPrefsMixin("defaultFrequency", notificationPreference, notificationsDefaults.getJsonObject(notificationName))) &&
+                    notificationPrefsMixin("defaultFrequency", userNotificationPref, notificationsDefaults.getJsonObject(notificationName))) &&
                     !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
-                            notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getJsonObject(notificationName))) &&
+                            notificationPrefsMixin("restriction", userNotificationPref, notificationsDefaults.getJsonObject(notificationName))) &&
                     !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
-                            notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getJsonObject(notificationName)))) {
+                            notificationPrefsMixin("restriction", userNotificationPref, notificationsDefaults.getJsonObject(notificationName)))) {
 
                 notification.put("template", notificationsDefaults.getJsonObject(notificationName, new JsonObject()).getString("template", ""));
 
