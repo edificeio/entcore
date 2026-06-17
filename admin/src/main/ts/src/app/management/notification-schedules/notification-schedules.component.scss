@@ -1,0 +1,22 @@
+.see-more {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.flex-select {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 15px;
+
+    &>label {
+        flex: 0 0 350px;
+    }
+
+    &>ode-mono-select {
+        flex: 1;
+    }
+}
+
+a {
+    cursor: pointer;
+}
