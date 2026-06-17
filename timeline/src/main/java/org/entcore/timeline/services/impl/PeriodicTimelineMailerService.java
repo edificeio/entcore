@@ -180,7 +180,8 @@ public class PeriodicTimelineMailerService implements CronMailerService {
 
         final JsonObject results = new JsonObject()
                 .put("mails.sent", new AtomicInteger(0))
-                .put("users.ko", new AtomicInteger(0));
+                .put("users.ko", new AtomicInteger(0))
+                .put("users.skipped.quiethours", new AtomicInteger(0));
         final JsonObject notificationsDefaults = new JsonObject();
         final List<String> notifiedUsers = new ArrayList<>();
 
@@ -503,7 +504,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         log.info("[PeriodicMailer] Page : " + currentPage + "/" + pages.size());
 
         if(periodicity == Periodicity.WEEKLY) {
-            return assemblePipeline(currentPage, users, from, to, notificationsDefaults)
+            return assemblePipeline(currentPage, users, from, to, notificationsDefaults, results)
                     .recover(t -> {
                         log.error("[PeriodicMailer] Error during mail pipeline ", t);
                         ((AtomicInteger) results.getValue("users.ko")).addAndGet(users.size());
@@ -528,13 +529,47 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                 });
     }
 
-    private Future<JsonObject> assemblePipeline(int page, List<String> users, Date from, Date to, JsonObject notificationsDefaults) {
+    private Future<JsonObject> assemblePipeline(int page, List<String> users, Date from, Date to, JsonObject notificationsDefaults, JsonObject results) {
         return Future.succeededFuture().compose( h -> getAuthorizedUsers( users, page)
                 .compose( filteredUser -> getUserPreferences(filteredUser, page)))
+                .map( preferences -> computeWeeklyScheduleAt(preferences, results, page))
                 .compose( preferences -> getAggregatedUserNotifications(preferences, from, to, page))
                 .compose( notificationContext -> applyRuleToNotification(notificationContext, notificationsDefaults, page))
                 .compose( notificationContext -> processTimelineTemplate(notificationContext, page))
                 .compose( notificationContext -> sendMassMail(notificationContext, page));
+    }
+
+    /**
+     * Computes each user's weekly-mail scheduleAt from their quiet hours: {@code now} (immediate) if not currently in
+     * a quiet hour, else the resumption time (end of quiet period). Users whose quiet hours leave no slot before the
+     * next weekly run are dropped. Unlike the daily pipeline, the weekly is a single (non timezone-partitioned) run,
+     * so there is no 06:00 timezone filter here — only the per-user send time.
+     */
+    private JsonArray computeWeeklyScheduleAt(JsonArray preferences, JsonObject results, int page) {
+        final JsonArray kept = new JsonArray();
+        if (preferences == null) {
+            log.error("[WeeklyMails] getUserPreferences returned null (Neo4j error) page " + page + " - skipping page");
+            return kept;
+        }
+        final Instant now = Instant.now();
+        final Instant nextRun = now.plus(7, ChronoUnit.DAYS);
+        int skippedQuietHours = 0;
+        for (Object userObj : preferences) {
+            final JsonObject user = (JsonObject) userObj;
+            final ZoneId zone = QuietHoursHelper.resolveTimezone(NotificationHelper.parseTimezone(user));
+            final QuietHoursPreference quietHours = NotificationHelper.parseQuietHours(user);
+            final Instant scheduleAt = QuietHoursHelper.computeWeeklyMailScheduleAt(now, quietHours, zone, nextRun);
+            if (scheduleAt == null) {
+                log.info("[WeeklyMails] UserId [" + user.getString("userId") + "] - no send slot before next run, mail skipped");
+                skippedQuietHours++;
+                continue;
+            }
+            user.put("scheduleAt", scheduleAt.toString());
+            kept.add(user);
+        }
+        ((AtomicInteger) results.getValue("users.skipped.quiethours")).addAndGet(skippedQuietHours);
+        log.info("[WeeklyMails] scheduleAt page " + page + " : kept " + kept.size() + ", no send slot " + skippedQuietHours);
+        return kept;
     }
 
     private Future<JsonObject> assembleDailyPipeline(int page, List<String> users, Date from, Date to, JsonObject notificationsDefaults) {

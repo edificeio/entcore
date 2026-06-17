@@ -9,7 +9,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 /**
- * Utility class for quiet hours logic: schedule evaluation, timezone resolution, UAI mapping.
+ * Utility class for quiet hours logic: schedule evaluation and timezone resolution.
  */
 public final class QuietHoursHelper {
 
@@ -67,6 +67,16 @@ public final class QuietHoursHelper {
         final Instant base = localRun.plusHours(1).toInstant();
         final Instant nextRun = localRun.plusDays(1).toInstant();
         final Instant scheduleAt = computeNextSendTime(base, userPrefQuietHours, zone);
+        if (scheduleAt == null || !scheduleAt.isBefore(nextRun)) return null;
+        return scheduleAt;
+    }
+
+    /**
+     * Computes the scheduleAt instant for the weekly mail of a user, evaluated at {@code now} (the weekly run).
+     * Return the send instant ({@code now} = immediate), or null if it must be dropped
+     */
+    public static Instant computeWeeklyMailScheduleAt(Instant now, QuietHoursPreference userPrefQuietHours, ZoneId zone, Instant nextRun) {
+        final Instant scheduleAt = computeNextSendTime(now, userPrefQuietHours, zone);
         if (scheduleAt == null || !scheduleAt.isBefore(nextRun)) return null;
         return scheduleAt;
     }

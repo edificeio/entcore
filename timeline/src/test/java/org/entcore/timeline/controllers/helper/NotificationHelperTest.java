@@ -378,4 +378,53 @@ public class NotificationHelperTest {
     public void testComputeDailyMailScheduleAt_NullZone_Skipped() {
         assertNull(QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), null, null));
     }
+
+    // --- computeWeeklyMailScheduleAt : immediate if not in quiet, else resumption, drop if no slot before next run ---
+
+    private static final Instant WEEKLY_NOW = dt(2026, 6, 1, 22, 30).toInstant();        // Monday 22:30 Paris
+    private static final Instant WEEKLY_NEXT_RUN = WEEKLY_NOW.plus(Duration.ofDays(7));
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_NoZone_Immediate() {
+        // no timezone -> no quiet hours -> immediate (returns now)
+        assertEquals(WEEKLY_NOW, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(fullSchedule(22, 23)), null, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_NoQuietHours_Immediate() {
+        assertEquals(WEEKLY_NOW, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, null, PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_NotQuietNow_Immediate() {
+        // quiet 02h-04h, now is 22:30 -> not in a quiet slot -> immediate
+        assertEquals(WEEKLY_NOW, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(fullSchedule(2, 3, 4)), PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_InQuiet_ReturnsResumption() {
+        // Monday quiet 22h,23h ; now Monday 22:30 -> resumption = Tuesday 00:00
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{22, 23};
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        Instant expected = dt(2026, 6, 2, 0, 0).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(schedule), PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_DegenerateFullQuiet_Dropped() {
+        int[] allDay = new int[24];
+        for (int h = 0; h < 24; h++) allDay[h] = h;
+        assertNull(QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(fullSchedule(allDay)), PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_ResumptionAfterNextRun_Dropped() {
+        // resumption Tuesday 00:00, but next run only 1h after now -> dropped
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{22, 23};
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        Instant nextRun = WEEKLY_NOW.plus(Duration.ofHours(1));
+        assertNull(QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(schedule), PARIS, nextRun));
+    }
 }
