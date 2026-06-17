@@ -1962,8 +1962,11 @@ public class AuthController extends BaseController {
 					}
 				}*/
 				mfaState.remove("valid");
+				final String mfaType = mfaState.containsKey("type")
+					? mfaState.getString("type")
+					: (Mfa.withSms() ? Mfa.TYPE_SMS : Mfa.TYPE_EMAIL);
 				renderJson(request, new JsonObject()
-					.put("type", Mfa.withTotp() ? Mfa.TYPE_TOTP : (Mfa.withSms() ? Mfa.TYPE_SMS : Mfa.TYPE_EMAIL))
+					.put("type", mfaType)
 					.put("waitInSeconds", UserValidation.getDefaultWaitInSeconds())
 					.put("state", mfaState)
 				);

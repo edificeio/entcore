@@ -26,8 +26,11 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
+import fr.wseduc.webutils.Either;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
 
 import com.eatthepath.otp.TimeBasedOneTimePasswordGenerator;
 import java.security.InvalidKeyException;
@@ -52,11 +55,37 @@ public class DefaultMfaService implements MfaService {
         MfaField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
             super(
                 Mfa.withTotp() ? "totp" : Mfa.withSms() ? "mobile" : "email", // used for reading only
-                "mfaState", 
-                vertx, 
+                "mfaState",
+                vertx,
                 config,
                 params
             );
+        }
+
+        @Override
+        protected Future<JsonObject> retrieveFullState(String userId) {
+            // When both TOTP and SMS are active, fetch both fields so that users without
+            // a TOTP secret can still fall back to SMS (mobile number must be available).
+            if (Mfa.withTotp() && Mfa.withSms()) {
+                final Promise<JsonObject> promise = Promise.promise();
+                String query =
+                    "MATCH (u:`User` { id : {id}}) " +
+                    "RETURN COALESCE(u.totp, null) as totp, COALESCE(u.mobile, null) as mobile, " +
+                    "COALESCE(u." + stateField + ", null) as " + stateField + ", " +
+                    "u.firstName as firstName, u.lastName as lastName, u.displayName as displayName";
+                neo.execute(query, new JsonObject().put("id", userId), m -> {
+                    Either<String, JsonObject> r = validUniqueResult(m);
+                    if (r.isRight()) {
+                        final JsonObject result = r.right().getValue();
+                        result.put(stateField, fromRaw(result.getString(stateField)));
+                        promise.complete(result);
+                    } else {
+                        promise.fail(r.left().getValue());
+                    }
+                });
+                return promise.future();
+            }
+            return super.retrieveFullState(userId);
         }
 
         /** 
@@ -292,8 +321,12 @@ public class DefaultMfaService implements MfaService {
                     .put("userName", userInfos.getUsername())
                     .put("duration", Math.round(DataStateUtils.ttlToRemainingSeconds(expires) / 60f))
                     .put("code", DataStateUtils.getKey(mfaState));
-
-                    return mfaField.sendValidationMessage(request, fullState.getString("target"), templateParams, "MFA")
+                    // When TOTP is active but this user has no secret enrolled, fall back to mobile for SMS.
+                    String smsTarget = fullState.getString("target");
+                    if (StringUtils.isEmpty(smsTarget) && Mfa.withSms()) {
+                        smsTarget = fullState.getString("mobile");
+                    }
+                    return mfaField.sendValidationMessage(request, smsTarget, templateParams, "MFA")
                     .onFailure( t -> {
                         // Code was not sent => consider it is outdated
                         logger.error(t);
