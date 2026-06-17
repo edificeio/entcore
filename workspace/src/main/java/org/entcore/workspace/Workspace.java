@@ -141,7 +141,9 @@ public class Workspace extends BaseServer {
 		quotaController.setQuotaService(quotaService);
 		addController(quotaController);
 
-        DefaultCaptionService captionService = new DefaultCaptionService(MongoDb.getInstance(), vertx);
+        final String platformId = config.getString("platform-name", "unnamed-pf");
+
+        DefaultCaptionService captionService = new DefaultCaptionService(MongoDb.getInstance(), platformId, vertx);
         CaptionController captionController = new CaptionController(captionService);
         addController(captionController);
 

@@ -1,9 +1,12 @@
 package org.entcore.workspace.controllers;
 
-import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserUtils;
 import org.entcore.workspace.service.impl.DefaultCaptionService;
 
@@ -19,48 +22,74 @@ public class CaptionController extends BaseController {
         this.captionService = captionService;
     }
 
-    @Get("/caption/:documentId")
+    @Post("/caption")
+    @SecuredAction("workspace.caption.generate")
     public void caption(final HttpServerRequest request) {
-        final String documentId = request.params().get("documentId");
-        final String userAgent = Optional.ofNullable(request.getHeader("User-Agent")).orElse("");
-        final String sessionId = UserUtils.getSessionId(request).orElse("");
-        final String acceptLanguage = I18n.acceptLanguage(request);
-        final String language = (acceptLanguage == null || acceptLanguage.isEmpty()) ?
-                DEFAULT_LANGUAGE : acceptLanguage.split(",")[0].split("-")[0];
+        UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(userInfos -> {
+            RequestUtils.bodyToJson(request, payload -> {
+                final String documentId = payload.getString("documentId");
 
-        UserUtils.getUserInfos(eb, request, userInfo -> {
-            captionService.getCaption(userInfo, documentId, sessionId, userAgent, language)
-                          .onSuccess(text -> request.response()
-                                                    .putHeader("Content-Type", "text/plain; charset=utf-8")
-                                                    .setStatusCode(200)
-                                                    .end(text))
-                          .onFailure(error -> {
-                              final boolean notFound = error instanceof FileNotFoundException;
-                              request.response().setStatusCode(notFound ? 404 : 500).end(error.getMessage());
-                          });
-        });
+                if (documentId == null || documentId.isEmpty()) {
+                    badRequest(request, "documentId is required");
+                    return;
+                }
+
+                final String userAgent = Optional.ofNullable(request.getHeader("User-Agent")).orElse("");
+                final String sessionId = UserUtils.getSessionId(request).orElse("");
+                final String language = resolveLanguage(request);
+
+                captionService.getCaption(userInfos, documentId, sessionId, userAgent, language).onSuccess(altText -> {
+                    final JsonObject body = new JsonObject().put("text", altText);
+
+                    request.response()
+                            .putHeader("content-type", "application/json")
+                            .setStatusCode(200)
+                            .end(body.encode());
+                }).onFailure(error -> {
+                    final boolean notFound = error instanceof FileNotFoundException;
+                    request.response().setStatusCode(notFound ? 404 : 500).end(error.getMessage());
+                });
+            });
+        }).onFailure(error -> request.response().setStatusCode(401).end(error.getMessage()));
     }
 
-    @Get("/ocr/:documentId")
+    @Post("/ocr")
+    @SecuredAction("workspace.caption.generate")
     public void ocr(final HttpServerRequest request) {
-        final String documentId = request.params().get("documentId");
-        final String userAgent = Optional.ofNullable(request.getHeader("User-Agent")).orElse("");
-        final String sessionId = UserUtils.getSessionId(request).orElse("");
-        final String acceptLanguage = I18n.acceptLanguage(request);
-        final String language = (acceptLanguage == null || acceptLanguage.isEmpty()) ?
-                DEFAULT_LANGUAGE : acceptLanguage.split(",")[0].split("-")[0];
+        UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(userInfos -> {
+            RequestUtils.bodyToJson(request, payload -> {
+                final String documentId = payload.getString("documentId");
 
-        UserUtils.getUserInfos(eb, request, userInfo -> {
-            captionService.getOcr(userInfo, documentId, sessionId, userAgent, language)
-                          .onSuccess(text -> request.response()
-                                                    .putHeader("Content-Type", "text/plain; charset=utf-8")
-                                                    .setStatusCode(200)
-                                                    .end(text))
-                          .onFailure(error -> {
-                              final boolean notFound = error instanceof FileNotFoundException;
-                              request.response().setStatusCode(notFound ? 404 : 500).end(error.getMessage());
-                          });
-        });
+                if (documentId == null || documentId.isEmpty()) {
+                    badRequest(request, "documentId is required");
+                    return;
+                }
+
+                final String userAgent = Optional.ofNullable(request.getHeader("User-Agent")).orElse("");
+                final String sessionId = UserUtils.getSessionId(request).orElse("");
+                final String language = resolveLanguage(request);
+
+                captionService.getOcr(userInfos, documentId, sessionId, userAgent, language).onSuccess(ocr -> {
+                    final JsonObject body = new JsonObject().put("text", ocr);
+
+                    request.response()
+                            .putHeader("content-type", "application/json")
+                            .setStatusCode(200)
+                            .end(body.encode());
+                }).onFailure(error -> {
+                    final boolean notFound = error instanceof FileNotFoundException;
+                    request.response().setStatusCode(notFound ? 404 : 500).end(error.getMessage());
+                });
+            });
+        }).onFailure(error -> request.response().setStatusCode(401).end(error.getMessage()));
+    }
+
+    private String resolveLanguage(HttpServerRequest request) {
+        final String acceptLanguage = I18n.acceptLanguage(request);
+        if (acceptLanguage == null || acceptLanguage.isEmpty()) {
+            return DEFAULT_LANGUAGE;
+        }
+        return acceptLanguage.split(",")[0].split("-")[0];
     }
 
 }
