@@ -249,6 +249,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
      *   "children": array of child objects defined as {firstName: string, lastName: string, classname: string}. Null for non-Relative Users.
      *   "firstChild": first child object found in the "children" array. May be null.
      *   "otherChildren": array of other child objects found in the "children" array, different from "firstChild". May be null.
+     *   "hasFederatedIdentity: boolean true if has an idp or structure default auth is federated for his profile"
      *
      * // Below are the DEPRECATED FIELDS, kept for backward compability only. Do not use anymore.
      *   "classname": name of the first found class the User belongs to. Use firstClass instead.
@@ -275,7 +276,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String condition = "";
         String optional =
                 " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
-                        "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+                " OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
+                " OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(u.profiles), auth: 'FEDERATED' }) ";
+        ;
 
         JsonObject params = new JsonObject().put("structureId", structureId);
 
@@ -391,7 +394,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
 
         //With clause
         String withStr =
-            " WITH u, p "
+            " WITH u, p, collect(auths) as auths "
            +", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass "
            +", CASE count(child) WHEN 0 THEN null ELSE filter("
               +"c IN (collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name})) WHERE not(c.firstName is null)"
@@ -411,7 +414,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             +", CASE WHEN size(children) < 2 THEN null ELSE tail(children) END as otherChildren"
             // Deprecated fields below
             +", classname, isInClass"
-            +", CASE WHEN size(children) = 0 THEN null ELSE head(children) END as child";
+            +", CASE WHEN size(children) = 0 THEN null ELSE head(children) END as child"
+            +", (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NULL as hasFederatedIdentity ";;
 
         //Order by
         String sort = " ORDER BY ";
@@ -474,7 +478,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String optional =
                 "OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
-                        "OPTIONAL MATCH (u:User)-[rf:HAS_FUNCTION]->(f:Function) ";
+                        "OPTIONAL MATCH (u:User)-[rf:HAS_FUNCTION]->(f:Function) "
+                +" OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(u.profiles), auth: 'FEDERATED' }) ";
 
         JsonObject params = new JsonObject().put("structureId", structureId);
 
@@ -498,21 +503,20 @@ public class DefaultMassMailService extends Renders implements MassMailService {
 
         //With clause
         String withStr =
-                "WITH u, p, rf, f ";
+                "WITH u, p, rf, f, COLLECT(auths) as auths ";
 
         //Return clause
         String returnStr =
                 "RETURN distinct collect(p.name)[0] as type, " +
                         "u.id as id, u.firstName as firstName, u.lastName as lastName, " +
                         "u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code, " +
-                        "u.created as creationDate, COALESCE(u.blocked, false) as blocked, " +
-                        "COLLECT(distinct [f.externalId, rf.scope]) as functions ";
+                        "u.created as creationDate, COALESCE(u.blocked, false) as blocked ";
 
         withStr += ", collect(distinct {id: c.id, name: c.name}) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
         returnStr += ", classes, classname, isInClass ";
 
         withStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
-        returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children ";
+        returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children, (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV'] AND u.activationCode IS NULL )  as hasFederatedIdentity ";
 
         String sort = "ORDER BY lastName";
 
