@@ -12,22 +12,8 @@
   </div>
 
   <div class="container has-shadow">
-    <!--
-    <h2>
-      <label>
-        <s5l>management.structure.notification.schedules.title</s5l>
-        <input
-          type="checkbox"
-          name="activateCB"
-          [(ngModel)]="activated"
-          class="is-pulled-right"
-        />
-      </label>
-    </h2>
--->
-
     <form #tzForm="ngForm" class="has-vertical-padding-10">
-      <h2>
+      <b>
         <label
           ><s5l>management.structure.notification.schedules.title</s5l>
           <input
@@ -37,7 +23,7 @@
             class="is-pulled-right"
           />
         </label>
-      </h2>
+      </b>
 
       <p>
         <s5l>management.structure.notification.schedules.paragraph</s5l>
@@ -55,7 +41,8 @@
         ></ode-mono-select>
       </ode-form-field>
 
-      <button type="button"
+      <button
+        type="button"
         class="is-pulled-right"
         [disabled]="tzForm.pristine || tzForm.invalid || timezone == null"
         (click)="showConfirmLightbox = true"

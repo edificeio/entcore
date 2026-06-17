@@ -20,37 +20,11 @@ export class TimezoneService {
     if (this.availableTimezones !== null) return this.availableTimezones;
 
     const availablePrefixes = ["Eur", "Pac", "Afr", "Ame", "Asi", "Aus", "Ind"];
-    try {
-      this.availableTimezones = (Intl as any)
-        .supportedValuesOf("timeZone")
-        .filter((tz: string) =>
-          availablePrefixes.some((prefix) => tz.startsWith(prefix)),
-        );
-    } catch {
-      this.availableTimezones = [
-        "Europe/Paris",
-        "Europe/Brussels",
-        "Europe/Lisbon",
-        "Europe/Madrid",
-        "Europe/Rome",
-        "Europe/Berlin",
-        "Europe/London",
-        "Indian/Mayotte",
-        "Indian/Reunion",
-        "Pacific/Noumea",
-        "Pacific/Tahiti",
-        "Pacific/Wallis",
-        "America/Bogota",
-        "America/Cayenne",
-        "America/Guadeloupe",
-        "America/Guyana",
-        "America/Marigot",
-        "America/Martinique",
-        "America/Mexico_City",
-        "America/Miquelon",
-        "America/St_Barthelemy",
-      ];
-    }
+    this.availableTimezones = (Intl as any)
+      .supportedValuesOf("timeZone")
+      .filter((tz: string) =>
+        availablePrefixes.some((prefix) => tz.startsWith(prefix)),
+      ) as string[];
 
     return this.availableTimezones;
   }
