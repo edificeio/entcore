@@ -29,6 +29,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" },
         { label: 'management.structure.gar.tab', view: 'gar', active: 'gar'},
         { label: "management.structure.user-position.tab", view: "positions", active: "positions" },
+        { label: "management.structure.notification.schedules.tab", view: "notification-schedules", active: "notification-schedules" },
     ];
 
     private structure: StructureModel;
