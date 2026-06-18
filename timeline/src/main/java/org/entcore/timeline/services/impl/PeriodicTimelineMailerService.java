@@ -662,6 +662,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             final String userLanguage = mutableUserLanguage;
             final String userDisplayName = getOrElse(userPrefs.getString("displayName"), "", true);
             SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.forLanguageTag(userLanguage));
+            formatter.setTimeZone(TimeZone.getTimeZone(ZoneId.of(userPrefs.getString("zoneId", DEFAULT_TIMEZONE.getId()))));
 
             final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject()
                     .put("headers", new JsonObject()
