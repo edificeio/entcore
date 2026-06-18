@@ -132,13 +132,13 @@ public class DefaultSchoolServiceTest {
                 .put("timezone", "Europe/Paris")
                 .put("quietHours", new JsonObject()
                         .put("schedule", new JsonArray())
-                        .put("enabled", true));
+                        .put("enabled", false));
 
         // Update without any "timezone" key at all
         final JsonObject updateBody = new JsonObject()
                 .put("quietHours", new JsonObject()
                         .put("schedule", new JsonArray())
-                        .put("enabled", true));
+                        .put("enabled", false));
 
         setQuietHoursPreferences(structureId, initialBody)
                 .compose(ignored -> setQuietHoursPreferences(structureId, updateBody))
@@ -168,14 +168,14 @@ public class DefaultSchoolServiceTest {
                 .put("timezone", "Europe/Paris")
                 .put("quietHours", new JsonObject()
                         .put("schedule", new JsonArray())
-                        .put("enabled", true));
+                        .put("enabled", false));
 
         // Update with a different explicit timezone
         final JsonObject updateBody = new JsonObject()
                 .put("timezone", "America/Chicago")
                 .put("quietHours", new JsonObject()
                         .put("schedule", new JsonArray())
-                        .put("enabled", true));
+                        .put("enabled", false));
 
         setQuietHoursPreferences(structureId, initialBody)
                 .compose(ignored -> setQuietHoursPreferences(structureId, updateBody))
