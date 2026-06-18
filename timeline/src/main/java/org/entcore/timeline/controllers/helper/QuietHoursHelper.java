@@ -53,18 +53,18 @@ public final class QuietHoursHelper {
     /**
      * Computes the scheduleAt instant for the daily mail of a user processed at runTime.
      *
-     * <p>Base send time is the next local hour after runTime (run at 06:00 local -> mail at 07:00 local).
-     * If quiet hours are active at the base time, the send time is pushed to the first non-quiet slot.
-     * The mail must be sent before the next daily run of the user's timezone (next local 06:00, i.e. +1 calendar
-     * day — calendar arithmetic so DST transition days stay correct): past that point a fresher digest takes over,
-     * so the mail is dropped instead.</p>
+     * <p>Base send time is the processing hour itself (run at 07:00 local -> mail at 07:00 local, i.e. sent
+     * immediately). If quiet hours are active at the base time, the send time is pushed to the first non-quiet slot.
+     * The mail must be sent before the next daily run of the user's timezone (next local processing hour, i.e. +1
+     * calendar day — calendar arithmetic so DST transition days stay correct): past that point a fresher digest takes
+     * over, so the mail is dropped instead.</p>
      *
      * @return the send instant, or null if no valid slot exists before the next run (mail must be skipped)
      */
     public static Instant computeDailyMailScheduleAt(Instant runTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
         if (zone == null) return null;
         final ZonedDateTime localRun = runTime.atZone(zone).truncatedTo(ChronoUnit.HOURS);
-        final Instant base = localRun.plusHours(1).toInstant();
+        final Instant base = localRun.toInstant();
         final Instant nextRun = localRun.plusDays(1).toInstant();
         final Instant scheduleAt = computeNextSendTime(base, userPrefQuietHours, zone);
         if (scheduleAt == null || !scheduleAt.isBefore(nextRun)) return null;

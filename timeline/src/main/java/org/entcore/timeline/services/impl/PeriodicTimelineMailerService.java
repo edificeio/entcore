@@ -53,7 +53,7 @@ import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 public class PeriodicTimelineMailerService implements CronMailerService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultTimelineMailerService.class);
-    private static final int DAILY_PROCESSING_LOCAL_HOUR = 6;
+    private static final int DAILY_PROCESSING_LOCAL_HOUR = 7;
     private static final ZoneId DEFAULT_TIMEZONE = ZoneId.of("Europe/Paris");
     private final EventBus eb;
     private Map<String, String> registeredNotifications;

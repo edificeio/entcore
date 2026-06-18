@@ -305,17 +305,17 @@ public class NotificationHelperTest {
     }
 
     @Test
-    public void testComputeDailyMailScheduleAt_NoQuietHours_SendsAt7Local() {
-        // no quiet hours preference -> mail scheduled at 07:00 local
-        Instant expected = ZonedDateTime.of(2026, 6, 1, 7, 0, 0, 0, PARIS).toInstant();
+    public void testComputeDailyMailScheduleAt_NoQuietHours_SendsImmediately() {
+        // no quiet hours preference -> mail sent immediately at the processing hour (06:00 local)
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 6, 0, 0, 0, PARIS).toInstant();
         assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), null, PARIS));
     }
 
     @Test
-    public void testComputeDailyMailScheduleAt_RunWithJitter_StillSendsAt7Local() {
-        // cron fired at 06:00:42 -> truncation keeps the 07:00 local target
+    public void testComputeDailyMailScheduleAt_RunWithJitter_StillSendsAtProcessingHour() {
+        // cron fired at 06:00:42 -> truncation drops the jitter, immediate send at 06:00 local
         Instant jittered = ZonedDateTime.of(2026, 6, 1, 6, 0, 42, 0, PARIS).toInstant();
-        Instant expected = ZonedDateTime.of(2026, 6, 1, 7, 0, 0, 0, PARIS).toInstant();
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 6, 0, 0, 0, PARIS).toInstant();
         assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(jittered, null, PARIS));
     }
 
@@ -337,9 +337,9 @@ public class NotificationHelperTest {
 
     @Test
     public void testComputeDailyMailScheduleAt_SlotJustBeforeNextRun_Sent() {
-        // Monday quiet from 7h, Tuesday quiet 0h-4h -> first free slot Tuesday 05:00, before next run (06:00) -> sent
+        // Monday quiet from 6h, Tuesday quiet 0h-4h -> first free slot Tuesday 05:00, before next run (06:00) -> sent
         int[][] schedule = new int[7][];
-        schedule[0] = new int[]{7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        schedule[0] = new int[]{6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
         schedule[1] = new int[]{0, 1, 2, 3, 4};
         for (int i = 2; i < 7; i++) schedule[i] = new int[]{};
         Instant expected = ZonedDateTime.of(2026, 6, 2, 5, 0, 0, 0, PARIS).toInstant();
@@ -348,9 +348,9 @@ public class NotificationHelperTest {
 
     @Test
     public void testComputeDailyMailScheduleAt_SlotAtNextRun_Skipped() {
-        // Monday quiet from 7h, Tuesday quiet 0h-5h -> first free slot Tuesday 06:00 = next run -> mail skipped (null)
+        // Monday quiet from 6h, Tuesday quiet 0h-5h -> first free slot Tuesday 06:00 = next run -> mail skipped (null)
         int[][] schedule = new int[7][];
-        schedule[0] = new int[]{7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        schedule[0] = new int[]{6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
         schedule[1] = new int[]{0, 1, 2, 3, 4, 5};
         for (int i = 2; i < 7; i++) schedule[i] = new int[]{};
         assertNull(QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), enabledPref(schedule), PARIS));
@@ -367,10 +367,10 @@ public class NotificationHelperTest {
 
     @Test
     public void testComputeDailyMailScheduleAt_HalfHourOffset_India() {
-        // Asia/Kolkata is UTC+5:30 -> run at 01:00 UTC = 06:30 local, truncated to 06:00 local -> mail at 07:00 local
+        // Asia/Kolkata is UTC+5:30 -> run at 01:00 UTC = 06:30 local, truncated to 06:00 local -> immediate at 06:00 local
         ZoneId kolkata = ZoneId.of("Asia/Kolkata");
         Instant runTime = Instant.parse("2026-06-01T01:00:00Z");
-        Instant expected = ZonedDateTime.of(2026, 6, 1, 7, 0, 0, 0, kolkata).toInstant();
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 6, 0, 0, 0, kolkata).toInstant();
         assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(runTime, null, kolkata));
     }
 
