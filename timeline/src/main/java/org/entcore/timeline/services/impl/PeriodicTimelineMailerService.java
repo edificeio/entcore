@@ -28,14 +28,21 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
+import org.entcore.common.user.dto.QuietHoursPreference;
 import org.entcore.common.utils.StopWatch;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.timeline.controllers.TimelineLambda;
+import org.entcore.timeline.controllers.helper.NotificationHelper;
+import org.entcore.timeline.controllers.helper.QuietHoursHelper;
 import org.entcore.timeline.services.CronMailerService;
 import org.entcore.timeline.services.TimelineConfigService;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -46,6 +53,8 @@ import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 public class PeriodicTimelineMailerService implements CronMailerService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultTimelineMailerService.class);
+    private static final int DAILY_PROCESSING_LOCAL_HOUR = 7;
+    private static final ZoneId DEFAULT_TIMEZONE = ZoneId.of("Europe/Paris");
     private final EventBus eb;
     private Map<String, String> registeredNotifications;
     private TimelineConfigService configService;
@@ -171,7 +180,8 @@ public class PeriodicTimelineMailerService implements CronMailerService {
 
         final JsonObject results = new JsonObject()
                 .put("mails.sent", new AtomicInteger(0))
-                .put("users.ko", new AtomicInteger(0));
+                .put("users.ko", new AtomicInteger(0))
+                .put("users.skipped.quiethours", new AtomicInteger(0));
         final JsonObject notificationsDefaults = new JsonObject();
         final List<String> notifiedUsers = new ArrayList<>();
 
@@ -262,6 +272,226 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                 }).map(v -> results);
     }
 
+    /**
+     * Timezone-aware daily mailing, meant to be triggered hourly.
+     */
+    @Override
+    public Future<JsonObject> sendDailyMailsByTimezone(Instant runTime) {
+        final AtomicInteger endPage = new AtomicInteger(0);
+        final Instant to = runTime.truncatedTo(ChronoUnit.HOURS);
+        final Instant from = to.minus(25, ChronoUnit.HOURS);
+
+        final JsonObject results = new JsonObject()
+                .put("mails.sent", new AtomicInteger(0))
+                .put("users.ko", new AtomicInteger(0))
+                .put("users.skipped.timezone", new AtomicInteger(0))
+                .put("users.skipped.quiethours", new AtomicInteger(0));
+        final JsonObject notificationsDefaults = new JsonObject();
+        final List<String> notifiedUsers = new ArrayList<>();
+
+        return hasCandidateUsers(to).compose(hasCandidates -> {
+            if (!hasCandidates) {
+                log.info("[DailyMails] no user in a timezone at " + DAILY_PROCESSING_LOCAL_HOUR + ":00 local - run skipped");
+                results.put("users.recipients", 0).put("users.pages", 0).put("run.skipped", true);
+                return Future.succeededFuture(results);
+            }
+            
+            StopWatch step1 = new StopWatch();
+            return getRecipientsUsers(Date.from(from), Date.from(to))
+                    .compose(event -> {
+                        log.info("[DailyMails][perf] getRecipientUsersTiming " + step1.elapsedTimeMillis() + " ms");
+                        if (event != null && !event.isEmpty()) {
+                            notifiedUsers.addAll(event.getList());
+                            endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
+                            results.put("users.recipients", notifiedUsers.size());
+                            results.put("users.pages", endPage.get());
+                        } else {
+                            results.put("users.recipients", 0);
+                            results.put("users.pages", 0);
+                            return Future.succeededFuture();
+                        }
+                        
+                        StopWatch step2 = new StopWatch();
+                        return getNotificationsDefaults().compose( notifications -> {
+                            log.info("[DailyMails][perf] getNotifications " + step2.elapsedTimeMillis() + " ms");
+                            if (notifications == null) {
+                                log.error("[sendDailyMailsByTimezone] Error while retrieving notifications defaults.");
+                            } else {
+                                for (Object notifObj : notifications) {
+                                    final JsonObject notif = (JsonObject) notifObj;
+                                    notificationsDefaults.put(notif.getString("key", ""), notif);
+                                }
+                            }
+                            List<List<String>> usersPartitioned = Lists.partition(notifiedUsers, USERS_LIMIT);
+                            return processDailyTimezonePages(usersPartitioned, 0, results, Date.from(from), Date.from(to), notificationsDefaults, to);
+                        });
+                    }).map(v -> results);
+        });
+    }
+
+    /**
+     * Cheap early-exit guard: returns true if at least one user could be at {@link #DAILY_PROCESSING_LOCAL_HOUR}:00
+     * local right now. Lets the ~23 hourly runs whose timezones hold no user skip the heavy recipient aggregation
+     * and the whole pipeline.
+     */
+    private Future<Boolean> hasCandidateUsers(Instant runTime) {
+        final Set<String> candidateZones = new HashSet<>();
+        for (String id : ZoneId.getAvailableZoneIds()) {
+            if (runTime.atZone(ZoneId.of(id)).getHour() == DAILY_PROCESSING_LOCAL_HOUR) {
+                candidateZones.add(id);
+            }
+        }
+        if (candidateZones.contains(DEFAULT_TIMEZONE.getId())) {
+            return Future.succeededFuture(true);
+        }
+        
+        final JsonArray zones = new JsonArray(new ArrayList<>(candidateZones));
+        final String query = "MATCH (uac:UserAppConf) WHERE uac.timezone IS NOT NULL AND any(z IN {zones} WHERE uac.timezone CONTAINS z) RETURN 1 AS found LIMIT 1";
+
+        final Promise<Boolean> promise = Promise.promise();
+        neo4j.execute(query, new JsonObject().put("zones", zones), Neo4jResult.validResultHandler(event -> {
+            if (event.isLeft()) {
+                log.error("[DailyMails] hasCandidateUsers check failed, proceeding: " + event.left().getValue());
+                promise.complete(true);
+            } else {
+                promise.complete(!event.right().getValue().isEmpty());
+            }
+        }));
+        return promise.future();
+    }
+
+    private Future<Void> processDailyTimezonePages(List<List<String>> pages, int index, JsonObject results, Date from, Date to, JsonObject notificationsDefaults, Instant runTime) {
+        if (index >= pages.size()) {
+            return Future.succeededFuture();
+        }
+
+        List<String> users = pages.get(index);
+        int currentPage = index + 1;
+
+        log.info("[PeriodicMailer] Page : " + currentPage + "/" + pages.size());
+
+        return assembleDailyTimezonePipeline(currentPage, users, from, to, notificationsDefaults, runTime, results)
+                .recover(t -> {
+                    log.error("[PeriodicMailer] Error during mail pipeline ", t);
+                    ((AtomicInteger) results.getValue("users.ko")).addAndGet(users.size());
+                    return Future.succeededFuture(new JsonObject().put("mails.sent", 0).put("users.ko", 0));
+                })
+                .compose(result -> {
+                    ((AtomicInteger) results.getValue("mails.sent")).addAndGet(result.getInteger("mails.sent", 0));
+                    ((AtomicInteger) results.getValue("users.ko")).addAndGet(result.getInteger("users.ko", 0));
+                    return processDailyTimezonePages(pages, index + 1, results, from, to, notificationsDefaults, runTime);
+                });
+    }
+
+    private Future<JsonObject> assembleDailyTimezonePipeline(int page, List<String> users, Date from, Date to, JsonObject notificationsDefaults, Instant runTime, JsonObject results) {
+        final Map<String, String> userZones = new HashMap<>();
+        return Future.succeededFuture().compose( h -> getAuthorizedUsers( users, page))
+                .map( authorizedUsers -> keepUsersInTargetTimezone(authorizedUsers, runTime, results, page, userZones))
+                .compose( targetUsers -> getUserPreferences(targetUsers, page))
+                .map( preferences -> computeScheduleAt(preferences, runTime, results, page, userZones))
+                .compose( preferences -> getUsersNotifications(preferences, from, to, page))
+                .map( notificationContext -> trimNotificationsToUserWindow(notificationContext, runTime))
+                .compose( notificationContext -> applyDailyRuleToNotification(notificationContext, notificationsDefaults, page))
+                .compose( notificationContext -> processDailyTimelineTemplate(notificationContext, page))
+                .compose( notificationContext -> sendMassMail(notificationContext, page));
+    }
+
+    /**
+     * Early filter, run BEFORE the costly get.userlist call: keeps only the authorized users whose local hour is
+     * {@link #DAILY_PROCESSING_LOCAL_HOUR} at runTime, using the timezone returned by {@link #getAuthorizedUsers}.
+     * Users without a resolvable timezone fall back to {@link #DEFAULT_TIMEZONE}. This narrows the set to a single
+     * timezone so the downstream preferences/notifications calls only run on ~1/24 of the recipients.
+     */
+    private JsonArray keepUsersInTargetTimezone(JsonArray authorizedUsers, Instant runTime, JsonObject results, int page, Map<String, String> userZones) {
+        final JsonArray kept = new JsonArray();
+        if (authorizedUsers == null) {
+            return kept;
+        }
+        int skippedTimezone = 0;
+        for (Object userObj : authorizedUsers) {
+            final JsonObject user = (JsonObject) userObj;
+            ZoneId zone = QuietHoursHelper.resolveTimezone(NotificationHelper.parseTimezone(user));
+            if (zone == null) {
+                zone = DEFAULT_TIMEZONE;
+            }
+            if (runTime.atZone(zone).getHour() != DAILY_PROCESSING_LOCAL_HOUR) {
+                skippedTimezone++;
+                continue;
+            }
+            userZones.put(user.getString("id"), zone.getId());
+            kept.add(user);
+        }
+        ((AtomicInteger) results.getValue("users.skipped.timezone")).addAndGet(skippedTimezone);
+        log.info("[DailyMails] timezone filter page " + page + " : kept " + kept.size() + ", other timezone " + skippedTimezone);
+        return kept;
+    }
+
+    /**
+     * Computes each user's mail scheduleAt (stored in the preference object) from the full preferences returned by
+     * get.userlist. Users whose quiet hours leave no send slot before the next run of their timezone are dropped
+     * (a fresher digest will take over). Timezone has already been narrowed by {@link #keepUsersInTargetTimezone}.
+     */
+    private JsonArray computeScheduleAt(JsonArray preferences, Instant runTime, JsonObject results, int page, Map<String, String> userZones) {
+        final JsonArray kept = new JsonArray();
+        if (preferences == null) {
+            log.error("[DailyMails] getUserPreferences returned null (Neo4j error) page " + page + " - skipping page");
+            return kept;
+        }
+
+        int skippedQuietHours = 0;
+        for (Object userObj : preferences) {
+            final JsonObject user = (JsonObject) userObj;
+            final ZoneId zone = ZoneId.of(userZones.getOrDefault(user.getString("userId"), DEFAULT_TIMEZONE.getId()));
+
+            final QuietHoursPreference quietHours = NotificationHelper.parseQuietHours(user);
+            final Instant scheduleAt = QuietHoursHelper.computeDailyMailScheduleAt(runTime, quietHours, zone);
+            if (scheduleAt == null) {
+                log.info("[DailyMails] UserId [" + user.getString("userId") + "] - no send slot before next run, mail skipped");
+                skippedQuietHours++;
+                continue;
+            }
+            user.put("scheduleAt", scheduleAt.toString());
+            user.put("zoneId", zone.getId());
+            kept.add(user);
+        }
+        ((AtomicInteger) results.getValue("users.skipped.quiethours")).addAndGet(skippedQuietHours);
+        log.info("[DailyMails] scheduleAt page " + page + " : kept " + kept.size() + ", no send slot " + skippedQuietHours);
+        return kept;
+    }
+
+    /**
+     * Keeps, for each user, only the notifications inside their exact daily window
+     * [previous local-06:00 run, this run). The Mongo candidate window is 25h wide to cover DST fall-back days;
+     * this trim removes the surplus so a notification is never digested twice (spring-forward) nor lost (fall-back).
+     * Uses the zone each user was selected/scheduled with (stashed in {@link #computeScheduleAt}).
+     */
+    private NotificationContext trimNotificationsToUserWindow(NotificationContext ctx, Instant runTime) {
+        final Map<String, Instant> userWindowStart = new HashMap<>();
+        for (Object prefObj : ctx.preferences) {
+            final JsonObject pref = (JsonObject) prefObj;
+            final ZoneId zone = ZoneId.of(pref.getString("zoneId", DEFAULT_TIMEZONE.getId()));
+            userWindowStart.put(pref.getString("userId"),
+                    runTime.atZone(zone).truncatedTo(ChronoUnit.HOURS).minusDays(1).toInstant());
+        }
+        
+        final JsonArray kept = new JsonArray();
+        for (Object notifObj : ctx.notifications) {
+            final JsonObject notification = (JsonObject) notifObj;
+            final String userId = notification.getJsonObject("recipients", new JsonObject()).getString("userId");
+            final Instant windowStart = userWindowStart.get(userId);
+            if (windowStart == null) {
+                continue;
+            }
+            final Instant date = MongoDb.parseIsoDate(notification.getJsonObject("date")).toInstant();
+            if (!date.isBefore(windowStart)) {
+                kept.add(notification);
+            }
+        }
+        ctx.notifications = kept;
+        
+        return ctx;
+    }
+
     private Future<Void> processPages(List<List<String>> pages, int index, JsonObject results, Date from, Date to,
                                       JsonObject notificationsDefaults, Periodicity periodicity) {
         if (index >= pages.size()) {
@@ -274,7 +504,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         log.info("[PeriodicMailer] Page : " + currentPage + "/" + pages.size());
 
         if(periodicity == Periodicity.WEEKLY) {
-            return assemblePipeline(currentPage, users, from, to, notificationsDefaults)
+            return assemblePipeline(currentPage, users, from, to, notificationsDefaults, results)
                     .recover(t -> {
                         log.error("[PeriodicMailer] Error during mail pipeline ", t);
                         ((AtomicInteger) results.getValue("users.ko")).addAndGet(users.size());
@@ -299,13 +529,47 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                 });
     }
 
-    private Future<JsonObject> assemblePipeline(int page, List<String> users, Date from, Date to, JsonObject notificationsDefaults) {
+    private Future<JsonObject> assemblePipeline(int page, List<String> users, Date from, Date to, JsonObject notificationsDefaults, JsonObject results) {
         return Future.succeededFuture().compose( h -> getAuthorizedUsers( users, page)
                 .compose( filteredUser -> getUserPreferences(filteredUser, page)))
+                .map( preferences -> computeWeeklyScheduleAt(preferences, results, page))
                 .compose( preferences -> getAggregatedUserNotifications(preferences, from, to, page))
                 .compose( notificationContext -> applyRuleToNotification(notificationContext, notificationsDefaults, page))
                 .compose( notificationContext -> processTimelineTemplate(notificationContext, page))
                 .compose( notificationContext -> sendMassMail(notificationContext, page));
+    }
+
+    /**
+     * Computes each user's weekly-mail scheduleAt from their quiet hours: {@code now} (immediate) if not currently in
+     * a quiet hour, else the resumption time (end of quiet period). Users whose quiet hours leave no slot before the
+     * next weekly run are dropped. Unlike the daily pipeline, the weekly is a single (non timezone-partitioned) run,
+     * so there is no 06:00 timezone filter here — only the per-user send time.
+     */
+    private JsonArray computeWeeklyScheduleAt(JsonArray preferences, JsonObject results, int page) {
+        final JsonArray kept = new JsonArray();
+        if (preferences == null) {
+            log.error("[WeeklyMails] getUserPreferences returned null (Neo4j error) page " + page + " - skipping page");
+            return kept;
+        }
+        final Instant now = Instant.now();
+        final Instant nextRun = now.plus(7, ChronoUnit.DAYS);
+        int skippedQuietHours = 0;
+        for (Object userObj : preferences) {
+            final JsonObject user = (JsonObject) userObj;
+            final ZoneId zone = QuietHoursHelper.resolveTimezone(NotificationHelper.parseTimezone(user));
+            final QuietHoursPreference quietHours = NotificationHelper.parseQuietHours(user);
+            final Instant scheduleAt = QuietHoursHelper.computeWeeklyMailScheduleAt(now, quietHours, zone, nextRun);
+            if (scheduleAt == null) {
+                log.info("[WeeklyMails] UserId [" + user.getString("userId") + "] - no send slot before next run, mail skipped");
+                skippedQuietHours++;
+                continue;
+            }
+            user.put("scheduleAt", scheduleAt.toString());
+            kept.add(user);
+        }
+        ((AtomicInteger) results.getValue("users.skipped.quiethours")).addAndGet(skippedQuietHours);
+        log.info("[WeeklyMails] scheduleAt page " + page + " : kept " + kept.size() + ", no send slot " + skippedQuietHours);
+        return kept;
     }
 
     private Future<JsonObject> assembleDailyPipeline(int page, List<String> users, Date from, Date to, JsonObject notificationsDefaults) {
@@ -446,6 +710,10 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                     .setBody(template.getValue())
                     .setSubject(notificationContext.subjects.get(template.getKey()))
                     .setTo(Lists.newArrayList(new PostgresEmailDto.User(userPrefs.getString("userMail"), null)));
+            final String scheduleAt = userPrefs.getString("scheduleAt");
+            if (scheduleAt != null) {
+                mail.setScheduleAt(OffsetDateTime.ofInstant(Instant.parse(scheduleAt), ZoneOffset.UTC));
+            }
             mails.add(mail);
         }
         StopWatch step7 = new StopWatch();
@@ -482,8 +750,9 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         final String query =
                 "MATCH (u:User)-[:IN]->(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) " +
                         "WHERE u.id IN {notifiedUsers} AND u.activationCode IS NULL AND u.email IS NOT NULL AND length(u.email) > 0 " +
-                        "AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\"" +
-                        "RETURN DISTINCT u.email as mail, u.id as id ";
+                        "AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\" " +
+                        "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+                        "RETURN DISTINCT u.email as mail, u.id as id, uac.timezone as timezone ";
         JsonObject params = new JsonObject()
                 .put("notifiedUsers", new JsonArray(usersIds));
         neo4j.execute(query, params, Neo4jResult.validResultHandler( event -> {
@@ -510,7 +779,11 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         for (Object userObj : users)
             userIds.add(((JsonObject) userObj).getString("id", ""));
         StopWatch step4 = new StopWatch();
-        NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language, displayName: u.displayName", h -> {
+        NotificationUtils.getUsersPreferences(eb, userIds,
+                "language: uac.language, " +
+                "displayName: u.displayName, " +
+                "quietHours: uac.quietHours, " +
+                "timezone: uac.timezone ", h -> {
             log.info("[PeriodicMails][perf] getUsersPreferences page " + pagination + " time " + step4.elapsedTimeMillis() + " ms");
             promise.complete(h);
         });
@@ -802,8 +1075,9 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             JsonObject userNotificationPref = notificationPreference.getJsonObject("preferences", new JsonObject())
                     .getJsonObject("config", new JsonObject())
                     .getJsonObject(notificationName, new JsonObject());
-            if (TimelineNotificationsLoader.Frequencies.DAILY.name().equals(
-                    notificationPrefsMixin("defaultFrequency", userNotificationPref, notificationsDefaults.getJsonObject(notificationName))) &&
+            final String frequency = notificationPrefsMixin("defaultFrequency", userNotificationPref, notificationsDefaults.getJsonObject(notificationName));
+            final boolean deferredImmediate = TimelineNotificationsLoader.Frequencies.IMMEDIATE.name().equals(frequency) && notification.getJsonObject("recipients", new JsonObject()).getBoolean("deferredToDaily", false);
+            if ((TimelineNotificationsLoader.Frequencies.DAILY.name().equals(frequency) || deferredImmediate) &&
                     !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
                             notificationPrefsMixin("restriction", userNotificationPref, notificationsDefaults.getJsonObject(notificationName))) &&
                     !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(

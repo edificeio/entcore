@@ -988,11 +988,11 @@ public class DefaultSchoolService implements SchoolService {
 			result[dayIndex] = new int[day.size()];
 			
 			for (int hourIndex = 0; hourIndex < day.size(); hourIndex++) {
-				final Integer hour = day.getInteger(hourIndex);
-				if (hour == null) {
+				final Object hourValue = day.getValue(hourIndex);
+				if (!(hourValue instanceof Integer)) {
 					throw new IllegalArgumentException("Schedule must contain integers only");
 				}
-				result[dayIndex][hourIndex] = hour;
+				result[dayIndex][hourIndex] = (Integer) hourValue;
 			}
 		}
 		
