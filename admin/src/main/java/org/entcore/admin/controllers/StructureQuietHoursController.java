@@ -67,12 +67,7 @@ public class StructureQuietHoursController extends BaseController {
     @MfaProtected()
     public void setPreferences(HttpServerRequest request) {
         final String structureId = request.params().get("structureId");
-        RequestUtils.bodyToJson(request, preferences -> {
-            if (preferences == null) {
-                renderJson(request, new JsonObject().put("error", "Invalid or empty JSON body"), 400);
-                return;
-            }
-            
+        RequestUtils.bodyToJson(request, pathPrefix + "setStructureQuietHoursPreferences", preferences -> {
             final JsonObject saveMessage = new JsonObject()
                     .put("action", "set")
                     .put("structureId", structureId)

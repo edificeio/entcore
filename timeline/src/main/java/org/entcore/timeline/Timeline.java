@@ -38,10 +38,8 @@ import org.entcore.timeline.controllers.FlashMsgController;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.cron.PurgeMessageCronTask;
-import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.OptimizedDailyMailingCronTask;
 import org.entcore.timeline.cron.OptimizedWeeklyMailingCronTask;
-import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
 import org.entcore.timeline.services.FlashMsgService;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -127,32 +125,21 @@ public class Timeline extends BaseServer {
 		periodicTimelineMailerService.setLazyEventsI18n(lazyEventsI18n);
 		periodicTimelineMailerService.setRegisteredNotifications(registeredNotificationsCache);
 
-		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 2 * * ?");
+		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 * * * ?");
 		final String weeklyMailingCron = config.getString("weekly-mailing-cron", "0 0 5 ? * MON");
 		final String purgeMessagesReadCron = config.getString("purge-messages-read-cron", "0 0 2 * * ?");
-		final int dailyDayDelta = config.getInteger("daily-day-delta", -1);
 		final int weeklyDayDelta = config.getInteger("weekly-day-delta", -1);
-		final boolean useOptimized = config.getBoolean("use-optimized", true);
-		final DailyMailingCronTask dailyMailingCronTask = new DailyMailingCronTask(mailerService, dailyDayDelta);
-		final WeeklyMailingCronTask weeklyMailingCronTask = new WeeklyMailingCronTask(mailerService, weeklyDayDelta);
+		final OptimizedDailyMailingCronTask dailyMailingCronTask = new OptimizedDailyMailingCronTask(periodicTimelineMailerService);
+		final OptimizedWeeklyMailingCronTask weeklyMailingCronTask = new OptimizedWeeklyMailingCronTask(periodicTimelineMailerService, weeklyDayDelta);
 		final PurgeMessageCronTask purgeMessageCronTask =  new PurgeMessageCronTask(flashMsgService);
 
 		// Enable mailing tasks to be triggered via API
 		addController(new TaskController(dailyMailingCronTask, weeklyMailingCronTask, purgeMessageCronTask));
-		if (useOptimized) {
-			try {
-				new CronTrigger(vertx, dailyMailingCron).schedule(new OptimizedDailyMailingCronTask(periodicTimelineMailerService, dailyDayDelta));
-				new CronTrigger(vertx, weeklyMailingCron).schedule(new OptimizedWeeklyMailingCronTask(periodicTimelineMailerService, weeklyDayDelta));
-			} catch (ParseException e) {
-				log.error("Failed to start mailing crons.");
-			}
-		} else {
-			try {
+		try {
 			new CronTrigger(vertx, dailyMailingCron).schedule(dailyMailingCronTask);
 			new CronTrigger(vertx, weeklyMailingCron).schedule(weeklyMailingCronTask);
-			} catch (ParseException e) {
-				log.error("Failed to start mailing crons.");
-			}
+		} catch (ParseException e) {
+			log.error("Failed to start mailing crons.");
 		}
 
 		if (purgeMessagesReadCron != null) {

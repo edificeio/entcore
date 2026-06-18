@@ -9,7 +9,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 
 /**
- * Utility class for quiet hours logic: schedule evaluation, timezone resolution, UAI mapping.
+ * Utility class for quiet hours logic: schedule evaluation and timezone resolution.
  */
 public final class QuietHoursHelper {
 
@@ -18,9 +18,9 @@ public final class QuietHoursHelper {
     private QuietHoursHelper() {}
 
     /** Returns true if the current instant falls within the user's quiet hours. Returns false if no preference is active. */
-    static boolean isQuietHour(Instant now, QuietHoursPreference userPrefQuietHours, TimezonePreference userPrefTimezone, String userPrefUai) {
+    static boolean isQuietHour(Instant now, QuietHoursPreference userPrefQuietHours, TimezonePreference userPrefTimezone) {
         if (userPrefQuietHours == null || !userPrefQuietHours.isEnabled() || userPrefQuietHours.getSchedule() == null) return false;
-        ZoneId zone = resolveTimezone(userPrefTimezone, userPrefUai);
+        ZoneId zone = resolveTimezone(userPrefTimezone);
         if (zone == null) return false;
         return isQuietHour(now.atZone(zone), userPrefQuietHours.getSchedule());
     }
@@ -41,22 +41,44 @@ public final class QuietHoursHelper {
         return false;
     }
 
-    /** Returns the next send instant based on quiet hours. Returns notificationTime if no preference is active. */
-    static Instant computeNextSendTime(Instant notificationTime, QuietHoursPreference userPrefQuietHours, TimezonePreference userPrefTimezone, String userPrefUai) {
-        if (userPrefQuietHours == null || !userPrefQuietHours.isEnabled() || userPrefQuietHours.getSchedule() == null) {
-            return notificationTime;
-        }
-        ZoneId zone = resolveTimezone(userPrefTimezone, userPrefUai);
-        return computeNextSendTime(notificationTime, userPrefQuietHours, zone);
-    }
-
     /** Returns the next send instant using an already-resolved ZoneId. Returns notificationTime if zone is null. */
-    static Instant computeNextSendTime(Instant notificationTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
+    public static Instant computeNextSendTime(Instant notificationTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
         if (zone == null) return notificationTime;
         if (userPrefQuietHours == null || !userPrefQuietHours.isEnabled() || userPrefQuietHours.getSchedule() == null) {
             return notificationTime;
         }
         return computeNextSendTime(notificationTime.atZone(zone), userPrefQuietHours.getSchedule());
+    }
+
+    /**
+     * Computes the scheduleAt instant for the daily mail of a user processed at runTime.
+     *
+     * <p>Base send time is the processing hour itself (run at 07:00 local -> mail at 07:00 local, i.e. sent
+     * immediately). If quiet hours are active at the base time, the send time is pushed to the first non-quiet slot.
+     * The mail must be sent before the next daily run of the user's timezone (next local processing hour, i.e. +1
+     * calendar day — calendar arithmetic so DST transition days stay correct): past that point a fresher digest takes
+     * over, so the mail is dropped instead.</p>
+     *
+     * @return the send instant, or null if no valid slot exists before the next run (mail must be skipped)
+     */
+    public static Instant computeDailyMailScheduleAt(Instant runTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
+        if (zone == null) return null;
+        final ZonedDateTime localRun = runTime.atZone(zone).truncatedTo(ChronoUnit.HOURS);
+        final Instant base = localRun.toInstant();
+        final Instant nextRun = localRun.plusDays(1).toInstant();
+        final Instant scheduleAt = computeNextSendTime(base, userPrefQuietHours, zone);
+        if (scheduleAt == null || !scheduleAt.isBefore(nextRun)) return null;
+        return scheduleAt;
+    }
+
+    /**
+     * Computes the scheduleAt instant for the weekly mail of a user, evaluated at {@code now} (the weekly run).
+     * Return the send instant ({@code now} = immediate), or null if it must be dropped
+     */
+    public static Instant computeWeeklyMailScheduleAt(Instant now, QuietHoursPreference userPrefQuietHours, ZoneId zone, Instant nextRun) {
+        final Instant scheduleAt = computeNextSendTime(now, userPrefQuietHours, zone);
+        if (scheduleAt == null || !scheduleAt.isBefore(nextRun)) return null;
+        return scheduleAt;
     }
 
     /**
@@ -89,12 +111,11 @@ public final class QuietHoursHelper {
     }
 
     /**
-     * Resolves the ZoneId to use for quiet hours:
-     * 1. Explicit timezone from user preference
-     * 2. Fallback from UAI (structure code)
-     * 3. null if no fallback (foreign structure -> no quiet hours applied)
+     * Resolves the ZoneId from the user's explicit timezone preference only.
+     * Returns null when the user has no (valid) timezone preference: callers treat that as "no quiet hours"
+     * (and fall back to a default zone solely for daily-mail scheduling).
      */
-    static ZoneId resolveTimezone(TimezonePreference userPrefTimezone, String userPrefUai) {
+    public static ZoneId resolveTimezone(TimezonePreference userPrefTimezone) {
         if (userPrefTimezone != null && userPrefTimezone.getTimezone() != null) {
             try {
                 return ZoneId.of(userPrefTimezone.getTimezone());
@@ -102,35 +123,6 @@ public final class QuietHoursHelper {
                 log.warn("[QuietHoursHelper] Invalid timezone in preference: " + userPrefTimezone.getTimezone());
             }
         }
-        return getTimezoneFromUai(userPrefUai);
-    }
-
-    /**
-     * Returns the ZoneId for a French school UAI code.
-     * Extracts the department from the first 2-3 characters to handle DOM-TOM.
-     * Falls back to Europe/Paris for metropolitan France or unknown UAI.
-     */
-    static ZoneId getTimezoneFromUai(String uai) {
-        if (uai == null) return null;
-        if (uai.length() < 3) return ZoneId.of("Europe/Paris");
-        try {
-            int dept = Integer.parseInt(uai.substring(0, 3));
-            switch (dept) {
-                case 971: return ZoneId.of("America/Guadeloupe");
-                case 972: return ZoneId.of("America/Martinique");
-                case 973: return ZoneId.of("America/Cayenne");
-                case 974: return ZoneId.of("Indian/Reunion");
-                case 975: return ZoneId.of("America/Miquelon");
-                case 976: return ZoneId.of("Indian/Mayotte");
-                case 977: return ZoneId.of("America/St_Barthelemy");
-                case 978: return ZoneId.of("America/Marigot");
-                case 986: return ZoneId.of("Pacific/Wallis");
-                case 987: return ZoneId.of("Pacific/Tahiti");
-                case 988: return ZoneId.of("Pacific/Noumea");
-                default:  return ZoneId.of("Europe/Paris");
-            }
-        } catch (NumberFormatException e) {
-            return ZoneId.of("Europe/Paris");
-        }
+        return null;
     }
 }

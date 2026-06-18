@@ -7,18 +7,18 @@ import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
-import org.entcore.timeline.cron.DailyMailingCronTask;
+import org.entcore.timeline.cron.OptimizedDailyMailingCronTask;
 import org.entcore.timeline.cron.PurgeMessageCronTask;
-import org.entcore.timeline.cron.WeeklyMailingCronTask;
+import org.entcore.timeline.cron.OptimizedWeeklyMailingCronTask;
 
 public class TaskController extends BaseController {
 	protected static final Logger log = LoggerFactory.getLogger(TaskController.class);
 
-	final DailyMailingCronTask dailyMailingCronTask;
-	final WeeklyMailingCronTask weeklyMailingCronTask;
+	final OptimizedDailyMailingCronTask dailyMailingCronTask;
+	final OptimizedWeeklyMailingCronTask weeklyMailingCronTask;
 	final PurgeMessageCronTask purgeMessageCronTask;
 
-	public TaskController(DailyMailingCronTask dailyMailingCronTask, WeeklyMailingCronTask weeklyMailingCronTask, PurgeMessageCronTask purgeMessageCronTask) {
+	public TaskController(OptimizedDailyMailingCronTask dailyMailingCronTask, OptimizedWeeklyMailingCronTask weeklyMailingCronTask, PurgeMessageCronTask purgeMessageCronTask) {
 		this.dailyMailingCronTask = dailyMailingCronTask;
 		this.weeklyMailingCronTask = weeklyMailingCronTask;
 		this.purgeMessageCronTask = purgeMessageCronTask;
