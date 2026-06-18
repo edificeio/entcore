@@ -61,110 +61,25 @@ public class NotificationHelperTest {
         assertFalse(QuietHoursHelper.isQuietHour(dt(2026, 3, 29, 12, 0), schedule));
     }
 
-    // --- getTimezoneFromUai tests ---
+    // --- isQuietHour(Instant, QuietHoursPreference, TimezonePreference) : user timezone preference only ---
 
     @Test
-    public void testGetTz_Null() {
-        // null UAI (foreign structure) -> no timezone -> quiet hours do not apply
-        assertNull(QuietHoursHelper.getTimezoneFromUai(null));
+    public void testIsQuietHour_NoPreference_NotQuiet() {
+        // no quiet-hours preference -> not quiet
+        assertFalse(QuietHoursHelper.isQuietHour(Instant.now(), null, null));
     }
 
     @Test
-    public void testGetTz_TooShort() {
-        assertEquals(ZoneId.of("Europe/Paris"), QuietHoursHelper.getTimezoneFromUai("07"));
-    }
-
-    @Test
-    public void testGetTz_CorseDuSud() {
-        // Corse-du-Sud UAIs start with 620 -> default -> Europe/Paris
-        assertEquals(ZoneId.of("Europe/Paris"), QuietHoursHelper.getTimezoneFromUai("6200060W"));
-    }
-
-    @Test
-    public void testGetTz_HauteCorse() {
-        // Haute-Corse UAIs start with 720 -> default -> Europe/Paris
-        assertEquals(ZoneId.of("Europe/Paris"), QuietHoursHelper.getTimezoneFromUai("7200062E"));
-    }
-
-    @Test
-    public void testGetTz_Metropole() {
-        assertEquals(ZoneId.of("Europe/Paris"), QuietHoursHelper.getTimezoneFromUai("0750010E"));
-    }
-
-    @Test
-    public void testGetTz_Guadeloupe() {
-        assertEquals(ZoneId.of("America/Guadeloupe"), QuietHoursHelper.getTimezoneFromUai("9710001A"));
-    }
-
-    @Test
-    public void testGetTz_Martinique() {
-        assertEquals(ZoneId.of("America/Martinique"), QuietHoursHelper.getTimezoneFromUai("9720001A"));
-    }
-
-    @Test
-    public void testGetTz_Guyane() {
-        assertEquals(ZoneId.of("America/Cayenne"), QuietHoursHelper.getTimezoneFromUai("9730001A"));
-    }
-
-    @Test
-    public void testGetTz_Reunion() {
-        assertEquals(ZoneId.of("Indian/Reunion"), QuietHoursHelper.getTimezoneFromUai("9740001A"));
-    }
-
-    @Test
-    public void testGetTz_Miquelon() {
-        assertEquals(ZoneId.of("America/Miquelon"), QuietHoursHelper.getTimezoneFromUai("9750001A"));
-    }
-
-    @Test
-    public void testGetTz_Mayotte() {
-        assertEquals(ZoneId.of("Indian/Mayotte"), QuietHoursHelper.getTimezoneFromUai("9760001A"));
-    }
-
-    @Test
-    public void testGetTz_SaintBarthelemy() {
-        assertEquals(ZoneId.of("America/St_Barthelemy"), QuietHoursHelper.getTimezoneFromUai("9770001A"));
-    }
-
-    @Test
-    public void testGetTz_SaintMartin() {
-        assertEquals(ZoneId.of("America/Marigot"), QuietHoursHelper.getTimezoneFromUai("9780001A"));
-    }
-
-    @Test
-    public void testGetTz_WallisFutuna() {
-        assertEquals(ZoneId.of("Pacific/Wallis"), QuietHoursHelper.getTimezoneFromUai("9860001A"));
-    }
-
-    @Test
-    public void testGetTz_Polynesie() {
-        assertEquals(ZoneId.of("Pacific/Tahiti"), QuietHoursHelper.getTimezoneFromUai("9870001A"));
-    }
-
-    @Test
-    public void testGetTz_NouvelleCaledonie() {
-        assertEquals(ZoneId.of("Pacific/Noumea"), QuietHoursHelper.getTimezoneFromUai("9880001A"));
-    }
-
-    @Test
-    public void testGetTz_NonNumeric() {
-        // Non-numeric UAI should fall back to Europe/Paris via NumberFormatException catch
-        assertEquals(ZoneId.of("Europe/Paris"), QuietHoursHelper.getTimezoneFromUai("ABCDEFG"));
-    }
-
-    // --- isQuietHour(Instant, QuietHoursPreference, String) ---
-
-    @Test
-    public void testIsQuietHour_NoPreference_NoUai_NotQuiet() {
-        // no preference, no UAI -> null zone -> not quiet (foreign structure)
-        assertFalse(QuietHoursHelper.isQuietHour(Instant.now(), null, null, null));
-    }
-
-    @Test
-    public void testIsQuietHour_NoPreference_WithUai_NotQuiet() {
-        // no preference -> no schedule -> not quiet regardless of UAI or time
-        ZonedDateTime wednesday10h = dt(2026, 4, 1, 10, 0);
-        assertFalse(QuietHoursHelper.isQuietHour(wednesday10h.toInstant(), null, null, "0750010E"));
+    public void testIsQuietHour_NoTimezone_NotQuiet() {
+        // quiet hours enabled but no timezone preference -> null zone -> not quiet (quiet hours not applied)
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{10};
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        QuietHoursPreference userPrefQuietHours = new QuietHoursPreference();
+        userPrefQuietHours.setEnabled(true);
+        userPrefQuietHours.setSchedule(schedule);
+        ZonedDateTime monday10h = dt(2026, 3, 30, 10, 0);
+        assertFalse(QuietHoursHelper.isQuietHour(monday10h.toInstant(), userPrefQuietHours, null));
     }
 
     @Test
@@ -175,14 +90,13 @@ public class NotificationHelperTest {
         for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
         QuietHoursPreference userPrefQuietHours = new QuietHoursPreference();
         userPrefQuietHours.setSchedule(schedule);
-        // enabled stays false (primitive default)
         ZonedDateTime monday10h = dt(2026, 3, 30, 10, 0);
-        assertFalse(QuietHoursHelper.isQuietHour(monday10h.toInstant(), userPrefQuietHours, tz("Europe/Paris"), "0750010E"));
+        assertFalse(QuietHoursHelper.isQuietHour(monday10h.toInstant(), userPrefQuietHours, tz("Europe/Paris")));
     }
 
     @Test
     public void testIsQuietHour_WithSchedulePreference_UsesSchedule() {
-        // enabled = true + schedule with Monday 10h -> quiet
+        // enabled = true + schedule with Monday 10h + Paris tz -> quiet
         int[][] schedule = new int[7][];
         schedule[0] = new int[]{10};
         for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
@@ -190,13 +104,12 @@ public class NotificationHelperTest {
         userPrefQuietHours.setEnabled(true);
         userPrefQuietHours.setSchedule(schedule);
         ZonedDateTime monday10h = dt(2026, 3, 30, 10, 0);
-        assertTrue(QuietHoursHelper.isQuietHour(monday10h.toInstant(), userPrefQuietHours, tz("Europe/Paris"), "0750010E"));
+        assertTrue(QuietHoursHelper.isQuietHour(monday10h.toInstant(), userPrefQuietHours, tz("Europe/Paris")));
     }
 
     @Test
-    public void testIsQuietHour_PreferenceTzOverridesUai() {
-        // enabled = true + preference tz (Reunion) overrides Guadeloupe UAI
-        // Wednesday 10:00 Paris = 14:00 Reunion -> 14h not in schedule -> not quiet
+    public void testIsQuietHour_UsesPreferenceTimezone() {
+        // tz preference (Reunion): Wednesday 10:00 Paris = 14:00 Reunion -> 14h not in schedule -> not quiet
         int[][] schedule = new int[7][];
         schedule[2] = new int[]{22, 23, 0, 1}; // Wednesday quiet hours (not 14h)
         for (int i = 0; i < 7; i++) if (schedule[i] == null) schedule[i] = new int[]{};
@@ -204,41 +117,31 @@ public class NotificationHelperTest {
         userPrefQuietHours.setEnabled(true);
         userPrefQuietHours.setSchedule(schedule);
         ZonedDateTime wednesday10hParis = dt(2026, 4, 1, 10, 0);
-        assertFalse(QuietHoursHelper.isQuietHour(wednesday10hParis.toInstant(), userPrefQuietHours, tz("Indian/Reunion"), "9710001A"));
+        assertFalse(QuietHoursHelper.isQuietHour(wednesday10hParis.toInstant(), userPrefQuietHours, tz("Indian/Reunion")));
     }
 
-    // --- resolveTimezone priority tests ---
-
-    // --- resolveTimezone(TimezonePreference, String) ---
+    // --- resolveTimezone(TimezonePreference) : user preference only, null when absent/invalid ---
 
     @Test
-    public void testResolveTimezone_PreferenceOverridesUai() {
-        // explicit tz in preference wins -> UAI never resolved
-        assertEquals(ZoneId.of("Indian/Reunion"), QuietHoursHelper.resolveTimezone(tz("Indian/Reunion"), "9710001A"));
+    public void testResolveTimezone_ValidPreference() {
+        assertEquals(ZoneId.of("Indian/Reunion"), QuietHoursHelper.resolveTimezone(tz("Indian/Reunion")));
     }
 
     @Test
-    public void testResolveTimezone_FallsBackToUai_WhenNoPref() {
-        // no preference -> resolves UAI
-        assertEquals(ZoneId.of("America/Guadeloupe"), QuietHoursHelper.resolveTimezone(null, "9710001A"));
+    public void testResolveTimezone_NullPreference_ReturnsNull() {
+        assertNull(QuietHoursHelper.resolveTimezone(null));
     }
 
     @Test
-    public void testResolveTimezone_FallsBackToUai_WhenNoTzInPref() {
-        // preference without timezone -> resolves UAI
-        assertEquals(ZoneId.of("Indian/Reunion"), QuietHoursHelper.resolveTimezone(new TimezonePreference(), "9740001A"));
+    public void testResolveTimezone_EmptyPreference_ReturnsNull() {
+        // preference without timezone -> null (no UAI fallback anymore)
+        assertNull(QuietHoursHelper.resolveTimezone(new TimezonePreference()));
     }
 
     @Test
-    public void testResolveTimezone_NullUai_ReturnsNull() {
-        // no preference, null UAI (foreign structure) -> null
-        assertNull(QuietHoursHelper.resolveTimezone(null, (String) null));
-    }
-
-    @Test
-    public void testResolveTimezone_InvalidTzInPref_FallsBackToUai() {
-        // invalid tz string in preference -> falls back to UAI resolution
-        assertEquals(ZoneId.of("Europe/Paris"), QuietHoursHelper.resolveTimezone(tz("Invalid/Zone"), "0750010E"));
+    public void testResolveTimezone_InvalidTzInPref_ReturnsNull() {
+        // invalid tz string -> no fallback -> null
+        assertNull(QuietHoursHelper.resolveTimezone(tz("Invalid/Zone")));
     }
 
     // --- computeNextSendTime (guards — point d'entrée) ---
@@ -390,5 +293,138 @@ public class NotificationHelperTest {
         // After DST, 2h doesn't exist: plusHours(1) from truncated 1h gives 3h directly
         ZonedDateTime expected = ZonedDateTime.of(2026, 3, 29, 3, 0, 0, 0, ZoneId.of("Europe/Paris"));
         assertEquals(expected.toInstant(), QuietHoursHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    // --- computeDailyMailScheduleAt (daily mail par timezone) ---
+    // Run = Monday 2026-06-01 06:00 Europe/Paris unless stated otherwise.
+
+    private static final ZoneId PARIS = ZoneId.of("Europe/Paris");
+
+    private static Instant mondayRun() {
+        return ZonedDateTime.of(2026, 6, 1, 6, 0, 0, 0, PARIS).toInstant();
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_NoQuietHours_SendsImmediately() {
+        // no quiet hours preference -> mail sent immediately at the processing hour (06:00 local)
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 6, 0, 0, 0, PARIS).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), null, PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_RunWithJitter_StillSendsAtProcessingHour() {
+        // cron fired at 06:00:42 -> truncation drops the jitter, immediate send at 06:00 local
+        Instant jittered = ZonedDateTime.of(2026, 6, 1, 6, 0, 42, 0, PARIS).toInstant();
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 6, 0, 0, 0, PARIS).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(jittered, null, PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_QuietUntil7_SendsAt7Local() {
+        // default quiet hours 20h-7h: hour 7 is free -> mail at 07:00 local
+        QuietHoursPreference pref = enabledPref(fullSchedule(20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6));
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 7, 0, 0, 0, PARIS).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), pref, PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_QuietUntil9_PushedTo9Local() {
+        // quiet hours covering 7h and 8h -> mail pushed to 09:00 local
+        QuietHoursPreference pref = enabledPref(fullSchedule(0, 1, 2, 3, 4, 5, 6, 7, 8));
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 9, 0, 0, 0, PARIS).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), pref, PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_SlotJustBeforeNextRun_Sent() {
+        // Monday quiet from 6h, Tuesday quiet 0h-4h -> first free slot Tuesday 05:00, before next run (06:00) -> sent
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        schedule[1] = new int[]{0, 1, 2, 3, 4};
+        for (int i = 2; i < 7; i++) schedule[i] = new int[]{};
+        Instant expected = ZonedDateTime.of(2026, 6, 2, 5, 0, 0, 0, PARIS).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), enabledPref(schedule), PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_SlotAtNextRun_Skipped() {
+        // Monday quiet from 6h, Tuesday quiet 0h-5h -> first free slot Tuesday 06:00 = next run -> mail skipped (null)
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        schedule[1] = new int[]{0, 1, 2, 3, 4, 5};
+        for (int i = 2; i < 7; i++) schedule[i] = new int[]{};
+        assertNull(QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), enabledPref(schedule), PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_DegenerateFullQuiet_Skipped() {
+        // quiet 24/7 -> no slot in 168h -> mail skipped (null)
+        int[] allDay = new int[24];
+        for (int h = 0; h < 24; h++) allDay[h] = h;
+        QuietHoursPreference pref = enabledPref(fullSchedule(allDay));
+        assertNull(QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), pref, PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_HalfHourOffset_India() {
+        // Asia/Kolkata is UTC+5:30 -> run at 01:00 UTC = 06:30 local, truncated to 06:00 local -> immediate at 06:00 local
+        ZoneId kolkata = ZoneId.of("Asia/Kolkata");
+        Instant runTime = Instant.parse("2026-06-01T01:00:00Z");
+        Instant expected = ZonedDateTime.of(2026, 6, 1, 6, 0, 0, 0, kolkata).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(runTime, null, kolkata));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_NullZone_Skipped() {
+        assertNull(QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), null, null));
+    }
+
+    // --- computeWeeklyMailScheduleAt : immediate if not in quiet, else resumption, drop if no slot before next run ---
+
+    private static final Instant WEEKLY_NOW = dt(2026, 6, 1, 22, 30).toInstant();        // Monday 22:30 Paris
+    private static final Instant WEEKLY_NEXT_RUN = WEEKLY_NOW.plus(Duration.ofDays(7));
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_NoZone_Immediate() {
+        // no timezone -> no quiet hours -> immediate (returns now)
+        assertEquals(WEEKLY_NOW, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(fullSchedule(22, 23)), null, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_NoQuietHours_Immediate() {
+        assertEquals(WEEKLY_NOW, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, null, PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_NotQuietNow_Immediate() {
+        // quiet 02h-04h, now is 22:30 -> not in a quiet slot -> immediate
+        assertEquals(WEEKLY_NOW, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(fullSchedule(2, 3, 4)), PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_InQuiet_ReturnsResumption() {
+        // Monday quiet 22h,23h ; now Monday 22:30 -> resumption = Tuesday 00:00
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{22, 23};
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        Instant expected = dt(2026, 6, 2, 0, 0).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(schedule), PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_DegenerateFullQuiet_Dropped() {
+        int[] allDay = new int[24];
+        for (int h = 0; h < 24; h++) allDay[h] = h;
+        assertNull(QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(fullSchedule(allDay)), PARIS, WEEKLY_NEXT_RUN));
+    }
+
+    @Test
+    public void testComputeWeeklyMailScheduleAt_ResumptionAfterNextRun_Dropped() {
+        // resumption Tuesday 00:00, but next run only 1h after now -> dropped
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{22, 23};
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        Instant nextRun = WEEKLY_NOW.plus(Duration.ofHours(1));
+        assertNull(QuietHoursHelper.computeWeeklyMailScheduleAt(WEEKLY_NOW, enabledPref(schedule), PARIS, nextRun));
     }
 }
