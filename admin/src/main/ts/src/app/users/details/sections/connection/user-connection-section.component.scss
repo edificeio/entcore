@@ -1,3 +1,10 @@
+
+:host ::ng-deep ode-form-field:has(input:disabled) label,
+:host ::ng-deep .field-disabled ode-form-field label, .is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .merge-info {
   h2 {
     margin-right: 30px;
