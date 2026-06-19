@@ -1693,7 +1693,7 @@
   "users.details.section.functional.groups": "Groupe(s) d'enseignement",
   "users.details.section.infos": "Identité",
   "users.details.section.infos.federatedInfo.title": "Comment cet utilisateur peut se connecter ?",
-  "users.details.section.infos.federatedInfo.content": "Pour se connecter, cet utilisateur doit passer par une authentification externe à l'ENT (par exemple: EduConnect, E Arena, LiÀ, FranceConnect...). II doit s'adresser au service concerné pour gérer ses accès. Donc, depuis cette fiche, il n'est pas possible de publiposter sa fiche de connexion et de renouveler son mot de passe.",
+  "users.details.section.infos.federatedInfo.content": "Pour se connecter, cet utilisateur doit passer par une authentification externe à l'ENT (par exemple: EduConnect, E Arena, LiÀ, FranceConnect...). Il doit s'adresser au service concerné pour gérer ses accès. Donc, depuis cette fiche, il n'est pas possible de publiposter sa fiche de connexion et de renouveler son mot de passe.",
   "users.details.section.manual.groups": "Groupe(s) manuel(s)",
   "users.details.section.positions": "Fonctions",
   "users.details.section.quota": "Quota de stockage",
