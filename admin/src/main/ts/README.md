@@ -2,10 +2,15 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.19.
 
-## Development server
+## Development with proxy server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-If you want to be connected to a remote server instead of you local springboard you can use the `.proxyRemoteConfig.template.js` copy the file and remove the `.template` so the `proxy-devepment.config.js` will be able to use it when you run `ng serve`.
+
+To connect to a remote server instead of your local springboard, create a `.env` file in this directory with your credentials:
+
+**Option 1 — automatic (recommended):** use [dev-auth-fetcher](https://github.com/edificeio/dev-auth-fetcher) which handles authentication and generates the `.env` automatically.
+
+**Option 2 — manual:** copy `.env.template` to `.env` and fill in `VITE_RECETTE`, `VITE_XSRF_TOKEN` and `VITE_ONE_SESSION_ID`, then run `ng serve`.
 
 ## Code scaffolding
 
