@@ -1642,7 +1642,7 @@
   "user.communication.section.title.sending-rules": "Avec qui l'utilisateur peut-il communiquer",
   "user.communication.title": "Communication de {{ lastName }} {{ firstName }}",
   "user.connection.activationCode.unlock": "Débloquer pour voir le code d’activation",
-  "user.connection.field.title.disabled.federatedUser": "Le champ est bloqué car l'utilisateur possède une identité fédérée (voir la bulle d'info ci-dessus).",
+  "user.connection.field.title.disabled.federatedUser": "Champs verrouillé car l'utilisateur est en authentification externe (voir message ci-dessus)",
   "user.error": "Erreur lors du chargement de l'utilisateur",
   "user.has.duplicates": "Utilisateur en doublon",
   "user.icons.tooltip.blocked": "Compte bloqué",
