@@ -12,7 +12,7 @@
             <button workflow="directory.allowClassAdminDeleteUsers" ng-if="canRemoveSelection()" ng-click="openLightbox('admin/actions/delete')">
                 <i18n>remove</i18n>
             </button>
-            <button ng-click="goToExport(true)">
+            <button ng-click="goToExport(true)" ng-if="!allSelectedUsersAreFederated()">
                 <i18n>classAdmin.export.toaster</i18n>
             </button>
             <button workflow="directory.allowClassAdminUnlinkUsers" ng-click="onToasterUnlinkUsers()">
