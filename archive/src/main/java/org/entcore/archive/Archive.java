@@ -28,25 +28,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.AsyncMap;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.entcore.archive.controllers.ArchiveController;
-import org.entcore.archive.controllers.ImportController;
-import org.entcore.archive.controllers.DuplicationController;
-import org.entcore.archive.controllers.RepriseController;
+import org.entcore.archive.controllers.*;
 import org.entcore.archive.filters.ArchiveFilter;
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.RepriseService;
-import org.entcore.archive.services.impl.DefaultImportService;
-import org.entcore.archive.services.impl.DefaultRepriseService;
-import org.entcore.archive.services.impl.DeleteOldArchives;
+import org.entcore.archive.services.impl.*;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
-import org.entcore.common.utils.MapFactory;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.text.ParseException;
-import java.util.Map;
 
 public class Archive extends BaseServer {
 
@@ -95,19 +88,20 @@ public class Archive extends BaseServer {
 		addController(ic);
 		addController(dc);
 
+		DeleteOldArchivesTask deleteOldArchivesTask = new DeleteOldArchivesTask(vertx,
+				storageFactory.getStorage(),
+				config.getInteger("deleteDelay", 24),
+				exportPath,
+				importService,
+				importPath,
+				config.getBoolean("enablePurgeByFileAge", true),
+				config.getInteger("maxFileAge", 24)
+		);
+
 		String purgeArchivesCron = config.getString("purgeArchive");
 		if (purgeArchivesCron != null) {
 			try {
-				new CronTrigger(vertx, purgeArchivesCron).schedule(
-						new DeleteOldArchives(vertx,
-								storageFactory.getStorage(),
-								config.getInteger("deleteDelay", 24),
-								exportPath,
-								importService,
-								importPath,
-								config.getBoolean("enablePurgeByFileAge", true),
-								config.getInteger("maxFileAge", 24)
-						));
+				new CronTrigger(vertx, purgeArchivesCron).schedule(deleteOldArchivesTask);
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
 			}
@@ -122,26 +116,28 @@ public class Archive extends BaseServer {
 		addController(rc);
 
 		Boolean teacherPersonnelFirst = reprise.getBoolean("teacher-personnel-first", false);
+		RepriseExportTask repriseExportTask = new RepriseExportTask(teacherPersonnelFirst, repriseService);
 		String repriseExportCron = reprise.getString("export-cron");
 		if (repriseExportCron != null) {
 			try {
-				new CronTrigger(vertx, repriseExportCron).schedule(event -> {
-					repriseService.launchExportForUsersFromOldPlatform(teacherPersonnelFirst.booleanValue());
-				});
+				new CronTrigger(vertx, repriseExportCron).schedule(repriseExportTask);
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+		RepriseImportTask repriseImportTask = new RepriseImportTask(teacherPersonnelFirst, repriseService);
 		String repriseImportCron = reprise.getString("import-cron");
 		if (repriseImportCron != null) {
 			try {
-				new CronTrigger(vertx, repriseImportCron).schedule(event -> {
-					repriseService.launchImportForUsersFromOldPlatform(teacherPersonnelFirst.booleanValue());
-				});
+				new CronTrigger(vertx, repriseImportCron).schedule(repriseImportTask);
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+
+		// Add controller to trigger the tasks via API
+		addController(new TaskController(deleteOldArchivesTask, repriseExportTask, repriseImportTask));
+
 		return Future.succeededFuture();
 	}
 

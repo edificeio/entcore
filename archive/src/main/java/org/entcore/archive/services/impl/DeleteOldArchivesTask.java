@@ -39,7 +39,7 @@ import java.util.Date;
 
 import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
-public class DeleteOldArchives implements Handler<Long> {
+public class DeleteOldArchivesTask implements Handler<Long> {
 
     private final MongoDb mongo = MongoDb.getInstance();
     private final Vertx vertx;
@@ -51,10 +51,10 @@ public class DeleteOldArchives implements Handler<Long> {
     private final int maxFileAge;
     private final boolean enablePurgeByFileAge;
 
-    private static final Logger log = LoggerFactory.getLogger(DeleteOldArchives.class);
+    private static final Logger log = LoggerFactory.getLogger(DeleteOldArchivesTask.class);
 
 
-    public DeleteOldArchives(Vertx vertx, Storage storage, int delay, String exportPath, ImportService importService, final String importPath, final boolean enablePurgeByFileAge, final int maxFileAge) {
+    public DeleteOldArchivesTask(Vertx vertx, Storage storage, int delay, String exportPath, ImportService importService, final String importPath, final boolean enablePurgeByFileAge, final int maxFileAge) {
         this.storage = storage;
         this.vertx = vertx;
         this.delay = delay;
