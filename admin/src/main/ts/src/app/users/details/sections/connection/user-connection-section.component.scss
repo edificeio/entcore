@@ -1,6 +1,6 @@
-
 :host ::ng-deep ode-form-field:has(input:disabled) label,
-:host ::ng-deep .field-disabled ode-form-field label, .is-disabled {
+:host ::ng-deep .field-disabled ode-form-field label,
+:host .is-disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
