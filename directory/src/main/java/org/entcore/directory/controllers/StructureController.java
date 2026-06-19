@@ -507,6 +507,10 @@ public class StructureController extends BaseController {
 			filter.put("activated", request.params().get("a"));
 		}
 
+		if (request.params().contains("includeFederated") && Boolean.parseBoolean(request.params().get("includeFederated"))) {
+			filter.put("includeFederated", true);
+		}
+
         if(request.params().contains("adml")){
             filter.put("adml", request.params().get("adml"));
         }
@@ -535,40 +539,38 @@ public class StructureController extends BaseController {
 			final String templatePath = assetsPath + "/template/directory/";
 			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
 
-			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-				public void handle(final UserInfos infos) {
+			UserUtils.getUserInfos(eb, request, infos -> {
 
-					//PDF
-					if("pdf".equals(type) || "newPdf".equals(type) || "simplePdf".equals(type)){
-						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-							public void handle(Either<String, JsonArray> result) {
-								if(result.isLeft()){
-									forbidden(request);
-									return;
-								}
+                //PDF
+                if("pdf".equals(type) || "newPdf".equals(type) || "simplePdf".equals(type)){
+                    massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+                        public void handle(Either<String, JsonArray> result1) {
+                            if(result1.isLeft()){
+                                forbidden(request);
+                                return;
+                            }
 
-								massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result.right().getValue());
-							}
-						});
-					}
-					//Mail
-					else if("mail".equals(type)){
-						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-							public void handle(final Either<String, JsonArray> result) {
-								if(result.isLeft()){
-									forbidden(request);
-									return;
-								}
+                            massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result1.right().getValue());
+                        }
+                    });
+                }
+                //Mail
+                else if("mail".equals(type)){
+                    massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+                        public void handle(final Either<String, JsonArray> result1) {
+                            if(result1.isLeft()){
+                                forbidden(request);
+                                return;
+                            }
 
-								massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
-							}
-						});
-					} else {
-						badRequest(request);
-					}
+                            massMailService.massMailTypeMail(infos, request, templatePath, result1.right().getValue());
+                        }
+                    });
+                } else {
+                    badRequest(request);
+                }
 
-				}
-			});
+            });
 		});
 	}
 
