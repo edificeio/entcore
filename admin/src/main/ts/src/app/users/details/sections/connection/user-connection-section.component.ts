@@ -1,3 +1,4 @@
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -6,22 +7,21 @@ import {
   OnInit,
   ViewChild,
 } from "@angular/core";
-import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { AbstractControl, NgForm } from "@angular/forms";
-import { Observable, Subscription } from "rxjs";
 import { BundlesService } from "ngx-ode-sijil";
+import { Observable, Subscription } from "rxjs";
 
-import { AbstractSection } from "../abstract.section";
-import { UserInfoService } from "../info/user-info.service";
-import { Config } from "../../../../core/resolvers/Config";
+import { SpinnerService } from "ngx-ode-ui";
+import { catchError, tap } from "rxjs/operators";
+import { NotifyService } from "src/app/core/services/notify.service";
+import { PlatformInfoService } from "src/app/core/services/platform-info.service";
+import { Session } from "src/app/core/store/mappings/session";
+import { SessionModel } from "src/app/core/store/models/session.model";
 import { StructureModel } from "src/app/core/store/models/structure.model";
 import { UserModel } from "src/app/core/store/models/user.model";
-import { NotifyService } from "src/app/core/services/notify.service";
-import { SpinnerService } from "ngx-ode-ui";
-import { PlatformInfoService } from "src/app/core/services/platform-info.service";
-import { SessionModel } from "src/app/core/store/models/session.model";
-import { Session } from "src/app/core/store/mappings/session";
-import { catchError, tap } from "rxjs/operators";
+import { Config } from "../../../../core/resolvers/Config";
+import { AbstractSection } from "../abstract.section";
+import { UserInfoService } from "../info/user-info.service";
 
 @Component({
   selector: "ode-user-connection-section",
@@ -60,6 +60,7 @@ export class UserConnectionSectionComponent
   tempTotp: string = "";
   showTotpVerify: boolean = false;
   tempTotpCode: string = "";
+  isFederatedUserFieldsUnlocked = false;
   // Base32 alphabet: A-Z and 2-7, with optional padding
   readonly totpBase32Pattern = /^[A-Za-z2-7]+(={0,6})?$/;
   // TOTP code: exactly 6 digits
@@ -106,9 +107,21 @@ export class UserConnectionSectionComponent
     super();
   }
 
+  
+  get isInactiveFederatedUser(): boolean {
+    const isUserActive = !(
+      this.details.activationCode && this.details.activationCode.length > 0
+    );
+    return this.details?.hasFederatedIdentity && !isUserActive;
+  }
+
+  get isFederatedIdentityFieldsLocked(): boolean {
+    return this.isInactiveFederatedUser && !this.isFederatedUserFieldsUnlocked;
+  }
+
   get federatedDisabledTitle(): string {
-    return this.details?.hasFederatedIdentity
-      ? this.bundles.translate('user.connection.field.title.disabled.federatedUser')
+    return this.isFederatedIdentityFieldsLocked
+      ? this.bundles.translate('users.details.section.connection.field.title.disabled.federatedUser')
       : '';
   }
 
@@ -147,7 +160,10 @@ export class UserConnectionSectionComponent
       this.passwordResetMobile = this.details.mobile;
     }
     this.renewalCode = undefined;
+    this.isFederatedUserFieldsUnlocked = false;
   }
+
+
 
   sendResetPasswordMail(email: string) {
     if( this.isForbidden )
