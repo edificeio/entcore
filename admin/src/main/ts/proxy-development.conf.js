@@ -57,21 +57,19 @@ const parseEnvFile = (content) => {
 
 if (fs.existsSync("./.env")) {
   const env = parseEnvFile(fs.readFileSync("./.env", "utf-8"));
-  const target = env.VITE_RECETTE;
-  const xsrfToken = env.VITE_XSRF_TOKEN;
-  const oneSessionId = env.VITE_ONE_SESSION_ID;
-  if (target) {
-    console.log("Using remote proxy configuration target: ", target);
-    PROXY_CONFIG.target = target;
-    PROXY_FAVICO.target = target;
-    if (oneSessionId && xsrfToken) {
+  const {VITE_RECETTE, VITE_XSRF_TOKEN, VITE_ONE_SESSION_ID} = env;
+  if (VITE_RECETTE) {
+    console.log("Using remote proxy configuration target: ", VITE_RECETTE);
+    PROXY_CONFIG.target = VITE_RECETTE;
+    PROXY_FAVICO.target = VITE_RECETTE;
+    if (VITE_ONE_SESSION_ID && VITE_XSRF_TOKEN) {
       PROXY_CONFIG.headers = {
-        cookie: `oneSessionId=${oneSessionId}; authenticated=true; XSRF-TOKEN=${xsrfToken}`,
+        cookie: `oneSessionId=${VITE_ONE_SESSION_ID}; authenticated=true; XSRF-TOKEN=${VITE_XSRF_TOKEN}`,
       };
       PROXY_CONFIG.onProxyRes = (proxyRes, req, res) => {
         proxyRes.headers["set-cookie"] = [
-          `oneSessionId=${oneSessionId}`,
-          `XSRF-TOKEN=${xsrfToken}`,
+          `oneSessionId=${VITE_ONE_SESSION_ID}`,
+          `XSRF-TOKEN=${VITE_XSRF_TOKEN}`,
         ];
       };
     }
