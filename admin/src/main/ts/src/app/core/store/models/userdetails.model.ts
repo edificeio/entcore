@@ -1,5 +1,5 @@
-import {Model} from 'entcore-toolkit';
-import {GroupModel} from '../../store/models/group.model';
+import { Model } from 'entcore-toolkit';
+import { GroupModel } from '../../store/models/group.model';
 import { StructureModel } from './structure.model';
 import { UserPosition } from './userPosition.model';
 
@@ -43,6 +43,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     mobile?: string;
     totp?: string;
     hasTotp?: boolean;
+    hasFederatedIdentity: boolean = false;
     profiles: Array<String> = [];
     type?: Array<string>;
     functions?: Array<[string, Array<string>]>;

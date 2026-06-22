@@ -2,12 +2,22 @@
   <div class="message is-info" *ngIf="isForbidden">
     <div class="message-body">&nbsp;<s5l>notify.user.email.info</s5l></div>
   </div>
+
+  <div class="cell flashmsg blue" *ngIf="details.hasFederatedIdentity">
+      <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
+      <use [attr.href]="'/admin/public/icons/icons.svg#alert-triangle'"></use>
+    </svg>
+    <div class="flash-content">
+      <h3><s5l>users.details.section.infos.federatedInfo.title</s5l></h3> 
+      <p><s5l>users.details.section.infos.federatedInfo.content</s5l></p>
+    </div>
+  </div>
   
   <form #loginForm="ngForm">
-    <fieldset>
+    <fieldset [title]="federatedDisabledTitle">
       <ode-form-field label="login">
-        <span *ngIf="isAdmc == false">{{ details.login }}</span>
-        <div *ngIf="isAdmc">
+        <span *ngIf="!isAdmc" >{{ details.login }}</span>
+        <div *ngIf="isAdmc" >
           <input
             type="text"
             [(ngModel)]="details.login"
@@ -16,11 +26,13 @@
             #loginInput="ngModel"
             (ngModelChange)="isUpdateLoginSaved = false"
             maxlength="64"
+            [disabled]="details.hasFederatedIdentity"
           />
           <button
             type="button"
             (click)="showChangeLoginConfirmation = true"
             [disabled]="
+              details.hasFederatedIdentity ||
               isUpdateLoginSaved ||
               loginForm.pristine ||
               loginForm.invalid ||
@@ -45,6 +57,48 @@
               <s5l>user.change.login.disclaimer.confirm</s5l>
             </p>
           </ode-lightbox-confirm>
+        </div>
+      </ode-form-field>
+    </fieldset>
+  </form>
+  
+  <div [class.field-disabled]="details.hasFederatedIdentity" [title]="federatedDisabledTitle">
+    <ode-form-field label="activation.code" >
+      <span *ngIf="details.hasFederatedIdentity" class="is-disabled" ><s5l>user.connection.activationCode.unlock</s5l></span>
+      <span *ngIf="!!details.activationCode && !details.hasFederatedIdentity">{{ details.activationCode }}</span>
+    </ode-form-field>
+  </div>
+
+  <form #connectionForm="ngForm">
+    <fieldset [title]="federatedDisabledTitle">
+      <ode-form-field label="loginAlias">
+        <div>
+          <input
+            type="text"
+            [(ngModel)]="details.loginAlias"
+            name="loginAlias"
+            [pattern]="loginAliasPattern"
+            #loginAliasInput="ngModel"
+            [disabled]="isForbidden || details.hasFederatedIdentity"
+            maxlength="64"
+          />
+          <button
+            type="button"
+            (click)="updateLoginAlias()"
+            [disabled]="
+              connectionForm.pristine ||
+              connectionForm.invalid ||
+              spinner.isLoading('portal-content')
+            "
+          >
+            <s5l>login.update</s5l>
+            <i class="fa fa-floppy-o"></i>
+          </button>
+          <ode-form-errors
+            [control]="loginAliasInput"
+            [expectedPatternMsg]="'form.user.alias.pattern' | translate"
+          >
+          </ode-form-errors>
         </div>
       </ode-form-field>
     </fieldset>
@@ -85,46 +139,11 @@
     </fieldset>
   </form>
 
-  <form #connectionForm="ngForm">
-    <fieldset>
-      <ode-form-field label="loginAlias">
-        <div>
-          <input
-            type="text"
-            [(ngModel)]="details.loginAlias"
-            name="loginAlias"
-            [pattern]="loginAliasPattern"
-            #loginAliasInput="ngModel"
-            [disabled]="isForbidden"
-            maxlength="64"
-          />
-          <button
-            type="button"
-            (click)="updateLoginAlias()"
-            [disabled]="
-              connectionForm.pristine ||
-              connectionForm.invalid ||
-              spinner.isLoading('portal-content')
-            "
-          >
-            <s5l>login.update</s5l>
-            <i class="fa fa-floppy-o"></i>
-          </button>
-          <ode-form-errors
-            [control]="loginAliasInput"
-            [expectedPatternMsg]="'form.user.alias.pattern' | translate"
-          >
-          </ode-form-errors>
-        </div>
-      </ode-form-field>
-    </fieldset>
-  </form>
+  
 
   <form>
     <fieldset>
-      <ode-form-field label="activation.code" *ngIf="details.activationCode">
-        <span>{{ details.activationCode }}</span>
-      </ode-form-field>
+   
       <ode-form-field label="mergeKey" *ngIf="user.type === 'Relative'">
         <div>
           <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
@@ -416,31 +435,36 @@
           >
         </div>
       </ode-form-field>
-
-      <ode-form-field label="massmail">
-        <div>
-          <button type="button" (click)="sendIndividualMassMail('pdf')">
-            <span><s5l>individual.massmail.pdf</s5l></span>
-            <i class="fa fa-file-pdf-o"></i>
-          </button>
-          <button
-            type="button"
-            (click)="showMassMailConfirmation = true"
-            [disabled]="!details.email"
-          >
-            <span><s5l>individual.massmail.mail</s5l></span>
-            <i class="fa fa-envelope"></i>
-          </button>
-          <ode-lightbox-confirm
-            [show]="showMassMailConfirmation"
-            [lightboxTitle]="'warning'"
-            (onConfirm)="sendIndividualMassMail('mail')"
-            (onCancel)="showMassMailConfirmation = false"
-          >
-            <s5l>individual.massmail.confirm</s5l>
-          </ode-lightbox-confirm>
-        </div>
-      </ode-form-field>
+        <div [class.field-disabled]="details.hasFederatedIdentity" [title]="federatedDisabledTitle">
+          <ode-form-field label="massmail">
+            <div >
+              <button
+                type="button"
+                (click)="sendIndividualMassMail('pdf')"
+                [disabled]="details.hasFederatedIdentity"
+              >
+                <span><s5l>individual.massmail.pdf</s5l></span>
+                <i class="fa fa-file-pdf-o"></i>
+              </button>
+              <button
+                type="button"
+                (click)="showMassMailConfirmation = true"
+                [disabled]="!details.email || details.hasFederatedIdentity"
+              >
+                <span><s5l>individual.massmail.mail</s5l></span>
+                <i class="fa fa-envelope"></i>
+              </button>
+              <ode-lightbox-confirm
+                [show]="showMassMailConfirmation"
+                [lightboxTitle]="'warning'"
+                (onConfirm)="sendIndividualMassMail('mail')"
+                (onCancel)="showMassMailConfirmation = false"
+              >
+                <s5l>individual.massmail.confirm</s5l>
+              </ode-lightbox-confirm>
+            </div>
+          </ode-form-field>
+      </div>
     </fieldset>
   </form>
 </ode-panel-section>
