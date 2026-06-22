@@ -57,12 +57,12 @@
         <entCoreLibsVersion>6.16.3</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.2.1</modPostgresVersion>
-        <modMongoVersion>4.2.0</modMongoVersion>
-        <modSmsProxyVersion>2.2.0</modSmsProxyVersion>
-        <webUtilsVersion>3.4.3</webUtilsVersion>
-        <imageResizerVersion>3.3.1</imageResizerVersion>
-        <mongodbHelperVersion>3.1.1</mongodbHelperVersion>
+        <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
+        <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
+        <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
+        <imageResizerVersion>3.3-SNAPSHOT</imageResizerVersion>
+        <webUtilsVersion>3.4-develop-enabling-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
