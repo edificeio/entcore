@@ -8,7 +8,6 @@
       <use [attr.href]="'/admin/public/icons/icons.svg#alert-triangle'"></use>
     </svg>
     <div class="flash-content">
-      <!-- <p></p> -->
       <h3><s5l>users.details.section.infos.federatedInfo.title</s5l></h3> 
       <p><s5l>users.details.section.infos.federatedInfo.content</s5l></p>
     </div>
@@ -27,13 +26,13 @@
             #loginInput="ngModel"
             (ngModelChange)="isUpdateLoginSaved = false"
             maxlength="64"
-            [disabled]="!!details.hasFederatedIdentity"
+            [disabled]="details.hasFederatedIdentity"
           />
           <button
             type="button"
             (click)="showChangeLoginConfirmation = true"
             [disabled]="
-              !!details.hasFederatedIdentity ||
+              details.hasFederatedIdentity ||
               isUpdateLoginSaved ||
               loginForm.pristine ||
               loginForm.invalid ||
@@ -63,9 +62,9 @@
     </fieldset>
   </form>
   
-  <div [class.field-disabled]="!!details.hasFederatedIdentity" [title]="federatedDisabledTitle">
+  <div [class.field-disabled]="details.hasFederatedIdentity" [title]="federatedDisabledTitle">
     <ode-form-field label="activation.code" >
-      <span *ngIf="!!details.hasFederatedIdentity" class="is-disabled" ><s5l>user.connection.activationCode.unlock</s5l></span>
+      <span *ngIf="details.hasFederatedIdentity" class="is-disabled" ><s5l>user.connection.activationCode.unlock</s5l></span>
       <span *ngIf="!!details.activationCode && !details.hasFederatedIdentity">{{ details.activationCode }}</span>
     </ode-form-field>
   </div>
@@ -80,7 +79,7 @@
             name="loginAlias"
             [pattern]="loginAliasPattern"
             #loginAliasInput="ngModel"
-            [disabled]="isForbidden || !!details.hasFederatedIdentity"
+            [disabled]="isForbidden || details.hasFederatedIdentity"
             maxlength="64"
           />
           <button
@@ -436,13 +435,13 @@
           >
         </div>
       </ode-form-field>
-        <div [class.field-disabled]="!!details.hasFederatedIdentity" [title]="federatedDisabledTitle">
+        <div [class.field-disabled]="details.hasFederatedIdentity" [title]="federatedDisabledTitle">
           <ode-form-field label="massmail">
             <div >
               <button
                 type="button"
                 (click)="sendIndividualMassMail('pdf')"
-                [disabled]="!!details.hasFederatedIdentity"
+                [disabled]="details.hasFederatedIdentity"
               >
                 <span><s5l>individual.massmail.pdf</s5l></span>
                 <i class="fa fa-file-pdf-o"></i>
@@ -450,7 +449,7 @@
               <button
                 type="button"
                 (click)="showMassMailConfirmation = true"
-                [disabled]="!details.email || !!details.hasFederatedIdentity"
+                [disabled]="!details.email || details.hasFederatedIdentity"
               >
                 <span><s5l>individual.massmail.mail</s5l></span>
                 <i class="fa fa-envelope"></i>
