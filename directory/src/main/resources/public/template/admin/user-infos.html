@@ -143,8 +143,8 @@
 	<!--END FORM-->
 	<!--BUTTONS-->
 	<div class="row twelve bottom-spacing-three" ng-if="!isForbidden()">
-		<a workflow="directory.allowClassAdminResetPassword" ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></a>
-		<a class="button" ng-click="userInfoExport(selectedUser)" translate content="classAdmin.userInfos.connectInfos"></a>
+		<button workflow="directory.allowClassAdminResetPassword" ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></button>
+		<button ng-disabled="selectedUser.hasFederatedIdentity" ng-click="userInfoExport(selectedUser)" translate content="classAdmin.userInfos.connectInfos"></button>
 	</div>
 	<!--END BUTTON-->
 	<!--MOOD-->
@@ -195,7 +195,7 @@
 	<article class="row bottom-spacing-three" ng-if="userInfosDisplayRelative()">
 		<h2 content="userBook.profile.relatives"><span class="no-style" translate key="userBook.profile.relatives"></span></h2>
 		<div class="reduce-block-eight">
-			<div class="flex-row align-center top-spacing-twice">
+			<div ng-if="!selectedUser.hasFederatedIdentity" class="flex-row align-center top-spacing-twice">
 					<a class="cell-ellipsis small-text block left-text" ng-click="userInfoExportFamily(selectedUser)">
 						<i class="download-disk"></i> <i18n>classAdmin.report.family</i18n>
 					</a>
