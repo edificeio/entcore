@@ -234,6 +234,8 @@ export async function UserListDelegate($scope: UserListDelegateScope) {
     $scope.displayCode = function (user) {
         if (user.blocked) {
             return lang.translate("directory.blocked.label");
+        } else if (user.hasFederatedIdentity) {
+            return lang.translate("directory.federated");
         } else if (user.activationCode) {
             return user.activationCode;
         } else if (user.resetCode) {
@@ -245,10 +247,12 @@ export async function UserListDelegate($scope: UserListDelegateScope) {
     $scope.displayCodeCss = function (user) {
         if (user.blocked) {
             return "blocked";
+        } else if (user.hasFederatedIdentity) {
+            return "italic-text";
         } else if (user.activationCode) {
             return "notactivated";
         } else if (user.resetCode) {
-            return "resetted"
+            return "resetted";
         } else {
             return "activated";
         }

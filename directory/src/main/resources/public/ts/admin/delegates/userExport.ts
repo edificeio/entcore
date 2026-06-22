@@ -139,6 +139,7 @@ export function ExportDelegate($scope: ExportDelegateScope) {
                 return ($scope.userExport.profiles.indexOf(u.type) > -1);
             });
         }
+        _usersForMailing = _usersForMailing.filter(u => !u.hasFederatedIdentity);
         _usersWithoutMails = _usersForMailing.filter(s => !s.safeHasEmail);
         _usersWithMails = _usersForMailing.filter(s => s.safeHasEmail);
     }

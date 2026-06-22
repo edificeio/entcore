@@ -70,6 +70,7 @@ export class User extends Model {
     originalLogin: string;
     lastLogin: string;
     blocked: boolean;
+    hasFederatedIdentity: boolean;
     type: UserTypes;
     profile: UserTypes;
     resetCode: string;
