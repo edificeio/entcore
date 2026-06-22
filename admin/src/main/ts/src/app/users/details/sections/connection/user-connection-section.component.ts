@@ -106,6 +106,12 @@ export class UserConnectionSectionComponent
     super();
   }
 
+  get federatedDisabledTitle(): string {
+    return this.details?.hasFederatedIdentity
+      ? this.bundles.translate('user.connection.field.title.disabled.federatedUser')
+      : '';
+  }
+
   get shouldShowTotpField(): boolean {
     // Show TOTP field if at least one structure does not ignore MFA
     if (!this.details || !this.details.structureNodes || this.details.structureNodes.length === 0) {
