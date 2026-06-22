@@ -1,26 +1,23 @@
+import { HttpClient } from "@angular/common/http";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
-  OnInit,
-  ViewChild,
+  OnInit
 } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { AbstractControl } from "@angular/forms";
-import { Subscription } from "rxjs";
 import { BundlesService } from "ngx-ode-sijil";
+import { Subscription } from "rxjs";
 
-import { AbstractSection } from "../abstract.section";
-import { UserInfoService } from "./user-info.service";
-import { Config } from "../../../../core/resolvers/Config";
+import { SpinnerService } from "ngx-ode-ui";
+import { NotifyService } from "src/app/core/services/notify.service";
+import { Session } from "src/app/core/store/mappings/session";
+import { SessionModel } from "src/app/core/store/models/session.model";
 import { StructureModel } from "src/app/core/store/models/structure.model";
 import { UserModel } from "src/app/core/store/models/user.model";
-import { NotifyService } from "src/app/core/services/notify.service";
-import { SpinnerService } from "ngx-ode-ui";
-import { PlatformInfoService } from "src/app/core/services/platform-info.service";
-import { SessionModel } from "src/app/core/store/models/session.model";
-import { Session } from "src/app/core/store/mappings/session";
+import { Config } from "../../../../core/resolvers/Config";
+import { AbstractSection } from "../abstract.section";
+import { UserInfoService } from "./user-info.service";
 
 @Component({
   selector: "ode-user-info-section",
