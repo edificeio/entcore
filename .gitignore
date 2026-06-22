@@ -77,6 +77,7 @@ admin/src/main/ts/.angular
 *.lock
 tests/src/test/resources/data/thumbnails/image.jpg
 admin/src/main/ts/.proxyRemoteConfig.js
+admin/src/main/ts/.env
 conversation/src/main/resources/public/js/
 conversation/src/main/resources/view/
 
