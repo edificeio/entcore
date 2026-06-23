@@ -119,6 +119,9 @@
     {% if carbonioDomainKey is defined %}
       "carbonio-domain-key": "{{ carbonioDomainKey }}",
     {% endif %}
+    {% if authIdruideEmail is defined %}
+      "idruide-email-domain-by-host": "{{ authIdruideEmail | default('{}') }}",
+    {% endif %}
     "passwordRegex": "{{ authPasswordRegex | default('.{8}.*')}}"
   }
 }
