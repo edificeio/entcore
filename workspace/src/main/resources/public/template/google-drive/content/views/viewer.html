@@ -1,0 +1,27 @@
+<div class="embedded-viewer height-minus200 height-minus270-1d" id="embeded-viewer">
+    <div class="controls__navbar flex-row align-center justify-between">
+        <div class="flex-row align-center justify-between">
+            <h2><i class="back" ng-click="closeViewFile()"></i></h2>
+            <div class="flex-row f-column left-spacing-twice">
+                <h2 class="no-margin">[[viewFile.name]]</h2>
+                <small><span class="no-1d"><i18n>owner</i18n>:&nbsp;</span><strong>[[viewFile.ownerDisplayName]]</strong></small>
+            </div>
+        </div>
+        <div class="flex-row align-center justify-between">
+            <button class="cancel" ng-if="viewFile.editable" ng-click="openEditor(viewFile)"><i18n>workspace.external.open</i18n></button>
+            <a class="cancel" ng-if="!viewFile.editable" ng-href="[[getFile(viewFile)]]" target="_blank"><i18n>download</i18n></a>
+        </div>
+    </div>
+    <div class="file">
+        <img ng-if="viewFile.role === 'image'" class="render" ng-src="[[getFile(viewFile)]]" />
+        <audio ng-if="viewFile.role === 'audio'" controls class="render" ng-src="[[getFile(viewFile)]]"></audio>
+        <video ng-if="viewFile.role === 'video'" controls class="render" ng-src="[[getFile(viewFile)]]"></video>
+        <pdf-viewer ng-if="viewFile.role === 'pdf'" ng-src="[[getFile(viewFile)]]"></pdf-viewer>
+        <div ng-if="viewFile.editable" class="default-viewer">
+            <button ng-click="openEditor(viewFile)"><i18n>workspace.external.open</i18n></button>
+        </div>
+        <div ng-if="!viewFile.editable && viewFile.role !== 'image' && viewFile.role !== 'audio' && viewFile.role !== 'video' && viewFile.role !== 'pdf'" class="default-viewer">
+            <a class="button" ng-href="[[getFile(viewFile)]]" target="_blank"><i18n>file.viewer.download</i18n></a>
+        </div>
+    </div>
+</div>

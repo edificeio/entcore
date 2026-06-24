@@ -63,6 +63,8 @@
     "name": "Title",
     "nofile": "No file",
     "owner": "Owner",
+    "google-drive.quota": "Used space",
+    "google-drive.unlimited.space": "Unlimited space",
     "quota.title": "Used space",
     "rack": "My rack",
     "rack.sent.message": "Your document has been sent",
