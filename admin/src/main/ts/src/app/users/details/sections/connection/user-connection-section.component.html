@@ -10,14 +10,18 @@
     <div class="flash-content">
       <!-- <p></p> -->
       <h3><s5l>users.details.section.connection.federatedInfo.title</s5l></h3> 
-      <p><s5l>users.details.section.connection.federatedInfo.content</s5l></p>
+      <h4><s5l>users.details.section.connection.federatedInfo.signin.title</s5l></h4> 
+      <p><s5l>users.details.section.connection.federatedInfo.signin.content</s5l></p>
+      <h4><s5l>users.details.section.connection.federatedInfo.issue.title</s5l></h4>
+      <p><s5l>users.details.section.connection.federatedInfo.issue.content</s5l></p>
     </div>
-    <p><b><s5l>users.details.section.connection.federatedInfo.unlock</s5l></b></p>
+    <p><b><s5l>users.details.section.connection.federatedInfo.unlock</s5l></b>
     <label>
       <input type="checkbox" [(ngModel)]="isFederatedUserFieldsUnlocked" />
       <s5l *ngIf="!isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.locked</s5l>
       <s5l *ngIf="isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.unlocked</s5l>
     </label>
+    </p>
   </div>
   
   <form #loginForm="ngForm">
