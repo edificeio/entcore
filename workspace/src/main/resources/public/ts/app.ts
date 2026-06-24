@@ -19,6 +19,16 @@ import {
 import { NextcloudService } from "./directives/nextcloud/services/nextcloud.service";
 import { NextcloudEventService } from "./directives/nextcloud/services/nextcloudEvent.service";
 import { NextcloudUserService } from "./directives/nextcloud/services/nextcloudUser.service";
+import {
+  workspaceGoogleDriveContent,
+  workspaceGoogleDriveContentController,
+} from "./directives/google-drive/components/content/contentViewer.component";
+import {
+  workspaceGoogleDriveFolder,
+  workspaceGoogleDriveFolderController,
+} from "./directives/google-drive/googleDriveFolder.directive";
+import { GoogleDriveService } from "./directives/google-drive/services/googleDrive.service";
+import { GoogleDriveEventService } from "./directives/google-drive/services/googleDriveEvent.service";
 import { pdfViewer } from "./directives/pdfViewer";
 import { syncDocumentViewer } from "./directives/syncDocumentViewer";
 import { txtViewer } from "./directives/txtViewer";
@@ -83,3 +93,16 @@ ng.directives.push(folderPicker2);
 // Content
 ng.directives.push(workspaceNextcloudContent);
 ng.controllers.push(workspaceNextcloudContentController);
+
+// Google Drive
+// Services
+ng.services.push(GoogleDriveService);
+ng.services.push(GoogleDriveEventService);
+
+// Folder
+ng.directives.push(workspaceGoogleDriveFolder);
+ng.controllers.push(workspaceGoogleDriveFolderController);
+
+// Content
+ng.directives.push(workspaceGoogleDriveContent);
+ng.controllers.push(workspaceGoogleDriveContentController);
