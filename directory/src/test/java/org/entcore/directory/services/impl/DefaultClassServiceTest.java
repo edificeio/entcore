@@ -50,6 +50,7 @@ public class DefaultClassServiceTest {
             .firstName("Eleve").lastName("StructureFederee")
             .displayName("Eleve StructureFederee")
             .profile(Profile.Student)
+            .activationCode("class-student-structure-with-idp-activation-code")
             .build();
     static final UserTest parent = UserTestBuilder.anUserTest().id("class-parent")
             .login("class.parent")
