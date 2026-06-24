@@ -45,6 +45,7 @@ declare var ENABLE_LOOL: boolean;
 declare var ENABLE_SCRATCH: boolean;
 declare var ENABLE_NEXTCLOUD: boolean;
 declare var USE_NEXTCLOUD_SNIPLET: boolean;
+declare var ENABLE_GOOGLE_DRIVE: boolean;
 declare var ENABLE_GGB: boolean;
 declare var DISABLE_FULL_TEXT_SEARCH: boolean;
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope, ScratchDelegateScope, GeogebraDelegateScope {
@@ -54,6 +55,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	ENABLE_NEXTCLOUD: boolean;
 	HAS_NEXTCLOUD_RIGHT: boolean;
 	USE_NEXTCLOUD_SNIPLET: boolean;
+	ENABLE_GOOGLE_DRIVE: boolean;
 	DISABLE_FULL_TEXT_SEARCH: boolean;
 	documentList:models.DocumentsListModel;
 	documentListSorted:models.DocumentsListModel;
@@ -187,6 +189,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.ENABLE_NEXTCLOUD = ENABLE_NEXTCLOUD;
 	$scope.HAS_NEXTCLOUD_RIGHT = model.me.hasWorkflow(NEXTCLOUD_VIEW_RIGHT);
 	$scope.USE_NEXTCLOUD_SNIPLET = USE_NEXTCLOUD_SNIPLET;
+	$scope.ENABLE_GOOGLE_DRIVE = ENABLE_GOOGLE_DRIVE;
 	$scope.DISABLE_FULL_TEXT_SEARCH = DISABLE_FULL_TEXT_SEARCH;
 
 	/**

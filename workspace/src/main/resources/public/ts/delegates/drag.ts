@@ -32,10 +32,34 @@ export interface DragDelegateScope {
 declare var jQuery;
 export function DragDelegate($scope: DragDelegateScope) {
     let draggingItems: models.Element[] = []
+    let dragImageCopy: any = null;
     $scope.onInit(function () {
         //INIT
         $scope.isDraggingElement = false;
     });
+    document.addEventListener("dragstart", function (_e: DragEvent) {
+        const onDragEndCleanup = (): void => {
+            document.removeEventListener("dragend", onDragEndCleanup, true);
+            try {
+                jQuery(window).off("mousemove.drag touchmove.drag");
+                jQuery("body").off("mouseup.drag touchend.drag touchleave.drag");
+                jQuery("[dragstart]").data("dragging", false).css({ position: "", top: "", left: "", transition: "" });
+            } catch (ex) {
+                console.warn("jQuery drag cleanup error:", ex);
+            }
+            if (dragImageCopy) {
+                dragImageCopy.remove();
+                dragImageCopy = null;
+            }
+            document.querySelectorAll(".zoomout-2x").forEach(function (el: Element) { (el as HTMLElement).remove(); });
+            setTimeout(() => {
+                $scope.lockDropzone = false;
+                $scope.isDraggingElement = false;
+                $scope.safeApply();
+            }, 300);
+        };
+        document.addEventListener("dragend", onDragEndCleanup, true);
+    }, true);
     $scope.lockDropzone = false;
     $scope.isDropzoneEnabled = function () {
         //display drop zone only owner and shared tree
@@ -49,9 +73,11 @@ export function DragDelegate($scope: DragDelegateScope) {
         return draggingItems.length;
     }
     $scope.dragEnd = function (el, event: Event) {
-        //wait until drop event finished
+        if (dragImageCopy) {
+            dragImageCopy.remove();
+            dragImageCopy = null;
+        }
         setTimeout(() => {
-            //reset
             $scope.lockDropzone = false;
             $scope.isDraggingElement = false;
             $scope.safeApply()
@@ -74,18 +100,16 @@ export function DragDelegate($scope: DragDelegateScope) {
         $scope.lockDropzone = true;
         try {
             const original = jQuery($originalEvent.target);
-            const copy = original.clone().css({ position: "absolute", top: -10000, left: -1000, zoom: 0.5 }).addClass("zoomout-2x").insertAfter(original)
-            $originalEvent.dataTransfer.setDragImage(copy[0], undefined, undefined);
+            dragImageCopy = original.clone().css({ position: "absolute", top: -10000, left: -1000, zoom: 0.5 }).addClass("zoomout-2x").insertAfter(original)
+            $originalEvent.dataTransfer.setDragImage(dragImageCopy[0], undefined, undefined);
         } catch (e) {
             console.warn(e)
         }
-        //
         try {
             $originalEvent.dataTransfer.setData('application/json', JSON.stringify(item));
         } catch (e) {
             $originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
         }
-        //
         $scope.isDraggingElement = true;
         $scope.safeApply()
     };

@@ -1,0 +1,56 @@
+<div class="google-drive vertical-spacing-six">
+    <!-- Google Drive folder tree -->
+    <folder-tree
+        id="google-drive-folder-tree"
+        tree-props="folderTree"
+        dragdrop="droppable.dragDropHandler($originalEvent)"
+    >
+    </folder-tree>
+
+    <!-- Google Drive navigation contents -->
+    <div class="google-drive-content bottom-spacing-three">
+        <div id="google-drive-folder-create" ng-show="selectedFolder">
+            <div ng-switch="isTrashbinOpen">
+                <!-- If trashbin is open, show empty trash button -->
+                <a
+                    ng-switch-when="true"
+                    ng-show="documents.length > 0"
+                    class="classic-link centered-bloc-text vertical-spacing-twice-1d ng-scope"
+                    ng-click="emptyTrashbin.lightbox.emptyTrash = true;"
+                >
+                    <i18n>workspace.empty.trash</i18n>
+                </a>
+
+                <!-- By default show new folder button -->
+                <a
+                    ng-switch-default
+                    class="classic-link centered-bloc-text vertical-spacing-twice-1d ng-scope"
+                    ng-click="folderCreation.toggleCreateFolder(true, null)"
+                >
+                    <i18n>folder.new</i18n>
+                </a>
+            </div>
+
+            <!-- Popups -->
+            <div
+                ng-include="'/workspace/public/template/google-drive/folder/folder-creation.html'"
+            ></div>
+            <div
+                ng-include="'/workspace/public/template/google-drive/folder/empty-trash.html'"
+            ></div>
+        </div>
+    </div>
+
+    <div class="row" ng-if="driveQuota">
+        <h2><i18n>google-drive.quota</i18n></h2>
+        <div ng-if="!driveQuota.unlimited" class="progress-bar">
+            <div
+                class="filled"
+                ng-class="{'small': driveQuota.usedRatio < 10}"
+                ng-style="{'width': driveQuota.usedRatio + '%'}"
+            ></div>
+            [[driveQuota.usedDisplay]] / [[driveQuota.total]] [[driveQuota.unit]]
+        </div>
+        <span ng-if="driveQuota.unlimited"><i18n>google-drive.unlimited.space</i18n></span>
+    </div>
+</div>

@@ -1791,6 +1791,7 @@ public class WorkspaceController extends BaseController {
 		context.put("enableGeogebra", config.getBoolean("enable-geogebra", false));
 		context.put("enableNextcloud", config.getBoolean("enable-nextcloud", false));
 		context.put("useNextcloudSniplet", config.getBoolean("use-nextcloud-sniplet", true));
+		context.put("enableGoogleDrive", config.getBoolean("enable-google-drive", false));
 		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
 		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
 		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));
