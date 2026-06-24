@@ -39,6 +39,7 @@ export class SyncDocument {
   // custom field bound by other entity/model
   selected?: boolean;
   isNextcloudParent?: boolean;
+  isRootGroup?: boolean;
 
   // properties used for static folder
   isStaticFolder?: boolean;
@@ -169,5 +170,29 @@ export class SyncDocument {
     staticFolder.cacheDocument.disableCache();
 
     return staticFolder;
+  }
+
+  // Wraps "Mes documents"/"Corbeille" under a single "Nextcloud" group, mirroring GoogleDriveDocument.createRootGroup().
+  static createRootGroup(): SyncDocument {
+    const group = new SyncDocument();
+    group.path = "__group__/root";
+    group.name = lang.translate("nextcloud.title");
+    group.ownerDisplayName = model.me.login;
+    group.contentType = null;
+    group.size = null;
+    group.favorite = null;
+    group.etag = null;
+    group.fileId = null;
+    group.isFolder = true;
+    group.lastModified = new Date().toISOString();
+    group.children = [];
+    group.isRootGroup = true;
+    group.cacheChildren = new models.CacheList<any>(0, () => false, () => false);
+    group.cacheChildren.setData([]);
+    group.cacheChildren.disableCache();
+    group.cacheDocument = new models.CacheList<any>(0, () => false, () => false);
+    group.cacheDocument.setData([]);
+    group.cacheDocument.disableCache();
+    return group;
   }
 }

@@ -50,7 +50,6 @@ export class ToolbarShareSnipletViewModel implements IViewModel {
       template.open("workspace-nextcloud-toolbar-share", pathTemplate);
     } else {
       template.close("workspace-nextcloud-toolbar-share");
-      this.copyingForShare = true;
     }
   }
 
@@ -58,12 +57,24 @@ export class ToolbarShareSnipletViewModel implements IViewModel {
     const paths: Array<string> = this.vm.selectedDocuments.map(
       (document: SyncDocument) => document.path,
     );
+    // Shows share-documents-options.html's own "Copie en cours..." block (previously dead code:
+    // copyingForShare was only ever set true on CLOSE, never during the actual copy below).
+    this.copyingForShare = true;
+    this.vm.safeApply();
     nextcloudService
       .copyDocumentToWorkspace(model.me.userId, paths)
       .then((workspaceDocuments: Array<models.Element>) => {
         this.sharedElement = workspaceDocuments;
         const pathTemplate: string = `nextcloud/toolbar/share/share`;
         template.open("workspace-nextcloud-toolbar-share", pathTemplate);
+      })
+      .catch((e) => {
+        console.error("Error while copying documents for share: " + e.message);
+        notify.error(lang.translate("nextcloud.transfer.error"));
+      })
+      .then(() => {
+        this.copyingForShare = false;
+        this.vm.safeApply();
       });
   }
 

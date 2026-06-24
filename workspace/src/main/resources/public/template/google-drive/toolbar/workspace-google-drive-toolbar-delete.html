@@ -1,0 +1,37 @@
+<lightbox
+    show="toolbar.lightbox.delete"
+    class=""
+    on-close="toolbar.toggleDeleteView(false)"
+>
+    <div class="horizontal-spacing-twice">
+        <h2>
+            <i18n>workspace.delete</i18n>
+        </h2>
+
+        <div class="row">
+            <i18n>google-drive.documents.confirm.deletion</i18n>
+            <hr />
+        </div>
+
+        <div class="lightbox-buttons fluid">
+            <!-- isDeleting: see workspace-google-drive-toolbar-trash.html's same note — this lightbox
+                 stays open for the whole operation, so the content area's own loader is never visible. -->
+            <button
+                class="right-magnet"
+                ng-disabled="isDeleting"
+                ng-click="toolbar.deleteDocumentsPermanently()"
+            >
+                <i class="google-drive-import-spinner" ng-if="isDeleting" style="margin-right: 6px; vertical-align: middle;"></i>
+                <i18n>workspace.definitive.delete.confirm.action</i18n>
+            </button>
+
+            <button
+                class="cancel right-magnet"
+                ng-disabled="isDeleting"
+                ng-click="toolbar.toggleDeleteView(false)"
+            >
+                <i18n>cancel</i18n>
+            </button>
+        </div>
+    </div>
+</lightbox>
