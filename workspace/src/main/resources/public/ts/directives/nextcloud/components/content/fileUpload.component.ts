@@ -80,6 +80,7 @@ export class UploadFileSnipletViewModel implements IViewModel {
     let selectedFolderFromNextcloudTree: SyncDocument =
       this.vm.getNextcloudTreeController()["selectedFolder"];
     const nextcloudController: any = this.vm.getNextcloudTreeController();
+    this.vm.isImporting = true;
     nextcloudService
       .uploadDocuments(
         model.me.userId,
@@ -116,6 +117,10 @@ export class UploadFileSnipletViewModel implements IViewModel {
         } else {
           notify.error(lang.translate("nextcloud.fail.upload"));
         }
+      })
+      .then(() => {
+        this.vm.isImporting = false;
+        safeApply(this.vm);
       });
     this.toggleUploadFilesView(false);
     safeApply(this.vm);

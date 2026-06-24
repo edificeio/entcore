@@ -1,4 +1,4 @@
-<div class="nextcloud vertical-spacing-six" ng-if="userInfo">
+<div class="nextcloud" ng-if="userInfo">
     <!-- nextcloud folder tree -->
     <folder-tree
         id="nextcloud-folder-tree"
@@ -8,31 +8,9 @@
     </folder-tree>
 
     <!-- nextcloud navigation contents -->
-    <div class="nextcloud-content bottom-spacing-three">
-        <!-- create synchronize folder -->
+    <!-- Triggers moved to the page header; these popups stay here since that's what the header buttons actually open. -->
+    <div class="nextcloud-content">
         <div id="nextcloud-folder-create" ng-show="selectedFolder">
-            <div ng-switch="isTrashbinOpen">
-                <!-- If trashbin is open when change the action button to empty trashbin -->
-                <a
-                    ng-switch-when="true"
-                    ng-show="documents.length > 0"
-                    class="classic-link centered-bloc-text vertical-spacing-twice-1d ng-scope"
-                    ng-click="emptyTrashbin.lightbox.emptyTrash = true;"
-                >
-                    <i18n>workspace.empty.trash</i18n>
-                </a>
-
-                <!-- And by default we show the new folder button -->
-                <a
-                    ng-switch-default
-                    class="classic-link centered-bloc-text vertical-spacing-twice-1d ng-scope"
-                    ng-click="folderCreation.toggleCreateFolder(true, null)"
-                >
-                    <i18n>folder.new</i18n>
-                </a>
-            </div>
-
-            <!-- popup -->
             <div
                 ng-include="'/workspace/public/template/nextcloud/folder/folder-creation.html'"
             ></div>
@@ -40,20 +18,6 @@
                 ng-include="'/workspace/public/template/nextcloud/folder/empty-trash.html'"
             ></div>
         </div>
-
-        <div class="row">
-            <h2>
-                <i18n>nextcloud.quota</i18n>
-            </h2>
-            <progress-bar
-                ng-if="userInfo.quota.total !== 0"
-                max="userInfo.quota.total"
-                filled="userInfo.quota.used"
-                unit="[[userInfo.quota.unit]]"
-            ></progress-bar>
-            <span ng-if="userInfo.quota.total === 0"
-                ><i18n>nextcloud.unlimited.space</i18n></span
-            >
-        </div>
     </div>
+    <!-- Mobile footer moved to workspace.html: its CSS "order: 999" only works as a direct child of nav.vertical[side-nav]. -->
 </div>

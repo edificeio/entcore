@@ -1,0 +1,19 @@
+<lightbox
+    show="emptyTrashbin.lightbox.emptyTrash"
+    on-close="emptyTrashbin.toggleDeleteView(false)"
+>
+    <!-- horizontal-spacing-twice: matches the other confirmation lightboxes (e.g. the delete-document
+         one) — without it the lightbox's own overflow-x:auto kicks in and shows a horizontal scrollbar
+         for no actual overflowing content. -->
+    <div class="horizontal-spacing-twice">
+        <h2 translate content="workspace.delete"></h2>
+        <div class="row">
+            <span translate content="workspace.delete.empty.trash"></span>
+            <hr />
+        </div>
+        <div class="lightbox-buttons fluid">
+            <button class="right-magnet" ng-click="emptyTrashbin.emptyTrashbin()"><i18n>workspace.delete.confirm.action</i18n></button>
+            <button class="cancel right-magnet" ng-click="emptyTrashbin.lightbox.emptyTrash = false;"><i18n>cancel</i18n></button>
+        </div>
+    </div>
+</lightbox>
