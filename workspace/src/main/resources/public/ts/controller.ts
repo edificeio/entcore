@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { model, idiom as lang, idiom, moment, ng, notify, template } from "entcore";
+import { angular, model, idiom as lang, idiom, moment, ng, notify, template } from "entcore";
 import {
   NavigationDelegate,
   NavigationDelegateScope,
@@ -38,13 +38,15 @@ import {
 import { DocumentActionType } from "entcore/types/src/ts/workspace/services";
 import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
 import {GeogebraDelegate, GeogebraDelegateScope} from "./delegates/geogebra";
-
-const NEXTCLOUD_VIEW_RIGHT = 'fr.openent.nextcloud.controller.NextcloudController|view';
+import {GOOGLE_DRIVE_CREATE_DOCUMENT_TYPES} from "./directives/google-drive/models/googleDriveCreateDocumentType.model";
+import {GOOGLE_DRIVE_VIEW_RIGHT} from "./directives/google-drive/services/googleDrive.service";
+import {NEXTCLOUD_VIEW_RIGHT} from "./directives/nextcloud/services/nextcloud.service";
 
 declare var ENABLE_LOOL: boolean;
 declare var ENABLE_SCRATCH: boolean;
 declare var ENABLE_NEXTCLOUD: boolean;
 declare var USE_NEXTCLOUD_SNIPLET: boolean;
+declare var ENABLE_GOOGLE_DRIVE: boolean;
 declare var ENABLE_GGB: boolean;
 declare var DISABLE_FULL_TEXT_SEARCH: boolean;
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope, ScratchDelegateScope, GeogebraDelegateScope {
@@ -54,7 +56,34 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	ENABLE_NEXTCLOUD: boolean;
 	HAS_NEXTCLOUD_RIGHT: boolean;
 	USE_NEXTCLOUD_SNIPLET: boolean;
+	ENABLE_GOOGLE_DRIVE: boolean;
+	HAS_GOOGLE_DRIVE_RIGHT: boolean;
 	DISABLE_FULL_TEXT_SEARCH: boolean;
+	isGoogleDriveImportableFolder(): boolean;
+	triggerGoogleDriveImport(): void;
+	triggerGoogleDriveRefresh(): void;
+	isGoogleDriveTrashbinOpen(): boolean;
+	isGoogleDriveTrashEmptyable(): boolean;
+	triggerGoogleDriveCreateFolder(): void;
+	triggerGoogleDriveEmptyTrash(): void;
+	googleDriveDocTypes: { label: string, icon: string, type: string }[];
+	isGoogleDriveCreateDocumentMenuOpen: boolean;
+	toggleGoogleDriveCreateDocumentMenu(): void;
+	triggerGoogleDriveCreateDocument(docType: { type: string }): void;
+	isNextcloudImportableFolder(): boolean;
+	triggerNextcloudImport(): void;
+	triggerNextcloudRefresh(): void;
+	isNextcloudTrashbinOpen(): boolean;
+	isNextcloudTrashEmptyable(): boolean;
+	triggerNextcloudCreateFolder(): void;
+	triggerNextcloudCreateDocument(): void;
+	triggerNextcloudEmptyTrash(): void;
+	getNextcloudTreeScope(): any;
+	footerBackgroundColor: string;
+	footerLeft: number;
+	footerWidth: number;
+	contentAreaHeight: number;
+	recomputeWorkspaceFooterOffsets(): void;
 	documentList:models.DocumentsListModel;
 	documentListSorted:models.DocumentsListModel;
 	//new
@@ -79,6 +108,29 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	isUploadedImage(): boolean
 	createDocumentCursor(onUpdate: CursorUpdate, params: DocumentCursorParams): void
 	//selection
+	//per-tile "..." menu (icon view)
+	openTileMenuFor: models.Element | null;
+	tileMenuPosition: { top?: string; right?: string };
+	isTileMenuOpen(item: models.Element): boolean;
+	toggleTileMenu(item: models.Element, $event?: MouseEvent): void;
+	isTileMenuActionVisible(item: models.Element, action: "download" | "rename" | "share" | "comment" | "showComments" | "move" | "copy" | "trash" | "restore" | "delete" | "editImage" | "revision"): boolean;
+	onTileOpen(item: models.Element): void;
+	onTileDownload(item: models.Element): void;
+	onTileRename(item: models.Element): void;
+	onTileShare(item: models.Element): void;
+	onTileComment(item: models.Element): void;
+	onTileShowComments(item: models.Element): void;
+	onTileMove(item: models.Element): void;
+	onTileCopy(item: models.Element): void;
+	onTileTrash(item: models.Element): void;
+	onTileRestore(item: models.Element): void;
+	onTileDeletePermanently(item: models.Element): void;
+	onTileEditImage(item: models.Element): void;
+	onTileShowRevision(item: models.Element): void;
+	// Toolbar button ordering must mirror the per-tile "..." menu's order, but move/copy and
+	// trash/restore/delete come from the same currentTree.contextualButtons array (controller.ts) —
+	// split via this predicate so each group can be rendered at its own position in toaster.html.
+	isTrashContextualButton(button: { action: () => any }): boolean;
 }
 export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', '$route','$filter', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route, $route, $filter) => {
 	let _currentCursor: DocumentCursor = null;
@@ -187,15 +239,335 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.ENABLE_NEXTCLOUD = ENABLE_NEXTCLOUD;
 	$scope.HAS_NEXTCLOUD_RIGHT = model.me.hasWorkflow(NEXTCLOUD_VIEW_RIGHT);
 	$scope.USE_NEXTCLOUD_SNIPLET = USE_NEXTCLOUD_SNIPLET;
+	$scope.ENABLE_GOOGLE_DRIVE = ENABLE_GOOGLE_DRIVE;
+	$scope.HAS_GOOGLE_DRIVE_RIGHT = model.me.hasWorkflow(GOOGLE_DRIVE_VIEW_RIGHT);
 	$scope.DISABLE_FULL_TEXT_SEARCH = DISABLE_FULL_TEXT_SEARCH;
+
+	// Per-tile "..." menu (icon view) — acts on the tile's own item without going through the real
+	// selection state, so opening it never visually selects the tile. Actions here reuse the same
+	// delegate functions the real selection toolbar uses, briefly setting item.selected so those
+	// functions (which read the current selection) pick up the right item, then unsetting it right
+	// after for the actions that read selection synchronously with no confirm dialog. Trash/delete
+	// actions open a confirm dialog that reads selection later, so selected is left as-is there —
+	// same as the real toolbar flow, which is the whole point.
+	$scope.openTileMenuFor = null;
+	$scope.tileMenuPosition = {};
+	$scope.isTileMenuOpen = function (item: models.Element): boolean {
+		return $scope.openTileMenuFor === item;
+	};
+	$scope.toggleTileMenu = function (item: models.Element, $event?: MouseEvent): void {
+		const wasOpen = $scope.isTileMenuOpen(item);
+		$scope.openTileMenuFor = wasOpen ? null : item;
+		if (!wasOpen && $event) {
+			const rect = ($event.currentTarget as HTMLElement).getBoundingClientRect();
+			$scope.tileMenuPosition = {
+				top: (rect.bottom + 4) + "px",
+				right: (window.innerWidth - rect.right) + "px",
+			};
+		}
+	};
+	document.addEventListener("click", function (event: MouseEvent): void {
+		if (!$scope.openTileMenuFor) return;
+		if ((event.target as HTMLElement)?.closest(".tile-menu-wrapper")) return;
+		$scope.openTileMenuFor = null;
+		$scope.safeApply();
+	});
+	// position:fixed menus don't follow their trigger when an ancestor scrolls underneath them —
+	// close instead of leaving a stale-positioned dropdown floating disconnected from its tile.
+	document.addEventListener("scroll", function (): void {
+		if (!$scope.openTileMenuFor) return;
+		$scope.openTileMenuFor = null;
+		$scope.safeApply();
+	}, true);
+	const withSelected = (item: models.Element, action: () => void): void => {
+		item.selected = true;
+		action();
+		item.selected = false;
+		$scope.safeApply();
+	};
+	const withSelectedPersisted = (item: models.Element, action: () => void): void => {
+		item.selected = true;
+		action();
+		$scope.safeApply();
+	};
+	$scope.isTileMenuActionVisible = function (item: models.Element, action): boolean {
+		const filter = $scope.currentTree?.filter;
+		const isFolder = workspaceService.isFolder(item);
+		switch (action) {
+			case "download":
+				return filter !== "external" && filter !== "trash" && workspaceService.isActionAvailable("download", [item]);
+			case "rename":
+				return filter !== "trash" && (!isFolder || filter !== "external")
+					&& !!item.myRights && !!item.myRights["manager"];
+			case "share":
+				// "Mes documents partagés" (filter "shared") holds items someone else shared with me —
+				// re-sharing them from here is no longer offered, only from "Mes documents" (owner).
+				return filter === "owner"
+					&& workspaceService.isActionAvailable("share", [item]);
+			case "comment":
+				// Mirrors canComment() (delegates/comments.ts) — toolbar-only until now. The backend
+				// secures POST .../comment as a per-resource action (workspace.comment, WorkspaceController),
+				// so a shared item without myRights.comment granted would 403 — check it here too, since
+				// isActionAvailable is a permanent no-op (see allowAction's own comment, further below).
+				return (filter === "shared" || filter === "owner")
+					&& workspaceService.isActionAvailable("comment", [item])
+					&& !!item.myRights && !!item.myRights["comment"];
+				case "showComments":
+					// Mirrors canShowBadgeComments() (delegates/comments.ts) — same badge visible on the tile.
+					return $scope.canShowBadgeComments(item);
+				case "move":
+				// item.canMove (owner, or myRights.manager) is the real check — isActionAvailable is a
+				// permanent no-op in this deployment (see allowAction's own comment above). Without this,
+				// "Déplacer" stayed visible for a shared item you only have read rights on, and silently
+				// did nothing on click (openMoveView's own canMove guard).
+				return (filter === "owner" || filter === "shared")
+					&& workspaceService.isActionAvailable("move", [item]) && item.canMove;
+			case "copy":
+				return (filter === "owner" || filter === "shared" || filter === "protected")
+					&& workspaceService.isActionAvailable("copy", [item]) && item.canCopy;
+			case "trash":
+				if (filter === "trash") return false;
+				if (filter === "external") return !isFolder;
+				return !!item.myRights && !!item.myRights["manager"];
+			case "restore":
+			case "delete":
+				return filter === "trash" && !!item.myRights && !!item.myRights["manager"];
+			case "editImage": {
+				// Mirrors canEditImage() (delegates/actions/index.ts) — toolbar-only until now, including
+				// its own myRights.contrib check (the save route, PUT /document/:id, is resource-secured
+				// on workspace.contrib — isActionAvailable is a permanent no-op, see allowAction's comment).
+				const ownerId: any = item.owner && (item.owner["userId"] || item.owner);
+				return !isFolder && !!item.isEditableImage
+					&& (ownerId == model.me.userId || !!(item.myRights && item.myRights["contrib"]))
+					&& (filter === "shared" || filter === "owner" || filter === "protected");
+			}
+			case "revision":
+				// Mirrors canShowRevision() (delegates/revisions.ts) — toolbar-only until now.
+				return !isFolder && (filter === "shared" || filter === "owner")
+					&& workspaceService.isActionAvailable("history", [item]);
+		}
+		return false;
+	};
+	$scope.onTileOpen = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		if (workspaceService.isFolder(item)) {
+			$scope.openFolderRoute(item);
+		} else {
+			$scope.viewFile(item);
+		}
+	};
+	$scope.onTileDownload = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		workspaceService.downloadFiles([item], $scope.currentTree.filter === "trash");
+	};
+	$scope.onTileRename = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openRenameView(item));
+	};
+	$scope.onTileShare = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openShareView());
+	};
+	$scope.onTileComment = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openCommentView());
+	};
+	$scope.onTileShowComments = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		$scope.showComments(item);
+	};
+	$scope.onTileMove = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openMoveView());
+	};
+	$scope.onTileCopy = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openCopyView());
+	};
+	$scope.onTileTrash = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelectedPersisted(item, () => $scope.toTrashConfirm());
+	};
+	$scope.onTileRestore = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.restore());
+	};
+	$scope.onTileDeletePermanently = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelectedPersisted(item, () => $scope.deleteConfirm());
+	};
+	$scope.onTileEditImage = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.editImage());
+	};
+	$scope.onTileShowRevision = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openHistory(item));
+	};
+
+	// Header button rendered here, not in the GD component, to stay aligned across every tree; reaches into the GD scopes directly since they have no relation to this one.
+	// Importing into "Partagé avec moi" itself (the flat top-level list) makes no sense — there's no
+	// real folder there — but a specific shared SUBfolder with editor access is a legitimate upload
+	// target: Drive's upload API has no ownership check, only the (here, satisfied) access check.
+	$scope.isGoogleDriveImportableFolder = function (): boolean {
+		const gdTreeScope: any = angular.element(document.getElementById("google-drive-folder-tree")).scope();
+		if (gdTreeScope?.isTrashbinOpen) return false;
+		if (!gdTreeScope?.isSharedViewOpen) return true;
+		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();
+		return !gdContentScope?.parentDocument?.isStaticFolder && gdContentScope?.parentDocument?.permissionRole !== "reader";
+	};
+	$scope.triggerGoogleDriveImport = function (): void {
+		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();
+		gdContentScope?.triggerImportFiles();
+	};
+	$scope.triggerGoogleDriveRefresh = function (): void {
+		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();
+		gdContentScope?.refreshCurrentFolder();
+	};
+
+	$scope.isGoogleDriveTrashbinOpen = function (): boolean {
+		const gdTreeScope: any = angular.element(document.getElementById("google-drive-folder-tree")).scope();
+		return !!gdTreeScope?.isTrashbinOpen;
+	};
+	$scope.isGoogleDriveTrashEmptyable = function (): boolean {
+		// Not gdTreeScope.documents — that's the stable tree-root structure, always non-empty; the real trash contents live on the content scope.
+		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();
+		return (gdContentScope?.documents?.length ?? 0) > 0;
+	};
+	$scope.triggerGoogleDriveCreateFolder = function (): void {
+		const gdTreeScope: any = angular.element(document.getElementById("google-drive-folder-tree")).scope();
+		gdTreeScope?.folderCreation?.toggleCreateFolder(true, null);
+	};
+	$scope.triggerGoogleDriveEmptyTrash = function (): void {
+		const gdTreeScope: any = angular.element(document.getElementById("google-drive-folder-tree")).scope();
+		if (gdTreeScope?.emptyTrashbin) gdTreeScope.emptyTrashbin.lightbox.emptyTrash = true;
+	};
+
+	// The create URL is built server-side (GET /googledrive/files/create/:type, 302-redirect); entries only carry the doc type.
+	$scope.googleDriveDocTypes = GOOGLE_DRIVE_CREATE_DOCUMENT_TYPES;
+	$scope.isGoogleDriveCreateDocumentMenuOpen = false;
+	$scope.toggleGoogleDriveCreateDocumentMenu = function (): void {
+		$scope.isGoogleDriveCreateDocumentMenuOpen = !$scope.isGoogleDriveCreateDocumentMenuOpen;
+	};
+	$scope.triggerGoogleDriveCreateDocument = function (docType: { type: string }): void {
+		$scope.isGoogleDriveCreateDocumentMenuOpen = false;
+		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();
+		// parentDocument.id is null at Drive root (initParent()), so the backend keeps its default behavior there.
+		const parentId = gdContentScope?.parentDocument?.id;
+		const url = `/googledrive/files/create/${docType.type}` + (parentId ? `?parentId=${encodeURIComponent(parentId)}` : "");
+		window.open(url, "_blank");
+	};
+	// Closes the dropdown on outside click; clicks inside the wrapper are left to their own ng-click.
+	document.addEventListener("click", function (event: MouseEvent): void {
+		if (!$scope.isGoogleDriveCreateDocumentMenuOpen) return;
+		if ((event.target as HTMLElement)?.closest(".google-drive-create-document-wrapper")) return;
+		$scope.isGoogleDriveCreateDocumentMenuOpen = false;
+		$scope.safeApply();
+	});
+
+	// Mirrors the Google Drive block above; Nextcloud has no shared-folder equivalent.
+	$scope.isNextcloudImportableFolder = function (): boolean {
+		const ncTreeScope: any = angular.element(document.getElementById("nextcloud-folder-tree")).scope();
+		return !ncTreeScope?.isTrashbinOpen;
+	};
+	$scope.triggerNextcloudImport = function (): void {
+		const ncContentScope: any = angular.element(document.getElementById("nextcloud-content")).scope();
+		ncContentScope?.upload?.startImportFlow();
+	};
+	$scope.triggerNextcloudRefresh = function (): void {
+		const ncContentScope: any = angular.element(document.getElementById("nextcloud-content")).scope();
+		ncContentScope?.refreshCurrentFolder();
+	};
+	$scope.isNextcloudTrashbinOpen = function (): boolean {
+		const ncTreeScope: any = angular.element(document.getElementById("nextcloud-folder-tree")).scope();
+		return !!ncTreeScope?.isTrashbinOpen;
+	};
+	$scope.isNextcloudTrashEmptyable = function (): boolean {
+		// See isGoogleDriveTrashEmptyable — same reasoning.
+		const ncContentScope: any = angular.element(document.getElementById("nextcloud-content")).scope();
+		return (ncContentScope?.documents?.length ?? 0) > 0;
+	};
+	$scope.triggerNextcloudCreateDocument = function (): void {
+		const ncContentScope: any = angular.element(document.getElementById("nextcloud-content")).scope();
+		ncContentScope?.createDocument?.toggleCreateDocumentView(true);
+	};
+	$scope.triggerNextcloudCreateFolder = function (): void {
+		const ncTreeScope: any = angular.element(document.getElementById("nextcloud-folder-tree")).scope();
+		ncTreeScope?.folderCreation?.toggleCreateFolder(true, null);
+	};
+	// Lives here, not in workspace-nextcloud-folder.html, so it's a direct flex child of nav.vertical and its CSS "order: 999" actually applies.
+	$scope.getNextcloudTreeScope = function (): any {
+		return angular.element(document.getElementById("nextcloud-folder-tree")).scope();
+	};
+	$scope.triggerNextcloudEmptyTrash = function (): void {
+		const ncTreeScope: any = angular.element(document.getElementById("nextcloud-folder-tree")).scope();
+		if (ncTreeScope?.emptyTrashbin) ncTreeScope.emptyTrashbin.lightbox.emptyTrash = true;
+	};
+
+	// Classic view's height doesn't reliably reach the viewport bottom, so the footer's box has to be measured rather than reserved with padding.
+	function getWorkspaceFooterBackgroundColor(): string {
+		let el: Element | null = document.querySelector("nav.vertical.nav-droppable.mobile-navigation");
+		while (el) {
+			const bg = window.getComputedStyle(el).backgroundColor;
+			if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
+				return bg;
+			}
+			el = el.parentElement;
+		}
+		return "transparent";
+	}
+	function getWorkspaceContentBox(): Element | null {
+		return document.querySelector(".list-view, .icons-view");
+	}
+	// Sidebar isn't guaranteed flush with the viewport edge, so left/width are measured rather than hardcoded to avoid the footer spilling into the document list.
+	function getWorkspaceSidebarRect(): { left: number; width: number } {
+		const sidebarEl = document.querySelector("nav.vertical.nav-droppable.mobile-navigation");
+		if (!sidebarEl) return { left: 0, width: 0 };
+		const rect = sidebarEl.getBoundingClientRect();
+		return { left: rect.left, width: rect.width };
+	}
+	function getWorkspaceContentAreaHeight(): number {
+		// Footer lives under the sidebar only, so the content view just needs a flat bottom margin.
+		const boxEl = getWorkspaceContentBox();
+		if (!boxEl) return 0;
+		const top = boxEl.getBoundingClientRect().top;
+		return Math.max(0, window.innerHeight - top - 10);
+	}
+	$scope.footerBackgroundColor = getWorkspaceFooterBackgroundColor();
+	$scope.footerLeft = 0;
+	$scope.footerWidth = 0;
+	$scope.contentAreaHeight = 0;
+	$scope.recomputeWorkspaceFooterOffsets = function (): void {
+		const sidebarRect = getWorkspaceSidebarRect();
+		$scope.footerLeft = sidebarRect.left;
+		$scope.footerWidth = sidebarRect.width;
+		$scope.contentAreaHeight = getWorkspaceContentAreaHeight();
+		$scope.safeApply();
+	};
+	window.addEventListener("resize", $scope.recomputeWorkspaceFooterOffsets);
+	setTimeout($scope.recomputeWorkspaceFooterOffsets, 0);
 
 	/**
 	 * INIT
 	 */
+	$scope.isTrashContextualButton = function (button): boolean {
+		return button.action === $scope.toTrashConfirm || button.action === $scope.restore || button.action === $scope.deleteConfirm;
+	};
 	const allowAction = (type: DocumentActionType) => () => {
 		const items = $scope.selectedItems();
 		if (!workspaceService.isActionAvailable(type, items)) {
 			return false;
+		}
+		// isActionAvailable is a permanent no-op here: nothing in this deployment ever calls
+		// registerExternalActionFilter, so it always returns true regardless of rights. The model's own
+		// canMove/canCopy getters (owner, or myRights.manager/read respectively) are the real per-item
+		// check — without this, "Déplacer"/"Copier" stayed visible (and silently did nothing on click,
+		// per openMoveView/openCopyView's own canMove/canCopy guard) for a read-only shared item.
+		if (type === "move") {
+			return items.every(i => i.canMove);
+		}
+		if (type === "copy") {
+			return items.every(i => i.canCopy);
 		}
 		return true
 	}
@@ -204,7 +576,8 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.documentListSorted = new models.DocumentsListModel($filter).watch($scope,{documents:'openedFolder.sortedDocuments'});
 	$scope.trees = [
     new models.ElementTree(shouldCache, {
-      name: lang.translate("documents"),
+      // Renamed for nesting under "Mon espace personnel" (see tree.ts).
+      name: lang.translate("workspace.personal.documents"),
       filter: "owner",
       hierarchical: true,
       hidden: false,
@@ -241,7 +614,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
       ],
     }),
     new models.ElementTree(shouldCache, {
-      name: lang.translate("shared_tree"),
+      name: lang.translate("workspace.personal.shared"),
       filter: "shared",
       hierarchical: true,
       hidden: false,
@@ -360,7 +733,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
           right: "manager",
         },
         {
-          text: lang.translate("workspace.move.trash"),
+          text: lang.translate("workspace.delete"),
           action: $scope.deleteConfirm,
           right: "manager",
         },

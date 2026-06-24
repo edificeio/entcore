@@ -6,6 +6,9 @@ import {
 } from "../models/nextcloudFolder.model";
 import models = workspace.v2.models;
 
+/** Workflow right granting access to Nextcloud, declared by the fr.openent.nextcloud module. */
+export const NEXTCLOUD_VIEW_RIGHT = "fr.openent.nextcloud.controller.NextcloudController|view";
+
 export interface INextcloudService {
   openNextcloudLink(document: SyncDocument, nextcloudUrl: string): void;
 
@@ -36,6 +39,12 @@ export interface INextcloudService {
   ): Promise<AxiosResponse>;
 
   moveDocumentWorkspaceToCloud(
+    userid: string,
+    ids: Array<string>,
+    cloudDocumentName?: string,
+  ): Promise<AxiosResponse>;
+
+  copyDocumentWorkspaceToCloud(
     userid: string,
     ids: Array<string>,
     cloudDocumentName?: string,
@@ -198,6 +207,22 @@ export const nextcloudService: INextcloudService = {
     );
   },
 
+  copyDocumentWorkspaceToCloud: (
+    userid: string,
+    ids: Array<string>,
+    cloudDocumentName?: string,
+  ): Promise<AxiosResponse> => {
+    let urlParams: URLSearchParams = new URLSearchParams();
+    ids.forEach((path: string) => urlParams.append("id", path));
+    const parentDocumentNameParam: string = cloudDocumentName
+      ? `&parentName=${cloudDocumentName}`
+      : "";
+    // @ts-ignore
+    return http.put(
+      `/nextcloud/files/user/${userid}/workspace/copy/cloud?${urlParams}${parentDocumentNameParam}`,
+    );
+  },
+
   copyDocumentToWorkspace(
     userid: string,
     paths: Array<string>,
@@ -291,10 +316,10 @@ export const nextcloudService: INextcloudService = {
   },
 
   getFiles: (userid: string, path: string, files: Array<string>): string => {
-    const pathParam: string = `?path=${path}`;
+    const pathParam: string = `?path=${encodeURIComponent(path)}`;
     let filesParam: string = "";
     files.forEach((file: string) => {
-      filesParam += `&file=${file}`;
+      filesParam += `&file=${encodeURIComponent(file)}`;
     });
     const urlParam: string = `${pathParam}${filesParam}`;
     return `/nextcloud/files/user/${userid}/multiple/download${urlParam}`;

@@ -16,6 +16,7 @@ export interface ActionTrashScope {
     confirmDelete();
     isTrashEmpty(): boolean;
     canEmptyTrash(): boolean;
+    isDeleting: boolean;
     //from others
     currentTree: models.ElementTree;
     openedFolder: models.FolderContext
@@ -40,17 +41,31 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
         }
         $scope.confirm = async function () {
             const all = $scope.selectedItems()
-            await workspaceService.trashAll(all);
-            notify.info('workspace.removed.message');
-            template.close('lightbox');
+            $scope.isDeleting = true;
+            $scope.safeApply();
+            try {
+                await workspaceService.trashAll(all);
+                notify.info('workspace.removed.message');
+                template.close('lightbox');
+            } finally {
+                $scope.isDeleting = false;
+                $scope.safeApply();
+            }
         };
     };
 
     $scope.toTrash = async function () {
         const removed = $scope.selectedItems()
-        await workspaceService.trashAll(removed);
-        notify.info('workspace.removed.message');
-        template.close('lightbox');
+        $scope.isDeleting = true;
+        $scope.safeApply();
+        try {
+            await workspaceService.trashAll(removed);
+            notify.info('workspace.removed.message');
+            template.close('lightbox');
+        } finally {
+            $scope.isDeleting = false;
+            $scope.safeApply();
+        }
     };
 
     $scope.restore = async function () {
@@ -71,20 +86,25 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
     }
 
     $scope.confirmDelete = function () {
+        if (($scope as any).$root.isGDTrashbinOpen) return;
         template.open('lightbox', 'trash/confirm-empty-trash');
     }
 
     $scope.emptyTrash = async function () {
-        //dont be in a folder when deleting
+        if (($scope as any).$root.isGDTrashbinOpen) return;
         $scope.setCurrentTreeRoute("trash")
-        await workspaceService.emptyTrash();
-        //wait revision to be deleted
-        setTimeout(async () => {
-            await quota.refresh();
-            notify.info('workspace.empty.trash.confirm');
-            $scope.safeApply();
-        }, 300);
-        template.close('lightbox');
+        try {
+            await workspaceService.emptyTrash();
+            setTimeout(async () => {
+                await quota.refresh();
+                notify.info('workspace.empty.trash.confirm');
+                $scope.safeApply();
+            }, 300);
+        } catch (e) {
+            notify.error('e400');
+        } finally {
+            template.close('lightbox');
+        }
     };
 
     $scope.deleteSelection = async function () {

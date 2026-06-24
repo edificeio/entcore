@@ -3,24 +3,19 @@
     on-close="toolbar.toggleRenameView(false)"
 >
     <!-- title -->
-    <h2>
-        <i18n>workspace.properties</i18n>
+    <h2 style="margin-top: 0;">
+        <i18n>workspace.rename</i18n>
     </h2>
 
     <!-- body -->
     <div class="row">
-        <label class="three cell">
-            <i18n>workspace.document.name</i18n>
-        </label>
-        <label>
-            <input
-                class="nine cell"
-                type="text"
-                ng-model="toolbar.currentDocument.name"
-                placeholder="[[toolbar.currentDocument.name]]"
-                autofocus
-            />
-        </label>
+        <input
+            class="twelve cell"
+            type="text"
+            ng-model="toolbar.currentDocument.name"
+            placeholder="[[toolbar.currentDocument.name]]"
+            autofocus
+        />
     </div>
 
     <!-- footer -->

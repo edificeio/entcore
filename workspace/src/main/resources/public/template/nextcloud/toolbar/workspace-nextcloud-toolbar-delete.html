@@ -17,17 +17,22 @@
 
         <!-- Footer/buttons -->
         <div class="lightbox-buttons fluid">
+            <!-- isDeleting: see workspace-nextcloud-toolbar-trash.html's same note — this lightbox
+                 stays open for the whole operation, so the content area's own loader is never visible. -->
             <!-- delete -->
             <button
                 class="nextcloud-button-confirm right-magnet"
+                ng-disabled="isDeleting"
                 ng-click="toolbar.deleteDocumentsPermanently()"
             >
+                <i class="google-drive-import-spinner" ng-if="isDeleting" style="margin-right: 6px; vertical-align: middle;"></i>
                 <i18n>workspace.definitive.delete.confirm.action</i18n>
             </button>
 
             <!-- cancel -->
             <button
                 class="nextcloud-button-cancel cancel right-magnet"
+                ng-disabled="isDeleting"
                 ng-click="toolbar.toggleDeleteView(false)"
             >
                 <i18n>cancel</i18n>
