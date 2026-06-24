@@ -23,7 +23,7 @@
         ]"
       ></ode-mono-select>
       <span *ngIf="!isADMC">
-        <s5l>management.structure.informations.authMode.mode.{{authConfig.defaultAuthModes[profile]}}</s5l>
+        {{ ('management.structure.informations.authMode.mode.' + authModes[profile]) | translate }}
       </span>
     </ode-form-field>
     <div class="action" *ngIf="isADMC">
