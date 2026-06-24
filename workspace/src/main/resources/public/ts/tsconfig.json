@@ -4,6 +4,7 @@
     "module": "commonjs",
     "declaration": false,
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "sourceMap":  true,
     "noImplicitAny": false,
     "skipLibCheck": true,

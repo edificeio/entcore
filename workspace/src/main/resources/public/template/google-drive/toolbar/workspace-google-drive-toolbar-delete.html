@@ -1,0 +1,32 @@
+<lightbox
+    show="toolbar.lightbox.delete"
+    class=""
+    on-close="toolbar.toggleDeleteView(false)"
+>
+    <div class="horizontal-spacing-twice">
+        <h2>
+            <i18n>workspace.delete</i18n>
+        </h2>
+
+        <div class="row">
+            <i18n>google-drive.documents.confirm.deletion</i18n>
+            <hr />
+        </div>
+
+        <div class="lightbox-buttons fluid">
+            <button
+                class="right-magnet"
+                ng-click="toolbar.deleteDocumentsPermanently()"
+            >
+                <i18n>workspace.definitive.delete.confirm.action</i18n>
+            </button>
+
+            <button
+                class="cancel right-magnet"
+                ng-click="toolbar.toggleDeleteView(false)"
+            >
+                <i18n>cancel</i18n>
+            </button>
+        </div>
+    </div>
+</lightbox>

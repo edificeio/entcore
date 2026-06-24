@@ -1,0 +1,82 @@
+<section
+    class="google-drive-content-toolbar toggle-buttons"
+    ng-class="{'hide': !selectedDocuments || selectedDocuments.length === 0}"
+>
+    <div class="toggle">
+        <!-- Toolbar when NOT in trashbin -->
+        <div ng-if="!toolbar.treeController.isTrashbinOpen" class="row">
+            <!-- open file -->
+            <div
+                id="google-drive-toolbar-open"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments)"
+            >
+                <button ng-click="toolbar.openDocument()">
+                    <i18n>workspace.open</i18n>
+                </button>
+            </div>
+
+            <!-- edit document (Google native types only) -->
+            <div
+                id="google-drive-toolbar-edit"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments) && toolbar.isSelectedEditable(selectedDocuments)"
+            >
+                <button ng-click="toolbar.editDocument()">
+                    <i18n>workspace.external.open</i18n>
+                </button>
+            </div>
+
+            <!-- download file(s) -->
+            <button ng-click="toolbar.downloadFiles(selectedDocuments)">
+                <i18n>workspace.download</i18n>
+            </button>
+
+            <!-- move file(s) -->
+            <button ng-click="toolbar.toggleMoveView(true, selectedDocuments)">
+                <i18n>workspace.move</i18n>
+            </button>
+
+            <!-- copy -->
+            <button ng-click="toolbar.toggleCopyView(true, selectedDocuments)">
+                <i18n>workspace.copy</i18n>
+            </button>
+
+            <!-- share document(s) -->
+            <button ng-click="toolbar.share.toggleShareView(true, selectedDocuments)">
+                <i18n>workspace.share</i18n>
+            </button>
+
+            <!-- delete document(s) — moves to trash -->
+            <button ng-click="toolbar.toggleDeleteView(true)">
+                <i18n>google-drive.documents.trash</i18n>
+            </button>
+        </div>
+
+        <!-- Toolbar when IN trashbin -->
+        <div ng-if="toolbar.treeController.isTrashbinOpen" class="row">
+            <!-- Restore document(s) -->
+            <button ng-click="toolbar.restoreDocuments()">
+                <i18n>workspace.trash.restore</i18n>
+            </button>
+
+            <!-- Permanently delete document(s) -->
+            <button ng-click="toolbar.toggleDeleteView(true)">
+                <i18n>workspace.delete</i18n>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Lightboxes rendered outside toggle-buttons to avoid button style override -->
+<!-- ng-if on outer div, ng-include on inner div — must NOT be on same element (ng-if is terminal) -->
+<div ng-if="toolbar.lightbox.copy">
+    <div ng-include="'/workspace/public/template/google-drive/toolbar/workspace-google-drive-toolbar-copy.html'"></div>
+</div>
+<div ng-if="toolbar.lightbox.delete && !toolbar.treeController.isTrashbinOpen">
+    <div ng-include="'/workspace/public/template/google-drive/toolbar/workspace-google-drive-toolbar-trash.html'"></div>
+</div>
+<div ng-if="toolbar.lightbox.delete && toolbar.treeController.isTrashbinOpen">
+    <div ng-include="'/workspace/public/template/google-drive/toolbar/workspace-google-drive-toolbar-delete.html'"></div>
+</div>
+<div ng-if="toolbar.lightbox.share">
+    <div ng-include="'/workspace/public/template/google-drive/toolbar/share/workspace-google-drive-toolbar-share.html'"></div>
+</div>

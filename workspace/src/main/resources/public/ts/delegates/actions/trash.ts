@@ -71,20 +71,25 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
     }
 
     $scope.confirmDelete = function () {
+        if (($scope as any).$root.isGDTrashbinOpen) return;
         template.open('lightbox', 'trash/confirm-empty-trash');
     }
 
     $scope.emptyTrash = async function () {
-        //dont be in a folder when deleting
+        if (($scope as any).$root.isGDTrashbinOpen) return;
         $scope.setCurrentTreeRoute("trash")
-        await workspaceService.emptyTrash();
-        //wait revision to be deleted
-        setTimeout(async () => {
-            await quota.refresh();
-            notify.info('workspace.empty.trash.confirm');
-            $scope.safeApply();
-        }, 300);
-        template.close('lightbox');
+        try {
+            await workspaceService.emptyTrash();
+            setTimeout(async () => {
+                await quota.refresh();
+                notify.info('workspace.empty.trash.confirm');
+                $scope.safeApply();
+            }, 300);
+        } catch (e) {
+            notify.error('e400');
+        } finally {
+            template.close('lightbox');
+        }
     };
 
     $scope.deleteSelection = async function () {
