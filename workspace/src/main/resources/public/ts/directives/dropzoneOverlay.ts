@@ -143,8 +143,16 @@ export const dropzoneOverlay = ng.directive('dropzoneOverlay', ['$timeout', ($ti
             }
             scope.error = false
             scope.hide();
-            // 
+            // Internal tile drags (move/copy within the app) only ever carry "application/json"/"text" —
+            // never "Files". Ignoring anything without "Files" keeps this overlay (and its dashed-border
+            // visual state) from reacting to those, since it's only meant for OS file drops.
+            const isOsFileDrag = (e): boolean => {
+                const types = e.originalEvent?.dataTransfer?.types;
+                return !!types && Array.prototype.indexOf.call(types, "Files") !== -1;
+            };
+            //
             parent.on('dragenter', (e) => {
+                if (!isOsFileDrag(e)) return;
                 scope.show()
             });
 

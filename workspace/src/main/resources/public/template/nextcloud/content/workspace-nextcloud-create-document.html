@@ -1,0 +1,38 @@
+<!-- Mirrors the lool app's own "Création d'un document" modal (its create button is what this whole
+     feature wraps — same templates, same icons) so the two visually match instead of looking like two
+     unrelated features. -->
+<lightbox show="createDocument.lightbox" class="" on-close="createDocument.toggleCreateDocumentView(false)">
+    <form ng-submit="createDocument.createDocument()" class="nextcloud-create-document-form">
+        <h2>
+            <i18n>nextcloud.create.document.title</i18n>
+        </h2>
+        <p class="nextcloud-create-document-intro"><i18n>nextcloud.create.document.type</i18n></p>
+        <div class="nextcloud-create-document-cards">
+            <button
+                type="button"
+                class="nextcloud-create-document-card"
+                ng-repeat="docType in createDocument.docTypes"
+                ng-class="{ selected: createDocument.selectedType === docType }"
+                ng-click="createDocument.selectType(docType)"
+            >
+                <span class="nextcloud-create-document-card-radio" ng-class="{ checked: createDocument.selectedType === docType }"></span>
+                <img ng-src="[[docType.icon]]" alt="" />
+                <strong>[[translate(docType.label)]]</strong>
+                <span class="nextcloud-create-document-card-description">[[translate(docType.description)]]</span>
+            </button>
+        </div>
+        <div class="row top-spacing-four">
+            <label translate content="nextcloud.create.document.name"></label>
+            <input
+                type="text"
+                ng-model="createDocument.name"
+                i18n-placeholder="nextcloud.create.document.name.placeholder"
+                autofocus
+            />
+        </div>
+        <div class="lightbox-buttons fluid">
+            <button class="right-magnet" ng-disabled="!createDocument.canCreate()"><i18n>nextcloud.create.document.submit</i18n></button>
+            <button class="cancel right-magnet" type="button" ng-click="createDocument.toggleCreateDocumentView(false)"><i18n>nextcloud.create.document.close</i18n></button>
+        </div>
+    </form>
+</lightbox>
