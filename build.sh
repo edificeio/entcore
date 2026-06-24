@@ -199,6 +199,22 @@ buildFrontend () {
       rm -rf ./dist
       cd ../..
     fi
+    if [ -e ./"$module"/frontend-crna ]; then
+      echo -e "[Build React] Build react frontend-crna for module $module"
+      cd ./"$module"/frontend-crna
+      if [ "$NO_DOCKER" = "true" ] ; then
+        ./build.sh --no-docker clean init build
+      else
+        ./build.sh clean init build
+      fi
+      if [ $? -ne 0 ]; then
+        echo "Error while building React frontend-crna for module $module"
+        exit 1
+      fi
+      syncReactFrontendBuildToResources ".."
+      rm -rf ./dist
+      cd ../..
+    fi
   done
 
   # --- Build angular-based frontends
