@@ -1,0 +1,496 @@
+import http, { AxiosResponse } from "axios";
+import { ng, workspace } from "entcore";
+import {
+  GoogleDriveDocument,
+  IGoogleDriveDocumentResponse,
+  IGoogleDriveSharedFileResponse,
+} from "../models/googleDriveDocument.model";
+import {
+  GoogleDriveQuota,
+  IGoogleDriveQuotaResponse,
+} from "../models/googleDriveQuota.model";
+import models = workspace.v2.models;
+
+/** Workflow right granting access to Google Drive, declared by the google-drive module. */
+export const GOOGLE_DRIVE_VIEW_RIGHT = "io.edifice.google.drive.controller.GoogleDriveController|view";
+
+export type GoogleDriveShareRole = "reader" | "commenter" | "writer";
+
+export interface IGoogleDriveShareEntry {
+  id: string;
+  userId: string | null;
+  // Unlike GoogleDriveShareRole (valid roles to grant via this app's own sharing UI), an EXISTING
+  // permission entry can also be "owner" — Drive includes the file's owner in its permissions list.
+  role: GoogleDriveShareRole | "owner";
+  emailAddress: string;
+}
+
+export interface IGoogleDriveShareResult {
+  userId: string;
+  status: "ok" | "error";
+  id?: string;
+  message?: string;
+}
+
+export interface IGoogleDriveWorkspaceTransferResult {
+  id: string;
+  status: "ok" | "error";
+  message?: string;
+}
+
+export interface IGoogleDriveService {
+  listDocument(userid: string, parentId?: string): Promise<Array<GoogleDriveDocument>>;
+
+  listTrash(userid: string): Promise<Array<GoogleDriveDocument>>;
+
+  listSharedFiles(userid: string): Promise<Array<GoogleDriveDocument>>;
+
+  listSharedUsers(userid: string, fileId: string): Promise<Array<IGoogleDriveShareEntry>>;
+
+  shareDocument(
+    userid: string,
+    fileId: string,
+    targetUserId: string,
+    role?: GoogleDriveShareRole,
+  ): Promise<AxiosResponse>;
+
+  shareDocuments(
+    userid: string,
+    fileId: string,
+    targetUserIds: Array<string>,
+    role?: GoogleDriveShareRole,
+  ): Promise<Array<IGoogleDriveShareResult>>;
+
+  unshareDocument(userid: string, fileId: string, targetUserId: string): Promise<AxiosResponse>;
+
+  createFolder(userid: string, name: string, parentId?: string): Promise<AxiosResponse>;
+
+  moveDocument(userid: string, fileId: string, parentId: string): Promise<AxiosResponse>;
+
+  copyDocumentWithinDrive(userid: string, fileId: string, parentId: string): Promise<AxiosResponse>;
+
+  renameDocument(userid: string, fileId: string, newName: string): Promise<AxiosResponse>;
+
+  deleteDocuments(userid: string, ids: Array<string>): Promise<AxiosResponse>;
+
+  removeFromSharedList(userid: string, ids: Array<string>): Promise<AxiosResponse>;
+
+  deleteTrashDocuments(userid: string, ids: Array<string>): Promise<AxiosResponse>;
+
+  restoreDocument(userid: string, ids: Array<string>): Promise<AxiosResponse>;
+
+  deleteTrash(userid: string): Promise<AxiosResponse>;
+
+  moveDocumentDriveToWorkspace(
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<Array<models.Element>>;
+
+  copyDocumentToWorkspace(
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<Array<models.Element>>;
+
+  moveDocumentWorkspaceToCloud(
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<AxiosResponse>;
+
+  copyDocumentWorkspaceToCloud(
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<AxiosResponse>;
+
+  getFile(userid: string, fileId: string, isFolder?: boolean): string;
+
+  getThumbnail(userid: string, fileId: string): string;
+
+  getFilePreview(userid: string, fileId: string): string;
+
+  getFiles(userid: string, ids: Array<string>): string;
+
+  openEditLink(userid: string, document: GoogleDriveDocument): void;
+
+  openLocationLink(userid: string, document: GoogleDriveDocument): void;
+
+  getStorageQuota(userid: string): Promise<GoogleDriveQuota>;
+
+  uploadLocalFilesToCloud(
+    userid: string,
+    files: File[],
+    parentId?: string,
+    onProgress?: (ratio: number) => void,
+  ): Promise<void>;
+}
+
+// These endpoints always return 200; per-item failures only show up in the response body.
+function throwOnTransferErrors(res: AxiosResponse): void {
+  const results: Array<IGoogleDriveWorkspaceTransferResult> = res.data?.data ?? [];
+  const failed = results.filter((r) => r.status === "error");
+  if (failed.length > 0) {
+    throw new Error(failed.map((f) => f.message).filter(Boolean).join("; ") || "transfer failed");
+  }
+}
+
+export const googleDriveService: IGoogleDriveService = {
+  listDocument: async (
+    userid: string,
+    parentId?: string,
+  ): Promise<Array<GoogleDriveDocument>> => {
+    const urlParam = parentId ? `?path=${parentId}` : "";
+    return http
+      .get(`/googledrive/files/user/${userid}${urlParam}`)
+      .then((res: AxiosResponse) =>
+        res.data.data.map((doc: IGoogleDriveDocumentResponse) =>
+          new GoogleDriveDocument().build(doc),
+        ),
+      )
+      .then((documents: Array<GoogleDriveDocument>) => resolveOwnerDisplayNames(documents));
+  },
+
+  listTrash: async (userid: string): Promise<Array<GoogleDriveDocument>> => {
+    return http
+      .get(`/googledrive/files/user/${userid}/trash`)
+      .then((res: AxiosResponse) =>
+        res.data.map((doc: IGoogleDriveDocumentResponse) =>
+          new GoogleDriveDocument().build(doc),
+        ),
+      );
+  },
+
+  listSharedFiles: async (userid: string): Promise<Array<GoogleDriveDocument>> => {
+    return http
+      .get(`/googledrive/files/user/${userid}/shared`)
+      .then((res: AxiosResponse) =>
+        res.data.data.map((doc: IGoogleDriveSharedFileResponse) =>
+          new GoogleDriveDocument().buildFromShared(doc),
+        ),
+      )
+      .then((documents: Array<GoogleDriveDocument>) => resolveOwnerDisplayNames(documents));
+  },
+
+  listSharedUsers: async (
+    userid: string,
+    fileId: string,
+  ): Promise<Array<IGoogleDriveShareEntry>> => {
+    return http
+      .get(`/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share`)
+      .then((res: AxiosResponse) => res.data.data);
+  },
+
+  shareDocument: (
+    userid: string,
+    fileId: string,
+    targetUserId: string,
+    role: GoogleDriveShareRole = "reader",
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share`,
+      { userId: targetUserId, role },
+    );
+  },
+
+  shareDocuments: (
+    userid: string,
+    fileId: string,
+    targetUserIds: Array<string>,
+    role: GoogleDriveShareRole = "reader",
+  ): Promise<Array<IGoogleDriveShareResult>> => {
+    // @ts-ignore
+    return http
+      .put(`/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share/multiple`, {
+        userIds: targetUserIds,
+        role,
+      })
+      .then((res: AxiosResponse) => res.data.data as Array<IGoogleDriveShareResult>);
+  },
+
+  unshareDocument: (
+    userid: string,
+    fileId: string,
+    targetUserId: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.delete(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share/${encodeURIComponent(targetUserId)}`,
+    );
+  },
+
+  createFolder: async (
+    userid: string,
+    name: string,
+    parentId?: string,
+  ): Promise<AxiosResponse> => {
+    const parentParam = parentId ? `&parentId=${parentId}` : "";
+    return http.post(
+      `/googledrive/files/user/${userid}/create/folder?name=${encodeURIComponent(name)}${parentParam}`,
+    );
+  },
+
+  moveDocument: (
+    userid: string,
+    fileId: string,
+    parentId: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/move?fileId=${fileId}&parentId=${parentId}`,
+    );
+  },
+
+  copyDocumentWithinDrive: (
+    userid: string,
+    fileId: string,
+    parentId: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/copy-drive?fileId=${fileId}&parentId=${parentId}`,
+    );
+  },
+
+  renameDocument: (
+    userid: string,
+    fileId: string,
+    newName: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/rename`,
+      { name: newName },
+    );
+  },
+
+  deleteDocuments: (
+    userid: string,
+    ids: Array<string>,
+  ): Promise<AxiosResponse> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    // @ts-ignore
+    return http.delete(`/googledrive/files/user/${userid}/delete?${urlParams}`);
+  },
+
+  removeFromSharedList: (
+    userid: string,
+    ids: Array<string>,
+  ): Promise<AxiosResponse> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    // @ts-ignore
+    return http.delete(`/googledrive/files/user/${userid}/shared/remove?${urlParams}`);
+  },
+
+  deleteTrashDocuments: (
+    userid: string,
+    ids: Array<string>,
+  ): Promise<AxiosResponse> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    // @ts-ignore
+    return http.delete(
+      `/googledrive/files/user/${userid}/trash/delete-documents?${urlParams}`,
+    );
+  },
+
+  restoreDocument: (
+    userid: string,
+    ids: Array<string>,
+  ): Promise<AxiosResponse> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    // @ts-ignore
+    return http.put(`/googledrive/files/user/${userid}/restore?${urlParams}`);
+  },
+
+  deleteTrash: (userid: string): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.delete(`/googledrive/files/user/${userid}/trash/delete`);
+  },
+
+  moveDocumentDriveToWorkspace: (
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<Array<models.Element>> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    const parentParam = parentId ? `&parentId=${parentId}` : "";
+    // @ts-ignore
+    return http
+      .put(`/googledrive/files/user/${userid}/move/workspace?${urlParams}${parentParam}`)
+      .then((res: AxiosResponse) =>
+        res.data.data
+          .filter((doc: any) => doc.workspace && doc.workspace._id)
+          .map((doc: any) => new models.Element(doc.workspace)),
+      );
+  },
+
+  copyDocumentToWorkspace: (
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<Array<models.Element>> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    const parentParam = parentId ? `&parentId=${parentId}` : "";
+    // @ts-ignore
+    return http
+      .put(`/googledrive/files/user/${userid}/copy/workspace?${urlParams}${parentParam}`)
+      .then((res: AxiosResponse) =>
+        res.data.data
+          .filter((doc: any) => doc.workspace && doc.workspace._id)
+          .map((doc: any) => new models.Element(doc.workspace)),
+      );
+  },
+
+  moveDocumentWorkspaceToCloud: async (
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<AxiosResponse> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    const parentParam = parentId ? `&parentId=${parentId}` : "";
+    // @ts-ignore
+    const res: AxiosResponse = await http.put(
+      `/googledrive/files/user/${userid}/workspace/move/cloud?${urlParams}${parentParam}`,
+    );
+    throwOnTransferErrors(res);
+    return res;
+  },
+
+  copyDocumentWorkspaceToCloud: async (
+    userid: string,
+    ids: Array<string>,
+    parentId?: string,
+  ): Promise<AxiosResponse> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    const parentParam = parentId ? `&parentId=${parentId}` : "";
+    // @ts-ignore
+    const res: AxiosResponse = await http.put(
+      `/googledrive/files/user/${userid}/workspace/copy/cloud?${urlParams}${parentParam}`,
+    );
+    throwOnTransferErrors(res);
+    return res;
+  },
+
+  getFile: (userid: string, fileId: string, isFolder: boolean = false): string => {
+    return `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/download?isFolder=${isFolder}`;
+  },
+
+  // Proxied Drive-generated thumbnail (see DefaultDocumentsService#downloadThumbnail) — much lighter
+  // than getFile() above, meant for icon-view grid previews. Only call this when hasThumbnail is true;
+  // Drive doesn't generate one for every file type.
+  getThumbnail: (userid: string, fileId: string): string => {
+    return `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/thumbnail`;
+  },
+
+  getFilePreview: (userid: string, fileId: string): string => {
+    // No query string here: pdfViewer.ts's directive appends its own "?inline=true" to whatever src
+    // it's given — adding ours too would produce a second "?", corrupting the query string server-side.
+    return `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/download`;
+  },
+
+  getFiles: (userid: string, ids: Array<string>): string => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    return `/googledrive/files/user/${userid}/multiple/download?${urlParams}`;
+  },
+
+  openEditLink: (userid: string, document: GoogleDriveDocument): void => {
+    window.open(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(document.id)}/edit`,
+    );
+  },
+
+  openLocationLink: (userid: string, document: GoogleDriveDocument): void => {
+    window.open(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(document.id)}/location`,
+    );
+  },
+
+  getStorageQuota: async (userid: string): Promise<GoogleDriveQuota> => {
+    return http
+      .get(`/googledrive/files/user/${userid}/quota`)
+      .then((res: AxiosResponse) =>
+        new GoogleDriveQuota().build(res.data as IGoogleDriveQuotaResponse),
+      );
+  },
+
+  uploadLocalFilesToCloud: async (
+    userid: string,
+    files: File[],
+    parentId?: string,
+    onProgress?: (ratio: number) => void,
+  ): Promise<void> => {
+    // Uploaded straight to Google Drive — no detour through /workspace/document (ENT personal
+    // storage), so no ENT personal-space quota is consumed or checked here: Drive enforces its
+    // own quota and antivirus scanning natively. Weighting each file by its own size keeps the
+    // progress bar proportional across a mixed-size batch.
+    const totalSize = files.reduce((sum, f) => sum + f.size, 0) || 1;
+    let completedSize = 0;
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file, file.name);
+      const parentParam = parentId ? `?parentId=${parentId}` : "";
+      await http.put(
+        `/googledrive/files/user/${userid}/upload/local${parentParam}`,
+        formData,
+        {
+          onUploadProgress: (event: ProgressEvent) => {
+            if (!onProgress) return;
+            onProgress((completedSize + event.loaded) / totalSize);
+          },
+        },
+      );
+      completedSize += file.size;
+    }
+  },
+};
+
+// The owner's Google Workspace "displayName" is not reliable (it can be anything set in
+// Google Admin, e.g. a raw ENT id for test accounts) — resolve the real ENT display name
+// from the sharer's ENT userId instead, deduping lookups across documents by the same owner.
+function resolveOwnerDisplayNames(
+  documents: Array<GoogleDriveDocument>,
+): Promise<Array<GoogleDriveDocument>> {
+  const userIds = Array.from(
+    new Set(
+      documents
+        .map((doc) => doc.sharedOwners?.[0]?.userId ?? doc.ownerUserId)
+        .filter((id): id is string => !!id),
+    ),
+  );
+  if (!userIds.length) return Promise.resolve(documents);
+
+  return Promise.all(
+    userIds.map((id) =>
+      http
+        .get(`/userbook/api/person?id=${id}`)
+        .then((res: AxiosResponse) => [id, res.data?.result?.[0]?.displayName] as const)
+        .catch(() => [id, undefined] as const),
+    ),
+  ).then((resolved) => {
+    const displayNameByUserId = new Map<string, string>(
+      resolved.filter(([, name]) => !!name) as Array<[string, string]>,
+    );
+    documents.forEach((doc) => {
+      const ownerUserId = doc.sharedOwners?.[0]?.userId ?? doc.ownerUserId;
+      const resolvedName = ownerUserId && displayNameByUserId.get(ownerUserId);
+      if (resolvedName) doc.ownerDisplayName = resolvedName;
+    });
+    return documents;
+  });
+}
+
+export const GoogleDriveService = ng.service(
+  "GoogleDriveService",
+  (): IGoogleDriveService => googleDriveService,
+);
