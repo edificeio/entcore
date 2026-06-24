@@ -30,23 +30,17 @@
                 <i18n>workspace.download</i18n>
             </button>
 
-            <!-- properties file -->
+            <!-- rename (single selection only, same as the per-tile "..." menu) -->
             <div
-                id="nextcloud-toolbar-properties"
+                id="nextcloud-toolbar-rename"
                 ng-if="toolbar.hasOneDocumentSelected(selectedDocuments)"
             >
                 <button
                     ng-click="toolbar.toggleRenameView(true, selectedDocuments)"
                     class="cell"
                 >
-                    <i18n>workspace.properties</i18n>
+                    <i18n>workspace.rename</i18n>
                 </button>
-
-                <!-- popup -->
-                <div
-                    ng-if="toolbar.copyProps"
-                    ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-properties.html'"
-                ></div>
             </div>
 
             <!-- move file(s) -->
@@ -129,3 +123,9 @@
         </div>
     </div>
 </section>
+
+<!-- Rename/properties popup — mounted outside the selection-gated toolbar section so it also
+     works when triggered from the per-tile "..." menu, which deliberately doesn't select the tile. -->
+<div ng-if="toolbar.lightbox.properties">
+    <div ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-properties.html'"></div>
+</div>

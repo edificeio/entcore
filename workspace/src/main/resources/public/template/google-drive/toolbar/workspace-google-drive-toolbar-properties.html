@@ -1,0 +1,36 @@
+<lightbox
+    show="toolbar.lightbox.rename"
+    on-close="toolbar.toggleRenameView(false)"
+>
+    <div class="horizontal-spacing-twice">
+        <h2 style="margin-top: 0;">
+            <i18n>workspace.rename</i18n>
+        </h2>
+
+        <div class="row">
+            <input
+                class="twelve cell"
+                type="text"
+                ng-model="toolbar.currentDocument.name"
+                placeholder="[[toolbar.currentDocument.name]]"
+                autofocus
+            />
+        </div>
+
+        <div class="lightbox-buttons fluid">
+            <button
+                class="right-magnet"
+                ng-click="toolbar.renameDocument()"
+            >
+                <i18n>save</i18n>
+            </button>
+
+            <button
+                class="cancel right-magnet"
+                ng-click="toolbar.toggleRenameView(false)"
+            >
+                <i18n>cancel</i18n>
+            </button>
+        </div>
+    </div>
+</lightbox>

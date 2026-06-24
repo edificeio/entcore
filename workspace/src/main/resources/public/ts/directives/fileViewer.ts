@@ -18,6 +18,8 @@ interface FileViewerScope {
 	isStreamable(): boolean
 	download(): void;
 	isOfficePdf(): boolean;
+	previewAvailable: boolean;
+	previewChecking: boolean;
 	isOfficeExcelOrCsv(): boolean;
 	getCsvContent(): CsvDelegate;
 	editImage(): void;
@@ -51,15 +53,22 @@ class CsvProviderFromText implements CsvFile {
 	get id() { return this.model._id; }
 	get content() {
 		if (this._cache) return this._cache;
+		// try/catch around the await: letting it throw inside an async executor rejects THAT
+		// function's own (discarded) promise, not this outer one — it would just hang forever
+		// instead of actually rejecting, for whoever awaits .content (csvViewer.ts).
 		this._cache = new Promise<string>(async (resolve, reject) => {
-			const a = await workspaceService.getDocumentBlob(this.model._id);
-			const reader = new FileReader();
-			reader.onload = () => {
-				const res = (reader.result) as string;
-				resolve(res);
+			try {
+				const a = await workspaceService.getDocumentBlob(this.model._id);
+				const reader = new FileReader();
+				reader.onload = () => {
+					const res = (reader.result) as string;
+					resolve(res);
+				}
+				reader.onerror = (e) => reject(e);
+				reader.readAsText(a);
+			} catch (e) {
+				reject(e);
 			}
-			reader.onerror = (e) => reject(e);
-			reader.readAsText(a);
 		})
 		return this._cache;
 	}
@@ -71,14 +80,18 @@ class CsvProviderFromExcel implements CsvFile {
 	get content() {
 		if (this._cache) return this._cache;
 		this._cache = new Promise<string>(async (resolve, reject) => {
-			const a = await workspaceService.getPreviewBlob(this.model._id);
-			const reader = new FileReader();
-			reader.onload = () => {
-				const res = (reader.result) as string;
-				resolve(res);
+			try {
+				const a = await workspaceService.getPreviewBlob(this.model._id);
+				const reader = new FileReader();
+				reader.onload = () => {
+					const res = (reader.result) as string;
+					resolve(res);
+				}
+				reader.onerror = (e) => reject(e);
+				reader.readAsText(a);
+			} catch (e) {
+				reject(e);
 			}
-			reader.onerror = (e) => reject(e);
-			reader.readAsText(a);
 		})
 		return this._cache;
 	}
@@ -178,6 +191,47 @@ export const fileViewer = ng.directive('fileViewer', ['$sce', ($sce) => {
 			}
 			scope.previewUrl = () => {
 				return scope.ngModel.previewUrl;
+			}
+
+			// Documents moved/copied here from Google Drive can fail to preview: the PDF conversion
+			// endpoint (previewUrl()) 500s because the export doesn't produce a convertible file, and
+			// the csv/xls/txt content fetch can fail the same way. Rather than render the viewer (which
+			// would just show that failure), probe it first and fall back to the plain download button
+			// on error, same as an unsupported file type — previewAvailable also hides "Aperçu" below.
+			const safeApply = () => {
+				const phase = (scope as any).$root.$$phase;
+				if (phase !== "$apply" && phase !== "$digest") {
+					scope.$apply();
+				}
+			}
+
+			scope.previewAvailable = true;
+			scope.previewChecking = false;
+			if (scope.isOfficePdf()) {
+				scope.previewChecking = true;
+				// GET, not HEAD: the route may not have an explicit HEAD handler registered
+				// server-side, which would otherwise read as "unavailable" for every document.
+				http.get(scope.previewUrl())
+					.catch(() => {
+						scope.previewAvailable = false;
+					})
+					.then(() => {
+						scope.previewChecking = false;
+						safeApply();
+					});
+			} else if (scope.isOfficeExcelOrCsv() || scope.isTxt()) {
+				scope.previewChecking = true;
+				// Same cached content promise consumed by csv-viewer/txt-viewer's onInit above —
+				// this doesn't trigger a second network request.
+				const content = scope.isTxt() ? getTxtContent().content : getCsvContent().content;
+				content
+					.catch(() => {
+						scope.previewAvailable = false;
+					})
+					.then(() => {
+						scope.previewChecking = false;
+						safeApply();
+					});
 			}
 
 			scope.editImage = () => {

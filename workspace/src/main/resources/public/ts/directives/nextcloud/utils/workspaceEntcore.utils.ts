@@ -6,7 +6,8 @@ import { NextcloudDocumentsUtils } from "./nextcloudDocuments.utils";
 import ng = require("angular");
 
 export class WorkspaceEntcoreUtils {
-  static $ENTCORE_WORKSPACE: string = `div[data-ng-include="'folder-content'"]`;
+  // ID selector, not tag-based: with Google Drive enabled this element renders as <li> instead of <div>.
+  static $ENTCORE_WORKSPACE: string = `#classic-folder-tree-root`;
 
   /**
    * Will fetch <progress-bar> Element type component and its div to toggle hide or show depending on state

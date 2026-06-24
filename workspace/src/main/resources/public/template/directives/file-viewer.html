@@ -1,14 +1,14 @@
 <div class="embedded-viewer" ng-class="{'height-minus200 height-minus270-1d':!isFullscreen}" id="embeded-viewer">
 	<div class="controls__navbar flex-row align-center justify-between" ng-if="!isFullscreen">
 		<div class="flex-row align-center justify-between">
-			<h2><i class="back" ng-click="closeViewFile()"></i></h2>
+			<h2><i class="back" ng-click="closeViewFile()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></i></h2>
 			<div class="flex-row f-column left-spacing-twice">
 				<h2 class="no-margin">[[ngModel.name]]</h2>
 				<small><span class="no-1d"><i18n>owner</i18n>:&nbsp;</span><strong>[[ngModel.ownerName]]</strong></small>
 			</div>
 		</div>
 		<div class="flex-row align-center justify-between">
-			<button class="cancel" ng-click="fullscreen(true)"><i18n>preview</i18n></button>
+			<button class="cancel" ng-if="previewChecking || previewAvailable" ng-click="fullscreen(true)"><i18n>preview</i18n></button>
 			<button class="cancel" ng-click="download()"><i18n>download</i18n></button>
 			<resource-right resource="ngModel" name="contrib">
 				<button ng-click="editImage()" ng-if="ngModel.isEditableImage"><i18n>editImage</i18n></button>
@@ -40,7 +40,19 @@
 		<video ng-if="contentType==='video' && isStreamable()" controls class="render" ng-src="[[ngModel.link]]" data-document-id="[[ngModel._id]]" data-document-is-captation="[[ngModel.metadata.captation]]"></video>
 		<video ng-if="contentType==='video' && !isStreamable()" controls class="render" ng-src="[[ngModel.link]]" data-document-id="[[ngModel._id]]"></video>
 		<pdf-viewer ng-if="contentType === 'pdf'" ng-src="[[ngModel.link]]"></pdf-viewer>
-		<pdf-viewer ng-if="isOfficePdf()" ng-src="[[previewUrl()]]" scroller="'#embeded-viewer'"></pdf-viewer>
+		<!-- A <p> ancestor forces any "i" child to 25px (theme's "p i{width/height:25px !important}"
+		     rule) — use a div instead so the spinner stays small. -->
+		<div ng-if="isOfficePdf() && previewChecking" style="text-align: center; padding: 30px; color: inherit;">
+			<i class="google-drive-import-spinner" style="vertical-align: middle; margin-right: 8px;"></i>
+			<i18n>workspace.preview.loading</i18n>
+		</div>
+		<pdf-viewer ng-if="isOfficePdf() && !previewChecking && previewAvailable" ng-src="[[previewUrl()]]" scroller="'#embeded-viewer'"></pdf-viewer>
+		<div ng-if="isOfficePdf() && !previewChecking && !previewAvailable" class="default-viewer" style="text-align: center;">
+			<p><i18n>workspace.preview.unavailable</i18n></p>
+			<button ng-click="download()">
+				<i18n>file.viewer.download</i18n>
+			</button>
+		</div>
 		<csv-viewer ng-if="isOfficeExcelOrCsv()" csv-delegate="csvDelegate"></csv-viewer>
 		<txt-viewer ng-if="isTxt()" txt-delegate="txtDelegate"></txt-viewer>
 		<div ng-if="contentType === 'unknown' || contentType === 'zip'" class="default-viewer">

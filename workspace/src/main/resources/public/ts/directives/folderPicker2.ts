@@ -8,18 +8,22 @@ import { ng } from "entcore";
 import { models, workspaceService } from "../services";
 import { FolderTreeProps } from "./folderTree2";
 import { SyncDocument } from "./nextcloud/models/nextcloudFolder.model";
+import { GoogleDriveDocument } from "./google-drive/models/googleDriveDocument.model";
 
 export interface FolderPickerScope {
   treeProps: FolderTreeProps<models.Tree>;
   nextcloudTreeProps: FolderTreeProps<SyncDocument>;
+  googleDriveTreeProps: FolderTreeProps<GoogleDriveDocument>;
   folderProps: FolderPickerProps;
 
   // Tree data
   trees: models.Tree[];
   nextcloudTrees: SyncDocument[];
+  googleDriveTrees: GoogleDriveDocument[];
 
   // UI state
-  selectedFolder: models.Element | SyncDocument;
+  selectedFolder: models.Element | SyncDocument | GoogleDriveDocument;
+  isSubmitting: boolean;
   newFolder: models.Element;
   search: {
     value: string;
@@ -58,6 +62,11 @@ export interface FolderPickerSource {
 
 export interface FolderPickerSourceFile extends FolderPickerSource {
   fileId: string;
+  // Id of the folder the file currently lives in — null for a drive's root folder (e.g.
+  // GoogleDriveDocument.initParent()), distinct from undefined ("not set" — the picker behaves exactly
+  // as before). Only set by callers that want the picker to refuse selecting that same folder back as
+  // the destination (e.g. a "move" source — a no-op at best, and for some drives an outright error).
+  parentId?: string | null;
 }
 
 export interface FolderPickerSourceBlob extends FolderPickerSource {
@@ -77,11 +86,12 @@ export interface FolderPickerProps {
   sources: FolderPickerSource[];
   treeProvider?(): Promise<models.Tree[]>;
   nextcloudTreeProvider?(): Promise<SyncDocument[]>;
-  manageSubmit?(folder: models.Element | SyncDocument): boolean;
-  submit?(folder: models.Element | SyncDocument): Promise<void> | void;
+  googleDriveTreeProvider?(): Promise<GoogleDriveDocument[]>;
+  manageSubmit?(folder: models.Element | SyncDocument | GoogleDriveDocument): boolean;
+  submit?(folder: models.Element | SyncDocument | GoogleDriveDocument): Promise<void> | void;
   onCancel(): void;
   onError?(error: any): void;
-  onSubmitSuccess?(dest: models.Element | SyncDocument, count: number): void;
+  onSubmitSuccess?(dest: models.Element | SyncDocument | GoogleDriveDocument, count: number): void;
 }
 
 export const folderPicker2 = ng.directive("folderPicker2", [
@@ -108,10 +118,18 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               <div class="tree-container nextcloud-tree" ng-if="folderProps.nextcloudTreeProvider">
                 <folder-tree-2 tree-props="nextcloudTreeProps"></folder-tree-2>
               </div>
+              <!-- Google Drive tree -->
+              <div class="tree-container google-drive-tree" ng-if="folderProps.googleDriveTreeProvider">
+                <folder-tree-2 tree-props="googleDriveTreeProps"></folder-tree-2>
+              </div>
               <hr />
               <div class="lightbox-buttons fluid">
-                  <button class="nextcloud-button-confirm right-magnet" ng-disabled="cannotSubmit()" ng-click="onSubmit()" translate content="[[folderProps.i18.actionTitle]]"></button>
-                  <button class="nextcloud-button-cancel cancel right-magnet" ng-click="onCancel()"><i18n>cancel</i18n></button>
+                  <button class="nextcloud-button-confirm right-magnet" ng-disabled="cannotSubmit()" ng-click="onSubmit()">
+                    <i class="google-drive-import-spinner" ng-if="isSubmitting" style="margin-right: 6px; vertical-align: middle;"></i>
+                    <span ng-if="!isSubmitting" translate content="[[folderProps.i18.actionTitle]]"></span>
+                    <span ng-if="isSubmitting" translate content="[[folderProps.i18.actionProcessing]]"></span>
+                  </button>
+                  <button class="nextcloud-button-cancel cancel right-magnet" ng-disabled="isSubmitting" ng-click="onCancel()"><i18n>cancel</i18n></button>
               </div>
             </div>
           </div>
@@ -133,11 +151,36 @@ export const folderPicker2 = ng.directive("folderPicker2", [
         };
 
         scope.selectedFolder = null;
+        // Defined here, before the async loadTrees() below, so ng-disabled="cannotSubmit()" never
+        // evaluates against an undefined function on the directive's first render — otherwise the
+        // button renders enabled until some unrelated event (e.g. the user's own click) forces a
+        // fresh digest that finally re-evaluates it correctly.
+        scope.isSubmitting = false;
+        scope.cannotSubmit = () => !scope.selectedFolder || scope.isSubmitting;
 
         scope.trees = [];
         scope.nextcloudTrees = [];
+        scope.googleDriveTrees = [];
 
-        const canSelect = function (folder: models.Element | SyncDocument) {
+        // Folders a "move" source is currently in: refused as a destination (see FolderPickerSourceFile.
+        // parentId) — moving a file back into its own folder is a no-op at best. Only populated when a
+        // caller actually sets parentId on its move sources; other callers (copy/duplicate, or move
+        // sources that don't set it) are unaffected.
+        const excludedFolderIds = new Set<string | null>(
+          (scope.folderProps.sources || [])
+            .filter((source) => source.action === "move-from-file" && (source as any).parentId !== undefined)
+            .map((source) => (source as any).parentId as string | null),
+        );
+
+        const canSelect = function (folder: models.Element | SyncDocument | GoogleDriveDocument) {
+          // Synthetic label node (see setupCopyProps's ownerWrapper) grouping the owner trees under
+          // "Mon espace personnel" — navigation/expand only, not a real folder to export/move into.
+          if ((folder as any).isPersonalSpaceWrapper) {
+            return false;
+          }
+          if (excludedFolderIds.has((folder as any).id)) {
+            return false;
+          }
           if (folder instanceof models.Element) {
             if ((folder as models.Tree).filter) {
               return (folder as models.Tree).filter == "owner";
@@ -145,7 +188,13 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               return true;
             }
           } else if (folder instanceof SyncDocument) {
-            return folder.isFolder;
+            // isRootGroup: synthetic "Nextcloud" label node wrapping "Mes documents"/"Corbeille"
+            // (SyncDocument.createRootGroup()) — same navigation-only treatment as isPersonalSpaceWrapper.
+            return folder.isFolder && !(folder as any).isRootGroup;
+          } else if (folder instanceof GoogleDriveDocument) {
+            // isGoogleDriveRootWrapper: synthetic "Google Drive" label node wrapping "Mes documents"
+            // (set in setupCopyProps's googleDriveTreeProvider) — same treatment.
+            return folder.isFolder && !(folder as any).isGoogleDriveRootWrapper;
           }
           return false;
         };
@@ -183,6 +232,8 @@ export const folderPicker2 = ng.directive("folderPicker2", [
           openFolder(folder: models.Element) {
             selectedNextcloudFolder = null;
             openedNextcloudFolders = [];
+            selectedGoogleDriveFolder = null;
+            openedGoogleDriveFolders = [];
 
             if (canSelect(folder)) {
               openedWorkspaceFolder = selectedWorkspaceFolder = folder;
@@ -203,7 +254,7 @@ export const folderPicker2 = ng.directive("folderPicker2", [
             return scope.nextcloudTrees;
           },
           isDisabled(folder: SyncDocument) {
-            return false;
+            return !canSelect(folder);
           },
           isOpenedFolder(folder: SyncDocument) {
             return openedNextcloudFolders.some(
@@ -214,16 +265,58 @@ export const folderPicker2 = ng.directive("folderPicker2", [
             return selectedNextcloudFolder === folder;
           },
           openFolder(folder: SyncDocument) {
-            // Clear workspace selection
+            // Clear workspace and Google Drive selection
             selectedWorkspaceFolder = null;
             openedWorkspaceFolder = null;
+            selectedGoogleDriveFolder = null;
+            openedGoogleDriveFolders = [];
 
-            selectedNextcloudFolder = folder;
-            scope.selectedFolder = folder;
+            if (canSelect(folder)) {
+              selectedNextcloudFolder = folder;
+              scope.selectedFolder = folder;
+            }
 
             // Add to opened folders if not already there
             if (!openedNextcloudFolders.includes(folder)) {
               openedNextcloudFolders.push(folder);
+            }
+          },
+        };
+
+        // Google Drive tree props
+        let selectedGoogleDriveFolder: GoogleDriveDocument = null;
+        let openedGoogleDriveFolders: GoogleDriveDocument[] = [];
+
+        scope.googleDriveTreeProps = {
+          cssTree: "maxheight-half-vh",
+          get trees() {
+            return scope.googleDriveTrees;
+          },
+          isDisabled(folder: GoogleDriveDocument) {
+            return !canSelect(folder);
+          },
+          isOpenedFolder(folder: GoogleDriveDocument) {
+            return openedGoogleDriveFolders.some(
+              (openFolder) => openFolder === folder,
+            );
+          },
+          isSelectedFolder(folder: GoogleDriveDocument) {
+            return selectedGoogleDriveFolder === folder;
+          },
+          openFolder(folder: GoogleDriveDocument) {
+            // Clear workspace and Nextcloud selection
+            selectedWorkspaceFolder = null;
+            openedWorkspaceFolder = null;
+            selectedNextcloudFolder = null;
+            openedNextcloudFolders = [];
+
+            if (canSelect(folder)) {
+              selectedGoogleDriveFolder = folder;
+              scope.selectedFolder = folder;
+            }
+
+            if (!openedGoogleDriveFolders.includes(folder)) {
+              openedGoogleDriveFolders.push(folder);
             }
           },
         };
@@ -252,6 +345,18 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               }
             }
 
+            // Load Google Drive trees
+            if (scope.folderProps.googleDriveTreeProvider) {
+              const googleDriveTrees =
+                await scope.folderProps.googleDriveTreeProvider();
+              if (googleDriveTrees && googleDriveTrees.length > 0) {
+                scope.googleDriveTrees.length = 0;
+                googleDriveTrees.forEach((tree) =>
+                  scope.googleDriveTrees.push(tree),
+                );
+              }
+            }
+
             scope.safeApply();
           } catch (e) {
             console.error("Error loading trees:", e);
@@ -263,9 +368,6 @@ export const folderPicker2 = ng.directive("folderPicker2", [
 
         // Load trees
         await loadTrees();
-
-        // Submission handling
-        scope.cannotSubmit = () => !scope.selectedFolder;
 
         scope.onSubmit = async () => {
           if (scope.cannotSubmit()) return;
@@ -280,10 +382,14 @@ export const folderPicker2 = ng.directive("folderPicker2", [
 
           try {
             if (scope.folderProps.submit) {
+              scope.isSubmitting = true;
+              scope.safeApply();
               await scope.folderProps.submit(scope.selectedFolder);
+              scope.isSubmitting = false;
               scope.safeApply();
             }
           } catch (e) {
+            scope.isSubmitting = false;
             scope.folderProps.onError(e);
             scope.safeApply();
           }
