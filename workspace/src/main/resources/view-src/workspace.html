@@ -17,6 +17,7 @@
 		var ENABLE_GGB= {{enableGeogebra}};
 		var ENABLE_NEXTCLOUD= {{enableNextcloud}};
 		var USE_NEXTCLOUD_SNIPLET = {{useNextcloudSniplet}};
+		var ENABLE_GOOGLE_DRIVE= {{enableGoogleDrive}};
 		var LAZY_MODE = {{lazyMode}}
 		var CACHE_DOC_TTL_SEC = {{cacheDocTTl}}
 		var CACHE_FOLDER_TTL_SEC = {{cacheFolderTtl}}
@@ -257,7 +258,7 @@
 
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
-					<a ng-click="confirmDelete()" ng-if="canEmptyTrash()" ng-hide="isTrashEmpty()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
+					<a ng-click="confirmDelete()" ng-if="canEmptyTrash() && !$root.isGDTrashbinOpen" ng-hide="isTrashEmpty()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
 					<div class="row" ng-hide="canEmptyTrash() && isTrashEmpty()">
 						<h2>
 							<i18n>quota.title</i18n>
@@ -280,6 +281,13 @@
 							>
 							</sniplet>
 						</div>
+					</div>
+
+					<div ng-if="ENABLE_GOOGLE_DRIVE">
+						<workspace-google-drive-folder
+							application="google-drive"
+						>
+						</workspace-google-drive-folder>
 					</div>
 				</nav>
 

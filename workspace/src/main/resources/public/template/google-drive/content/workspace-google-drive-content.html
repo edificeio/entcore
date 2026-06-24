@@ -1,0 +1,73 @@
+<div
+    id="google-drive-content"
+    class="sniplet google-drive google-drive-content"
+    ng-controller="GoogleDriveContentController"
+>
+    <div
+        style="
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+        "
+    >
+        <div
+            style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            "
+        >
+            <div class="choice-view" style="display: flex; gap: 8px">
+                <i
+                    class="show-icons"
+                    ng-class="{ selected: isViewMode('icons') }"
+                    ng-click="changeViewMode('icons')"
+                ></i>
+                <i
+                    class="show-list"
+                    ng-class="{ selected: isViewMode('list') }"
+                    ng-click="changeViewMode('list')"
+                ></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- dropzone action -->
+    <dropzone-overlay
+        ng-if="isDropzoneEnabled()"
+        on-import="onCannotDropFile()"
+        can-drop="canDropOnFolder()"
+        on-cannot-drop="onCannotDropFile()"
+    >
+    </dropzone-overlay>
+
+    <!-- view content -->
+    <container template="documents-content"></container>
+
+    <!-- empty state -->
+    <div
+        class="emptyscreen-google-drive"
+        ng-if="isLoaded"
+        ng-show="!documents.length"
+    >
+        <h2 class="emptyscreen-header">
+            <i18n>empty.workspace.subfolder.title</i18n>
+        </h2>
+
+        <img
+            class="emptyscreen-image__mini"
+            src="/workspace/public/img/empty-workspace.svg"
+            alt=""
+        />
+
+        <p class="emptyscreen-footer">
+            <i18n>empty.workspace</i18n>
+        </p>
+    </div>
+
+    <!-- toolbar -->
+    <div
+        ng-include="'/workspace/public/template/google-drive/toolbar/workspace-google-drive-toolbar.html'"
+    ></div>
+</div>
