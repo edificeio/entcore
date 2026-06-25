@@ -33,7 +33,10 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
@@ -65,8 +68,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isEmpty;
@@ -727,76 +733,97 @@ public class StructureController extends BaseController {
 	@ResourceFilter(AdminStructureFilter.class)
 	@MfaProtected()
 	public void blockUsers(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject json) {
-				final String structureId = request.params().get("id");
-				final String profile = json.getString("profile");
-				final boolean block = json.getBoolean("block", true);
-				UserUtils.getUserInfos(eb, request, user -> {
-					if (user != null) {
-						final boolean isAdmc = (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN));
-						structureService.blockUsers(structureId, profile, block, isAdmc, new Handler<JsonObject>() {
-							@Override
-							public void handle(JsonObject r) {
-								if ("ok".equals(r.getString("status"))) {
-									request.response().setStatusCode(204);
-									request.response().end();
+		RequestUtils.bodyToJson(request, json -> {
+            final String structureId = request.params().get("id");
+            final String profile = json.getString("profile");
+            final boolean block = json.getBoolean("block", true);
+            UserUtils.getUserInfos(eb, request, user -> {
+                if (user != null) {
+                    final boolean isAdmc = (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN));
+                    structureService.blockUsers(structureId, profile, block, isAdmc, r -> {
+                        if ("ok".equals(r.getString("status"))) {
+                            // Collect the i18n keys of every side task that failed so the front can report them.
+                            final Set<String> errors = new LinkedHashSet<>();
+                            final List<Future> tasks = new ArrayList<>();
 
-									// Create a Trace
-									JsonObject traceData = new JsonObject()
-											.put("action", block ? "BLOCK" : "UNBLOCK")
-											.put("profile", profile)
-											.put("structureId", structureId)
-											.put("userId", user.getUserId())
-											.put("userName", user.getUsername());
-									eb.request("wse.admin.block.trace", traceData, response -> {
-										if (response.succeeded()) {
-											log.info("Trace created successfully: " + traceData.toString());
-										} else {
-											log.error("An error occurred during the trace creation", response.cause());
-										}
-									});
+                            // Create a Trace
+                            JsonObject traceData = new JsonObject()
+                                    .put("action", block ? "BLOCK" : "UNBLOCK")
+                                    .put("profile", profile)
+                                    .put("structureId", structureId)
+                                    .put("userId", user.getUserId())
+                                    .put("userName", user.getUsername());
+                            Promise<Void> tracePromise = Promise.promise();
+                            tasks.add(tracePromise.future());
+                            eb.request("wse.admin.block.trace", traceData, response -> {
+                                if (response.succeeded()) {
+                                    log.info("Trace created successfully: " + traceData.toString());
+                                } else {
+                                    log.error("An error occurred during the trace creation", response.cause());
+                                    errors.add("block.error.trace");
+                                }
+                                tracePromise.complete();
+                            });
 
-									JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
-									eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
-									if (block) {
-										NotificationUtils.deleteFcmTokens(usersId, ar -> {
-											if (ar.isLeft()) {
-												log.error("Failed to delete FCM tokens when block structure : " + structureId + " " + ar.left().getValue());
-											}
-										});
-									}
-									for (Object userId : usersId) {
-										UserUtils.deletePermanentSession(eb, (String) userId, null, null, false, new Handler<Boolean>() {
-											@Override
-											public void handle(Boolean event) {
-												if (!event) {
-													log.error("Error delete permanent session with userId : " + userId);
-												}
-											}
-										});
-										UserUtils.deleteCacheSession(eb, (String) userId, null, new Handler<JsonArray>() {
-											@Override
-											public void handle(JsonArray event) {
-												if (event == null) {
-													log.error("Error delete cache session with userId : " + userId);
-												}
-											}
-										});
-									}
-								}
-								else {
-									badRequest(request);
-								}
-							}
-						});
-					} else {
-						unauthorized(request, "invalid.user");
-					}
-				});
-			}
-		});
+                            JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
+                            eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
+                            if (block) {
+                                Promise<Void> fcmPromise = Promise.promise();
+                                tasks.add(fcmPromise.future());
+                                NotificationUtils.deleteFcmTokens(usersId, ar -> {
+                                    if (ar.isLeft()) {
+                                        log.error("Failed to delete FCM tokens when block structure : " + structureId + " " + ar.left().getValue());
+                                        errors.add("block.error.fcm");
+                                    }
+                                    fcmPromise.complete();
+                                });
+                            }
+                            for (Object userId : usersId) {
+                                Promise<Void> sessionPromise = Promise.promise();
+                                tasks.add(sessionPromise.future());
+                                UserUtils.deletePermanentSession(eb, (String) userId, null, null, false, new Handler<Boolean>() {
+                                    @Override
+                                    public void handle(Boolean event) {
+                                        if (event == null || !event) {
+                                            log.error("Error delete permanent session with userId : " + userId);
+                                            errors.add("block.error.session");
+                                        }
+                                        sessionPromise.complete();
+                                    }
+                                });
+                                Promise<Void> cachePromise = Promise.promise();
+                                tasks.add(cachePromise.future());
+                                UserUtils.deleteCacheSession(eb, (String) userId, null, new Handler<JsonArray>() {
+                                    @Override
+                                    public void handle(JsonArray event) {
+                                        if (event == null) {
+                                            log.error("Error delete cache session with userId : " + userId);
+                                            errors.add("block.error.cache");
+                                        }
+                                        cachePromise.complete();
+                                    }
+                                });
+                            }
+
+                            // Wait for every side task to settle, then answer once with the collected errors.
+                            CompositeFuture.all(tasks).onComplete(done -> {
+                                if (errors.isEmpty()) {
+                                    request.response().setStatusCode(204);
+                                    request.response().end();
+                                } else {
+                                    renderJson(request, new JsonObject().put("errors", new JsonArray(new ArrayList<>(errors))));
+                                }
+                            });
+                        }
+                        else {
+                            renderJson(request, new JsonObject().put("errors", new JsonArray().add("block.error.global")), 400);
+                        }
+                    });
+                } else {
+                    unauthorized(request, "invalid.user");
+                }
+            });
+        });
 	}
 
 	@Put("/structure/:structureId/resetName")
