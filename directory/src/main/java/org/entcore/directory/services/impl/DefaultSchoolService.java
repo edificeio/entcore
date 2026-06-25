@@ -639,7 +639,8 @@ public class DefaultSchoolService implements SchoolService {
 				setWidget = options.getBoolean("setWidgets", true),
 				setDistribution = options.getBoolean("setDistribution", true),
 				setEducation = options.getBoolean("setEducation", true),
-				setHasApp = options.getBoolean("setHasApp", true);
+				setHasApp = options.getBoolean("setHasApp", true),
+				setDefaultAuth = options.getBoolean("setDefaultAuth", false);
 		if (setApplications) {
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "ProfileGroup");
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "FunctionGroup");
@@ -647,6 +648,9 @@ public class DefaultSchoolService implements SchoolService {
 		if (setWidget) {
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Widget", "ProfileGroup");
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Widget", "FunctionGroup");
+		}
+		if (setDefaultAuth) {
+			buildDuplicateDefaultAuthQuery(structureId, targetUAIs, builder);
 		}
 		if (setDistribution || setEducation || setHasApp) {
 			String structureUpdateQuery = "MATCH (s:Structure {id:{structureId}}), (s2:Structure) " +
@@ -681,6 +685,18 @@ public class DefaultSchoolService implements SchoolService {
 				"AND s2.UAI IN {uais} AND g2.name ENDS WITH LAST(SPLIT(g1.name, '-')) AND g1.id <> g2.id " +
 				"MERGE (g2)-[a2:AUTHORIZED]->(r)" +
 				"ON CREATE SET a2.mandatory = a.mandatory";
+		builder.add(duplicateQuery, params);
+	}
+
+	private void buildDuplicateDefaultAuthQuery(String structureId, JsonArray targetUAIs, StatementsBuilder builder) {
+		final JsonObject params = new JsonObject().put("structureId", structureId).put("uais", targetUAIs);
+		final String deleteExistingQuery = "MATCH (s2:Structure)-[:HAS_AUTH_DEFAULT]->(d:AuthDefault) " +
+				"WHERE s2.UAI IN {uais} " +
+				"DETACH DELETE d";
+		builder.add(deleteExistingQuery, params);
+		final String duplicateQuery = "MATCH (s:Structure {id:{structureId}})-[:HAS_AUTH_DEFAULT]->(d:AuthDefault), (s2:Structure) " +
+				"WHERE s2.UAI IN {uais} " +
+				"MERGE (s2)-[:HAS_AUTH_DEFAULT]->(:AuthDefault { profile: d.profile, auth: d.auth })";
 		builder.add(duplicateQuery, params);
 	}
 
