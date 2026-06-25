@@ -344,7 +344,7 @@ public class UserController extends BaseController {
 					.add("city").add("otherNames").add("title").add("surname").add("functions").add("headTeacher")
 					.add("relativeAddress").add("classCategories").add("subjectTaught").add("needRevalidateTerms")
 					.add("joinKey").add("isTeacher").add("structures").add("type").add("children").add("parents")
-					.add("functionalGroups").add("startDateStruct").add("endDateStruct")
+					.add("functionalGroups").add("startDateStruct").add("endDateStruct").add("login")
 					.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses")
 					.add("scholarshipHolder").add("attachmentId").add("fieldOfStudy").add("module").add("transport")
 					.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level");
