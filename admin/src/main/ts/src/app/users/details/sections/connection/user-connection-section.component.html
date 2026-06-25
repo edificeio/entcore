@@ -1,16 +1,27 @@
-<ode-panel-section section-title="users.connection.section.infos" [folded]="false">
+<ode-panel-section section-title="users.details.section.connection.section.infos" [folded]="false" >
   <div class="message is-info" *ngIf="isForbidden">
     <div class="message-body">&nbsp;<s5l>notify.user.email.info</s5l></div>
   </div>
 
-  <div class="cell flashmsg blue" *ngIf="details.hasFederatedIdentity">
+  <div class="cell flashmsg blue" *ngIf="isInactiveFederatedUser" >
       <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
       <use [attr.href]="'/admin/public/icons/icons.svg#alert-triangle'"></use>
     </svg>
     <div class="flash-content">
-      <h3><s5l>users.details.section.infos.federatedInfo.title</s5l></h3> 
-      <p><s5l>users.details.section.infos.federatedInfo.content</s5l></p>
+      <!-- <p></p> -->
+      <h3><s5l>users.details.section.connection.federatedInfo.title</s5l></h3> 
+      <h4><s5l>users.details.section.connection.federatedInfo.signin.title</s5l></h4> 
+      <p><s5l>users.details.section.connection.federatedInfo.signin.content</s5l></p>
+      <h4><s5l>users.details.section.connection.federatedInfo.issue.title</s5l></h4>
+      <p><s5l>users.details.section.connection.federatedInfo.issue.content</s5l></p>
     </div>
+    <p><b><s5l>users.details.section.connection.federatedInfo.unlock</s5l></b>
+    <label>
+      <input type="checkbox" [(ngModel)]="isFederatedUserFieldsUnlocked" />
+      <s5l *ngIf="!isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.locked</s5l>
+      <s5l *ngIf="isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.unlocked</s5l>
+    </label>
+    </p>
   </div>
   
   <form #loginForm="ngForm">
@@ -26,13 +37,13 @@
             #loginInput="ngModel"
             (ngModelChange)="isUpdateLoginSaved = false"
             maxlength="64"
-            [disabled]="details.hasFederatedIdentity"
+            [disabled]="isFederatedIdentityFieldsLocked"
           />
           <button
             type="button"
             (click)="showChangeLoginConfirmation = true"
             [disabled]="
-              details.hasFederatedIdentity ||
+              isFederatedIdentityFieldsLocked ||
               isUpdateLoginSaved ||
               loginForm.pristine ||
               loginForm.invalid ||
@@ -62,12 +73,12 @@
     </fieldset>
   </form>
   
-  <div [class.field-disabled]="details.hasFederatedIdentity" [title]="federatedDisabledTitle">
+  <fieldset [class.field-disabled]="isFederatedIdentityFieldsLocked" [title]="federatedDisabledTitle" *ngIf="details.activationCode">
     <ode-form-field label="activation.code" >
-      <span *ngIf="details.hasFederatedIdentity" class="is-disabled" ><s5l>user.connection.activationCode.unlock</s5l></span>
-      <span *ngIf="!!details.activationCode && !details.hasFederatedIdentity">{{ details.activationCode }}</span>
+      <span *ngIf="isFederatedIdentityFieldsLocked" class="is-disabled" ><s5l>users.details.section.connection.activationCode.unlock</s5l></span>
+      <span *ngIf="!!details.activationCode && !isFederatedIdentityFieldsLocked">{{ details.activationCode }}</span>
     </ode-form-field>
-  </div>
+  </fieldset>
 
   <form #connectionForm="ngForm">
     <fieldset [title]="federatedDisabledTitle">
@@ -79,16 +90,17 @@
             name="loginAlias"
             [pattern]="loginAliasPattern"
             #loginAliasInput="ngModel"
-            [disabled]="isForbidden || details.hasFederatedIdentity"
+            [disabled]="isForbidden || isFederatedIdentityFieldsLocked"
             maxlength="64"
           />
           <button
             type="button"
             (click)="updateLoginAlias()"
             [disabled]="
-              connectionForm.pristine ||
+              connectionForm.pristine || 
               connectionForm.invalid ||
-              spinner.isLoading('portal-content')
+              spinner.isLoading('portal-content') ||
+              isForbidden || isFederatedIdentityFieldsLocked
             "
           >
             <s5l>login.update</s5l>
@@ -191,7 +203,7 @@
     </fieldset>
   </form>
   <form>
-    <fieldset>
+    <fieldset >
       <ode-form-field
         label="send.reset.password"
         *ngIf="!details.activationCode"
@@ -435,13 +447,13 @@
           >
         </div>
       </ode-form-field>
-        <div [class.field-disabled]="details.hasFederatedIdentity" [title]="federatedDisabledTitle">
+        <div [class.field-disabled]="isFederatedIdentityFieldsLocked" [title]="federatedDisabledTitle">
           <ode-form-field label="massmail">
             <div >
               <button
                 type="button"
                 (click)="sendIndividualMassMail('pdf')"
-                [disabled]="details.hasFederatedIdentity"
+                [disabled]="isFederatedIdentityFieldsLocked"
               >
                 <span><s5l>individual.massmail.pdf</s5l></span>
                 <i class="fa fa-file-pdf-o"></i>
@@ -449,7 +461,7 @@
               <button
                 type="button"
                 (click)="showMassMailConfirmation = true"
-                [disabled]="!details.email || details.hasFederatedIdentity"
+                [disabled]="!details.email || isFederatedIdentityFieldsLocked"
               >
                 <span><s5l>individual.massmail.mail</s5l></span>
                 <i class="fa fa-envelope"></i>
