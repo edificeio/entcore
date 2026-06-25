@@ -401,7 +401,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
            +") END as children ";
 
         if (!filterObj.containsKey("includeFederated")) {
-            withStr += " WHERE NOT ((HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NULL) ";
+            withStr += " WHERE NOT ((HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NOT NULL) ";
         }
 
         //Return clause
@@ -419,7 +419,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             // Deprecated fields below
             +", classname, isInClass"
             +", CASE WHEN size(children) = 0 THEN null ELSE head(children) END as child"
-            +", (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR (size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NULL) as hasFederatedIdentity ";
+            +", (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR " +
+            " (size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV']) AND u.activationCode IS NOT NULL) as hasFederatedIdentity ";
 
         //Order by
         String sort = " ORDER BY ";
@@ -520,7 +521,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         returnStr += ", classes, classname, isInClass ";
 
         withStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
-        returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children, (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR (size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV'] AND u.activationCode IS NULL ))  as hasFederatedIdentity ";
+        returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children, (HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) OR " +
+                " (size(auths) > 0 AND (u.source in ['AAF', 'AAF1D', 'CSV'] AND u.activationCode IS NOT NULL ))  as hasFederatedIdentity ";
 
         String sort = "ORDER BY lastName";
 
