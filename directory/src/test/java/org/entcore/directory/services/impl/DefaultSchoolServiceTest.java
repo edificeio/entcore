@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -104,6 +105,12 @@ public class DefaultSchoolServiceTest {
                 .withUser(parent)
                 .withUser(adml)
                     .adml(adml.getId(), "my-structure-01")
+                // Structures dedicated to the defaultAuth duplication tests.
+                // Sources are matched by id, targets by UAI.
+                .withStructure(new StructureTest("auth-src-fed", "auth source federated", true))
+                .withStructure(new StructureTest("auth-src-ent", "auth source ent"))
+                .withStructure(new StructureTest("auth-target-copy", "auth target copy", false, "UAI-AUTH-COPY"))
+                .withStructure(new StructureTest("auth-target-replace", "auth target replace", true, "UAI-AUTH-REPLACE"))
                 .execute();
     }
 
@@ -304,6 +311,70 @@ public class DefaultSchoolServiceTest {
                     // validate() returns false when enabled=true and schedule.length==0
                     context.assertTrue(ar.failed(), "enabled=true with empty schedule should be rejected");
                     context.assertEquals("invalid.preference.data", ar.cause().getMessage());
+                    async.complete();
+                });
+    }
+
+    // -----------------------------------------------------------------------
+    //  Default auth duplication tests (setDefaultAuth option)
+    // -----------------------------------------------------------------------
+
+    private Future<Void> duplicateDefaultAuth(final String sourceStructureId, final String targetUai) {
+        final Promise<Void> promise = Promise.promise();
+        // Only the defaultAuth config is duplicated, to isolate the behaviour under test.
+        final JsonObject options = new JsonObject()
+                .put("setApplications", false)
+                .put("setWidgets", false)
+                .put("setDistribution", false)
+                .put("setEducation", false)
+                .put("setHasApp", false)
+                .put("setDefaultAuth", true);
+        defaultSchoolService.duplicateStructureSettings(sourceStructureId, new JsonArray().add(targetUai), options, result -> {
+            if (result.isRight()) {
+                promise.complete();
+            } else {
+                promise.fail(result.left().getValue());
+            }
+        });
+        return promise.future();
+    }
+
+    @Test
+    public void testDuplicateDefaultAuth_copiesFederatedConfigToTarget(final TestContext context) {
+        final Async async = context.async();
+        // Source "auth-src-fed" is FEDERATED for every profile, target starts with no config.
+        duplicateDefaultAuth("auth-src-fed", "UAI-AUTH-COPY")
+                .compose(ignored -> defaultSchoolService.getDefaultAuth("auth-target-copy"))
+                .onComplete(ar -> {
+                    if (ar.succeeded()) {
+                        final DefaultAuthModeConfig config = ar.result();
+                        context.assertEquals(DefaultAuthModeConfig.Profile.values().length,
+                                config.getDefaultAuthModes().size(), "every profile should be configured");
+                        config.getDefaultAuthModes().forEach((profile, mode) ->
+                                context.assertEquals(DefaultAuthModeConfig.DefaultAuthMode.FEDERATED, mode,
+                                        "profile " + profile + " should be FEDERATED after duplication"));
+                    } else {
+                        context.fail(ar.cause());
+                    }
+                    async.complete();
+                });
+    }
+
+    @Test
+    public void testDuplicateDefaultAuth_replacesExistingConfigWhenSourceHasNone(final TestContext context) {
+        final Async async = context.async();
+        // Source "auth-src-ent" has no AuthDefault, target starts FEDERATED: duplication must clear it back to ENT.
+        duplicateDefaultAuth("auth-src-ent", "UAI-AUTH-REPLACE")
+                .compose(ignored -> defaultSchoolService.getDefaultAuth("auth-target-replace"))
+                .onComplete(ar -> {
+                    if (ar.succeeded()) {
+                        final DefaultAuthModeConfig config = ar.result();
+                        config.getDefaultAuthModes().forEach((profile, mode) ->
+                                context.assertEquals(DefaultAuthModeConfig.DefaultAuthMode.ENT, mode,
+                                        "profile " + profile + " should fall back to ENT after duplication"));
+                    } else {
+                        context.fail(ar.cause());
+                    }
                     async.complete();
                 });
     }
