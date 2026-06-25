@@ -57,6 +57,7 @@ public class DefaultUserServiceTest {
             .firstName("prenom").lastName("NdF")
             .displayName("Prenom NdF")
             .profile(Profile.Student)
+            .activationCode("simple-user-structure-with-idp-activation-code")
             .build();
     static final UserTest child1 = UserTestBuilder.anUserTest().id("child")
             .login("child")

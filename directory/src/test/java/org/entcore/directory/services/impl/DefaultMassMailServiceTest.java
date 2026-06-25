@@ -50,6 +50,7 @@ public class DefaultMassMailServiceTest {
             .firstName("Eleve").lastName("StructureFederee")
             .displayName("Eleve StructureFederee")
             .profile(Profile.Student)
+            .activationCode("massmail-student-structure-with-idp-activation-code")
             .build();
 
     @BeforeClass
