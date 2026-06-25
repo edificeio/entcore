@@ -34,6 +34,7 @@ import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -90,13 +91,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -1676,32 +1671,52 @@ public class AuthController extends BaseController {
 			public void handle(JsonObject json) {
 				final String userId = request.params().get("userId");
 				boolean block = json.getBoolean("block", true);
-				userAuthAccount.blockUser(userId, block, new io.vertx.core.Handler<Boolean>() {
-					@Override
-					public void handle(Boolean r) {
-						if (Boolean.TRUE.equals(r)) {
-							request.response().end();
-							UserUtils.deletePermanentSession(eb, userId, null, null, new io.vertx.core.Handler<Boolean>() {
-								@Override
-								public void handle(Boolean event) {
-									if (!event) {
-										log.error("Error delete permanent session with userId : " + userId);
-									}
-								}
-							});
-							UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<JsonArray>() {
-								@Override
-								public void handle(JsonArray event) {
-									if (event == null) {
-										log.error("Error delete cache session with userId : " + userId);
-									}
-								}
-							});
-						} else {
-							badRequest(request);
-						}
-					}
-				});
+				userAuthAccount.blockUser(userId, block, r -> {
+                    if (Boolean.TRUE.equals(r)) {
+						// Collect the i18n keys of every side task that failed so the front can report them.
+						final Set<String> errors = new LinkedHashSet<>();
+						final List<Future> tasks = new ArrayList<>();
+
+						Promise<Void> permanentSessionPromise = Promise.promise();
+						tasks.add(permanentSessionPromise.future());
+
+                        UserUtils.deletePermanentSession(eb, userId, null, null, new io.vertx.core.Handler<Boolean>() {
+                            @Override
+                            public void handle(Boolean event) {
+                                if (!event) {
+                                    log.error("Error delete permanent session with userId : " + userId);
+									errors.add("block.error.session");
+                                }
+								permanentSessionPromise.complete();;
+                            }
+                        });
+
+						Promise<Void> cachePromise = Promise.promise();
+						tasks.add(cachePromise.future());
+
+                        UserUtils.deleteCacheSession(eb, userId, null, new io.vertx.core.Handler<JsonArray>() {
+                            @Override
+                            public void handle(JsonArray event) {
+                                if (event == null) {
+                                    log.error("Error delete cache session with userId : " + userId);
+									errors.add("block.error.cache");
+                                }
+								cachePromise.complete();
+                            }
+                        });
+						// Wait for every side task to settle, then answer once with the collected errors.
+						CompositeFuture.all(tasks).onComplete(done -> {
+							if (errors.isEmpty()) {
+								request.response().setStatusCode(204);
+								request.response().end();
+							} else {
+								renderJson(request, new JsonObject().put("errors", new JsonArray(new ArrayList<>(errors))));
+							}
+						});
+                    } else {
+                        badRequest(request);
+                    }
+                });
 			}
 		});
 	}
