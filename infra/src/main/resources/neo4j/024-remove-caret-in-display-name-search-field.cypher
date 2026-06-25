@@ -1,0 +1,1 @@
+MATCH(u:User) WHERE u.displayNameSearchField CONTAINS '-' set u.displayNameSearchField = replace(u.displayNameSearchField, '-','');
