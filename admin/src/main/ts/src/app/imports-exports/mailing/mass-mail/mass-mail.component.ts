@@ -30,6 +30,7 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
     inputFilters = {lastName: '', firstName: '', classesStr: ''};
     countUsers = 0;
     countUsersWithoutMail = 0;
+    countUsersInactiveAndFederated = 0;
     userOrder: string;
     structureId: string;
     show = false;
@@ -96,17 +97,24 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
         this.userlistFiltersService.setClassesComboModel(structure.classes);
         this.userlistFiltersService.setProfilesComboModel(structure.profiles.map(p => p.name));
     }
-
+    
     getFilteredUsers(): UserModel[] {
         const users = FilterPipe.prototype.transform(this.users, this.filters) || [];
+        console.log('users:', users)
         this.countUsers = 0;
         this.countUsersWithoutMail = 0;
+        this.countUsersInactiveAndFederated = 0;
         users.forEach(user => {
             this.countUsers++;
             if (!user.email) {
                 this.countUsersWithoutMail++;
             }
+            if (user.hasFederatedIdentity && (!user.code || user.code.length === 0)) {
+                console.log('user:', user)
+                this.countUsersInactiveAndFederated++;
+            }
         });
+        console.log('this.countUsersInactiveAndFederated:', this.countUsersInactiveAndFederated)
         return users;
     }
 

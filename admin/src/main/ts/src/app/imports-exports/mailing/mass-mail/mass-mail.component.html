@@ -1,6 +1,17 @@
 <div class="container has-shadow">
   <h2>{{ 'massmail.accounts' | translate }}</h2>
 
+
+  <div class="cell flashmsg blue" *ngIf="countUsersInactiveAndFederated > 0">
+      <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
+      <use [attr.href]="'/admin/public/icons/icons.svg#alert-triangle'"></use>
+    </svg>
+    <div class="flash-content">
+      <p><s5l>massmail.info.authMode</s5l></p>
+    </div>
+  
+  </div>
+
   <div class="has-vertical-padding-10 is-pulled-left">
     <button (click)="toggleVisibility()"
             class="button is-primary"
