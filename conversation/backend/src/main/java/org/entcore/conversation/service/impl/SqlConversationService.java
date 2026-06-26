@@ -331,7 +331,14 @@ public class SqlConversationService implements ConversationService{
 				builder.prepared("UPDATE conversation.messages SET schedule_at = ? WHERE id = ? ", new JsonArray().add(message.getString("scheduleAt")).add(draftId));
 			}
 
-            sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
+            sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout),
+					h -> {
+				if (!"ok".equalsIgnoreCase(h.body().getString("status"))) {
+					result.handle(new Either.Left<>("conversation.error.alreadysend"));
+					return;
+				}
+				SqlResult.validUniqueResultHandler(0, result).handle(h);
+			});
         });
 	}
 
