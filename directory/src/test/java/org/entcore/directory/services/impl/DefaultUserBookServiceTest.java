@@ -131,6 +131,7 @@ public class DefaultUserBookServiceTest {
                 testContext.assertEquals(user.getString("displayName"), parent.getDisplayName() , "Field must be equals");
                 testContext.assertEquals(user.getString("email"), parent.getEmail() , "Field must be equals");
                 testContext.assertEquals(user.getString("birthdate"), parent.getBirthdate() , "Field must be equals");
+                testContext.assertTrue(isEmpty(user.getString("login")), "Login must be hidden on public access even without visibility filter");
                 async.complete();
             });
 
@@ -154,6 +155,7 @@ public class DefaultUserBookServiceTest {
                 testContext.assertNotNull(user.getString("displayName") , "Field must be not null");
                 testContext.assertNull(user.getString("email"), "Field must be null");
                 testContext.assertNull(user.getString("birthdate") , "Field must be null");
+                testContext.assertTrue(isEmpty(user.getString("login")), "Login must be hidden with public filter");
                 async.complete();
             });
 
