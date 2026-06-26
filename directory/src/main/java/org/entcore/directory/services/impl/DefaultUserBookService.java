@@ -508,6 +508,7 @@ public class DefaultUserBookService implements UserBookService {
 						if(!visibleInfos.contains("SHOW_MOBILE")) result.put("mobile", "");
 						if(!visibleInfos.contains("SHOW_BIRTHDATE")) result.put("birthdate", "");
 						if(!visibleInfos.contains("SHOW_HEALTH")) result.put("health", "");
+						result.put("login", "");
 					}
 				}
 				handler.handle(new Either.Right<>(results));
