@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { idiom as lang, idiom, moment, ng, notify, template } from "entcore";
+import { model, idiom as lang, idiom, moment, ng, notify, template } from "entcore";
 import {
   NavigationDelegate,
   NavigationDelegateScope,
@@ -39,6 +39,7 @@ import { DocumentActionType } from "entcore/types/src/ts/workspace/services";
 import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
 import {GeogebraDelegate, GeogebraDelegateScope} from "./delegates/geogebra";
 
+const NEXTCLOUD_VIEW_RIGHT = 'fr.openent.nextcloud.controller.NextcloudController|view';
 
 declare var ENABLE_LOOL: boolean;
 declare var ENABLE_SCRATCH: boolean;
@@ -51,6 +52,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	ENABLE_SCRATCH: boolean;
 	ENABLE_GGB: boolean;
 	ENABLE_NEXTCLOUD: boolean;
+	HAS_NEXTCLOUD_RIGHT: boolean;
 	USE_NEXTCLOUD_SNIPLET: boolean;
 	DISABLE_FULL_TEXT_SEARCH: boolean;
 	documentList:models.DocumentsListModel;
@@ -183,6 +185,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.ENABLE_SCRATCH = ENABLE_SCRATCH;
 	$scope.ENABLE_GGB = ENABLE_GGB;
 	$scope.ENABLE_NEXTCLOUD = ENABLE_NEXTCLOUD;
+	$scope.HAS_NEXTCLOUD_RIGHT = model.me.hasWorkflow(NEXTCLOUD_VIEW_RIGHT);
 	$scope.USE_NEXTCLOUD_SNIPLET = USE_NEXTCLOUD_SNIPLET;
 	$scope.DISABLE_FULL_TEXT_SEARCH = DISABLE_FULL_TEXT_SEARCH;
 
