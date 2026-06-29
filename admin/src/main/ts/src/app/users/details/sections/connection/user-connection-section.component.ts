@@ -76,6 +76,7 @@ export class UserConnectionSectionComponent
   @Input() set inUser(user: UserModel) {
       this._inUser = user;
       this.user = user;
+      this.showUnlockConfirmModal = false;
   }
 
   @Input() config: Config;
