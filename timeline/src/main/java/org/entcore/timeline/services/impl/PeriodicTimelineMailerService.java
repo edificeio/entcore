@@ -991,6 +991,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
 
         for (Object notificationObj : notificationContext.notifications) {
             JsonObject notification = ((JsonObject) notificationObj).copy().getJsonObject("_id");
+            notification.put("count", ((JsonObject) notificationObj).getValue("count"));
             String userId = notification.getString("userId");
 
             final String notificationName =
@@ -1006,15 +1007,15 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             if (notificationPreference == null){
                 continue;
             }
-            notificationPreference.getJsonObject("preferences", new JsonObject())
+            JsonObject userNotifications = notificationPreference.getJsonObject("preferences", new JsonObject())
                     .getJsonObject("config", new JsonObject())
                     .getJsonObject(notificationName, new JsonObject());
             if (TimelineNotificationsLoader.Frequencies.WEEKLY.name().equals(
-                    notificationPrefsMixin("defaultFrequency", notificationPreference, notificationsDefaults.getJsonObject(notificationName))) &&
+                    notificationPrefsMixin("defaultFrequency", userNotifications, notificationsDefaults.getJsonObject(notificationName))) &&
                     !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
-                            notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getJsonObject(notificationName))) &&
+                            notificationPrefsMixin("restriction", userNotifications, notificationsDefaults.getJsonObject(notificationName))) &&
                     !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
-                            notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getJsonObject(notificationName)))) {
+                            notificationPrefsMixin("restriction", userNotifications, notificationsDefaults.getJsonObject(notificationName)))) {
                 notification.put("notificationName", notificationName);
 
                 usersNotifications.putIfAbsent(userId, new ArrayList<>());
