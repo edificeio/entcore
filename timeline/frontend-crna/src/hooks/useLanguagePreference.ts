@@ -34,8 +34,8 @@ export function useLanguagePreference() {
 
   const setLanguage = async (lang: string) => {
     setCurrentLang(lang);
-    i18n.changeLanguage(lang);
     await saveLanguagePreference(lang);
+    await i18n.changeLanguage(lang);
   };
 
   const languages = codes
