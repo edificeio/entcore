@@ -123,7 +123,7 @@ public class DefaultCaptionService implements CaptionService {
     private JsonObject createPayload(String taskType, UserInfos user, String sessionId, String fileId, String userAgent, String language) {
         final String s3Path = S3Client.getPath(fileId);
 
-        return new JsonObject()
+        final JsonObject payload = new JsonObject()
                 .put("userId", user.getUserId())
                 .put("session", sessionId)
                 .put("browser", userAgent)
@@ -132,5 +132,9 @@ public class DefaultCaptionService implements CaptionService {
                 .put("s3Path", s3Path)
                 .put("pfId", platformId)
                 .put("size", DEFAULT_SIZE);
+
+        System.out.println(payload.encodePrettily());
+
+        return payload;
     }
 }
