@@ -14,6 +14,7 @@ import {
 } from '@edifice.io/react/homepage';
 import { useState } from 'react';
 import backgroundImage from '~/assets/background.png';
+import styles from './Root.module.css';
 import { MediacentreWidget, WidgetMasonry } from '~/components';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
@@ -57,6 +58,7 @@ export const Root = () => {
 
   return (
     <PageLayout
+      className={styles.layout}
       variant="fullpage"
       style={{
         backgroundImage: `url(${backgroundImage})`,
