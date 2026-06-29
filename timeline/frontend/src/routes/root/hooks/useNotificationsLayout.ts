@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 export const useNotificationsLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { md, sm } = useBreakpoint();
-  const { toggleOverlay, closeOverlay, openOverlay, isOverlayOpen } =
-    useOverlay();
+  const { toggleOverlay, updateOverlayOpen, isOverlayOpen } = useOverlay();
 
   const toggleNotifications = () => {
     if (md) {
@@ -19,18 +18,18 @@ export const useNotificationsLayout = () => {
     if (md) {
       setIsSidebarOpen(false);
     } else {
-      closeOverlay();
+      updateOverlayOpen(false);
     }
   };
 
   // Close sidebar or overlay when resizing window to avoid inappropriate display
   useEffect(() => {
     if (md && isOverlayOpen) {
-      closeOverlay();
+      updateOverlayOpen(false);
       setIsSidebarOpen(true);
     } else if (sm && isSidebarOpen) {
       setIsSidebarOpen(false);
-      openOverlay();
+      updateOverlayOpen(true);
     }
   }, [md, sm]);
 
