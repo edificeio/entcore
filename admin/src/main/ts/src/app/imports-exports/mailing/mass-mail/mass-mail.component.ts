@@ -100,22 +100,22 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
     
     getFilteredUsers(): UserModel[] {
         const users = FilterPipe.prototype.transform(this.users, this.filters) || [];
-        console.log('users:', users)
         this.countUsers = 0;
         this.countUsersWithoutMail = 0;
         this.countUsersInactiveAndFederated = 0;
+        const visibleUsers: UserModel[] = [];
         users.forEach(user => {
+            if (user.hasFederatedIdentity && (!user.code || user.code.length === 0)) {
+                this.countUsersInactiveAndFederated++;
+                return;
+            }
+            visibleUsers.push(user);
             this.countUsers++;
             if (!user.email) {
                 this.countUsersWithoutMail++;
             }
-            if (user.hasFederatedIdentity && (!user.code || user.code.length === 0)) {
-                console.log('user:', user)
-                this.countUsersInactiveAndFederated++;
-            }
         });
-        console.log('this.countUsersInactiveAndFederated:', this.countUsersInactiveAndFederated)
-        return users;
+        return visibleUsers;
     }
 
     async processMassMail(type: string): Promise<void> {
