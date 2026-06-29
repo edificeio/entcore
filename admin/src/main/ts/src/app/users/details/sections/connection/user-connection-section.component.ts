@@ -61,6 +61,7 @@ export class UserConnectionSectionComponent
   showTotpVerify: boolean = false;
   tempTotpCode: string = "";
   isFederatedUserFieldsUnlocked = false;
+  showUnlockConfirmModal: boolean = false;
   // Base32 alphabet: A-Z and 2-7, with optional padding
   readonly totpBase32Pattern = /^[A-Za-z2-7]+(={0,6})?$/;
   // TOTP code: exactly 6 digits
@@ -113,6 +114,21 @@ export class UserConnectionSectionComponent
       this.details.activationCode && this.details.activationCode.length > 0
     );
     return this.details?.hasFederatedIdentity && !isUserActive;
+  }
+
+  onFederatedUnlockChange(value: boolean) {
+    if (value) {
+      this.showUnlockConfirmModal = true;
+    } else {
+      this.isFederatedUserFieldsUnlocked = false;
+    }
+    this.cdRef.markForCheck();
+  }
+
+  confirmFederatedUnlock() {
+    this.isFederatedUserFieldsUnlocked = true;
+    this.showUnlockConfirmModal = false;
+    this.cdRef.markForCheck();
   }
 
   get isFederatedIdentityFieldsLocked(): boolean {
