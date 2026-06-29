@@ -335,6 +335,7 @@ export function testUserEndpoints(data: InitData) {
     }
   });
 
+  // TODO add AAF structure initialization otherwise the test won't pass
   group('[Directory] GET /duplicates - List duplicates', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
 
