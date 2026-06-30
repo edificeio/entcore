@@ -143,7 +143,8 @@ public class Workspace extends BaseServer {
 
         final String platformId = config.getString("platform-name", "unnamed-pf");
 
-        DefaultCaptionService captionService = new DefaultCaptionService(MongoDb.getInstance(), platformId, vertx);
+        DefaultCaptionService captionService = new DefaultCaptionService(MongoDb.getInstance(), platformId, vertx,
+                                                                         storage, config);
         CaptionController captionController = new CaptionController(captionService);
         addController(captionController);
 

@@ -77,8 +77,12 @@ public class CaptionController extends BaseController {
                             .setStatusCode(200)
                             .end(body.encode());
                 }).onFailure(error -> {
+                    final JsonObject body = new JsonObject().put("error", error.getMessage());
                     final boolean notFound = error instanceof FileNotFoundException;
-                    request.response().setStatusCode(notFound ? 404 : 500).end(error.getMessage());
+
+                    System.out.println(error.getMessage());
+
+                    request.response().setStatusCode(notFound ? 404 : 500).end(body.encode());
                 });
             });
         }).onFailure(error -> request.response().setStatusCode(401).end(error.getMessage()));
