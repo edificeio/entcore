@@ -560,7 +560,18 @@ export const useSendDraft = () => {
       inReplyToId?: string;
     }) => {
       setMessageNeedToSave(false);
-      return messageService.send(draftId, payload, inReplyToId);
+      return messageService
+        .send(draftId, payload, inReplyToId)
+        .catch((error: any) => {
+          if (error.error) {
+            toast.error(t(error.error));
+            throw error;
+          }
+          invalidateQueriesWithFirstPage(queryClient, {
+            queryKey: folderQueryKeys.messages('draft'),
+          });
+          return Promise.reject(error);
+        });
     },
     onSuccess: (_response, { payload, draftId }) => {
       toast.success(t('message.sent'));
