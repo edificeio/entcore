@@ -17,7 +17,7 @@
     </div>
     <p><b><s5l>users.details.section.connection.federatedInfo.unlock</s5l></b>
     <label>
-      <input type="checkbox" [(ngModel)]="isFederatedUserFieldsUnlocked" />
+      <input type="checkbox" [ngModel]="isFederatedUserFieldsUnlocked" (ngModelChange)="onFederatedUnlockChange($event)" name="federatedUnlock" />
       <s5l *ngIf="!isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.locked</s5l>
       <s5l *ngIf="isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.unlocked</s5l>
     </label>
@@ -480,3 +480,13 @@
     </fieldset>
   </form>
 </ode-panel-section>
+
+<ode-lightbox-confirm
+  lightboxTitle="users.details.section.connection.federatedFields.unlock.confirm.title"
+  [show]="showUnlockConfirmModal"
+  (onCancel)="showUnlockConfirmModal = false"
+  (onConfirm)="confirmFederatedUnlock()">
+  <p>
+    <s5l>users.details.section.connection.federatedFields.unlock.confirm.content</s5l>
+  </p>
+</ode-lightbox-confirm>

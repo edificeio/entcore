@@ -1700,6 +1700,8 @@
   "users.details.section.connection.federatedInfo.unlock": "Débloquer l’accès au code d’activation :",
   "users.details.section.connection.federatedFields.toggle.locked": "Bloqué",
   "users.details.section.connection.federatedFields.toggle.unlocked": "Débloqué",
+  "users.details.section.connection.federatedFields.unlock.confirm.title": "Débloquer le code d'activation",
+  "users.details.section.connection.federatedFields.unlock.confirm.content": "Vous êtes sur le point de débloquer l'accès aux informations de connexion de ce compte. Si vous distribuez ces identifiants, pensez à bien indiquer à l'utilisateur de passer par la fenêtre de connexion de l'ENT (généralement pour les profils invités).",
   "users.details.section.connection.activationCode.unlock": "Débloquer pour voir le code d’activation",
   "users.details.section.connection.field.title.disabled.federatedUser": "Champs verrouillé car l'utilisateur est en authentification externe (voir message ci-dessus)",
   "users.details.section.detached": "non rattaché",
