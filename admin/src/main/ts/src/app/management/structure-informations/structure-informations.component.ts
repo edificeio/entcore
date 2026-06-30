@@ -31,6 +31,7 @@ export class DuplicationSettings {
   distribution: boolean = false;
   mobileapp: boolean = false;
   education: boolean = false;
+  defaultAuth: boolean = false;
   uaiList: string = "";
 
   uaiListRegex: RegExp = /^[0-9]{7}[a-zA-Z]([\r\n,;][0-9]{7}[a-zA-Z])*$/;
@@ -38,7 +39,7 @@ export class DuplicationSettings {
   {
     return this.uaiList && this.uaiListRegex.test(this.uaiList) &&
       (this.applications || this.distribution || this.education ||
-      this.mobileapp || this.widgets);
+      this.mobileapp || this.widgets || this.defaultAuth);
   }
 
   lightboxTitle: string;
