@@ -46,6 +46,7 @@ export class UserModel extends Model<UserModel> {
     duplicates: { id: string, firstName: string, lastName: string, code: string, score: number, structures: { id: string, name: string }[] }[] = [];
     deleteDate?: number;
     disappearanceDate?: number;
+    hasFederatedIdentity?: boolean;
 
     userDetails: UserDetailsModel;
 
