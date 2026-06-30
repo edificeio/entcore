@@ -123,13 +123,11 @@ export class UserConnectionSectionComponent
     } else {
       this.isFederatedUserFieldsUnlocked = false;
     }
-    this.cdRef.markForCheck();
   }
 
   confirmFederatedUnlock() {
     this.isFederatedUserFieldsUnlocked = true;
     this.showUnlockConfirmModal = false;
-    this.cdRef.markForCheck();
   }
 
   get isFederatedIdentityFieldsLocked(): boolean {
