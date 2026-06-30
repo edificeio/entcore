@@ -97,7 +97,7 @@
           [lightboxTitle]="'warning'"
           (onConfirm)="processMassMail('mail')"
           (onCancel)="showConfirmation = false">
-          <s5l [s5l-params]="{nbUsers: countUsers - countUsersWithoutMail}">massmail.confirm</s5l>
+          <s5l [s5l-params]="{nbUsers: countUsersWithMail}">massmail.confirm</s5l>
         </ode-lightbox-confirm>
       </div>
     </div>

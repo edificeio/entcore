@@ -61,6 +61,10 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
         super(injector);
     }
 
+    get countUsersWithMail(): number {
+        return this.countUsers - this.countUsersWithoutMail;
+    }
+
     ngOnInit(): void {
         super.ngOnInit();
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe(async (data: Data) => {
@@ -88,8 +92,6 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
             }
         }));
     }
-
-
 
     private initFilters(structure: StructureModel): void {
         this.userlistFiltersService.resetFilters();
