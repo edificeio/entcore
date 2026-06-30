@@ -11,7 +11,7 @@ export function WidgetEmptyState({ text }: WidgetEmptyStateProps) {
   return (
     <EmptyScreen
       imageSrc={illuNoContent}
-      text={text ?? t('homepage.widget.empty', 'Aucun élément disponible')}
+      text={text ?? t('homepage.crna.widget.empty', 'Aucun élément disponible')}
       size={80}
     />
   );

@@ -43,14 +43,14 @@ export function MediacentreWidget({
           variant={view === 'favorites' ? 'filled' : 'ghost'}
           onClick={() => setView('favorites')}
         >
-          {t('homepage.widget.mediacentre.favorites', 'Mes favoris')}
+          {t('homepage.crna.widget.mediacentre.favorites', 'Mes favoris')}
         </ButtonBeta>
         <ButtonBeta
           color={view === 'pins' ? 'destructive' : 'default'}
           variant={view === 'pins' ? 'filled' : 'ghost'}
           onClick={() => setView('pins')}
         >
-          {t('homepage.widget.mediacentre.pins', 'Ressources épinglées')}
+          {t('homepage.crna.widget.mediacentre.pins', 'Ressources épinglées')}
         </ButtonBeta>
       </div>
       {view === 'pins' && schools.length > 1 && (
@@ -65,7 +65,7 @@ export function MediacentreWidget({
                 <IconButton
                   {...triggerProps}
                   type="button"
-                  aria-label={selectedSchool?.name ?? t('homepage.widget.mediacentre.select-school', 'Choisir un établissement')}
+                  aria-label={selectedSchool?.name ?? t('homepage.crna.widget.mediacentre.select-school', 'Choisir un établissement')}
                   color="tertiary"
                   variant="ghost"
                   icon={<IconFilter />}
@@ -92,7 +92,7 @@ export function MediacentreWidget({
 
   return (
     <ListWidget
-      title={t('homepage.widget.mediacentre.title', 'Médiacentre')}
+      title={t('homepage.crna.widget.mediacentre.title', 'Médiacentre')}
       items={items}
       isLoading={isLoading}
       onSeeMore={onSeeMore}

@@ -17,42 +17,42 @@ export function AvantagesWidget({
     {
       id: '1',
       imageUrl: imgBooks,
-      label: t('homepage.widget.avantages.manuels', 'Manuels scolaires gratuits'),
-      sublabel: t('homepage.widget.avantages.manuels.desc', 'Fourniture gratuite pour tous les lycéens'),
+      label: t('homepage.crna.widget.avantages.manuels', 'Manuels scolaires gratuits'),
+      sublabel: t('homepage.crna.widget.avantages.manuels.desc', 'Fourniture gratuite pour tous les lycéens'),
       href: 'https://jeunes.nouvelle-aquitaine.fr/formation/accompagnement-scolaire/gratuite-des-manuels-scolaires-pour-les-lyceens',
     },
     {
       id: '2',
       imageUrl: imgTransport,
-      label: t('homepage.widget.avantages.transport', 'Transport scolaire'),
-      sublabel: t('homepage.widget.avantages.transport.desc', 'Transports gratuits ou réduits pour les élèves'),
+      label: t('homepage.crna.widget.avantages.transport', 'Transport scolaire'),
+      sublabel: t('homepage.crna.widget.avantages.transport.desc', 'Transports gratuits ou réduits pour les élèves'),
       href: 'https://jeunes.nouvelle-aquitaine.fr/vie-quotidienne/se-deplacer/transport-et-abonnements-scolaires',
     },
     {
       id: '3',
       imageUrl: imgRegion,
-      label: t('homepage.widget.avantages.soutien', 'Soutien scolaire gratuit'),
-      sublabel: t('homepage.widget.avantages.soutien.desc', 'Aide aux devoirs et accompagnement scolaire'),
+      label: t('homepage.crna.widget.avantages.soutien', 'Soutien scolaire gratuit'),
+      sublabel: t('homepage.crna.widget.avantages.soutien.desc', 'Aide aux devoirs et accompagnement scolaire'),
       href: 'https://jeunes.nouvelle-aquitaine.fr/formation/accompagnement-scolaire/aide-aux-devoirs-et-soutien-scolaire-gratuits',
     },
     {
       id: '4',
       imageUrl: imgPermis,
-      label: t('homepage.widget.avantages.permis', 'Aide au permis B'),
-      sublabel: t('homepage.widget.avantages.permis.desc', 'Subvention pour le passage du permis de conduire'),
+      label: t('homepage.crna.widget.avantages.permis', 'Aide au permis B'),
+      sublabel: t('homepage.crna.widget.avantages.permis.desc', 'Subvention pour le passage du permis de conduire'),
       href: 'https://jeunes.nouvelle-aquitaine.fr/vie-quotidienne/se-deplacer/aide-au-financement-du-permis-b',
     },
     {
       id: '5',
       imageUrl: imgTrain,
-      label: t('homepage.widget.avantages.ter', 'TER à prix réduits'),
-      sublabel: t('homepage.widget.avantages.ter.desc', 'Se déplacer en train régional à tarif réduit'),
+      label: t('homepage.crna.widget.avantages.ter', 'TER à prix réduits'),
+      sublabel: t('homepage.crna.widget.avantages.ter.desc', 'Se déplacer en train régional à tarif réduit'),
       href: 'https://jeunes.nouvelle-aquitaine.fr/vie-quotidienne/se-deplacer/ter-se-deplacer-prix-reduits',
     },
   ];
   return (
     <ListWidget
-      title={t('homepage.widget.avantages.title', 'Mes avantages')}
+      title={t('homepage.crna.widget.avantages.title', 'Mes avantages')}
       items={items}
       onSeeMore={onSeeMore}
       externalLink={true}

@@ -49,13 +49,13 @@ export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalP
   return (
     <Modal id="lool-create-modal" isOpen={isOpen} onModalClose={onClose} size="md">
       <Modal.Header onModalClose={onClose}>
-        {t('homepage.widget.create.modal.title', 'Créer un document')}
+        {t('homepage.crna.widget.create.modal.title', 'Créer un document')}
       </Modal.Header>
 
       <Modal.Body>
         <div className="d-flex flex-column gap-24">
           {isLoading ? (
-            <p>{t('homepage.widget.create.modal.loading', 'Chargement…')}</p>
+            <p>{t('homepage.crna.widget.create.modal.loading', 'Chargement…')}</p>
           ) : (
             <div className="d-flex gap-12">
               {docTypes.map((dt) => (
@@ -73,14 +73,14 @@ export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalP
 
           <FormControl id="lool-filename">
             <Label>
-              {t('homepage.widget.create.modal.filename', 'Nom du document')}
+              {t('homepage.crna.widget.create.modal.filename', 'Nom du document')}
             </Label>
             <Input
               type="text"
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-              placeholder={t('homepage.widget.create.modal.filename.placeholder', 'Saisissez un nom…')}
+              placeholder={t('homepage.crna.widget.create.modal.filename.placeholder', 'Saisissez un nom…')}
               size="md"
             />
           </FormControl>
@@ -89,14 +89,14 @@ export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalP
 
       <Modal.Footer>
         <ButtonBeta color="tertiary" variant="ghost" onClick={onClose}>
-          {t('homepage.widget.create.modal.cancel', 'Annuler')}
+          {t('homepage.crna.widget.create.modal.cancel', 'Annuler')}
         </ButtonBeta>
         <ButtonBeta
           color="default"
           disabled={!filename.trim()}
           onClick={handleCreate}
         >
-          {t('homepage.widget.create.modal.create', 'Créer')}
+          {t('homepage.crna.widget.create.modal.create', 'Créer')}
         </ButtonBeta>
       </Modal.Footer>
     </Modal>

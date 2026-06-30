@@ -177,7 +177,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
     if (isError) {
       onError?.(
         t(
-          'homepage.widget.carnet-de-bord.error',
+          'homepage.crna.widget.carnet-de-bord.error',
           'Impossible de récupérer les données Pronote. Veuillez réessayer plus tard.',
         ),
       );
@@ -204,7 +204,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
 
   const list = !hasContent ? (
     <WidgetEmptyState
-      text={t('homepage.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
+      text={t('homepage.crna.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
     />
   ) : (
     <ul className="carnet-de-bord-list">
@@ -213,7 +213,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
         const isEmpty = ct.compact === false && itemCount === 0;
 
         const sublabel = isEmpty
-          ? t(`homepage.widget.carnet-de-bord.${ct.title}.empty`, CONTENT_EMPTY_LABELS[ct.title])
+          ? t(`homepage.crna.widget.carnet-de-bord.${ct.title}.empty`, CONTENT_EMPTY_LABELS[ct.title])
           : ct.compact !== false
             ? ct.compact
             : null;
@@ -226,7 +226,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
             <div className="d-flex flex-column carnet-de-bord-entry-text">
               <strong className="carnet-de-bord-entry-label">
                 {t(
-                  `homepage.widget.carnet-de-bord.${ct.title}`,
+                  `homepage.crna.widget.carnet-de-bord.${ct.title}`,
                   CONTENT_LABELS[ct.title] ?? ct.title,
                 )}
               </strong>
@@ -266,15 +266,15 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
     ? currentContentType.full.length
     : 0;
 
-  const pronoteLabel = t('homepage.widget.carnet-de-bord.open-pronote', 'Voir sur Pronote');
+  const pronoteLabel = t('homepage.crna.widget.carnet-de-bord.open-pronote', 'Voir sur Pronote');
   const address = eleves[currentEleveIndex]?.address ?? '';
 
   return (
     <>
       <HomeCard variant="user">
         <HomeCard.Header
-          title={t('homepage.widget.carnet-de-bord.title', 'Carnet de bord')}
-          actionLabel={address ? t('homepage.widget.see.more', 'Voir plus') : undefined}
+          title={t('homepage.crna.widget.carnet-de-bord.title', 'Carnet de bord')}
+          actionLabel={address ? t('homepage.crna.widget.see.more', 'Voir plus') : undefined}
           onActionClick={address ? () => window.open(address, '_blank') : undefined}
           actionRightIcon={<IconExternalLink />}
         />
@@ -283,7 +283,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
             <WidgetSkeleton />
           ) : isError || eleves.length === 0 ? (
             <WidgetEmptyState
-              text={t('homepage.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
+              text={t('homepage.crna.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
             />
           ) : (
             <>
@@ -323,7 +323,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
               </div>
               <span className="carnet-de-bord-lightbox-title">
                 {t(
-                  `homepage.widget.${currentContentType.lightboxTitle}`,
+                  `homepage.crna.widget.${currentContentType.lightboxTitle}`,
                   LIGHTBOX_TITLES[currentContentType.title] ?? currentContentType.title,
                 )}
                 {eleves.length > 1 && eleves[currentEleveIndex]?.name && (

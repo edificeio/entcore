@@ -33,18 +33,18 @@ export function WelcomeWidget({ onCreateDocumentSuccess, onOpenSettings }: Welco
             <Avatar alt={firstName} src={avatar} size="md" variant="circle" />
             <div className="d-flex flex-column">
               <Heading level="h2" headingStyle="h4" className="mb-0 fw-bold">
-                {t('homepage.widget.welcome.greeting', 'Bonjour')} {firstName}
+                {t('homepage.crna.widget.welcome.greeting', 'Bonjour')} {firstName}
               </Heading>
               <span className="text-muted small">
                 {t(
-                  `homepage.profile.${profile.toLowerCase()}`,
+                  `homepage.crna.profile.${profile.toLowerCase()}`,
                   PROFILE_LABELS[profile] ?? profile,
                 )}
               </span>
             </div>
           </div>
         }
-        actionLabel={t('homepage.widget.welcome.settings', 'Paramètres')}
+        actionLabel={t('homepage.crna.widget.welcome.settings', 'Paramètres')}
         actionLeftIcon={<IconSettings width={20} height={20} />}
         onActionClick={onOpenSettings}
       />

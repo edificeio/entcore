@@ -51,8 +51,8 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
   return (
     <HomeCard variant="secondary">
       <HomeCard.Header
-        title={t('homepage.widget.create.title', 'Créer un document')}
-        actionLabel={t('homepage.widget.see.all', 'Voir tout')}
+        title={t('homepage.crna.widget.create.title', 'Créer un document')}
+        actionLabel={t('homepage.crna.widget.see.all', 'Voir tout')}
         onActionClick={() => window.open('/workspace', '_self')}
         actionRightIcon={<IconArrowRight />}
       />
@@ -119,8 +119,8 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
             onSuccess={() => {
               const msg =
                 mediaRecordType === 'video'
-                  ? t('homepage.widget.create.video.success', 'Votre vidéo a été enregistrée avec succès.')
-                  : t('homepage.widget.create.audio.success', 'Votre audio a été enregistré avec succès.');
+                  ? t('homepage.crna.widget.create.video.success', 'Votre vidéo a été enregistrée avec succès.')
+                  : t('homepage.crna.widget.create.audio.success', 'Votre audio a été enregistré avec succès.');
               onSuccess?.(msg);
               setMediaRecordType(null);
             }}

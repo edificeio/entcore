@@ -31,7 +31,7 @@ export function ListWidget({
     <HomeCard variant="user" style={style}>
       <HomeCard.Header
         title={title}
-        actionLabel={onSeeMore ? t('homepage.widget.see.more', 'Voir plus') : undefined}
+        actionLabel={onSeeMore ? t('homepage.crna.widget.see.more', 'Voir plus') : undefined}
         onActionClick={onSeeMore}
         actionRightIcon={externalLink ? <IconExternalLink /> : <IconArrowRight />}
       />

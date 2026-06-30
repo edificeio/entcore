@@ -18,7 +18,7 @@ export function PersonnalisationPanel() {
           headingStyle="h5"
           className="personnalisation-panel-title"
         >
-          {t('homepage.personnalisation.title', 'Personnalisation')}
+          {t('homepage.crna.personnalisation.title', 'Personnalisation')}
         </Heading>
         <IconButton
           icon={<IconClose />}
@@ -31,7 +31,7 @@ export function PersonnalisationPanel() {
 
       <section className="personnalisation-section">
         <Heading level="h3" headingStyle="h6">
-          {t('homepage.personnalisation.language', "Langue de l'interface")}
+          {t('homepage.crna.personnalisation.language', "Langue de l'interface")}
         </Heading>
         <div className="personnalisation-lang-grid">
           {languages.map((l) => (

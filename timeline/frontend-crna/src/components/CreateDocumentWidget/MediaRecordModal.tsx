@@ -22,8 +22,8 @@ export function MediaRecordModal({ type, isOpen, onClose, onSuccess }: MediaReco
     <Modal id="media-record-modal" isOpen={isOpen} onModalClose={onClose} size="md">
       <Modal.Header onModalClose={onClose}>
         {type === 'video'
-          ? t('homepage.widget.create.video.title', 'Enregistrer une vidéo')
-          : t('homepage.widget.create.audio.title', 'Enregistrer un audio')}
+          ? t('homepage.crna.widget.create.video.title', 'Enregistrer une vidéo')
+          : t('homepage.crna.widget.create.audio.title', 'Enregistrer un audio')}
       </Modal.Header>
       <Modal.Body>
         {type === 'audio' ? (
