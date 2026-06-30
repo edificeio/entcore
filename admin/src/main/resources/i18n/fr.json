@@ -713,6 +713,7 @@
   "management.structure.informations.duplication.setting.uai.notify.error.title": "Erreur",
   "management.structure.informations.duplication.setting.uai.placeholder": "Copier votre liste ici...",
   "management.structure.informations.duplication.setting.uai.tooltip": "La liste doit être composée d'UAI avec comme séparateur une virgule, un point-virgule ou un saut de ligne.",
+  "management.structure.informations.duplication.setting.defaultauth": "Mode d'authentification par défaut des comptes en alimentation automatique",
   "management.structure.informations.duplication.setting.widgets": "Paramétrage des widgets",
   "management.structure.informations.enableMFA": "Authentification forte ({{type}})",
   "management.structure.informations.general": "Général",

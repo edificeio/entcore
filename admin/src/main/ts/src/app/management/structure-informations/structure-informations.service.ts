@@ -48,7 +48,8 @@ export class StructureInformationsService
         setWidgets: options.widgets,
         setDistribution: options.distribution,
         setEducation: options.education,
-        setHasApp: options.mobileapp
+        setHasApp: options.mobileapp,
+        setDefaultAuth: options.defaultAuth
       },
       infos: {
         structure: structure.name,
