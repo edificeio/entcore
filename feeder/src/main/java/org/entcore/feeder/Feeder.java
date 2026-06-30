@@ -1038,7 +1038,19 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		});
 	}
 
-	private static boolean checkPathIsStraightForward(final String path) {
+	/**
+	 * @param path The path to check
+	 * @return {@code true} iff the supplied path is :
+	 * <ul>
+	 *     <li>empty string</li>
+	 *     <li>a path containing only a forward path (i.e. no .. and ~ allowed)</li>
+	 *     <li>no special characters</li>
+	 * </ul>
+	 */
+	public static boolean checkPathIsStraightForward(final String path) {
+		if("".equals(path)) {
+			return true;
+		}
 		if(path.matches("^[A-Za-z0-9_\\-\\./]+$")) {
 			return !path.contains("..");
 		}
