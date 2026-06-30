@@ -30,6 +30,7 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
     inputFilters = {lastName: '', firstName: '', classesStr: ''};
     countUsers = 0;
     countUsersWithoutMail = 0;
+    countUsersInactiveAndFederated = 0;
     userOrder: string;
     structureId: string;
     show = false;
@@ -60,6 +61,10 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
         super(injector);
     }
 
+    get countUsersWithMail(): number {
+        return this.countUsers - this.countUsersWithoutMail;
+    }
+
     ngOnInit(): void {
         super.ngOnInit();
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe(async (data: Data) => {
@@ -88,26 +93,31 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
         }));
     }
 
-
-
     private initFilters(structure: StructureModel): void {
         this.userlistFiltersService.resetFilters();
         this.userlistFiltersService.setDuplicatesComboModel([]);
         this.userlistFiltersService.setClassesComboModel(structure.classes);
         this.userlistFiltersService.setProfilesComboModel(structure.profiles.map(p => p.name));
     }
-
+    
     getFilteredUsers(): UserModel[] {
         const users = FilterPipe.prototype.transform(this.users, this.filters) || [];
         this.countUsers = 0;
         this.countUsersWithoutMail = 0;
+        this.countUsersInactiveAndFederated = 0;
+        const visibleUsers: UserModel[] = [];
         users.forEach(user => {
+            if (user.hasFederatedIdentity && (!user.code || user.code.length === 0)) {
+                this.countUsersInactiveAndFederated++;
+                return;
+            }
+            visibleUsers.push(user);
             this.countUsers++;
             if (!user.email) {
                 this.countUsersWithoutMail++;
             }
         });
-        return users;
+        return visibleUsers;
     }
 
     async processMassMail(type: string): Promise<void> {
