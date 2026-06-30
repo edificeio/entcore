@@ -38,6 +38,7 @@ import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.infra.controllers.*;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.cron.MonitoringEventsChecker;
+import org.entcore.infra.listeners.AntivirusBrokerListenerImpl;
 import org.entcore.infra.listeners.ConfigBrokerListenerImpl;
 import org.entcore.infra.metrics.MicrometerInfraMetricsRecorder;
 import org.entcore.infra.services.EventStoreService;
@@ -107,6 +108,7 @@ public class Starter extends BaseServer {
 			antiVirusController.setAntivirusService(antivirusService);
 			addController(antiVirusController);
 			vertx.deployVerticle(ExecCommandWorker.class.getName(), new DeploymentOptions().setWorker(true));
+      //BrokerProxyUtils.addBrokerProxy(new AntivirusBrokerListenerImpl(antivirusClient), vertx);
 		}
 		final JsonObject checkMonitoringEvents = config.getJsonObject("check-monitoring-events");
 		if (checkMonitoringEvents != null) {
