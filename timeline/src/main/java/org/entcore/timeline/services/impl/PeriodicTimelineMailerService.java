@@ -905,7 +905,8 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                         .add(new JsonObject().put("recipients.userId", new JsonObject()
                                 .put("$in", userIds)))
                         .add(new JsonObject().put("date", new JsonObject().put("$gte", new JsonObject().put("$date", formatUtcDateTime(from)))))
-                        .add(new JsonObject().put("date", new JsonObject().put("$lt", new JsonObject().put("$date", formatUtcDateTime(to))))));
+                        .add(new JsonObject().put("date", new JsonObject().put("$lt", new JsonObject().put("$date", formatUtcDateTime(to))))))
+                .put("disableMailNotification", new JsonObject().put("$ne", true));
 
         JsonObject transformer = new JsonObject("{ \"type\": 1, \"event-type\": 1, \"recipients\": { \"$filter\": { \"input\": \"$recipients\", \"as\": \"r\", \"cond\" : { \"$in\" : " +
                 "  [\"$$r.userId\", " + userIds.encode() + "]} }}}");
@@ -959,7 +960,8 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                         .add(new JsonObject().put("recipients.userId", new JsonObject()
                                 .put("$in", userIds)))
                         .add(new JsonObject().put("date", new JsonObject().put("$gte", new JsonObject().put("$date", formatUtcDateTime(from)))))
-                        .add(new JsonObject().put("date", new JsonObject().put("$lt", new JsonObject().put("$date", formatUtcDateTime(to))))));
+                        .add(new JsonObject().put("date", new JsonObject().put("$lt", new JsonObject().put("$date", formatUtcDateTime(to))))))
+                .put("disableMailNotification", new JsonObject().put("$ne", true));
 
         final JsonObject matcherPostUnwind = new JsonObject().put("recipients.userId", new JsonObject().put("$in", userIds));
 
