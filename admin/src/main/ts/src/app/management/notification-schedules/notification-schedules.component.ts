@@ -25,12 +25,23 @@ export class NotificationSchedulesComponent
 {
   @ViewChild("tzForm") private tzForm?: NgForm;
 
+  /* Currently selected structure */
   public structure: StructureModel;
+  /* List of available timezones for the user to choose from. */
   public timezones?: SelectOption<string>[];
+
+  /* User input to filter the displayed timezones (frontend filter only). */
+  public timezoneInputFilter: string;
+
+  /* Truthy when the lightbox to choose a timezone is visible */
+  public showTimezones = false;
+  /* Truthy when the lightbox to confirm the changes is visible */
   public showConfirmLightbox = false;
 
+  /* Truthy when the form is unlocked (=when quiet hours are activated) */
   public enabled = false;
-  public timezone?:string;
+  /* The timezone of the selected structure. */
+  public timezone?: SelectOption<string>;
 
   constructor(
     injector: Injector,
@@ -56,7 +67,7 @@ export class NotificationSchedulesComponent
 
   private _resetForm() {
     this.enabled = false;
-    this.timezone = "Europe/Paris";
+    this.timezone = { value: "Europe/Paris", label: "Europe/Paris" };
   }
 
   private _getTimezones(): void {
@@ -69,12 +80,49 @@ export class NotificationSchedulesComponent
     );
   }
 
+  filterByInput = (option: SelectOption<string>) => {
+    if (!this.timezoneInputFilter) {
+      return true;
+    }
+    return (
+      option.label
+        .toLowerCase()
+        .indexOf(this.timezoneInputFilter.toLowerCase()) >= 0
+    );
+  };
+
+  isSelected = (option: SelectOption<string>) => {
+    return this.timezone && option && this.timezone.value === option.value;
+  };
+
+  onTimezoneSelect = (option: SelectOption<string>) => {
+    this.timezone = option;
+    this.showTimezones = false;
+
+    this.tzForm?.form.markAsDirty();
+    this.tzForm?.form.markAsTouched();
+    this.changeDetector.markForCheck();
+  };
+
+  public get confirmTitle() {
+    return `management.structure.notification.schedules.confirm.${
+      this.enabled ? "on" : "off"
+    }`;
+  }
+
   private _getQuietHours() {
     this.timezoneService.getStructureQuietHours(this.structure.id).subscribe({
       next: (data) => {
         if (data != null && typeof data === "object" && data.timezone) {
           this.enabled = data.quietHours.enabled;
-          this.timezone = data.timezone;
+          const optionToSelect = this.timezones?.find(
+            (option) => option.value === data.timezone,
+          );
+          this.timezone = optionToSelect ?? {
+            value: data.timezone,
+            label: data.timezone,
+          };
+
           this.changeDetector.detectChanges();
         }
         // ode-mono-select makes tzForm dirty => make it pristine again
@@ -89,7 +137,11 @@ export class NotificationSchedulesComponent
 
   public save() {
     const promise = this.timezoneService
-      .setStructureQuietHours(this.structure.id, this.timezone ?? "Europe/Paris", this.enabled)
+      .setStructureQuietHours(
+        this.structure.id,
+        this.timezone?.value ?? "Europe/Paris",
+        this.enabled,
+      )
       .toPromise();
     this.spinner
       .perform("portal-content", promise)
@@ -98,6 +150,10 @@ export class NotificationSchedulesComponent
           "management.structure.notification.schedules.save.success.content",
           "management.structure.notification.schedules.save.success.title",
         );
+
+        this.tzForm?.form.markAsPristine();
+        this.tzForm?.form.markAsUntouched();
+        this.changeDetector.markForCheck();
       })
       .catch((error) => {
         this.notify.error(

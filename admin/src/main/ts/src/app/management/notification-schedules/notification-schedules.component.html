@@ -32,19 +32,49 @@
       <ode-form-field
         label="management.structure.notification.schedules.timezone"
       >
-        <ode-mono-select
+        <input
+          type="hidden"
           name="timezone"
-          [options]="timezones"
-          [(ngModel)]="timezone"
-          [disabled]="!enabled"
-          [translateOptions]="false"
-        ></ode-mono-select>
+          [(ngModel)]="timezone.value"
+          (click)="showTimezones = true"
+        />
+
+        <button
+          type="button"
+          class="button is-primary"
+          [disabled]="spinner.isLoading('portal-content')"
+          (click)="showTimezones = true"
+        >
+          {{ timezone.label }}
+        </button>
+
+        <ode-lightbox [show]="showTimezones" (onClose)="showTimezones = false">
+          <h2>
+            <s5l
+              >management.structure.notification.schedules.timezone.choose</s5l
+            >
+          </h2>
+          <ode-list
+            [model]="timezones"
+            sort="label"
+            [isSelected]="isSelected"
+            [inputFilter]="filterByInput"
+            searchPlaceholder="search"
+            noResultsLabel="management.structure.notification.schedules.timezone.no.results"
+            (inputChange)="timezoneInputFilter = $event"
+            (onSelect)="onTimezoneSelect($event)"
+          >
+            <ng-template let-item>
+              <div>{{ item.label }}</div>
+            </ng-template>
+          </ode-list>
+        </ode-lightbox>
       </ode-form-field>
 
       <button
         type="submit"
         class="is-pulled-right"
-        [disabled]="tzForm.pristine || tzForm.invalid || timezone == null"
+        [disabled]="tzForm.pristine || tzForm.invalid || !timezone"
       >
         <s5l>management.structure.notification.schedules.save</s5l>
       </button>
@@ -58,7 +88,7 @@
     (onConfirm)="save(); showConfirmLightbox = false"
   >
     <p>
-      <b><s5l>management.structure.notification.schedules.confirm.text</s5l></b>
+      <b>{{ confirmTitle | translate }}</b>
     </p>
   </ode-lightbox-confirm>
 </div>
