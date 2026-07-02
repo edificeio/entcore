@@ -26,7 +26,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -623,6 +622,30 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
+	public void cascadeQuietHoursByUai(JsonArray uais) {
+		StringBuilder query = new StringBuilder();
+		query.append("MATCH (s:Structure) WHERE s.UAI IN {uais} ");
+		query.append("RETURN s.id as id");
+		JsonObject params = new JsonObject();
+		params.put("uais", uais.stream()
+				.map(String.class::cast)
+				.map(String::toUpperCase)
+				.collect(Collectors.toList()));
+		neo.execute(query.toString(), new JsonObject().put("uais", uais), validResultHandler( res -> {
+			if (res.isRight()) {
+				res.right().getValue().stream()
+						.map(JsonObject.class::cast)
+						.forEach( jo -> {
+							final JsonObject cascadeMessage = new JsonObject()
+									.put("action", "cascade.structure.quiethours.preferences")
+									.put("structureId", jo.getString("id"));
+							eventBus.request("userbook.preferences", cascadeMessage);
+						});
+			}
+		}));
+	}
+
+	@Override
 	public void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
 					 Handler<Either<String, JsonObject>> handler) {
 		List<String> list = targetUAIs.getList();
@@ -640,7 +663,8 @@ public class DefaultSchoolService implements SchoolService {
 				setDistribution = options.getBoolean("setDistribution", true),
 				setEducation = options.getBoolean("setEducation", true),
 				setHasApp = options.getBoolean("setHasApp", true),
-				setDefaultAuth = options.getBoolean("setDefaultAuth", false);
+				setDefaultAuth = options.getBoolean("setDefaultAuth", false),
+				setQuietHoursSetting = options.getBoolean("setQuietHoursSetting", false);
 		if (setApplications) {
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "ProfileGroup");
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "FunctionGroup");
@@ -652,7 +676,7 @@ public class DefaultSchoolService implements SchoolService {
 		if (setDefaultAuth) {
 			buildDuplicateDefaultAuthQuery(structureId, targetUAIs, builder);
 		}
-		if (setDistribution || setEducation || setHasApp) {
+		if (setDistribution || setEducation || setHasApp || setQuietHoursSetting) {
 			String structureUpdateQuery = "MATCH (s:Structure {id:{structureId}}), (s2:Structure) " +
 					"WHERE s2.UAI IN {uais} SET ";
 			if (setDistribution) {
@@ -663,6 +687,9 @@ public class DefaultSchoolService implements SchoolService {
 			}
 			if (setHasApp) {
 				structureUpdateQuery += "s2.hasApp = s.hasApp,";
+			}
+			if (setQuietHoursSetting) {
+				structureUpdateQuery += " s2.notificationTimezone =  s.notificationTimezone, s2.notificationQuietHours = s.notificationQuietHours,";
 			}
 			// removing lastComma
 			structureUpdateQuery = structureUpdateQuery.substring(0, structureUpdateQuery.length()-1);
