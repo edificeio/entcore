@@ -262,7 +262,7 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node16 sh -c "npm run start"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node16 sh -c "npm run dev"
 }
 
 infra () {
