@@ -177,7 +177,7 @@ public class AudienceController extends BaseController {
           verify(module, resourceType, resourceIds, request)
                   .onSuccess(user ->
                           reactionService.upsertReaction(module, resourceType, resourceId, user, reactionType)
-                                  .onSuccess(upsertedReaction -> Renders.ok(request))
+                                  .onSuccess(upsertedReaction -> Renders.render(request, upsertedReaction))
                                   .onFailure(th -> {
                                       Renders.log.error("Error while upserting reaction on resource " + module + "@" + resourceType + "@" + resourceId, th);
                                       Renders.renderError(request);
