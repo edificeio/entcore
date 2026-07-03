@@ -53,7 +53,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
       <HomeCard.Header
         title={t('homepage.crna.widget.create.title', 'Créer un document')}
         actionLabel={t('homepage.crna.widget.see.all', 'Voir tout')}
-        onActionClick={() => window.open('/workspace', '_self')}
+        onActionClick={() => window.open('/workspace/workspace', '_self')}
         actionRightIcon={<IconArrowRight />}
       />
       <HomeCard.Content>
