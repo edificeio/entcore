@@ -392,7 +392,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                 .compose( preferences -> getUsersNotifications(preferences, from, to, page))
                 .map( notificationContext -> trimNotificationsToUserWindow(notificationContext, runTime))
                 .compose( notificationContext -> applyDailyRuleToNotification(notificationContext, notificationsDefaults, page))
-                .compose( notificationContext -> processDailyTimelineTemplate(notificationContext, page))
+                .compose( notificationContext -> processDailyTimelineTemplate(notificationContext, page, runTime))
                 .compose( notificationContext -> sendMassMail(notificationContext, page));
     }
 
@@ -577,7 +577,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                 .compose( filteredUser -> getUserPreferences(filteredUser, page)))
                 .compose( preferences -> getUsersNotifications(preferences, from, to, page))
                 .compose( notificationContext -> applyDailyRuleToNotification(notificationContext, notificationsDefaults, page))
-                .compose( notificationContext -> processDailyTimelineTemplate(notificationContext, page))
+                .compose( notificationContext -> processDailyTimelineTemplate(notificationContext, page, from.toInstant()))
                 .compose( notificationContext -> sendMassMail(notificationContext, page));
     }
 
@@ -636,7 +636,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
     }
 
 
-    private Future<NotificationContext> processDailyTimelineTemplate(NotificationContext notificationContext, int page) {
+    private Future<NotificationContext> processDailyTimelineTemplate(NotificationContext notificationContext, int page, Instant digestDay) {
         List<Future<?>> futures = new ArrayList<>();
 
         StopWatch step6 = new StopWatch();
@@ -661,8 +661,12 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             }
             final String userLanguage = mutableUserLanguage;
             final String userDisplayName = getOrElse(userPrefs.getString("displayName"), "", true);
+            final ZoneId userZone = ZoneId.of(userPrefs.getString("zoneId", DEFAULT_TIMEZONE.getId()));
             SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.forLanguageTag(userLanguage));
-            formatter.setTimeZone(TimeZone.getTimeZone(ZoneId.of(userPrefs.getString("zoneId", DEFAULT_TIMEZONE.getId()))));
+            formatter.setTimeZone(TimeZone.getTimeZone(userZone));
+            final SimpleDateFormat dayFormatter = new SimpleDateFormat("EEEE", Locale.forLanguageTag(userLanguage));
+            dayFormatter.setTimeZone(TimeZone.getTimeZone(userZone));
+            final String dayName = dayFormatter.format(Date.from(digestDay));
 
             final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject()
                     .put("headers", new JsonObject()
@@ -675,7 +679,8 @@ public class PeriodicTimelineMailerService implements CronMailerService {
                                                                 .map(JsonObject.class::cast)
                                                                 .map( notification -> formatter.format(MongoDb.parseIsoDate(notification.getJsonObject("date"))))
                                                                 .collect(Collectors.toList()))
-                                                        .put("displayName", userDisplayName);
+                                                        .put("displayName", userDisplayName)
+                                                        .put("day", dayName);
 
             futures.add(processTimelineTemplate(templateParams,  "notifications/daily-mail.html", request)
                     .onSuccess( template -> {
@@ -688,7 +693,8 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             JsonArray keys = new JsonArray()
                     .add("timeline.daily.mail.subject.header");
             futures.add(translateTimeline(keys, request, userLanguage)
-                    .onSuccess( translations -> { notificationContext.subjects.put(userId, translations.getString(0));}));
+                    .onSuccess( translations -> notificationContext.subjects.put(userId,
+                            Mustache.compiler().compile(translations.getString(0)).execute(templateParams.getMap()))));
         }
 
         return Future.join(futures).map( v -> {
