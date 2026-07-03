@@ -85,6 +85,7 @@ import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
 import static io.vertx.core.Future.failedFuture;
+import static io.vertx.core.Future.succeededFuture;
 import static java.io.File.separator;
 import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
 import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
@@ -1033,6 +1034,31 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						.onFailure(th -> logger.warn("Error while writing file " + filePath, th));
 			}).collect(Collectors.toList());
 			return Future.all(futures).mapEmpty();
+		})
+		.compose(e -> updateAAFDirectories(subPath));
+	}
+
+	public Future<Void> updateAAFDirectories(final String subPath) {
+		final String importDirectoriesPath = this.config.getString("import-files") + separator + "importDirectories.json";
+		final FileSystem fs = vertx.fileSystem();
+		return fs.exists(importDirectoriesPath)
+		.compose(exists -> {
+			if(!exists) {
+				return fs.writeFile(importDirectoriesPath, Buffer.buffer().appendString("[]"));
+			}
+			return succeededFuture();
+		})
+		.compose(v -> fs.readFile(importDirectoriesPath))
+		.compose(data -> {
+			if(StringUtils.isEmpty(subPath)) {
+				return succeededFuture();
+			}
+			final JsonArray directories = data.toJsonArray();
+			if(directories.contains(subPath)) {
+				return Future.succeededFuture();
+			}
+			directories.add(subPath);
+			return fs.writeFile(importDirectoriesPath, Buffer.buffer().appendString(directories.encode()));
 		});
 	}
 

@@ -20,11 +20,15 @@
 package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StudentImportProcessing2 extends StudentImportProcessing {
 
@@ -37,10 +41,37 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 		parse(handler, new CleanImportProcessing(path, vertx));
 	}
 
+	// Default number of structures whose relative links are committed together. Bounds the
+	// number of MERGE per transaction to avoid a single oversized transaction (neo4j OOM).
+	// Overridable via the "link-relative-batch-size" config key.
+	private static final int DEFAULT_LINK_RELATIVE_BATCH_SIZE = 25;
+
 	@Override
-	protected void preCommit() {
-		importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
-		importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
+	protected Future<Void> postCommit() {
+		// The global relative-linking queries fan out over the whole graph (hundreds of
+		// thousands of MERGE) and blow up the neo4j heap. Scope the work to the structures
+		// imported in this run and commit in bounded batches : each query is then anchored
+		// on Structure.externalId (unique index) instead of scanning every user.
+		final int batchSize = vertx.getOrCreateContext().config()
+				.getInteger("link-relative-batch-size", DEFAULT_LINK_RELATIVE_BATCH_SIZE);
+		final List<String> structures = new ArrayList<>(importer.getStructureImportedExternalId());
+		log.info(e -> "START postCommit StudentImportProcessing2 (" + structures.size() + " structures)", true);
+		Future<Void> chain = Future.succeededFuture();
+		for (int i = 0; i < structures.size(); i += batchSize) {
+			int pointer = i;
+			final List<String> batch = structures.subList(i, Math.min(i + batchSize, structures.size()));
+			chain = chain.compose(v -> {
+				log.info(e -> "tx linkRelative batch : " + pointer, true);
+				for (String structureExternalId : batch) {
+					importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix(), structureExternalId);
+					importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix(), structureExternalId);
+				}
+				return importer.getTransaction().commit().mapEmpty();
+			});
+		}
+		return chain
+				.onSuccess(r -> log.info(e -> "SUCCEED postCommit StudentImportProcessing2", true))
+				.onFailure(err -> log.error(e -> "FAILED postCommit StudentImportProcessing2", err));
 	}
 
 	@Override
