@@ -354,14 +354,19 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					if (invalidColumns.size() > 0 ) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 						return;
-				} else if (!columns.contains("classes") && !columns.contains("childClasses")) {
+					} 
 					// Relative profile: childClasses is required when linking students by name/first name
-					if ("Relative".equals(profile) && !columns.contains("childExternalId") && (columns.contains("childLastName") || columns.contains("childFirstName"))) {
+					else if ( "Relative".equals(profile) && 
+							  !columns.contains("childExternalId") && 
+							  (columns.contains("childLastName") || columns.contains("childFirstName")) &&
+							  !columns.contains("classes") && 
+							  !columns.contains("childClasses")) {
 						addErrorByFile(profile, "missing.column.childClasses");
-					}
-					handler.handle(result);
-					return;
-					} else {
+						handler.handle(result);
+						return;
+					} 
+					// No error
+					else {
 						int j = 0;
 						for (String column : columns) {
 							if ("classes".equals(column) || "childClasses".equals(column)) {
@@ -379,11 +384,12 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 				}
 				i++;
 			}
+			handler.handle(result);
 		} catch (Exception e) {
 			addError(profile, "csv.exception");
+			handler.handle(result);
 			log.error("csv.exception", e);
 		} finally {
-			handler.handle(result);
 			if(csvParser!=null) {
 				try {
 					csvParser.close();
