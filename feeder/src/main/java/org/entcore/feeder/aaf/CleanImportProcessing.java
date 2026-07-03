@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.aaf;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -46,7 +47,7 @@ public class CleanImportProcessing extends BaseImportProcessing {
 	}
 
 	@Override
-	protected void preCommit() {
+	protected Future<Void> preCommit() {
 		log.info(e-> "clean import process", true);
 		final JsonArray importPrefixList = importer.getPrefixToImportList();
 		if (importPrefixList != null && !importPrefixList.isEmpty() && getAcademyPrefix() != null && !getAcademyPrefix().isEmpty()) {
@@ -56,6 +57,7 @@ public class CleanImportProcessing extends BaseImportProcessing {
 		importer.addStructureNameInGroups(getAcademyPrefix());
 		importer.removeOldCommunicationRules(getAcademyPrefix());
 		importer.removeUnusedAAFPositions();
+		return Future.succeededFuture();
 	}
 
 	@Override

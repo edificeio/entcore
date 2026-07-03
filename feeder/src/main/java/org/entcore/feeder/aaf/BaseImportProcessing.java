@@ -20,8 +20,11 @@
 package org.entcore.feeder.aaf;
 
 import org.apache.commons.lang3.text.translate.*;
+import fr.wseduc.webutils.eventbus.ResultMessage;
 import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.dictionary.structures.Importer;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -99,9 +102,6 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 						try {
 							log.info(e -> "START parsing file : " + file, true);
 							importer.getReport().loadedFile(file);
-							byte[] encoded = Files.readAllBytes(Paths.get(file));
-							String content = UNESCAPE_AAF.translate(new String(encoded, "UTF-8"));
-							InputSource in = new InputSource(new StringReader(content));
 							AAFHandler sh = new AAFHandler(BaseImportProcessing.this);
 							XMLReader xr = XMLReaderFactory.createXMLReader();
 							xr.setContentHandler(sh);
@@ -131,36 +131,37 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 									}
 								}
 							});
-							xr.parse(in);
+							// Parse the raw file directly and unescape only each markup value in
+							// AAFHandler : avoids copying the whole file just to unescape it up-front.
+							try (InputStream is = new BufferedInputStream(Files.newInputStream(Paths.get(file)))) {
+								InputSource in = new InputSource(is);
+								in.setEncoding("UTF-8");
+								xr.parse(in);
+							}
 							log.info(e -> "START peristing file : " + file);
-							importer.persist(new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> message) {
-									if ("ok".equals(message.body().getString("status"))) {
-										log.info(e -> "SUCCEED persist successfully for file : " + file);
-										handlers[j + 1].handle(0);
-									} else {
-										log.error(e -> "FAILED persist for file : " + file);
+							importer.persist(message -> {
+                                if ("ok".equals(message.body().getString("status"))) {
+                                    log.info(e -> "SUCCEED persist successfully for file : " + file);
+									handlers[j] = null;
+                                    handlers[j + 1].handle(0);
+                                } else {
+                                    log.error(e -> "FAILED persist for file : " + file);
 
-										String msg = message.body().getString("message", "");
-										if(nbRetries < MAX_DEADLOCK_RETRIES && DEADLOCK_PATTERN.matcher(msg).find() == true)
-										{
-											log.info(e -> "RETRY persist for file : " + file);
-											handlers[j].handle(nbRetries + 1);
-										}
-										else
-										{
-											error(message, handler);
-										}
-									}
-								}
-							});
+                                    String msg = message.body().getString("message", "");
+                                    if(nbRetries < MAX_DEADLOCK_RETRIES && DEADLOCK_PATTERN.matcher(msg).find() == true)
+                                    {
+                                        log.info(e -> "RETRY persist for file : " + file);
+                                        handlers[j].handle(nbRetries + 1);
+                                    }
+                                    else
+                                    {
+                                        error(message, handler);
+                                    }
+                                }
+                            });
 						} catch (Exception e) {
 							error(e, handler);
 							log.error(t -> "FAILED parsing file : " + file, e);
-						} catch (OutOfMemoryError err) { // badly catch Error to unlock importer
-							log.error(t -> "FAILED parsing file (OOM) : " + file, err);
-							error(new Exception("OOM"), handler);
 						}
 					}
 				};
@@ -174,36 +175,67 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 
 	protected void next(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
 		log.info(t -> "START precommit");
-		preCommit();
-		if (importProcessing != null) {
-			log.info(t -> "START precommit persist....");
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if ("ok".equals(message.body().getString("status"))) {
-						log.info(t -> "SUCCEED precommit persist");
+		// Enclosing-step finalization, linearized : stage (preCommit) -> commit the staged work
+		// once (persist) -> run the step's own bounded/batched transactions (postCommit) -> hand
+		// over to the next processing step (or forward the result to the terminal handler).
+		preCommit()
+			.compose(v -> {
+				log.info(t -> "START precommit persist....");
+				final Promise<Message<JsonObject>> promise = Promise.promise();
+				importer.persist(promise::complete);
+				return promise.future();
+			})
+			.compose(message -> {
+				// A null message means the persist transaction was empty (preCommit staged
+				// nothing) : success, not a failure. Normalize it to a real "ok" message.
+				final Message<JsonObject> m = (message != null) ? message : new ResultMessage();
+				if ("ok".equals(m.body().getString("status"))) {
+					log.info(t -> "SUCCEED precommit persist" + (message == null ? " (empty transaction)" : ""));
+					// postCommit owns the enclosing step's bounded transactions ; carry the
+					// persist message through so the terminal step can forward it downstream.
+					return postCommit().map(v -> m);
+				}
+				log.error(t -> "FAILED precommit persist : " + m.body().encode());
+				return Future.failedFuture(new PersistFailure(m));
+			})
+			.onComplete(ar -> {
+				if (ar.succeeded()) {
+					if (importProcessing != null) {
 						importProcessing.start(handler);
 					} else {
-						log.error(t -> "FAILED precommit persist : "+ message.body().encode());
-						error(message, handler);
+						handler.handle(ar.result());
 					}
-				}
-			});
-		} else {
-			log.info(t -> "START precommit persist....");
-			importer.persist(e->{
-				//log
-				if ("ok".equals(e.body().getString("status"))) {
-					log.info(t -> "SUCCEED precommit persist");
+				} else if (ar.cause() instanceof PersistFailure) {
+					error(((PersistFailure) ar.cause()).message, handler);
 				} else {
-					log.error(t -> "FAILED precommit persist : "+ e.body().encode());
+					log.error(t -> "FAILED precommit/postcommit", ar.cause());
+					error(new Exception(ar.cause()), handler);
 				}
-				handler.handle(e);
 			});
+	}
+
+	// Staging hook : add queries to the current transaction ; the persist() that follows in
+	// next() commits them once. Implementations must NOT commit here.
+	protected Future<Void> preCommit() {
+		return Future.succeededFuture();
+	}
+
+	// Finalization hook run after persist() : owns its own (possibly batched) commits for the
+	// enclosing step. Kept separate from preCommit so a step that drives its own bounded
+	// transactions does not distort the staging contract of preCommit.
+	protected Future<Void> postCommit() {
+		return Future.succeededFuture();
+	}
+
+	// Carries a failing persist message through the Future chain so the terminal onComplete can
+	// forward it (error(message, handler)) instead of collapsing it to a bare cause.
+	private static final class PersistFailure extends Exception {
+		private final Message<JsonObject> message;
+		private PersistFailure(Message<JsonObject> message) {
+			this.message = message;
 		}
 	}
 
-	protected void preCommit() {}
 
 	protected void error(Exception e, Handler<Message<JsonObject>> handler) {
 		log.error(t -> e.getMessage(), e);
