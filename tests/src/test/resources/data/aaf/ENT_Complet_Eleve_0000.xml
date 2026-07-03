@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1711" -->
+<!-- versionSDET="http://eduscol.education.fr/AAF-SDET" -->
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>Eleve</value></attr></operationalAttributes>
+<identifier><id>1</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>1</value></attr>
+<attr name="ENTEleveStructRattachId"><value></value></attr>
+<attr name="ENTPersonDateNaissance"><value>01/01/1970</value></attr>
+<attr name="ENTPersonNomPatro"><value>MONJEAU</value></attr>
+<attr name="sn"><value>MONJEAU</value></attr>
+<attr name="givenName"><value>Lundy</value></attr>
+<attr name="ENTPersonAutresPrenoms"><value>Lundy</value></attr>
+<attr name="personalTitle"><value>M</value></attr>
+<attr name="ENTEleveParents"><value>2</value></attr>
+<attr name="ENTElevePere"></attr>
+<attr name="ENTEleveMere"><value>2</value></attr>
+<attr name="ENTEleveAutoriteParentale"><value>2</value></attr>
+<attr name="ENTElevePersRelEleve1"><value/></attr>
+<attr name="ENTEleveQualitePersRelEleve1"><value></value></attr>
+<attr name="ENTElevePersRelEleve2"><value/></attr>
+<attr name="ENTEleveQualitePersRelEleve2"><value/></attr>
+<attr name="ENTElevePersRelEleve"><value>2$1$0$2$0$0</value></attr>
+<attr name="ENTEleveBoursier"><value>N</value></attr>
+<attr name="ENTEleveRegime"><value>EXTERNE LIBRE</value></attr>
+<attr name="ENTEleveTransport"><value>N</value></attr>
+<attr name="ENTEleveStatutEleve"><value>SCOLAIRE</value></attr>
+<attr name="ENTEleveMEF"><value></value></attr>
+<attr name="ENTEleveLibelleMEF"><value>PREMIERE ECONOMIQUE ET SOCIALE</value></attr>
+<attr name="ENTEleveNivFormation"><value>PREMIERE GENERALE &amp; TECHNO YC BT</value></attr>
+<attr name="ENTEleveFiliere"><value>1ERE  GENERALE</value></attr>
+<attr name="ENTEleveEnseignements"><value>ACCOMPAGNEMENT PERSONNALISE</value><value>ANGLAIS LV1</value><value>EDUCATION PHYSIQUE ET SPORTIVE</value><value>ESPAGNOL LV2</value><value>FRANCAIS</value><value>MATHEMATIQUES</value><value>SCIENCES</value><value>SCIENCES ECONOMIQUES ET SOCIALES</value><value>TRAVAUX PERSONNELS ENCADRES</value><value>VIE DE CLASSE</value><value>HISTOIRE-GEOGRAPHIE</value><value>ENSEIGNEMENT MORAL ET CIVIQUE</value></attr>
+<attr name="ENTEleveCodeEnseignements"><value></value></attr>
+<attr name="ENTPersonStructRattach"><value>42</value></attr>
+<attr name="ENTEleveClasses"><value>42$1TES 2</value></attr>
+<attr name="ENTEleveGroupes"><value/></attr>
+</attributes>
+</addRequest>
+
+</ficAlimMENESR>
