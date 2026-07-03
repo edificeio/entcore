@@ -93,7 +93,14 @@ export function setup() {
     initData.csv = { structure: structureCSV, users: usersCSV };
 
 
-    structureAAF = generateAAFStructure([{ structureName: schoolName, nbStudents: 10, nbTeachers: 5, nbRelatives: 3 }]);
+    try {
+      structureAAF = generateAAFStructure([{ structureName: schoolName, nbStudents: 10, nbTeachers: 5, nbRelatives: 3 }]);
+    } catch (e) {
+      // teardown() is not called when setup fails : remove the files now, otherwise every later import of the
+      // platform reads them (the AAF1D ones of the feeder scenarios fail with "error.global")
+      cleanAAFWhenIdle("AAF", AAF_IMPORT_DIRECTORY);
+      throw e;
+    }
     users = getUsersOfSchool(structureAAF);
     initData.aaf = { structure: structureAAF, users };
 
