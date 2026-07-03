@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1711" -->
+<!-- versionSDET="http://eduscol.education.fr/AAF-SDET" -->
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>42</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>42</value></attr>
+<attr name="ENTStructureUAI"><value>0123456Z</value></attr>
+<attr name="ENTEtablissementUAI"><value>0123456Z</value></attr>
+<attr name="ENTStructureSIREN"><value/></attr>
+<attr name="ENTStructureNomCourant"><value>Emile ZOLA</value></attr>
+<attr name="ENTStructureTypeStruct"><value/></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value>MINISTERE DE L&apos;EDUCATION NATIONALE</value></attr>
+<attr name="ENTEtablissementContrat"><value>PU</value></attr>
+<attr name="postOfficeBox"><value></value></attr>
+<attr name="street"><value></value></attr>
+<attr name="postalCode"><value></value></attr>
+<attr name="l"><value></value></attr>
+<attr name="telephoneNumber"><value></value></attr>
+<attr name="facsimileTelephoneNumber"><value></value></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value></value></attr>
+<attr name="ENTServAcAcademie"><value>TEST</value></attr>
+<attr name="ENTStructureClasses"><value></value></attr>
+<attr name="ENTStructureGroupes"><value></value></attr>
+</attributes>
+</addRequest>
+
+</ficAlimMENESR>

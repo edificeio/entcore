@@ -1,0 +1,18 @@
+<!ELEMENT ficAlimMENESR (addRequest|modifyRequest|deleteRequest)*>
+<!ELEMENT addRequest (operationalAttributes, identifier, attributes)>
+<!ELEMENT modifyRequest (operationalAttributes, identifier, modifications)>
+<!ELEMENT deleteRequest (operationalAttributes, identifier)>
+<!ELEMENT operationalAttributes (attr)> <!-- Pas de controle : l'attribut "name" de l'element "attr" doit etre egal a "categoriePersonne" ou "categorieStructure" -->
+<!ELEMENT identifier (id)>
+<!ELEMENT attributes (attr+)>
+<!ELEMENT attr (value+)>
+<!ELEMENT modifications (modification+)>
+<!ELEMENT modification (value+)>
+<!ELEMENT value (#PCDATA)>
+<!ELEMENT id (#PCDATA)>
+<!ATTLIST attr name CDATA #REQUIRED>
+<!ATTLIST modification
+	name CDATA #REQUIRED
+	operation (replace) #REQUIRED>
+
+
