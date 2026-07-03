@@ -932,9 +932,6 @@ public class StructureController extends BaseController {
 									}
 								}
 							}));
-					if (handler.isRight() && options.getBoolean("setQuietHoursSetting") == Boolean.TRUE) {
-						structureService.cascadeQuietHoursByUai(targetUAIs);
-					}
 				});
 			});
 		});

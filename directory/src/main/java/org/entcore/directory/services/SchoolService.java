@@ -99,8 +99,6 @@ public interface SchoolService {
 
 	void getStructureNameByUAI(JsonArray uais, Handler<Either<String, JsonArray>> handler);
 
-	void cascadeQuietHoursByUai(JsonArray uais);
-
 	void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
 	                                Handler<Either<String, JsonObject>> handler);
 

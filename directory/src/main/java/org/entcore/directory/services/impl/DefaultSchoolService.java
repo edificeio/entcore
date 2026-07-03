@@ -622,30 +622,6 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void cascadeQuietHoursByUai(JsonArray uais) {
-		StringBuilder query = new StringBuilder();
-		query.append("MATCH (s:Structure) WHERE s.UAI IN {uais} ");
-		query.append("RETURN s.id as id");
-		JsonObject params = new JsonObject();
-		params.put("uais", uais.stream()
-				.map(String.class::cast)
-				.map(String::toUpperCase)
-				.collect(Collectors.toList()));
-		neo.execute(query.toString(), new JsonObject().put("uais", uais), validResultHandler( res -> {
-			if (res.isRight()) {
-				res.right().getValue().stream()
-						.map(JsonObject.class::cast)
-						.forEach( jo -> {
-							final JsonObject cascadeMessage = new JsonObject()
-									.put("action", "cascade.structure.quiethours.preferences")
-									.put("structureId", jo.getString("id"));
-							eventBus.request("userbook.preferences", cascadeMessage);
-						});
-			}
-		}));
-	}
-
-	@Override
 	public void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
 					 Handler<Either<String, JsonObject>> handler) {
 		List<String> list = targetUAIs.getList();
@@ -696,6 +672,25 @@ public class DefaultSchoolService implements SchoolService {
 
 			final JsonObject params = new JsonObject().put("structureId", structureId).put("uais", targetUAIs);
 			builder.add(structureUpdateQuery, params);
+		}
+		if (setQuietHoursSetting) {
+			final String updateQuery =
+					"MATCH (s:Structure) " +
+					"WHERE s.UAI in {uais} AND (s.notificationTimezone IS NOT NULL OR s.notificationQuietHours IS NOT NULL) " +
+					"WITH s " +
+					"MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+					"WITH s, collect(DISTINCT u) AS allUsers " +
+					"UNWIND allUsers AS u " +
+					"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+					"WITH s, u, uac, " +
+					"  (s.notificationTimezone IS NOT NULL AND (uac IS NULL OR uac.timezone IS NULL OR NOT uac.timezone CONTAINS {userManagedMarker})) AS shouldUpdateTimezone, " +
+					"  (s.notificationQuietHours IS NOT NULL AND (uac IS NULL OR uac.quietHours IS NULL OR NOT uac.quietHours CONTAINS {userManagedMarker})) AS shouldUpdateQuietHours " +
+					"WHERE shouldUpdateTimezone OR shouldUpdateQuietHours " +
+					"MERGE (u)-[:PREFERS]->(uac2:UserAppConf) " +
+					"FOREACH (_ IN CASE WHEN shouldUpdateTimezone THEN [1] ELSE [] END | SET uac2.timezone = s.notificationTimezone) " +
+					"FOREACH (_ IN CASE WHEN shouldUpdateQuietHours THEN [1] ELSE [] END | SET uac2.quietHours = s.notificationQuietHours) ";
+			final JsonObject params = new JsonObject().put("uais", targetUAIs).put("userManagedMarker", USER_MANAGED_MARKER);;
+			builder.add(updateQuery, params);
 		}
 	}
 
