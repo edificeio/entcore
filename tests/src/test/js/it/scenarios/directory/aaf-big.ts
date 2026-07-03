@@ -67,8 +67,15 @@ export function setup(): InitData {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     // teardown() does not run when a previous run was killed or failed in setup : start from a clean directory
     cleanAAF("AAF", AAF_IMPORT_DIRECTORY);
-    model = generateAndImportBigAAF();
-    result = waitForBigAAFImport(model);
+    try {
+      model = generateAndImportBigAAF();
+      result = waitForBigAAFImport(model);
+    } catch (e) {
+      // teardown() is not called when setup fails : remove the files now, otherwise every later import of the
+      // platform reads them (the AAF1D ones of the feeder scenarios fail with "error.global")
+      cleanAAFWhenIdle("AAF", AAF_IMPORT_DIRECTORY);
+      throw e;
+    }
   });
   console.log(`[Directory] Big AAF import setup completed: ${model.structures.length} structures, ` +
     `${model.students.length} students, ${model.relatives.length} relatives, ${model.teachers.length} teachers, ` +

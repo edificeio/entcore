@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1711" -->
+<!-- versionSDET="http://eduscol.education.fr/AAF-SDET" -->
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>2</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>BONDY</value></attr>
+<attr name="sn"><value>BONDY</value></attr>
+<attr name="givenName"><value>Astrid</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value/></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value></value></attr>
+<attr name="ENTPersonCodePostal"><value></value></attr>
+<attr name="ENTPersonVille"><value></value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+<attr name="ENTPersonAdresseDiffusion"><value>N</value></attr>
+<attr name="mobile"><value></value></attr>
+<attr name="mail"><value/></attr>
+<attr name="ENTPersonMobileSMS"><value/></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
+<identifier><id>3</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>3</value></attr>
+<attr name="ENTPersonDateNaissance"><value/></attr>
+<attr name="ENTPersonNomPatro"><value>FONTAINE-GOMES DE OLIVEIR</value></attr>
+<attr name="sn"><value>FONTAINE-GOMES DE OLIVEIR</value></attr>
+<attr name="givenName"><value>Isabelle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="homePhone"><value/></attr>
+<attr name="telephoneNumber"><value/></attr>
+<attr name="ENTPersonAdresse"><value></value></attr>
+<attr name="ENTPersonCodePostal"><value></value></attr>
+<attr name="ENTPersonVille"><value></value></attr>
+<attr name="ENTPersonPays"><value>FRANCE</value></attr>
+<attr name="ENTPersonAdresseDiffusion"><value>N</value></attr>
+<attr name="mobile"><value></value></attr>
+<attr name="mail"><value/></attr>
+<attr name="ENTPersonMobileSMS"><value/></attr>
+</attributes>
+</addRequest>
+
+</ficAlimMENESR>
