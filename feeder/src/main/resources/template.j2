@@ -115,6 +115,7 @@
     "exporter": "ELIOT",
     "export-path": "/tmp",
     "delete-export" : {{ feederEliotDeleteExport | default('false') }},
-    "export-destination": ""
+    "export-destination": "",
+    "validation-file-path": "{{ feederValidationFilePath }}"
   }
 }

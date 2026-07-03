@@ -61,10 +61,12 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 			);
 	private static final int MAX_DEADLOCK_RETRIES = 1;
 	private static final Pattern DEADLOCK_PATTERN = Pattern.compile("(deadlock|EntityNotFound)", Pattern.CASE_INSENSITIVE);
+	private final String validationFilePath;
 
 	protected BaseImportProcessing(String path, Vertx vertx) {
 		this.path = path;
 		this.vertx = vertx;
+		this.validationFilePath = vertx.getOrCreateContext().config().getString("validation-file-path", null);
 		log = new FeederLogger(e-> getTag(), e-> "academy: "+ academyPrefix);
 	}
 
@@ -117,7 +119,12 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 								@Override
 								public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 									if (systemId.equals("ficAlimMENESR.dtd")) {
-										Reader reader = new FileReader(path + File.separator + "ficAlimMENESR.dtd");
+										Reader reader;
+										if (validationFilePath != null && !validationFilePath.isEmpty()) {
+											reader = new FileReader(validationFilePath);
+										} else {
+											reader = new FileReader(path + File.separator + "ficAlimMENESR.dtd");
+										}
 										return new InputSource(reader);
 									} else {
 										return null;
