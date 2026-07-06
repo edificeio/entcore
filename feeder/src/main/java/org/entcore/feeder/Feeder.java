@@ -652,8 +652,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				result.getJsonObject("result").remove("errors");
 				replyHandler.handle(new JsonObject().put("status", "ok").put("result", result));
 			} else {
-				replyHandler.handle(new JsonObject().put("status", "ko").put("result", result));
-				sendError(message, "classes.mapping.error");
+				replyHandler.handle(new JsonObject().put("status", "error").put("message",  "classes.mapping.error"));
 			}
 		});
 	}
