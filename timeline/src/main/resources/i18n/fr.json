@@ -207,7 +207,7 @@
   "timeline.daily.mail.action.text": "Voir les nouveautés",
   "timeline.daily.mail.subject.bold": "du nouveau depuis hier",
   "timeline.daily.mail.subject.end": "dans votre ENT",
-  "timeline.daily.mail.subject.header": "Quoi de neuf aujourd'hui ?",
+  "timeline.daily.mail.subject.header": "Quoi de neuf ce {{day}} ?",
   "timeline.daily.mail.subject.start": "Bonjour {{displayName}}, il y a",
   "timeline.defaultFrequency": "Fréquence de mail par défaut",
   "timeline.empty": "Votre réseau proche n'a partagé aucune information avec vous pour le moment !",
