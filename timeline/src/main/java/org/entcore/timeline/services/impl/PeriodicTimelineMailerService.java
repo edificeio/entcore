@@ -21,8 +21,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.email.EmailFactory;
+import org.entcore.common.email.MassEmailSender;
 import org.entcore.common.email.impl.PostgresEmailDto;
-import org.entcore.common.email.impl.PostgresEmailSender;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
@@ -60,7 +60,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
     private TimelineConfigService configService;
     private Map<String, String> eventsI18n;
     private HashMap<String, JsonObject> lazyEventsI18n;
-    private final PostgresEmailSender emailSender;
+    private final MassEmailSender emailSender;
     private final int USERS_LIMIT;
     private final long QUERY_TIMEOUT;
     private final MongoDb mongo = MongoDb.getInstance();
@@ -74,7 +74,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
     public PeriodicTimelineMailerService(Vertx vertx, JsonObject config) {
         eb = Server.getEventBus(vertx);
         EmailFactory emailFactory = EmailFactory.getInstance();
-        emailSender = (PostgresEmailSender) emailFactory.getSenderWithPriority(EmailFactory.PRIORITY_VERY_LOW);
+        emailSender = emailFactory.getSenderWithPriority(EmailFactory.PRIORITY_VERY_LOW);
         USERS_LIMIT = config.getInteger("users-loop-limit", 200);
         QUERY_TIMEOUT = config.getLong("query-timeout", 300000L);
         init(vertx, config);
