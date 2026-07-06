@@ -29,7 +29,7 @@ import {
   addUsersToGroup
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import http from "k6/http";
-import {check, group} from "k6";
+import {check, fail, group} from "k6";
 
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
@@ -46,7 +46,7 @@ export const options = {
     checks: ["rate == 1.00"],
   },
   scenarios: {
-    /*testClassEndpoints: {
+    testClassEndpoints: {
       executor: "per-vu-iterations",
       exec: "testClassEndpoints",
       vus: 1,
@@ -60,7 +60,6 @@ export const options = {
       maxDuration: maxDuration,
       gracefulStop,
     },
-    */
     testUserEndpoints: {
       executor: "per-vu-iterations",
       exec: "testUserEndpoints",
@@ -71,20 +70,6 @@ export const options = {
     testGroupEndpoints: {
       executor: "per-vu-iterations",
       exec: "testGroupEndpoints",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testStructureEndpoints: {
-      executor: "per-vu-iterations",
-      exec: "testStructureEndpoints",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testClassEndpoints: {
-      executor: "per-vu-iterations",
-      exec: "testClassEndpoints",
       vus: 1,
       maxDuration: maxDuration,
       gracefulStop,
@@ -350,13 +335,85 @@ export function testUserEndpoints(data: InitData) {
     }
   });
 
+  // TODO add AAF structure initialization otherwise the test won't pass
   group('[Directory] GET /duplicates - List duplicates', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const res = http.get(`${rootUrl}/directory/duplicates?structure=${data.structure.id}`, { headers: getHeaders() });
+
+    let res = http.get(`${rootUrl}/directory/duplicates?structure=${data.structure.id}`, { headers: getHeaders() });
     check(res, {
       'list duplicates returns 200': (r) => r.status === 200,
       'list duplicates is array': (r) => Array.isArray(JSON.parse(<string>r.body)),
     });
+
+    const resInherit = http.get(`${rootUrl}/directory/duplicates?structure=${data.structure.id}&inherit=true`, { headers: getHeaders() });
+    check(resInherit, {
+      'list duplicates (inherit) returns 200': (r) => r.status === 200,
+      'list duplicates (inherit) is array': (r) => Array.isArray(JSON.parse(<string>r.body)),
+    });
+
+    const users = getUsersOfSchool(data.structure);
+    const teacher = getRandomUserWithProfile(users, 'Teacher');
+    authenticateWeb(teacher.login);
+    const resForbidden = http.get(`${rootUrl}/directory/duplicates?structure=${data.structure.id}`, { headers: getHeaders() });
+    check(resForbidden, {
+      'list duplicates as non-ADML is denied (401)': (r) => r.status === 401,
+    });
+    // restore the ADMC session
+    authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+
+    const victim = users.find((u) => (u.source === 'AAF' || u.source === 'AAF1D') && u.type === 'Teacher')
+      || users.find((u) => u.source === 'AAF' || u.source === 'AAF1D');
+
+    if (!victim) {
+      fail('[Directory] GET /duplicates - no AAF/AAF1D user found, skipping end-to-end duplicate detection');
+    } else {
+      const victimRes = http.get(`${rootUrl}/directory/user/${victim.id}`, { headers: getHeaders() });
+      const victimInfo = JSON.parse(<string>victimRes.body);
+
+      const twin = createUserAndGetData({
+        firstName: victimInfo.firstName,
+        lastName: victimInfo.lastName,
+        type: victim.type,
+        structureId: data.structure.id,
+        birthDate: victimInfo.birthDate,
+        positionIds: [],
+      });
+
+      const markRes = http.post(`${rootUrl}/directory/duplicates/mark`, null, { headers: getHeaders() });
+      check(markRes, {
+        'mark duplicates returns 200': (r) => r.status === 200,
+      });
+
+      const matchesPair = (d: any) =>
+        (d.user1.id === victim.id && d.user2.id === twin.id) ||
+        (d.user1.id === twin.id && d.user2.id === victim.id);
+      res = http.get(`${rootUrl}/directory/duplicates?structure=${data.structure.id}`, { headers: getHeaders() });
+      let body = JSON.parse(<string>res.body);
+      check(res, {
+        'list duplicates after mark returns 200': (r) => r.status === 200,
+        'list duplicates after mark is not empty': () => Array.isArray(body) && body.length > 0,
+        'list duplicates contains the created pair': () => Array.isArray(body) && body.some(matchesPair),
+        'created duplicate has a score >= 5': () => Array.isArray(body) && body.filter(matchesPair).every((d: any) => d.score >= 5),
+        'duplicate entries are well-formed': () => Array.isArray(body) && body.every((d: any) =>
+          typeof d.score === 'number' &&
+          !!d.user1 && !!d.user1.id && !!d.user1.firstName && !!d.user1.lastName &&
+          !!d.user2 && !!d.user2.id && !!d.user2.firstName && !!d.user2.lastName),
+      });
+
+
+      const ignoreRes = http.del(`${rootUrl}/directory/duplicate/ignore/${victim.id}/${twin.id}`, null, { headers: getHeaders() });
+      check(ignoreRes, {
+        'ignore duplicate returns 200': (r) => r.status === 200,
+      });
+
+      res = http.get(`${rootUrl}/directory/duplicates?structure=${data.structure.id}`, { headers: getHeaders() });
+      body = JSON.parse(<string>res.body);
+      check(res, {
+        'duplicate pair is gone after ignore': () => Array.isArray(body) && !body.some(matchesPair),
+      });
+
+      http.del(`${rootUrl}/directory/user?userId=${twin.id}`, null, { headers: getHeaders() });
+    }
   });
   group('[Directory] GET /list/isolated - List isolated users', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
