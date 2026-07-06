@@ -33,7 +33,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 public class StructureQuietHoursController extends BaseController {
 
     private static final String STRUCTURE_PREFERENCES_ADDRESS = "directory.structure.quiethours.preferences";
-    private static final String USERBOOK_PREFERENCES_ADDRESS  = "userbook.preferences";
+    public static final String USERBOOK_PREFERENCES_ADDRESS  = "userbook.preferences";
 
     @Get("api/structures/:structureId/quiethours-preferences")
     @SecuredAction(type = ActionType.RESOURCE, value = "")

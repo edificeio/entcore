@@ -111,6 +111,10 @@ public class DefaultSchoolServiceTest {
                 .withStructure(new StructureTest("auth-src-ent", "auth source ent"))
                 .withStructure(new StructureTest("auth-target-copy", "auth target copy", false, "UAI-AUTH-COPY"))
                 .withStructure(new StructureTest("auth-target-replace", "auth target replace", true, "UAI-AUTH-REPLACE"))
+                // Structures dedicated to the quiet hours duplication test (setQuietHoursSetting option).
+                // Source is matched by id, target by UAI.
+                .withStructure(new StructureTest("qh-src", "quiet hours source"))
+                .withStructure(new StructureTest("qh-target", "quiet hours target", false, "UAI-QH-COPY"))
                 .execute();
     }
 
@@ -372,6 +376,73 @@ public class DefaultSchoolServiceTest {
                         config.getDefaultAuthModes().forEach((profile, mode) ->
                                 context.assertEquals(DefaultAuthModeConfig.DefaultAuthMode.ENT, mode,
                                         "profile " + profile + " should fall back to ENT after duplication"));
+                    } else {
+                        context.fail(ar.cause());
+                    }
+                    async.complete();
+                });
+    }
+
+    // -----------------------------------------------------------------------
+    //  Quiet hours duplication test (setQuietHoursSetting option)
+    // -----------------------------------------------------------------------
+
+    private Future<Void> duplicateQuietHours(final String sourceStructureId, final String targetUai) {
+        final Promise<Void> promise = Promise.promise();
+        // Only the quiet hours / timezone settings are duplicated, to isolate the behaviour under test.
+        final JsonObject options = new JsonObject()
+                .put("setApplications", false)
+                .put("setWidgets", false)
+                .put("setDistribution", false)
+                .put("setEducation", false)
+                .put("setHasApp", false)
+                .put("setDefaultAuth", false)
+                .put("setQuietHoursSetting", true);
+        defaultSchoolService.duplicateStructureSettings(sourceStructureId, new JsonArray().add(targetUai), options, result -> {
+            if (result.isRight()) {
+                promise.complete();
+            } else {
+                promise.fail(result.left().getValue());
+            }
+        });
+        return promise.future();
+    }
+
+    @Test
+    public void testDuplicateQuietHours_copiesTimezoneAndScheduleToTarget(final TestContext context) {
+        final Async async = context.async();
+
+        // 7-day schedule (required when enabled=true) with a couple of quiet hours per day.
+        final JsonArray schedule = new JsonArray();
+        for (int dayCounter = 0; dayCounter < 7; dayCounter++) {
+            schedule.add(new JsonArray().add(22).add(23));
+        }
+        final JsonObject sourceBody = new JsonObject()
+                .put("timezone", "Europe/Paris")
+                .put("quietHours", new JsonObject()
+                        .put("schedule", schedule)
+                        .put("enabled", true));
+
+        setQuietHoursPreferences("qh-src", sourceBody)
+                .compose(ignored -> duplicateQuietHours("qh-src", "UAI-QH-COPY"))
+                .compose(ignored -> getQuietHoursPreferences("qh-target"))
+                .onComplete(ar -> {
+                    if (ar.succeeded()) {
+                        final JsonObject preferences = ar.result();
+
+                        final String timezoneJson = preferences.getString("notificationTimezone");
+                        context.assertNotNull(timezoneJson, "timezone should be duplicated to the target");
+                        final TimezonePreference timezone = Json.decodeValue(timezoneJson, TimezonePreference.class);
+                        context.assertEquals("Europe/Paris", timezone.getTimezone(),
+                                "target timezone should match the source");
+
+                        final String quietHoursJson = preferences.getString("notificationQuietHours");
+                        context.assertNotNull(quietHoursJson, "quiet hours should be duplicated to the target");
+                        final JsonObject quietHours = new JsonObject(quietHoursJson);
+                        context.assertTrue(quietHours.getBoolean("enabled"),
+                                "target quiet hours should be enabled like the source");
+                        context.assertEquals(7, quietHours.getJsonArray("schedule").size(),
+                                "target schedule should match the source");
                     } else {
                         context.fail(ar.cause());
                     }
