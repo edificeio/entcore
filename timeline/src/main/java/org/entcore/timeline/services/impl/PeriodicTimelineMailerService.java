@@ -37,11 +37,11 @@ import org.entcore.timeline.controllers.helper.QuietHoursHelper;
 import org.entcore.timeline.services.CronMailerService;
 import org.entcore.timeline.services.TimelineConfigService;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -662,11 +662,9 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             final String userLanguage = mutableUserLanguage;
             final String userDisplayName = getOrElse(userPrefs.getString("displayName"), "", true);
             final ZoneId userZone = ZoneId.of(userPrefs.getString("zoneId", DEFAULT_TIMEZONE.getId()));
-            SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.forLanguageTag(userLanguage));
-            formatter.setTimeZone(TimeZone.getTimeZone(userZone));
-            final SimpleDateFormat dayFormatter = new SimpleDateFormat("EEEE", Locale.forLanguageTag(userLanguage));
-            dayFormatter.setTimeZone(TimeZone.getTimeZone(userZone));
-            final String dayName = dayFormatter.format(Date.from(digestDay));
+            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm:ss", Locale.forLanguageTag(userLanguage)).withZone(userZone);
+            final DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.forLanguageTag(userLanguage)).withZone(userZone);
+            final String dayName = dayFormatter.format(digestDay);
 
             final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject()
                     .put("headers", new JsonObject()
@@ -677,7 +675,7 @@ public class PeriodicTimelineMailerService implements CronMailerService {
             JsonObject templateParams = new JsonObject().put("nestedTemplatesArray", notificationEntry.getValue())
                                                         .put("notificationDates", notificationEntry.getValue().stream()
                                                                 .map(JsonObject.class::cast)
-                                                                .map( notification -> formatter.format(MongoDb.parseIsoDate(notification.getJsonObject("date"))))
+                                                                .map( notification -> formatter.format(MongoDb.parseIsoDate(notification.getJsonObject("date")).toInstant()))
                                                                 .collect(Collectors.toList()))
                                                         .put("displayName", userDisplayName)
                                                         .put("day", dayName);
