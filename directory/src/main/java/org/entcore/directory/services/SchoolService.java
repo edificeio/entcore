@@ -100,7 +100,7 @@ public interface SchoolService {
 	void getStructureNameByUAI(JsonArray uais, Handler<Either<String, JsonArray>> handler);
 
 	void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
-									Handler<Either<String, JsonObject>> handler);
+	                                Handler<Either<String, JsonObject>> handler);
 
 	void checkGAR(JsonArray uais, Handler<Either<String, JsonArray>> handler);
 
