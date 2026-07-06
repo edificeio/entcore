@@ -347,13 +347,30 @@ public class NotificationHelperTest {
     }
 
     @Test
-    public void testComputeDailyMailScheduleAt_SlotAtNextRun_Skipped() {
-        // Monday quiet from 6h, Tuesday quiet 0h-5h -> first free slot Tuesday 06:00 = next run -> mail skipped (null)
+    public void testComputeDailyMailScheduleAt_SlotAtNextRun_Deferred() {
+        // Monday quiet from 6h, Tuesday quiet 0h-5h -> first free slot Tuesday 06:00 (what used to be the next run):
+        // no longer dropped, the digest is deferred to that slot (IMPULS-6046)
         int[][] schedule = new int[7][];
         schedule[0] = new int[]{6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
         schedule[1] = new int[]{0, 1, 2, 3, 4, 5};
         for (int i = 2; i < 7; i++) schedule[i] = new int[]{};
-        assertNull(QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), enabledPref(schedule), PARIS));
+        Instant expected = ZonedDateTime.of(2026, 6, 2, 6, 0, 0, 0, PARIS).toInstant();
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(mondayRun(), enabledPref(schedule), PARIS));
+    }
+
+    @Test
+    public void testComputeDailyMailScheduleAt_FullyQuietWeekend_DeferredToMonday() {
+        // Weekend 100% quiet, weekdays quiet 20h-6h: the Saturday run has no free slot before Sunday's run, but the
+        // digest is now deferred to the first open slot (Monday 07:00) instead of being dropped (IMPULS-6046)
+        int[] allDay = new int[24];
+        for (int h = 0; h < 24; h++) allDay[h] = h;
+        int[][] schedule = new int[7][];
+        for (int i = 0; i <= 4; i++) schedule[i] = new int[]{0, 1, 2, 3, 4, 5, 6, 20, 21, 22, 23}; // Mon-Fri
+        schedule[5] = allDay; // Saturday
+        schedule[6] = allDay; // Sunday
+        Instant saturdayRun = ZonedDateTime.of(2026, 6, 6, 6, 0, 0, 0, PARIS).toInstant();
+        Instant expected = ZonedDateTime.of(2026, 6, 8, 7, 0, 0, 0, PARIS).toInstant(); // next Monday 07:00
+        assertEquals(expected, QuietHoursHelper.computeDailyMailScheduleAt(saturdayRun, enabledPref(schedule), PARIS));
     }
 
     @Test
