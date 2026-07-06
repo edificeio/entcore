@@ -26,7 +26,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -640,7 +639,8 @@ public class DefaultSchoolService implements SchoolService {
 				setDistribution = options.getBoolean("setDistribution", true),
 				setEducation = options.getBoolean("setEducation", true),
 				setHasApp = options.getBoolean("setHasApp", true),
-				setDefaultAuth = options.getBoolean("setDefaultAuth", false);
+				setDefaultAuth = options.getBoolean("setDefaultAuth", false),
+				setQuietHoursSetting = options.getBoolean("setQuietHoursSetting", false);
 		if (setApplications) {
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "ProfileGroup");
 			buildDuplicateQuery(structureId, targetUAIs, builder, "Role", "FunctionGroup");
@@ -652,7 +652,7 @@ public class DefaultSchoolService implements SchoolService {
 		if (setDefaultAuth) {
 			buildDuplicateDefaultAuthQuery(structureId, targetUAIs, builder);
 		}
-		if (setDistribution || setEducation || setHasApp) {
+		if (setDistribution || setEducation || setHasApp || setQuietHoursSetting) {
 			String structureUpdateQuery = "MATCH (s:Structure {id:{structureId}}), (s2:Structure) " +
 					"WHERE s2.UAI IN {uais} SET ";
 			if (setDistribution) {
@@ -664,11 +664,33 @@ public class DefaultSchoolService implements SchoolService {
 			if (setHasApp) {
 				structureUpdateQuery += "s2.hasApp = s.hasApp,";
 			}
+			if (setQuietHoursSetting) {
+				structureUpdateQuery += " s2.notificationTimezone =  s.notificationTimezone, s2.notificationQuietHours = s.notificationQuietHours,";
+			}
 			// removing lastComma
 			structureUpdateQuery = structureUpdateQuery.substring(0, structureUpdateQuery.length()-1);
 
 			final JsonObject params = new JsonObject().put("structureId", structureId).put("uais", targetUAIs);
 			builder.add(structureUpdateQuery, params);
+		}
+		if (setQuietHoursSetting) {
+			final String updateQuery =
+					"MATCH (s:Structure) " +
+					"WHERE s.UAI in {uais} AND (s.notificationTimezone IS NOT NULL OR s.notificationQuietHours IS NOT NULL) " +
+					"WITH s " +
+					"MATCH (s)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+					"WITH s, collect(DISTINCT u) AS allUsers " +
+					"UNWIND allUsers AS u " +
+					"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+					"WITH s, u, uac, " +
+					"  (s.notificationTimezone IS NOT NULL AND (uac IS NULL OR uac.timezone IS NULL OR NOT uac.timezone CONTAINS {userManagedMarker})) AS shouldUpdateTimezone, " +
+					"  (s.notificationQuietHours IS NOT NULL AND (uac IS NULL OR uac.quietHours IS NULL OR NOT uac.quietHours CONTAINS {userManagedMarker})) AS shouldUpdateQuietHours " +
+					"WHERE shouldUpdateTimezone OR shouldUpdateQuietHours " +
+					"MERGE (u)-[:PREFERS]->(uac2:UserAppConf) " +
+					"FOREACH (_ IN CASE WHEN shouldUpdateTimezone THEN [1] ELSE [] END | SET uac2.timezone = s.notificationTimezone) " +
+					"FOREACH (_ IN CASE WHEN shouldUpdateQuietHours THEN [1] ELSE [] END | SET uac2.quietHours = s.notificationQuietHours) ";
+			final JsonObject params = new JsonObject().put("uais", targetUAIs).put("userManagedMarker", USER_MANAGED_MARKER);;
+			builder.add(updateQuery, params);
 		}
 	}
 
