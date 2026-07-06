@@ -55,20 +55,17 @@ public final class QuietHoursHelper {
      *
      * <p>Base send time is the processing hour itself (run at 07:00 local -> mail at 07:00 local, i.e. sent
      * immediately). If quiet hours are active at the base time, the send time is pushed to the first non-quiet slot.
-     * The mail must be sent before the next daily run of the user's timezone (next local processing hour, i.e. +1
-     * calendar day — calendar arithmetic so DST transition days stay correct): past that point a fresher digest takes
-     * over, so the mail is dropped instead.</p>
+     * When the whole day is quiet (e.g. a fully-silent weekend), that slot falls on the next open day and the digest
+     * is deferred there rather than dropped, so weekend content is not lost (IMPULS-6046). Daily windows are disjoint,
+     * so a deferred digest never overlaps the content of a later one.</p>
      *
-     * @return the send instant, or null if no valid slot exists before the next run (mail must be skipped)
+     * @return the send instant, or null only when the schedule leaves no non-quiet slot at all (mail must be skipped)
      */
     public static Instant computeDailyMailScheduleAt(Instant runTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
         if (zone == null) return null;
         final ZonedDateTime localRun = runTime.atZone(zone).truncatedTo(ChronoUnit.HOURS);
         final Instant base = localRun.toInstant();
-        final Instant nextRun = localRun.plusDays(1).toInstant();
-        final Instant scheduleAt = computeNextSendTime(base, userPrefQuietHours, zone);
-        if (scheduleAt == null || !scheduleAt.isBefore(nextRun)) return null;
-        return scheduleAt;
+        return computeNextSendTime(base, userPrefQuietHours, zone);
     }
 
     /**
