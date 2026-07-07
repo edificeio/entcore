@@ -304,5 +304,7 @@
   "xtnotifications.never": "Jamais",
   "xtnotifications.title": "Mes notifications externes",
   "xtnotifications.validate": "Enregistrer",
-  "xtnotifications.weekly": "Hebdomadaire"
+  "xtnotifications.weekly": "Hebdomadaire",
+  "infotip.quiethours.structure.title": "Votre établissement a mis en pause les notifications le soir et le week-end.",
+  "infotip.quiethours.structure.text": "Les notifications mails prévues entre 20h et 7h en semaine, ainsi que du vendredi 20h au lundi 7h, sont suspendues. Vous recevrez un récapitulatif chaque matin à 7h."
 }
