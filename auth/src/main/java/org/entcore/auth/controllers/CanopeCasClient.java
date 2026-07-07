@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
