@@ -1,4 +1,4 @@
-import { ng, template, idiom as lang, skin } from 'entcore';
+import { ng, template, idiom as lang, skin, http } from 'entcore';
 import { notify } from 'entcore';
 
 
@@ -12,7 +12,19 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
     $scope.applis = model.applis;
 	$scope.preference = model.preference;
 	$scope.userinfos = model.userinfos;
-	$scope.display = {};
+
+	const loadQuietHours = async function() {
+		$scope.quietHours = await new Promise((resolve, reject) => {
+			http().get('/userbook/api/preferences')
+			.done(data => resolve(data.quietHours))
+			.error(reject);
+		});
+	};
+	await loadQuietHours();
+
+	$scope.display = {
+		quietHoursTip: $scope.quietHours && $scope.quietHours.enabled && "STRUCTURE" == $scope.quietHours.managedBy.toUpperCase(),
+	};
 
 	$scope.lang = lang;
 
