@@ -1,6 +1,6 @@
 services:
   maven:
-    image: opendigitaleducation/mvn-java8-node20:latest
+    image: maven:3.9.16-eclipse-temurin-21
     user: "$DEFAULT_DOCKER_USER"
     working_dir: /usr/src/maven
     volumes:
