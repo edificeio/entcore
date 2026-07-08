@@ -512,19 +512,19 @@ i.group_add {
 
 // button styled as a plain link, e.g. <button class="link"><span>label</span></button>
 .link {
-  text-decoration: underline;
-  gap: 12px;
   padding: 0;
   border: 0;
+  text-decoration: underline;
+  background: transparent;
 
   &:not(:disabled) {
-    color: #5b6472;
+    color: $grey-dark;
   }
 
   &:not(:disabled):hover {
     background: transparent;
     border: 0;
-    color: #5b6472;
+    color: $grey-dark;
   }
 }
 

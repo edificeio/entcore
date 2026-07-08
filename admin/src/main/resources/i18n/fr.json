@@ -1701,7 +1701,7 @@
   "users.details.section.connection.federatedInfo.signin.content": "Cet utilisateur doit utiliser une authentification externe à l'ENT (ÉduConnect, FranceConnect, Arena, LiÀ, EducAgri…). En cas de problème de connexion, il doit s'adresser au service concerné.",
   "users.details.section.connection.federatedInfo.issue.title": "Que faire si le problème de connexion persiste ? ",
   "users.details.section.connection.federatedInfo.issue.content": "Toutefois, en cas de problème d'accès persistant par l'authentification externe, vous pouvez débloquer le login et code ENT. Si vous distribuez ces identifiants, indiquez à l'utilisateur de sélectionner le profil \"invité\" ou \"autre profil\" depuis la page de connexion.",
-  "users.details.section.connection.federatedInfo.unlock": "Pour voir le code d’activation cliquez ici :",
+  "users.details.section.connection.federatedInfo.unlock": "Pour voir le code d’activation, cliquez ici :",
   "users.details.section.connection.federatedFields.toggle.locked": "débloquer le code d’activation",
   "users.details.section.connection.federatedFields.toggle.unlocked": "code d’activation temporairement débloqué ✅",
   "users.details.section.connection.federatedFields.unlock.confirm.title": "Débloquer le code d'activation",
