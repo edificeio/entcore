@@ -58,8 +58,8 @@
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>3.0-SNAPSHOT</modPostgresVersion>
-        <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
-        <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
+        <modMongoVersion>5.0-SNAPSHOT</modMongoVersion>
+        <modSmsProxyVersion>3.0-SNAPSHOT</modSmsProxyVersion>
         <mongodbHelperVersion>4.0-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
