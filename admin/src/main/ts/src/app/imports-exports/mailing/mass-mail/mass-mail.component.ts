@@ -107,7 +107,8 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
         this.countUsersInactiveAndFederated = 0;
         const visibleUsers: UserModel[] = [];
         users.forEach(user => {
-            if (user.hasFederatedIdentity && (!user.code || user.code.length === 0)) {
+            const isUserInactive = !(!user.code || user.code.length === 0);
+            if (user.hasFederatedIdentity && isUserInactive) {
                 this.countUsersInactiveAndFederated++;
                 return;
             }
