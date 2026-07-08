@@ -57,7 +57,22 @@ const parseEnvFile = (content) => {
 
 if (fs.existsSync("./.env")) {
   const env = parseEnvFile(fs.readFileSync("./.env", "utf-8"));
-  const {VITE_RECETTE, VITE_XSRF_TOKEN, VITE_ONE_SESSION_ID} = env;
+  const {VITE_RECETTE, VITE_XSRF_TOKEN, VITE_ONE_SESSION_ID, SCREEB_APP_ID_DEV} = env;
+
+  // Dev-only mock: the platform won't serve the Screeb key on /admin/conf/public
+  // until the backend template.j2 change is deployed. Set SCREEB_APP_ID_DEV in
+  // .env to test the Screeb integration locally.
+  if (SCREEB_APP_ID_DEV) {
+    console.log("Mocking /admin/conf/public with SCREEB_APP_ID_DEV");
+    PROXY_CONFIG.bypass = (req, res) => {
+      if (req.url && req.url.split("?")[0] === "/admin/conf/public") {
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ "screeb-app-id": SCREEB_APP_ID_DEV }));
+        return true; // response already sent, skip proxying
+      }
+      return null; // proxy normally
+    };
+  }
   if (VITE_RECETTE) {
     console.log("Using remote proxy configuration target: ", VITE_RECETTE);
     PROXY_CONFIG.target = VITE_RECETTE;

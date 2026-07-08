@@ -1,6 +1,7 @@
 import { Component, Injector } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
+import { ScreebService } from './core/services/screeb.service';
 import { globalStore } from './core/store/global.store';
 import { SessionModel } from './core/store/models/session.model';
 import { StructureModel } from './core/store/models/structure.model';
@@ -50,8 +51,8 @@ export class AppRootComponent extends OdeComponent {
     public enableMassMessaging: boolean;
     private hasSubscribeChildRoute: boolean = false;
 
-    constructor(injector: Injector) {
-        super(injector);  
+    constructor(injector: Injector, private screebService: ScreebService) {
+        super(injector);
     }
 
     async ngOnInit() {
@@ -95,6 +96,10 @@ export class AppRootComponent extends OdeComponent {
         }
         // Add Zendesk Guide Widget
         this.addZendeskGuideWedget(session);
+        // Initialize Screeb (user feedback tool), enabled per platform via publicConf
+        this.screebService.initFromPlatformConf(session).catch(err => {
+            console.error('Failed to initialize Screeb:', err);
+        });
     }
     public onSelectStructure(structure: StructureModel) {
         this.router.navigateByUrl(this.getNewPath(structure.id));
