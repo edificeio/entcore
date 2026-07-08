@@ -52,6 +52,18 @@
     {% else %}
       "export-path": "{{ archiveExportPath | default('/srv/storage/exports') }}",
     {% endif %}
+    {% if s3iacaption_uri is defined s3iacaption_uri %}
+    "s3iacaption": {
+      "uri": "{{ s3iacaption_uri }}",
+      "accessKey": "{{ s3iacaption_accessKey }}",
+      "secretKey": "{{ s3iacaption_secretKey }}",
+      {% if s3iacaption_ssec is defined %}
+      "ssec": "{{ s3iacaption_ssec }}",
+      {% endif %}
+      "region": "{{ s3iacaption_region }}",
+      "bucket": "{{ s3iacaption_bucket }}"
+    },
+    {% endif %}
     "publicConf": {
       "lazy-mode": {{ workspaceLazyMode | default('true') }},
       {% if nextcloudVersion is defined and (nextcloudHost is defined or nextcloudProviders is defined) and googleVersion is defined and (googleDomain is defined or googleProviders is defined) %}
