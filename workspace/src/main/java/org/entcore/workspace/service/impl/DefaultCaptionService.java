@@ -9,6 +9,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.s3.S3Client;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.impl.S3Storage;
@@ -89,12 +90,34 @@ public class DefaultCaptionService implements CaptionService {
         }
     }
 
+    /**
+     * Get the description of the document (image only). If the description is already cached in the document it will be returned right away.
+     * If the description isn't cached yet, AI service will be called.
+     *
+     * @param user
+     * @param documentId
+     * @param sessionId
+     * @param userAgent
+     * @param language
+     * @return
+     */
     @Override
     public Future<String> getCaption(UserInfos user, String documentId, String sessionId, String userAgent, String language) {
         return getOrGenerate(documentId, TaskType.CAPTION, doc ->
                 generate(doc, TaskType.CAPTION, user, sessionId, userAgent, language));
     }
 
+    /**
+     * Extract the text of the document (image only). If the text is already cached in the document it will be returned right away.
+     * If the text isn't cached yet, AI service will be called.
+     *
+     * @param user
+     * @param documentId
+     * @param sessionId
+     * @param userAgent
+     * @param language
+     * @return
+     */
     @Override
     public Future<String> getOcr(UserInfos user, String documentId, String sessionId, String userAgent, String language) {
         return getOrGenerate(documentId, TaskType.OCR, doc ->
@@ -106,6 +129,14 @@ public class DefaultCaptionService implements CaptionService {
         return dotIndex < 0 ? "" : filename.substring(dotIndex);
     }
 
+    /**
+     *
+     *
+     * @param documentId
+     * @param taskType
+     * @param generator
+     * @return
+     */
     private Future<String> getOrGenerate(String documentId, TaskType taskType, Function<JsonObject, Future<String>> generator) {
         final String taskField = taskType.mongoField();
 
@@ -116,11 +147,24 @@ public class DefaultCaptionService implements CaptionService {
             if (document.containsKey(taskField)) {
                 return Future.succeededFuture(document.getString(taskField));
             }
+
+            if (!DocumentHelper.isImage(document)) {
+                return Future.failedFuture(new IllegalArgumentException("Document " + documentId + " is not an image"));
+            }
+
             return generator.apply(document).compose(fresh -> storeResult(documentId, taskField, fresh));
         }).onFailure(err -> log.error("Failed to get or generate " + taskField + " for document ID " + documentId + ": "
                                               + err.getMessage()));
     }
 
+    /**
+     * Cache the result of the AI service task in the mongo document.
+     *
+     * @param documentId
+     * @param taskField
+     * @param value
+     * @return
+     */
     private Future<String> storeResult(String documentId, String taskField, String value) {
         final JsonObject update = new JsonObject().put("$set", new JsonObject().put(taskField, value));
         final Promise<String> promise = Promise.promise();
@@ -138,10 +182,11 @@ public class DefaultCaptionService implements CaptionService {
     private Future<String> generate(JsonObject document, TaskType taskType, UserInfos user, String sessionId, String userAgent, String language) {
         final String fileId = document.getString("file");
         if (fileId == null || fileId.isEmpty()) {
-            return Future.failedFuture("Document has no associated file for " + taskType.value());
+            return Future.failedFuture(
+                    new IllegalArgumentException("Document has no associated file for " + taskType.value()));
         }
         if (captionOcrS3Storage == null) {
-            return Future.failedFuture("Caption S3 storage not configured");
+            return Future.failedFuture(new IllegalStateException("Caption S3 storage not configured"));
         }
 
         final String contentType = document.getJsonObject("metadata", new JsonObject())
@@ -157,6 +202,15 @@ public class DefaultCaptionService implements CaptionService {
                 });
     }
 
+    /**
+     * Copy the document from platform storage to AI service's own storage.
+     *
+     * @param fileId
+     * @param s3Path
+     * @param contentType
+     * @param filename
+     * @return
+     */
     private Future<Void> copyToCaptionStorage(String fileId, String s3Path, String contentType, String filename) {
         final Promise<Void> promise = Promise.promise();
 
