@@ -32,4 +32,13 @@ public interface SamlServiceProvider {
 	void generate(EventBus eb, String userId, String host, String serviceProviderEntityId,
 				  Handler<Either<String, io.vertx.core.json.JsonArray>> handler);
 
+	/**
+	 * Computes the SAML NameID value to use for this service provider, when it requires a specific
+	 * (non-default) NameID format such as an email address. Returns null if this provider has no
+	 * specific NameID to provide, in which case the caller should fall back to a default value.
+	 */
+	default String getNameId(String userId, String host) {
+		return null;
+	}
+
 }
