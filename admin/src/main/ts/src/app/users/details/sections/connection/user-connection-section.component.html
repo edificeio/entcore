@@ -16,11 +16,10 @@
       <p><s5l>users.details.section.connection.federatedInfo.issue.content</s5l></p>
     </div>
     <p><b><s5l>users.details.section.connection.federatedInfo.unlock</s5l></b>
-    <label>
-      <input type="checkbox" [ngModel]="isFederatedUserFieldsUnlocked" (ngModelChange)="onFederatedUnlockChange($event)" name="federatedUnlock" />
-      <s5l *ngIf="!isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.locked</s5l>
-      <s5l *ngIf="isFederatedUserFieldsUnlocked">users.details.section.connection.federatedFields.toggle.unlocked</s5l>
-    </label>
+      <button type="button" *ngIf="!isFederatedUserFieldsUnlocked" class="link" (click)="onFederatedUnlockChange()">
+        <span><s5l>users.details.section.connection.federatedFields.toggle.locked</s5l></span>
+      </button>
+      <span *ngIf="isFederatedUserFieldsUnlocked"><s5l>users.details.section.connection.federatedFields.toggle.unlocked</s5l></span>
     </p>
   </div>
   

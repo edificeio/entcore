@@ -117,12 +117,8 @@ export class UserConnectionSectionComponent
     return this.details?.hasFederatedIdentity && !isUserActive;
   }
 
-  onFederatedUnlockChange(value: boolean) {
-    if (value) {
-      this.showUnlockConfirmModal = true;
-    } else {
-      this.isFederatedUserFieldsUnlocked = false;
-    }
+  onFederatedUnlockChange() {
+    this.showUnlockConfirmModal = true;
   }
 
   confirmFederatedUnlock() {
