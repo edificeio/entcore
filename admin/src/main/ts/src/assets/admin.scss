@@ -511,7 +511,7 @@ i.group_add {
 }
 
 // button styled as a plain link, e.g. <button class="link"><span>label</span></button>
-.link {
+button.link {
   padding: 0;
   border: 0;
   text-decoration: underline;
