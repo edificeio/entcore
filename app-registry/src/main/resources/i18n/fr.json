@@ -54,7 +54,7 @@
   "appregistry.clientId": "Identifiants du client",
   "appregistry.code": "Code",
   "appregistry.confirm.app.deletion": "Veuillez confirmer la suppression définitive de l'application ",
-  "appregistry.connector.opts.header": "<p>Les paramètres du connecteur permettent de propager l'authentification de l'utilisateur vers un autre site pour qu'il n'ait pas besoin de se ré-authentifier.</p><p>Ce type de lien n'est possible qu'avec certains sites web. Renseignez-vous auprès du support du site web en question ou du service d'assistance de l'ENT pour connaître les paramétrages à effectuer.</p>",
+  "appregistry.connector.opts.header": "<p>Un connecteur (CAS ou OAuth) permet de propager l'authentification de l'utilisateur vers un autre site pour qu'il n'ait pas besoin de s'authentifier à nouveau.</p><p>Ce type de lien n'est possible qu'avec certains sites web, comme <a href=\"https://help.edifice.io/hc/fr/articles/14545756568092-%C3%89tape-1-Cr%C3%A9ation-et-configuration-du-connecteur-Pronote\" target=\"_blank\" style=\"text-decoration: underline; color:inherit;\">Pronote</a>. Renseignez-vous auprès du support du site web en question ou du service d'assistance de l'ENT pour connaître les paramétrages à effectuer.</p>",
   "appregistry.connector.parameters": "Paramètres du connecteur",
   "appregistry.create": "Créer",
   "appregistry.createApp": "Créer une application",
