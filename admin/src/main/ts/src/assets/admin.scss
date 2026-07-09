@@ -510,6 +510,24 @@ i.group_add {
   }
 }
 
+// button styled as a plain link, e.g. <button class="link"><span>label</span></button>
+button.link {
+  padding: 0;
+  border: 0;
+  text-decoration: underline;
+  background: transparent;
+
+  &:not(:disabled) {
+    color: $grey-dark;
+  }
+
+  &:not(:disabled):hover {
+    background: transparent;
+    border: 0;
+    color: $grey-dark;
+  }
+}
+
 // TODO duplicated
 .container {
   background-color: white;
