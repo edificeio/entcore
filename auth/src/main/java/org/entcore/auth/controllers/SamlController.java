@@ -358,7 +358,8 @@ public class SamlController extends AbstractFederateController {
 		} else {
 			switch (nameIdFormat) {
 				case NAME_ID_FORMAT_EMAIL_ADDRESS:
-					nameId = user.getEmail();
+					final String providerNameId = samlHelper.getNameId(serviceProviderId, user.getUserId(), getHost(request));
+					nameId = providerNameId != null ? providerNameId : user.getEmail();
 					break;
 				default:
 					nameId = sessionId;
