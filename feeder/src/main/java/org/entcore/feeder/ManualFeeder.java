@@ -349,12 +349,12 @@ public class ManualFeeder extends BusModBase {
 		String query =
 				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-" +
 				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}) " +
-				"CREATE (u:User {props}) " +
+				"CREATE UNIQUE pg<-[:IN]-(u:User {props}) " +
+				"SET u.structures = [s.externalId] " +
 				related +
 				"RETURN DISTINCT u.id as id, u.login AS login";
 		tx.add(query, params);
-		new org.entcore.common.schema.users.User(user.getString("id")).attach(tx,
-		        new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
+		org.entcore.common.schema.structures.Structure.applyStructureManagedPreferences(tx, user.getString("id"), structureId);
 		if (classesNames != null && !classesNames.isEmpty()) {
 			final String classesQuery =
 					"MATCH (s:Structure {id:{structureId}})<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup {filter: {profile}}), " +
@@ -640,8 +640,8 @@ public class ManualFeeder extends BusModBase {
 		String query =
 				"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
 				"(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile { name : {profile}}), s-[:BELONGS]->(struct:Structure) " +
-				"CREATE (u:User {props}), cpg<-[:IN]-u " +
-				"SET u.classes = [s.externalId] " +
+				"CREATE UNIQUE pg<-[:IN]-(u:User {props}), cpg<-[:IN]-u " +
+				"SET u.classes = [s.externalId], u.structures = [struct.externalId] " +
 				related +
 				"RETURN DISTINCT u.id as id, u.login AS login";
 		final String structureQuery = "MATCH (c:Class {id:{classId}})-[:BELONGS]->(s:Structure) RETURN s.id as structureId";
@@ -654,8 +654,7 @@ public class ManualFeeder extends BusModBase {
 				final TransactionHelper tx = new TransactionHelper(neo4j, Source.MANUAL, transactionId);
 				tx.add(query, params);
 				if (structureId != null) {
-					new org.entcore.common.schema.users.User(user.getString("id")).attach(tx,
-							new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
+					org.entcore.common.schema.structures.Structure.applyStructureManagedPreferences(tx, user.getString("id"), structureId);
 				}
 				final Promise<Void> promise = Promise.promise();
 				if (userPositionIds == null) {
@@ -725,8 +724,7 @@ public class ManualFeeder extends BusModBase {
 				final TransactionHelper tx = new TransactionHelper(neo4j, Source.MANUAL, transactionId);
 				tx.add(query, params);
 				if (structureId != null) {
-					new org.entcore.common.schema.users.User(userId).attach(tx,
-							new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
+					org.entcore.common.schema.structures.Structure.attach(tx, userId, structureId);
 				}
 				final Handler<Message<JsonObject>> replyHandler = new Handler<Message<JsonObject>>() {
 					@Override
@@ -774,8 +772,7 @@ public class ManualFeeder extends BusModBase {
 									"RETURN DISTINCT u.id as id";
 					tx.add(query, params);
 					if (structureId != null) {
-						new org.entcore.common.schema.users.User(uid).attach(tx,
-								new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
+						org.entcore.common.schema.structures.Structure.attach(tx, uid, structureId);
 					}
 				}
 				tx.commit(new Handler<Message<JsonObject>>() {
