@@ -1,0 +1,52 @@
+.mediacentre-universalis-search {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-8);
+  width: 100%;
+  margin-top: var(--primitive-spacer-16);
+}
+
+.mediacentre-universalis-search-logo {
+  width: 41px;
+  height: 39px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.mediacentre-state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--primitive-spacer-8);
+  padding: var(--primitive-spacer-16) var(--primitive-spacer-8);
+  text-align: center;
+}
+
+.mediacentre-state-message-illustration {
+  width: 150px;
+  height: 100px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.mediacentre-state-message-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--primitive-numbers-40);
+  height: var(--primitive-numbers-40);
+  border-radius: var(--primitive-border-radius-pill);
+  flex-shrink: 0;
+}
+
+.mediacentre-state-message--error .mediacentre-state-message-icon {
+  background: var(--primitive-red-200);
+  color: var(--primitive-red-800);
+}
+
+.mediacentre-state-message-text {
+  margin: 0;
+  font-size: var(--primitive-font-size-default);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-800);
+}

@@ -1,5 +1,6 @@
 import { HomeCard } from '@edifice.io/react/homepage';
 import { IconArrowRight, IconExternalLink } from '@edifice.io/react/icons';
+import clsx from 'clsx';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ListWidgetItem, WidgetBaseProps } from '~/models';
@@ -15,16 +16,31 @@ export interface ListWidgetProps extends WidgetBaseProps {
   style?: React.CSSProperties;
   externalLink?: boolean;
   filter?: React.ReactNode;
+  /** Rendered after the list/empty/error content, inside HomeCard.Content. */
+  footer?: React.ReactNode;
+  /** When true, renders errorState instead of the item list. */
+  isError?: boolean;
+  /** Overrides the default WidgetEmptyState when items is empty. */
+  emptyState?: React.ReactNode;
+  /** Rendered when isError is true. */
+  errorState?: React.ReactNode;
+  /** Extra class applied to each item, on top of list-widget-item. */
+  itemClassName?: string;
 }
 
 export function ListWidget({
   title,
   items,
   isLoading = false,
+  isError = false,
   onSeeMore,
   externalLink = false,
   style,
   filter,
+  footer,
+  emptyState,
+  errorState,
+  itemClassName,
 }: ListWidgetProps) {
   const { t } = useTranslation();
   return (
@@ -39,8 +55,10 @@ export function ListWidget({
         {filter}
         {isLoading ? (
           <WidgetSkeleton />
+        ) : isError ? (
+          (errorState ?? <WidgetEmptyState text={t('homepage.crna.widget.error', 'Une erreur est survenue')} />)
         ) : items.length === 0 ? (
-          <WidgetEmptyState />
+          (emptyState ?? <WidgetEmptyState />)
         ) : (
           <ul className="list-widget-list">
             {items.map((item) => {
@@ -69,19 +87,20 @@ export function ListWidget({
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="list-widget-item link-discret"
+                      className={clsx('list-widget-item link-discret', itemClassName)}
                       {...(externalLink ? { target: '_blank', rel: 'noreferrer' } : {})}
                     >
                       {content}
                     </a>
                   ) : (
-                    <div className="list-widget-item">{content}</div>
+                    <div className={clsx('list-widget-item', itemClassName)}>{content}</div>
                   )}
                 </li>
               );
             })}
           </ul>
         )}
+        {footer}
       </HomeCard.Content>
     </HomeCard>
   );

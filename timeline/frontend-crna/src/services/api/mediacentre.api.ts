@@ -7,7 +7,7 @@ function mapSignetToItem(signet: MediacentreSignet): ListWidgetItem {
     id: signet._id,
     label: signet.title,
     sublabel: signet.plain_text,
-    href: signet.link,
+    href: signet.link || signet.url,
     imageUrl: signet.image,
   };
 }
@@ -17,7 +17,7 @@ function mapPinToItem(signet: MediacentreSignet): ListWidgetItem {
     id: signet._id,
     label: signet.pinned_title || signet.title,
     sublabel: signet.pinned_description || signet.plain_text,
-    href: signet.link,
+    href: signet.link || signet.url,
     imageUrl: signet.image,
   };
 }
@@ -37,4 +37,13 @@ export async function fetchMediacentrePins(structureId: string): Promise<ListWid
   const data = Array.isArray(body) ? body : (body as MediacentreFavoritesResponse).data;
   if (!Array.isArray(data)) throw new Error('mediacentre.widget.pins.fetch.error');
   return data.map(mapPinToItem);
+}
+
+export async function fetchMediacentreHasUniversalis(): Promise<boolean> {
+  try {
+    const resource = await odeServices.http().get('/mediacentre/resource/universalis');
+    return !!resource;
+  } catch {
+    return false;
+  }
 }

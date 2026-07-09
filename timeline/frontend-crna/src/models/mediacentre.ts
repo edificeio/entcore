@@ -8,7 +8,9 @@ export interface MediacentreSignet {
   disciplines: string[];
   levels: string[];
   document_types: string[];
-  link: string;
+  link?: string;
+  /** Personal signets (favorites/pins the user added) return this column instead of `link`. */
+  url?: string;
   source: string;
   plain_text: string;
   favorite?: boolean;

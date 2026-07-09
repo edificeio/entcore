@@ -24,6 +24,16 @@ a.list-widget-item:hover {
   border-color: var(--primitive-grey-300);
 }
 
+.list-widget-item--highlight {
+  background: var(--color-primary-pale);
+  border-color: var(--color-primary-light);
+}
+
+a.list-widget-item--highlight:hover {
+  background-color: var(--primitive-white);
+  border-color: var(--color-primary-default);
+}
+
 .list-widget-item-icon {
   width: 36px;
   height: 36px;
@@ -45,17 +55,15 @@ a.list-widget-item:hover {
 }
 
 .list-widget-item-label {
-  font-family: var(--primitive-font-family-arimo);
-  font-weight: 400;
-  font-size: var(--primitive-font-size-small);
-  line-height: var(--primitive-font-lineheight-2xs);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-default);
+  line-height: var(--primitive-font-lineheight-s);
   color: var(--primitive-grey-900);
 }
 
 .list-widget-item-sublabel {
-  font-family: var(--primitive-legacy-font-family-roboto);
-  font-weight: 400;
-  font-size: var(--primitive-font-size-small);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--primitive-font-size-default);
   line-height: var(--primitive-font-lineheight-2xs);
   color: var(--primitive-grey-800);
   white-space: nowrap;

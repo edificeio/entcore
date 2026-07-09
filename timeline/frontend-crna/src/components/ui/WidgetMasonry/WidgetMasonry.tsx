@@ -25,6 +25,12 @@ export function WidgetMasonry({
       gutter={gutter}
       items={items}
       itemRender={(item) => <>{item.children}</>}
+      // Widgets load their content asynchronously (skeleton -> real data),
+      // changing height after the initial layout. Without `fresh`, Masonry
+      // only re-measures on breakpoint/item-list changes, so items keep
+      // stale positions and end up overlapping or jumping columns once a
+      // resize eventually triggers a recompute.
+      fresh
     />
   );
 }

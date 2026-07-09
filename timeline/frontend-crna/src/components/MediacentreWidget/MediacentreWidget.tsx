@@ -9,8 +9,15 @@ import type { IconButtonProps } from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
 import type { JSX, RefAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMediacentre, useMediacentrePins } from '~/hooks/useMediacentre';
+import {
+  useMediacentre,
+  useMediacentreHasUniversalis,
+  useMediacentrePins,
+} from '~/hooks/useMediacentre';
 import { ListWidget } from '../ui/ListWidget';
+import { MediacentreStateMessage } from './MediacentreStateMessage';
+import { UniversalisSearch } from './UniversalisSearch';
+import './MediacentreWidget.css';
 
 type MediacentreView = 'favorites' | 'pins';
 
@@ -27,13 +34,22 @@ export function MediacentreWidget({
   const [selectedSchoolIndex, setSelectedSchoolIndex] = useState(0);
   const selectedSchool = schools[selectedSchoolIndex];
 
-  const { data: favorites = [], isLoading: isFavLoading } = useMediacentre();
-  const { data: pins = [], isLoading: isPinsLoading } = useMediacentrePins(
-    selectedSchool?.id,
-  );
+  const {
+    data: favorites = [],
+    isLoading: isFavLoading,
+    isError: isFavError,
+  } = useMediacentre();
+  const {
+    data: pins = [],
+    isLoading: isPinsLoading,
+    isError: isPinsError,
+  } = useMediacentrePins(selectedSchool?.id);
+
+  const hasUniversalis = useMediacentreHasUniversalis();
 
   const items = view === 'favorites' ? favorites : pins;
   const isLoading = view === 'favorites' ? isFavLoading : isPinsLoading;
+  const isError = view === 'favorites' ? isFavError : isPinsError;
 
   const filter = (
     <div className="d-flex flex-column gap-4">
@@ -95,8 +111,41 @@ export function MediacentreWidget({
       title={t('homepage.crna.widget.mediacentre.title', 'Médiacentre')}
       items={items}
       isLoading={isLoading}
+      isError={isError}
       onSeeMore={onSeeMore}
+      externalLink
       filter={filter}
+      itemClassName="list-widget-item--highlight"
+      emptyState={
+        <MediacentreStateMessage
+          variant="empty"
+          text={
+            view === 'favorites'
+              ? t(
+                  'homepage.crna.widget.mediacentre.empty',
+                  'Aucune ressource en favoris',
+                )
+              : t(
+                  'homepage.crna.widget.mediacentre.empty-pins',
+                  'Aucune ressource épinglée',
+                )
+          }
+        />
+      }
+      errorState={
+        <MediacentreStateMessage
+          variant="error"
+          text={t(
+            'homepage.crna.widget.mediacentre.error',
+            "Impossible d'établir une connexion avec Médiacentre. Si le problème persiste, ouvrez une demande d'aide sur le module Assistance ENT.",
+          )}
+        />
+      }
+      footer={
+        !isError && hasUniversalis ? (
+          <UniversalisSearch uai={selectedSchool?.UAI} />
+        ) : undefined
+      }
     />
   );
 }
