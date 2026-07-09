@@ -140,7 +140,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	}
 
 	@Override
-	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler) {
+	public void listForUser(UserInfos user, String lang, String domain, boolean includeRead, Handler<Either<String, JsonArray>> handler) {
 		getUserPositions(user.getUserId()).onSuccess(myPositions -> {
 			String myStructuresIds;
 			String myADMLStructuresId;
@@ -188,7 +188,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 					"AND (\"structureId\" IS NULL " +
 					"OR (\"structureId\" IN (" + myStructuresIds + ")) " +
 					"OR EXISTS (SELECT * FROM " + STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myStructuresIds + "))) " +
-					"AND NOT EXISTS (SELECT * FROM " + JOIN_TABLE + " WHERE message_id = m.id AND user_id = '" + user.getUserId() + "') " +
+					(includeRead ? "" : "AND NOT EXISTS (SELECT * FROM " + JOIN_TABLE + " WHERE message_id = m.id AND user_id = '" + user.getUserId() + "') ") +
 					"ORDER BY modified DESC";
 
 			sql.raw(query, validResultHandler(handler, "contents"));

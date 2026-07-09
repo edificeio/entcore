@@ -9,9 +9,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: var(--primitive-numbers-40);
+  height: var(--primitive-numbers-40);
+  border-radius: var(--primitive-border-radius-pill);
   color: var(--primitive-white);
   font-weight: var(--primitive-font-weight-bold);
   font-size: var(--primitive-font-size-default);

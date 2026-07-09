@@ -104,7 +104,8 @@ public class FlashMsgController extends BaseController {
 					badRequest(request);
 					return;
 				}
-				service.listForUser(user, language, getHost(request), arrayResponseHandler(request));
+				boolean includeRead = "true".equalsIgnoreCase(request.params().get("includeRead"));
+				service.listForUser(user, language, getHost(request), includeRead, arrayResponseHandler(request));
 			}
 		});
 	}

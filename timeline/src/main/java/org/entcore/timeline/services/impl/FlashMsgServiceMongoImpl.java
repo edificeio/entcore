@@ -90,19 +90,22 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 	}
 
 	@Override
-	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler) {
+	public void listForUser(UserInfos user, String lang, String domain, boolean includeRead, Handler<Either<String, JsonArray>> handler) {
 		String profile = user.getType();
 		String now = mongoFormat.format(new Date());
 
-		Bson query = Filters.and(
+		List<Bson> filters = new java.util.ArrayList<>(java.util.Arrays.asList(
 				Filters.exists("contents."+lang, true),
 				Filters.ne("contents."+lang, ""),
 				Filters.eq("profiles", profile),
-				Filters.ne("markedAsRead", user.getUserId()),
 				Filters.lte("startDate", now),
 				Filters.gt("endDate", now),
 				Filters.eq("domain", domain)
-				);
+				));
+		if (!includeRead) {
+			filters.add(Filters.ne("markedAsRead", user.getUserId()));
+		}
+		Bson query = Filters.and(filters);
 
 		JsonObject sort = new JsonObject().put("modified", -1);
 		JsonObject keys = new JsonObject()

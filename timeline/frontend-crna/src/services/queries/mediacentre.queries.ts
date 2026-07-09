@@ -1,5 +1,9 @@
 import { queryOptions } from '@tanstack/react-query';
-import { fetchMediacentre, fetchMediacentrePins } from '../api/mediacentre.api';
+import {
+  fetchMediacentre,
+  fetchMediacentreHasUniversalis,
+  fetchMediacentrePins,
+} from '../api/mediacentre.api';
 
 export const mediacentreQueryOptions = queryOptions({
   queryKey: ['mediacentre'],
@@ -14,3 +18,9 @@ export const mediacentrePinsQueryOptions = (structureId: string) =>
     staleTime: 5 * 60 * 1000,
     enabled: !!structureId,
   });
+
+export const mediacentreUniversalisQueryOptions = queryOptions({
+  queryKey: ['mediacentre', 'universalis'],
+  queryFn: fetchMediacentreHasUniversalis,
+  staleTime: 5 * 60 * 1000,
+});

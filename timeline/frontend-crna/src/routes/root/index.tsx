@@ -12,16 +12,18 @@ import {
   NotificationListContainer,
   SchoolSpaceContainer,
 } from '@edifice.io/react/homepage';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import backgroundImage from '~/assets/background.png';
 import styles from './Root.module.css';
 import { MediacentreWidget, WidgetMasonry } from '~/components';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
-import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
 import { PersonnalisationPanel } from '~/components/ui/PersonnalisationPanel';
 import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
+import { FlashMessageHistoryPanel } from '~/components/WelcomeWidget/FlashMessageHistoryPanel';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
+
+type OverlayPanel = 'settings' | 'flash-history' | null;
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -36,8 +38,19 @@ export const Root = () => {
   const hasCarnetDeBord = user?.widgets?.some(
     (w) => w.name === 'carnet-de-bord',
   );
-  const { updateOverlayOpen } = useOverlay();
-  const openOverlay = () => updateOverlayOpen(true);
+  const { isOverlayOpen, updateOverlayOpen } = useOverlay();
+  const [activePanel, setActivePanel] = useState<OverlayPanel>(null);
+  const openSettings = () => {
+    setActivePanel('settings');
+    updateOverlayOpen(true);
+  };
+  const openHistory = () => {
+    setActivePanel('flash-history');
+    updateOverlayOpen(true);
+  };
+  useEffect(() => {
+    if (!isOverlayOpen) setActivePanel(null);
+  }, [isOverlayOpen]);
   const { lg } = useBreakpoint();
   const [pageErrors, setPageErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -71,18 +84,6 @@ export const Root = () => {
     >
       <PageLayout.Header onNotificationsClick={toggleNotifications} />
       <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
-        {pageErrors.map((msg) => (
-          <Alert
-            key={msg}
-            type="danger"
-            isToast
-            position="top-right"
-            isDismissible
-            autoClose
-          >
-            {msg}
-          </Alert>
-        ))}
         {successMessage && (
           <Alert
             type="success"
@@ -102,13 +103,13 @@ export const Root = () => {
         </WidgetErrorBoundary>
       </PageLayout.SidebarLeft>
       <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
-        <BetaSwitchContainer />
         <MessageFlashListContainer />
 
         <WidgetErrorBoundary>
           <WelcomeWidget
             onCreateDocumentSuccess={setSuccessMessage}
-            onOpenSettings={openOverlay}
+            onOpenSettings={openSettings}
+            onOpenHistory={openHistory}
           />
         </WidgetErrorBoundary>
 
@@ -125,7 +126,8 @@ export const Root = () => {
         </WidgetMasonry>
       </PageLayout.Content>
       <PageLayout.Overlay backdrop closeButton={false}>
-        <PersonnalisationPanel />
+        {activePanel === 'settings' && <PersonnalisationPanel />}
+        {activePanel === 'flash-history' && <FlashMessageHistoryPanel />}
       </PageLayout.Overlay>
 
       {isSidebarOpen ? (

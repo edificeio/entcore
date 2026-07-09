@@ -56,6 +56,7 @@ export function AvantagesWidget({
       items={items}
       onSeeMore={onSeeMore}
       externalLink={true}
+      itemClassName="list-widget-item--highlight"
     />
   );
 }
