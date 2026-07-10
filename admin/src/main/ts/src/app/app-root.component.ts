@@ -1,13 +1,13 @@
+import { JsonObject } from '@angular/compiler-cli/ngcc/src/utils';
 import { Component, Injector } from '@angular/core';
 import { Data } from '@angular/router';
+import http from 'axios';
 import { OdeComponent } from 'ngx-ode-core';
 import { ScreebService } from './core/services/screeb.service';
 import { globalStore } from './core/store/global.store';
+import { Session } from './core/store/mappings/session';
 import { SessionModel } from './core/store/models/session.model';
 import { StructureModel } from './core/store/models/structure.model';
-import http from 'axios';
-import {JsonObject} from '@angular/compiler-cli/ngcc/src/utils';
-import { Session } from './core/store/mappings/session';
 
 
 @Component({
@@ -51,7 +51,7 @@ export class AppRootComponent extends OdeComponent {
     public enableMassMessaging: boolean;
     private hasSubscribeChildRoute: boolean = false;
 
-    constructor(injector: Injector, private screebService: ScreebService) {
+    constructor(injector: Injector, private readonly screebService: ScreebService) {
         super(injector);
     }
 

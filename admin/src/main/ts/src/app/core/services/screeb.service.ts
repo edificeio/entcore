@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Screeb } from '@screeb/sdk-angular';
-import {
-    HooksMessageStart,
-    HooksSurveyStart,
-    PropertyRecord,
-} from '@screeb/sdk-browser';
 import http from 'axios';
 import { Session } from '../store/mappings/session';
 
@@ -19,7 +14,7 @@ type ScreebPublicConf = {
  *
  * Screeb is enabled per platform via the `screeb-app-id` key of the admin
  * module `publicConf` (served by GET /admin/conf/public). When the key is
- * absent or empty, no Screeb script is loaded and no network call is made.
+ * absent or empty, no Screeb script is loaded and no network call is made to Screeb.
  */
 @Injectable()
 export class ScreebService {
@@ -33,12 +28,12 @@ export class ScreebService {
      */
     public async initFromPlatformConf(session: Session): Promise<void> {
         const conf = (await http.get<ScreebPublicConf>('/admin/conf/public')).data;
-        const appId = conf && conf['screeb-app-id'];
+        const appId = conf?.['screeb-app-id'];
         if (!appId) {
             return;
         }
         const allowedProfiles = conf['screeb-allowed-profiles'];
-        if (allowedProfiles && allowedProfiles.length > 0 && allowedProfiles.indexOf(session.type) === -1) {
+        if (allowedProfiles && allowedProfiles.length > 0 && !allowedProfiles.includes(session.type)) {
             return;
         }
         await this.init(appId, session);
@@ -53,32 +48,6 @@ export class ScreebService {
         await this.screeb.load();
         const hashedId = await this.hashUserId(session.userId);
         await this.screeb.init(appId, hashedId, {profile: session.type});
-    }
-
-    public trackEvent(name: string, properties?: PropertyRecord): void {
-        this.screeb.eventTrack(name, properties);
-    }
-
-    public triggerSurvey(surveyId: string, hooks?: HooksSurveyStart, hiddenFields?: PropertyRecord): void {
-        // distributionId and allowMultipleResponses are wrongly declared as required by the Angular SDK:
-        // the underlying browser SDK treats them as optional.
-        this.screeb.surveyStart(surveyId, undefined as unknown as string, undefined as unknown as boolean, hiddenFields, hooks);
-    }
-
-    public triggerMessage(messageId: string, hooks?: HooksMessageStart): void {
-        this.screeb.messageStart(messageId, undefined, undefined, hooks);
-    }
-
-    public closeSurvey(): void {
-        this.screeb.surveyClose();
-    }
-
-    public setIdentityProperties(properties: PropertyRecord): void {
-        this.screeb.identityProperties(properties);
-    }
-
-    public reset(): void {
-        this.screeb.identityReset();
     }
 
     /** SHA-256 hash truncated to 16 hexadecimal characters (privacy rule shared with the React apps). */
