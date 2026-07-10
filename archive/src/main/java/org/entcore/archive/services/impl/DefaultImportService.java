@@ -135,8 +135,17 @@ public class DefaultImportService implements ImportService {
                     upload.pipeTo(tmpFile.result());
                 });
                 request.endHandler(v -> {
-                    MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId).put("date", MongoDb.now()));
-                    handler.handle(new Either.Right<>(importId));
+                    // Now we move it to the final storage so it can be used by other instances of archive which
+                    // do not share the same file system
+                    storage.moveFsFile(filePath, filePath)
+                    .onSuccess(e -> {
+                        MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject().put("import_id", importId).put("date", MongoDb.now()));
+                        handler.handle(new Either.Right<>(importId));
+                    })
+                    .onFailure(th -> {
+                        log.warn("An error occurred while moving an archive to upload to the final storage", th);
+                        handler.handle(new Either.Left<>("upload.error"));
+                    });
                 });
                 request.resume();
             } else {
@@ -164,48 +173,67 @@ public class DefaultImportService implements ImportService {
                                Handler<Either<String, JsonObject>> handler) {
         final String filePath = getImportPath(importId);
         final String unzippedPath = getUnzippedImportPath(importId);
-        fs.mkdirs(unzippedPath, done -> {
-            FileUtils.unzip(filePath, unzippedPath, new Handler<Either<String, Void>>()
-            {
-                @Override
-                public void handle(Either<String, Void> res)
-                {
-                    if(res.isRight() == true)
-                    {
-                        fs.readDir(unzippedPath, results -> {
-                            if (results.succeeded()) {
-                                if (results.result().size() == 1) {
-                                    fs.readDir(results.result().get(0), files -> {
-                                        if (files.succeeded()) {
-                                            if (files.result().size() > 0 &&
-                                                    files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
-                                                verifyImport(user, importId, filePath, locale, config, files.result(), handler);
+        storage.copyFileToFs(filePath, filePath)
+        .onFailure(th -> {
+            log.error("Cannot download previously uploaded archive with id " + importId + " to " + filePath, th) ;
+            deleteAndHandleError(importId, th.getMessage(), handler);
+        }).onSuccess(e -> {
+            fs.mkdirs(unzippedPath, done -> {
+                FileUtils.unzip(filePath, unzippedPath, new Handler<Either<String, Void>>() {
+                    @Override
+                    public void handle(Either<String, Void> res) {
+                        if (res.isRight()) {
+                            fs.readDir(unzippedPath, results -> {
+                                if (results.succeeded()) {
+                                    if (results.result().size() == 1) {
+                                        fs.readDir(results.result().get(0), files -> {
+                                            if (files.succeeded()) {
+                                                if (files.result().size() > 0 &&
+                                                        files.result().stream().anyMatch(file -> file.endsWith("Manifest.json"))) {
+                                                    verifyImport(user, importId, filePath, locale, config, files.result(), verifyResult -> {
+                                                        if (verifyResult.isRight()) {
+                                                            // Now we move it to the final storage so it can be used by other instances of archive which
+                                                            // do not share the same file system
+                                                            storage.moveFsDirectory(unzippedPath, unzippedPath)
+                                                                    .onFailure(th -> {
+                                                                        log.warn("An error occurred while moving an archive to upload to the final storage", th);
+                                                                        deleteAndHandleError(importId, th.getMessage(), handler);
+                                                                    })
+                                                                    .onSuccess(e -> handler.handle(verifyResult))
+                                                                    .onComplete(e -> fs.delete(filePath));
+                                                        } else {
+                                                            handler.handle(verifyResult);
+                                                        }
+                                                    });
+                                                } else {
+                                                    deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
+                                                }
                                             } else {
-                                                deleteAndHandleError(importId, "Archive file not recognized - Missing 'Manifest.json'", handler);
+                                                deleteAndHandleError(importId, files.cause().getMessage(), handler);
                                             }
-                                        } else {
-                                            deleteAndHandleError(importId, files.cause().getMessage(), handler);
-                                        }
-                                    });
+                                        });
+                                    } else {
+                                        deleteAndHandleError(importId, "Archive file not recognized", handler);
+                                    }
                                 } else {
-                                    deleteAndHandleError(importId,"Archive file not recognized", handler);
+                                    deleteAndHandleError(importId, results.cause().getMessage(), handler);
                                 }
-                            } else {
-                                deleteAndHandleError(importId, results.cause().getMessage(), handler);
-                            }
-                        });
+                            });
+                        } else {
+                            deleteAndHandleError(importId, res.left().getValue(), handler);
+                        }
                     }
-                    else
-                    {
-                        deleteAndHandleError(importId, res.left().getValue(), handler);
-                    }
-                }
+                });
             });
         });
     }
 
     private void deleteAndHandleError(String importId, String error, Handler<Either<String, JsonObject>> handler) {
-        deleteArchive(importId);
+        try {
+            deleteArchive(importId);
+        } catch(Exception e) {
+            log.error("Could not delete archive with id " + importId, e);
+        }
         handler.handle(new Either.Left<>(error));
     }
 
@@ -224,18 +252,18 @@ public class DefaultImportService implements ImportService {
             String filePath = getImportPath(importId);
             log.debug("[Archive] - Deleting import located at " + filePath);
 
-            storage.deleteRecursive(filePath);
             fs.deleteRecursive(filePath, true, deleted -> {
                 if (deleted.failed()) {
-                    log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
+                    log.debug("[Archive] - Import could not be deleted on the filesystem of this instance", deleted.cause());
                 }
+                storage.deleteRecursive(filePath);
             });
             String unzippedPath = getUnzippedImportPath(importId);
-            storage.deleteRecursive(unzippedPath);
             fs.deleteRecursive(unzippedPath, true, deleted -> {
                 if (deleted.failed()) {
-                    log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
+                    log.debug("[Archive] - Import could not be deleted", deleted.cause());
                 }
+                storage.deleteRecursive(unzippedPath);
             });
         }
     }
@@ -439,39 +467,45 @@ public class DefaultImportService implements ImportService {
 
     @Override
     public void launchImport(String userId, String userLogin, String userName, String importId,
-      String locale, String host, JsonObject apps)
-    {
-        userImports.put(importId, JsonObject.mapFrom(new UserImport(apps.size())));
-        fs.readDir(getUnzippedImportPath(importId), results -> {
-            if (results.succeeded()) {
-                if (results.result().size() == 1)
-                {
-                    final String path = results.result().get(0);
-                    log.debug("Moving unzipped files to storage " + path);
-                    storage.moveFsDirectory(path, path)
-                    .onSuccess(e -> {
-                        JsonObject j = new JsonObject()
-                                .put("action", handlerActionName)
-                                .put("importId", importId)
-                                .put("userId", userId)
-                                .put("userLogin", userLogin)
-                                .put("userName", userName)
-                                .put("locale", locale)
-                                .put("host", host)
-                                .put("apps", apps)
-                                .put("path", path);
-                        eb.publish("user.repository", j);
-                    })
-                    .onFailure(th -> log.error("[Archive] Error while moving zip to storage", th));
-                }
-                else {
+      String locale, String host, JsonObject apps) {
+        final String unzippedImportPath = getUnzippedImportPath(importId);
+        storage.copyDirectoryToFs(unzippedImportPath, unzippedImportPath)
+        .onFailure(th -> {
+            log.error("Cannot download previously uploaded archive with id " + importId + " to " + unzippedImportPath, th);
+            deleteArchive(importId);
+        })
+        .onSuccess(h -> {
+            userImports.put(importId, JsonObject.mapFrom(new UserImport(apps.size())));
+            fs.readDir(unzippedImportPath, results -> {
+                if (results.succeeded()) {
+                    final int nbFiles = results.result().size();
+                    if (nbFiles == 1) {
+                        final String path = results.result().get(0);
+                        log.debug("Moving unzipped files to storage " + path);
+                        storage.moveFsDirectory(path, path)
+                                .onSuccess(e -> {
+                                    JsonObject j = new JsonObject()
+                                            .put("action", handlerActionName)
+                                            .put("importId", importId)
+                                            .put("userId", userId)
+                                            .put("userLogin", userLogin)
+                                            .put("userName", userName)
+                                            .put("locale", locale)
+                                            .put("host", host)
+                                            .put("apps", apps)
+                                            .put("path", path);
+                                    eb.publish("user.repository", j);
+                                })
+                                .onFailure(th -> log.error("[Archive] Error while moving zip to storage", th));
+                    } else {
+                        deleteArchive(importId);
+                        log.error("[Archive] - Import could not be launched - wrong number of unzipped files (" + nbFiles + " VS 1");
+                    }
+                } else {
                     deleteArchive(importId);
-                    log.error("[Archive] - Import could not be launched - wrong number of unzipped files");
+                    log.error("[Archive] - Import could not be deleted - no unzipped filed");
                 }
-            } else {
-                deleteArchive(importId);
-                log.error("[Archive] - Import could not be deleted - no unzipped filed");
-            }
+            });
         });
     }
 

@@ -4,6 +4,7 @@ import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
@@ -17,6 +18,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import org.entcore.archive.services.ImportService;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserUtils;
 
@@ -32,6 +36,9 @@ public class ImportController extends BaseController {
     }
 
     @Get("/import/clear")
+    @SecuredAction(type = ActionType.RESOURCE, value = "")
+    @ResourceFilter(SuperAdminFilter.class)
+    @MfaProtected()
     public void clear(final HttpServerRequest request) {
         importService.clear();
         renderJson(request, new JsonObject().put("ok", true));
