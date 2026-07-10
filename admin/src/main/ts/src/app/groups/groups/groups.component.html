@@ -24,7 +24,8 @@
 <div class="tabs">
   <ng-container *ngFor="let tab of tabs"><button class="tab" *ngIf="tab.visible"
         [routerLink]="tab.view"
-        routerLinkActive="active">
+        routerLinkActive="active"
+        [attr.data-testid]="tab.testId">
     {{ tab.label | translate }}
   </button></ng-container>
 </div>

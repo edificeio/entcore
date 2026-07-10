@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { Data, NavigationEnd } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
-import { routing } from '../../core/services/routing.service';
-import { StructureModel } from '../../core/store/models/structure.model';
-import {ZimbraService} from '../zimbra/zimbra.service';
-import {SubjectsService} from '../subjects/subjects.service';
-import {CalendarService} from '../calendar/calendar.service';
-import {ImportEDTReportsService} from '../import-edt/import-edt-reports.service';
+import { UserPositionService } from 'src/app/core/services/user-position.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
-import { UserPositionService } from 'src/app/core/services/user-position.service';
+import { routing } from '../../core/services/routing.service';
+import { StructureModel } from '../../core/store/models/structure.model';
+import { CalendarService } from '../calendar/calendar.service';
+import { ImportEDTReportsService } from '../import-edt/import-edt-reports.service';
+import { SubjectsService } from '../subjects/subjects.service';
+import { ZimbraService } from '../zimbra/zimbra.service';
 
 @Component({
     selector: 'ode-management-root',
@@ -20,16 +20,16 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
 
     // Tabs
     tabs = [
-        { label: 'management.structure.informations.tab', view: 'infos', active: 'infos'},
-        { label: 'management.message.flash', view: 'message-flash/list', active: 'message-flash'},
-        { label: 'management.block.profile.tab', view: 'block-profiles', active: 'block-profiles'},
-        { label: 'management.calendar', view: 'calendar', active: 'calendar', right: "fr.openent.DisplayController|view"},
-        { label: 'management.zimbra.tab', view: 'zimbra', active: 'zimbra', right: "fr.openent.zimbra.controllers.ZimbraController|view"},
-        { label: 'management.subjects.tab', view: 'subjects/create', active: 'subjects', right: "fr.openent.DisplayController|view"},
-        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" },
-        { label: 'management.structure.gar.tab', view: 'gar', active: 'gar'},
-        { label: "management.structure.user-position.tab", view: "positions", active: "positions" },
-        { label: "management.structure.notification.schedules.tab", view: "notification-schedules", active: "notification-schedules" },
+        { label: 'management.structure.informations.tab', view: 'infos', active: 'infos', testId: "management-tabs-infos-button" },
+        { label: 'management.message.flash', view: 'message-flash/list', active: 'message-flash', testId: "management-tabs-message-flash-button" },
+        { label: 'management.block.profile.tab', view: 'block-profiles', active: 'block-profiles', testId: "management-tabs-block-profiles-button" },
+        { label: 'management.calendar', view: 'calendar', active: 'calendar', right: "fr.openent.DisplayController|view", testId: "management-tabs-calendar-button" },
+        { label: 'management.zimbra.tab', view: 'zimbra', active: 'zimbra', right: "fr.openent.zimbra.controllers.ZimbraController|view", testId: "management-tabs-zimbra-button" },
+        { label: 'management.subjects.tab', view: 'subjects/create', active: 'subjects', right: "fr.openent.DisplayController|view", testId: "management-tabs-subjects-button" },
+        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view", testId: "management-tabs-functional-group-flow-button" },
+        { label: 'management.structure.gar.tab', view: 'gar', active: 'gar', testId: "management-tabs-gar-button" },
+        { label: "management.structure.user-position.tab", view: "positions", active: "positions", testId: "management-tabs-user-position-button" },
+        { label: "management.structure.notification.schedules.tab", view: "notification-schedules", active: "notification-schedules", testId: "management-tabs-notification-schedules-button" },
     ];
 
     private structure: StructureModel;
