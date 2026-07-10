@@ -1,6 +1,7 @@
 import {AppRoutingModule} from './app-routing.module';
 import {NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
+import {ScreebModule} from '@screeb/sdk-angular';
 import {NgxOdeSijilModule} from 'ngx-ode-sijil';
 
 import {CoreModule} from './core/core.module';
@@ -38,7 +39,14 @@ registerLocaleData(localePt);
             provide: LabelsService,
             useExisting: SijilLabelsService
         }),
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        // Screeb is loaded and initialized manually (see ScreebService): the app id is
+        // only known at runtime, from the platform publicConf, and no script must be
+        // loaded at all when Screeb is not enabled for the platform.
+        ScreebModule.forRoot({
+            autoInit: false,
+            shouldLoad: false
+        })
     ],
     declarations: [
         AppComponent,
