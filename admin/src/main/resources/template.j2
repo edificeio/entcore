@@ -19,9 +19,6 @@
       {% if hotjarId is defined %}
         "hotjarId": {{ hotjarId }},
       {% endif %}
-      {% if adminScreebAllowedProfiles is defined %}
-        "screeb-allowed-profiles": {{ adminScreebAllowedProfiles }},
-      {% endif %}
       "screeb-app-id": "{{ screebAppId | default('') }}"
     },
     {% if adminDistributions is defined %}
