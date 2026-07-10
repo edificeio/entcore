@@ -11,6 +11,7 @@ import { I18nResolver } from './resolvers/i18n.resolver';
 import { SessionResolver } from './resolvers/session.resolver';
 import { StructuresResolver } from './resolvers/structures.resolver';
 import { NotifyService } from './services/notify.service';
+import { ScreebService } from './services/screeb.service';
 import { SijilLabelsService } from './services/sijil.labels.service';
 import { TimezoneService } from './services/timezone.service';
 import { UserPositionService } from './services/user-position.service';
@@ -40,7 +41,8 @@ import { WidgetService } from './services/widgets.service';
         UserService,
         UserPositionService,
         TimezoneService,
-        FavIconResolver
+        FavIconResolver,
+        ScreebService
     ],
 })
 export class CoreModule {
