@@ -13,6 +13,7 @@
         [max]="filter.datepicker ? 1 : filter.comboModel.length"
         [orderBy]="filter.order || orderer"
         [filter]="filter.filterProp"
+        [attr.data-testid]="filter.testId"
         (outputModelChange)="resetDate(filter)"
       ></ode-multi-combo>
       <div class="multi-combo-companion">
