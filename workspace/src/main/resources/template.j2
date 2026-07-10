@@ -45,6 +45,7 @@
       "enable-nextcloud": true,
       "use-nextcloud-sniplet": {{ nextcloudSniplet | default('false') }},
     {% endif %}
+      {% if googleVersion is defined and (googleDomain is defined or googleProviders is defined) %}"enable-google-drive": true,{% endif %}
     "searching-event": {{ workspaceSearchingEvent | default('true') }},
     {% if s3 is defined and 'storage' in s3 and s3['storage'] %}
       "export-path": "{{ archiveExportPath | default('/srv/vertx/tmp_storage/export') }}",
@@ -54,6 +55,7 @@
     "publicConf": {
       "lazy-mode": {{ workspaceLazyMode | default('true') }},
       {% if workspaceEnableNextCloud is defined and workspaceEnableNextCloud %}"folder-service": ["nextcloud"],{% endif %}
+    {% if googleVersion is defined and (googleDomain is defined or googleProviders is defined) %}"folder-service": ["google-drive"],{% endif %}
       "ttl-documents":{{ workspaceTtlDoc | default('180') }},
       "ttl-folders":{{ workspaceTtlFolder | default('600') }}
     }
