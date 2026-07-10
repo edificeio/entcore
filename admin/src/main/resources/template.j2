@@ -15,11 +15,15 @@
       "org.entcore.common.http.health.RedisProbe"
     ],
     "mass-messaging-enabled": {{ adminMassMessagingEnabled | default('false') }},
-    {% if hotjarId is defined %}
-      "publicConf": {
-        "hotjarId": {{ hotjarId }}
-      },
-    {% endif %}
+    "publicConf": {
+      {% if hotjarId is defined %}
+        "hotjarId": {{ hotjarId }},
+      {% endif %}
+      {% if adminScreebAllowedProfiles is defined %}
+        "screeb-allowed-profiles": {{ adminScreebAllowedProfiles }},
+      {% endif %}
+      "screeb-app-id": "{{ screebAppId | default('') }}"
+    },
     {% if adminDistributions is defined %}
       "distributions": {{ adminDistributions }},
     {% endif %}
