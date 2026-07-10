@@ -13,10 +13,10 @@ export class ImportsExportsRootComponent extends OdeComponent implements OnInit,
 
     // Tabs
     tabs = [
-        { label: 'import.users', view: 'import-csv'},
-        { label: 'export.accounts', view: 'export' },
-        { label: 'massmail.accounts', view: 'massmail' }, // Meld MassMail into export ?
-        {label: 'massmessage.accounts', view: 'massmessage'} // to be enabled and disabled via flag
+        { label: 'import.users', view: 'import-csv', testId: 'imports-exports-tabs-import-users-button' },
+        { label: 'export.accounts', view: 'export', testId: 'imports-exports-tabs-export-accounts-button' },
+        { label: 'massmail.accounts', view: 'massmail', testId: 'imports-exports-tabs-massmail-accounts-button' }, // Meld MassMail into export ?
+        {label: 'massmessage.accounts', view: 'massmessage', testId: 'imports-exports-tabs-massmessage-accounts-button' } // to be enabled and disabled via flag
     ];
 
     showMassMessage:Boolean = false;
