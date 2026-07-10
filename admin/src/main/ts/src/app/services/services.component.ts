@@ -13,10 +13,10 @@ import { ServicesStore } from './services.store';
 export class ServicesComponent extends OdeComponent implements OnInit, OnDestroy {
 
 
-    tabs: Array<{ label: string, view: string, disabled: boolean }> = [
-        {label: 'applications', view: 'applications', disabled: false},
-        {label: 'connectors', view: 'connectors', disabled: false},
-        {label: 'widgets', view: 'widgets', disabled: false}
+    tabs: Array<{ label: string, view: string, disabled: boolean, testId?: string }> = [
+        {label: 'applications', view: 'applications', disabled: false, testId: 'services-tabs-applications-button'},
+        {label: 'connectors', view: 'connectors', disabled: false, testId: 'services-tabs-connectors-button'},
+        {label: 'widgets', view: 'widgets', disabled: false, testId: 'services-tabs-widgets-button'}
     ];
 
     constructor(
