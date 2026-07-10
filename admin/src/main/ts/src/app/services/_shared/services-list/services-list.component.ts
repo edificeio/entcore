@@ -149,6 +149,9 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
     }
 
     ngAfterViewInit(): void {
+        if (!this.serviceName) {
+             return;
+        }
         const searchInput = this.elRef.nativeElement.querySelector('.search-input');
         if (searchInput) {
             this.renderer.setAttribute(searchInput, 'data-testid', `services-${this.serviceName}-search`);
