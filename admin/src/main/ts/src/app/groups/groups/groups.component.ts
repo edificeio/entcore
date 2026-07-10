@@ -9,11 +9,11 @@ import { Data, NavigationEnd } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
 import { Subscription } from "rxjs";
 import { Session } from "src/app/core/store/mappings/session";
+import { GroupType } from "src/app/core/store/models/group.model";
 import { SessionModel } from "src/app/core/store/models/session.model";
 import { CommunicationRulesService } from "../../communication/communication-rules.service";
 import { routing } from "../../core/services/routing.service";
 import { GroupsStore } from "../groups.store";
-import { GroupType } from "src/app/core/store/models/group.model";
 
 @Component({
   selector: "ode-groups-root",
@@ -28,12 +28,12 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
 
   // Tabs
   tabs = [
-    { label: "Classes", view: "classes", visible: false },  // admin only
-    { label: "ManualGroup", view: "manualGroup", visible: true },
-    { label: "ProfileGroup", view: "profileGroup", visible: true },
-    { label: "FunctionalGroup", view: "functionalGroup", visible: true },
-    { label: "FunctionGroup", view: "functionGroup", visible: false },  // optional
-    { label: "BroadcastGroup", view: "broadcastGroup", visible: false }    // admin only
+    { label: "Classes", view: "classes", visible: false, testId: "groups-tabs-classes-button" },  // admin only
+    { label: "ManualGroup", view: "manualGroup", visible: true, testId: "groups-tabs-manual-group-button" },
+    { label: "ProfileGroup", view: "profileGroup", visible: true, testId: "groups-tabs-profile-group-button" },
+    { label: "FunctionalGroup", view: "functionalGroup", visible: true, testId: "groups-tabs-functional-group-button" },
+    { label: "FunctionGroup", view: "functionGroup", visible: false, testId: "groups-tabs-function-group-button" },  // optional
+    { label: "BroadcastGroup", view: "broadcastGroup", visible: false, testId: "groups-tabs-broadcast-group-button" }    // admin only
   ];
 
   groupsError: any;

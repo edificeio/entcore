@@ -61,62 +61,68 @@
         <!-- Links for ADML -->
         <ul *ngIf="currentStructure">
             <li>
-                <i 
-                    class="navbar--icon dashboard" 
-                    aria-hidden="true" 
+                <i
+                    class="navbar--icon dashboard"
+                    aria-hidden="true"
                     [title]="'nav.structure' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id, true)"
+                    data-testid="navbar-home-button"
                 >
                 </i>
             </li>
             <li>
-                <i 
-                    class="navbar--icon school" 
-                    aria-hidden="true" 
+                <i
+                    class="navbar--icon school"
+                    aria-hidden="true"
                     [title]="'management.structure' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/management/infos'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/management', false)"
+                    data-testid="navbar-manage-structure-button"
                 >
                 </i>
             </li>
             <li>
-                <i 
-                    class="navbar--icon fa fa-user" 
-                    aria-hidden="true" 
+                <i
+                    class="navbar--icon fa fa-user"
+                    aria-hidden="true"
                     [title]="'users' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/users/list/filter'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)"
+                    data-testid="navbar-users-button"
                 >
                 </i>
             </li>
             <li>
-                <i 
-                    class="navbar--icon fa fa-users" 
-                    aria-hidden="true" 
+                <i
+                    class="navbar--icon fa fa-users"
+                    aria-hidden="true"
                     [title]="'groups' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/groups/manualGroup'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/groups', false)"
+                    data-testid="navbar-groups-button"
                 >
                 </i>
             </li>
             <li>
-                <i 
-                    class="navbar--icon fa fa-th" 
-                    aria-hidden="true" 
+                <i
+                    class="navbar--icon fa fa-th"
+                    aria-hidden="true"
                     [title]="'services' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/services/applications'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/services', false)"
+                    data-testid="navbar-services-button"
                 >
                 </i>
             </li>
             <li>
-                <i 
-                    class="navbar--icon fa fa-exchange" 
-                    aria-hidden="true"  
+                <i
+                    class="navbar--icon fa fa-exchange"
+                    aria-hidden="true"
                     [title]="'imports.exports' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/import-csv'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)"
+                    data-testid="navbar-imports-exports-button"
                 >
                 </i>
             </li>
@@ -126,6 +132,7 @@
                     [title]="'reports' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/alertes/signalements'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/alertes', false)"
+                    data-testid="navbar-reports-button"
                 >
                 </i>
             </li>
@@ -140,6 +147,7 @@
                     [title]="'admc.nav.dashboard' | translate"
                     routerLink="/admin/admc/dashboard"
                     [class.active]="router.isActive('/admin/admc/dashboard', true)"
+                    data-testid="navbar-admc-dashboard-button"
                 >
                 </i>
             </li>
@@ -150,6 +158,7 @@
                     [title]="'admc.nav.communications' | translate"
                     routerLink="/admin/admc/communications"
                     [class.active]="router.isActive('/admin/admc/communications', true)"
+                    data-testid="navbar-admc-communications-button"
                 >
                 </i>
             </li>
@@ -160,6 +169,7 @@
                     [title]="'admc.nav.search' | translate"
                     routerLink="/admin/admc/search/transverse"
                     [class.active]="router.isActive('/admin/admc/search', true)"
+                    data-testid="navbar-admc-search-button"
                 >
                 </i>
             </li>
@@ -170,6 +180,7 @@
                     [title]="'admc.nav.apps' | translate"
                     routerLink="/admin/admc/apps/roles"
                     [class.active]="router.isActive('/admin/admc/apps', true)"
+                    data-testid="navbar-admc-apps-button"
                 >
                 </i>
             </li>

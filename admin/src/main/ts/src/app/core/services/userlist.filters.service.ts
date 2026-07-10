@@ -1,5 +1,5 @@
-import {Injectable} from '@angular/core';
-import {Subject} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 import { UserPosition } from '../store/models/userPosition.model';
 
 export abstract class UserFilter<T> {
@@ -30,6 +30,7 @@ export abstract class UserFilter<T> {
     filterProp?: string;
 
     datepicker?: boolean;
+    testId?: string;
 }
 
 export type UserFilterList<T> = UserFilter<T>[];
@@ -37,6 +38,7 @@ export type UserFilterList<T> = UserFilter<T>[];
 class ProfileFilter extends UserFilter<string> {
     type = 'type';
     label = 'profiles.multi.combo.title';
+    testId = 'users-filter-profiles-button';
     comboModel = [];
     order = '-';
 
@@ -49,6 +51,7 @@ class ProfileFilter extends UserFilter<string> {
 class ActivationFilter extends UserFilter<string> {
     type = 'code';
     label = 'code.multi.combo.title';
+    testId = 'users-filter-activation-button';
     comboModel = [ 'users.activated', 'users.not.activated' ];
 
     filter = (code: string) => {
@@ -66,6 +69,7 @@ class ClassesFilter extends UserFilter<{id: string, name: string}> {
     display = 'name';
     order = '+name';
     filterProp = 'name';
+    testId = 'users-filter-classes-button';
 
     filter = (classes: {id: string, name: string}[]) => {
         const outputModel = this.outputModel;
@@ -83,6 +87,7 @@ class SourcesFilter extends UserFilter<string> {
     comboModel = [];
     order = '+';
     filterProp = 'this';
+    testId = 'users-filter-sources-button';
 
     filter = (source: string) => {
         const outputModel = this.outputModel;
@@ -93,6 +98,7 @@ class SourcesFilter extends UserFilter<string> {
 class FunctionsFilter extends UserFilter<string> {
     type = 'aafFunctions';
     label = 'functions.multi.combo.title';
+    testId = 'users-filter-functions-button';
     comboModel: Array<string> = [];
     order = '+';
     filterProp = 'this';
@@ -123,6 +129,7 @@ class FunctionalGroupsFilter extends UserFilter<string> {
     comboModel = [];
     order = '+';
     filterProp = 'this';
+    testId = 'users-filter-functional-groups-button';
 
     filter = (fgroups: string[]) => {
         const outputModel = this.outputModel;
@@ -140,6 +147,7 @@ class ManualGroupsFilter extends UserFilter<string> {
     comboModel = [];
     order = '+';
     filterProp = 'this';
+    testId = 'users-filter-manual-groups-button';
 
     filter = (mgroups: string[]) => {
         const outputModel = this.outputModel;
@@ -154,6 +162,7 @@ class ManualGroupsFilter extends UserFilter<string> {
 class DuplicatesFilter extends UserFilter<string> {
     type = 'duplicates';
     label = 'duplicates.multi.combo.title';
+    testId = 'users-filter-duplicates-button';
     comboModel = [ 'users.duplicated', 'users.not.duplicated' ];
     order = '';
     filterProp = 'this';
@@ -169,6 +178,7 @@ class DuplicatesFilter extends UserFilter<string> {
 class MailFilter extends UserFilter<string> {
     type = 'email';
     label = 'email';
+    testId = 'users-filter-email-button';
     comboModel = ['users.with.mail', 'users.without.mail'];
 
     filter = (mail: string) => {
@@ -187,6 +197,7 @@ class DateFilter extends UserFilter<{date: Date, comparison: string}> {
     order = '+date';
     filterProp = 'date';
     datepicker = true;
+    testId = 'users-filter-creation-date-button';
 
     filter = (date: string) => {
         const outputModel = this.outputModel;
@@ -200,6 +211,7 @@ class DateFilter extends UserFilter<{date: Date, comparison: string}> {
 class AdmlFilter extends UserFilter<string> {
     type = 'functions';
     label = 'adml.multi.combo.title';
+    testId = 'users-filter-adml-button';
     comboModel = ['users.adml', 'users.not.adml'];
     order = '+';
     filterProp = 'this';
@@ -223,6 +235,7 @@ export class DeleteFilter extends UserFilter<string> {
     defaultModel = ["users.waiting.deleted", "users.not.deleted"];
     order = "+";
     filterProp = "this";
+    testId = 'users-filter-delete-button';
 
     filter = (deleteDate: string, disappearanceDate: string) => {
         const outputModel = this.outputModel;
@@ -237,6 +250,7 @@ class BlockedFilter extends UserFilter<string> {
     type = 'blocked';
     label = 'blocked.multi.combo.title';
     comboModel = [ 'users.blocked', 'users.not.blocked' ];
+    testId = 'users-filter-blocked-button';
 
     filter = (blocked: boolean) => {
         const outputModel = this.outputModel;
@@ -253,6 +267,7 @@ class PositionFilter extends UserFilter<{id:string}> {
     comboModel = [];
     order = '+name';
     filterProp = 'name';
+    testId = 'users-filter-user-positions-button';
 
     filter = (userPositions: Array<UserPosition>) => {
         const outputModel = this.outputModel;
