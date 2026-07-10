@@ -49,7 +49,8 @@ export class StructureInformationsService
         setDistribution: options.distribution,
         setEducation: options.education,
         setHasApp: options.mobileapp,
-        setDefaultAuth: options.defaultAuth
+        setDefaultAuth: options.defaultAuth,
+        setQuietHoursSetting: options.quietHours
       },
       infos: {
         structure: structure.name,
