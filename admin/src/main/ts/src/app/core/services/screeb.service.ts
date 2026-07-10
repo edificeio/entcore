@@ -5,7 +5,6 @@ import { Session } from '../store/mappings/session';
 
 type ScreebPublicConf = {
     'screeb-app-id'?: string;
-    'screeb-allowed-profiles'?: string[];
 };
 
 /**
@@ -30,10 +29,6 @@ export class ScreebService {
         const conf = (await http.get<ScreebPublicConf>('/admin/conf/public')).data;
         const appId = conf?.['screeb-app-id'];
         if (!appId) {
-            return;
-        }
-        const allowedProfiles = conf['screeb-allowed-profiles'];
-        if (allowedProfiles && allowedProfiles.length > 0 && !allowedProfiles.includes(session.type)) {
             return;
         }
         await this.init(appId, session);
