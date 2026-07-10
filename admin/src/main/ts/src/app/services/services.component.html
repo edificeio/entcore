@@ -11,7 +11,8 @@
   <button class="tab" *ngFor="let tab of tabs"
           [disabled]="tab.disabled"
           [routerLink]="tab.view"
-          routerLinkActive="active">
+          routerLinkActive="active"
+          [attr.data-testid]="tab.testId">
     {{ tab.label | translate }}
   </button>
 </div>

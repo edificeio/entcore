@@ -7,7 +7,8 @@
   <button class="tab"
           [disabled]="tab.disabled"
           [routerLink]="tab.view"
-          routerLinkActive="active" 
+          routerLinkActive="active"
+          [attr.data-testid]="tab.testId"
           *ngIf="!(showMassMessage == false && tab.view == 'massmessage')">
     {{ tab.label | translate }}
   </button>

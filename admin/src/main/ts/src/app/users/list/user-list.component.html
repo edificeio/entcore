@@ -45,7 +45,7 @@
       [title]="'sort.profile' | translate"
       (click)="userListService.changeSorts('profile')"
     ></i>
-    <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
+    <strong class="badge" data-testid="users-toolbar-user-count">{{ nbUser }} <s5l>list.results.users</s5l></strong>
     <a
       class="button is-primary is-pulled-right"
       aria-hidden="true"

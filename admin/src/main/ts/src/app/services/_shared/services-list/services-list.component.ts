@@ -1,4 +1,4 @@
-import { Component, Injector, Input, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Injector, Input, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { BundlesService } from 'ngx-ode-sijil';
@@ -22,13 +22,15 @@ interface ServiceInfo {
     selector: 'ode-services-list',
     templateUrl: './services-list.component.html'
 })
-export class ServicesListComponent extends OdeComponent implements OnInit, OnDestroy {
+export class ServicesListComponent extends OdeComponent implements OnInit, OnDestroy, AfterViewInit {
 
     constructor(
         injector: Injector,
         private servicesStore: ServicesStore,
         public inputFileService: InputFileService,
-        private bundlesService: BundlesService) {
+        private bundlesService: BundlesService,
+        private elRef: ElementRef,
+        private renderer: Renderer2) {
             super(injector);
     }
     // TODO extract from router
@@ -143,7 +145,17 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
                 noResultsLabel: 'services.widget.list.empty'
             }
         };
-        
+
+    }
+
+    ngAfterViewInit(): void {
+        if (!this.serviceName) {
+             return;
+        }
+        const searchInput = this.elRef.nativeElement.querySelector('.search-input');
+        if (searchInput) {
+            this.renderer.setAttribute(searchInput, 'data-testid', `services-${this.serviceName}-search`);
+        }
     }
 
     closePanel(): void {
