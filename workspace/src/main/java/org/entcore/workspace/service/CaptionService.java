@@ -8,4 +8,8 @@ public interface CaptionService {
     Future<String> getCaption(UserInfos user, String documentId, String sessionId, String userAgent, String language);
 
     Future<String> getOcr(UserInfos user, String documentId, String sessionId, String userAgent, String language);
+
+    Future<String> getCaptionFromUrl(UserInfos user, String imageUrl, String sessionId, String userAgent, String language);
+
+    Future<String> getOcrFromUrl(UserInfos user, String imageUrl, String sessionId, String userAgent, String language);
 }

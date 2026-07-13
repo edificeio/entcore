@@ -5,6 +5,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserUtils;
@@ -29,9 +30,12 @@ public class CaptionController extends BaseController {
         UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(userInfos -> {
             RequestUtils.bodyToJson(request, payload -> {
                 final String documentId = payload.getString("documentId");
+                final String imageUrl = payload.getString("imageUrl");
+                final boolean hasDocumentId = documentId != null && !documentId.isEmpty();
+                final boolean hasImageUrl = imageUrl != null && !imageUrl.isEmpty();
 
-                if (documentId == null || documentId.isEmpty()) {
-                    badRequest(request, "documentId is required");
+                if (hasDocumentId == hasImageUrl) {
+                    badRequest(request, "Exactly one of documentId or imageUrl is required");
                     return;
                 }
 
@@ -39,20 +43,13 @@ public class CaptionController extends BaseController {
                 final String sessionId = UserUtils.getSessionId(request).orElse("");
                 final String language = resolveLanguage(request);
 
-                captionService.getCaption(userInfos, documentId, sessionId, userAgent, language)
-                        .onSuccess(altText -> {
-                            final JsonObject body = new JsonObject().put("text", altText);
+                final Future<String> caption = hasDocumentId
+                        ? captionService.getCaption(userInfos, documentId, sessionId, userAgent, language)
+                        : captionService.getCaptionFromUrl(userInfos, imageUrl, sessionId, userAgent, language);
 
-                            request.response()
-                                    .putHeader("content-type", "application/json")
-                                    .setStatusCode(200)
-                                    .end(body.encode());
-                        })
-                        .onFailure(error -> {
-                            final JsonObject body = new JsonObject().put("error", error.getMessage());
-
-                            request.response().setStatusCode(statusCodeFor(error)).end(body.encode());
-                        });
+                caption.onSuccess(altText -> renderJson(request, new JsonObject().put("text", altText)))
+                        .onFailure(error -> renderError(request, new JsonObject().put("error", error.getMessage()),
+                                                        statusCodeFor(error), error.getMessage()));
             });
         }).onFailure(error -> request.response().setStatusCode(401).end(error.getMessage()));
     }
@@ -63,9 +60,12 @@ public class CaptionController extends BaseController {
         UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(userInfos -> {
             RequestUtils.bodyToJson(request, payload -> {
                 final String documentId = payload.getString("documentId");
+                final String imageUrl = payload.getString("imageUrl");
+                final boolean hasDocumentId = documentId != null && !documentId.isEmpty();
+                final boolean hasImageUrl = imageUrl != null && !imageUrl.isEmpty();
 
-                if (documentId == null || documentId.isEmpty()) {
-                    badRequest(request, "documentId is required");
+                if (hasDocumentId == hasImageUrl) {
+                    badRequest(request, "Exactly one of documentId or imageUrl is required");
                     return;
                 }
 
@@ -73,20 +73,13 @@ public class CaptionController extends BaseController {
                 final String sessionId = UserUtils.getSessionId(request).orElse("");
                 final String language = resolveLanguage(request);
 
-                captionService.getOcr(userInfos, documentId, sessionId, userAgent, language)
-                        .onSuccess(ocr -> {
-                            final JsonObject body = new JsonObject().put("text", ocr);
+                final Future<String> ocr = hasDocumentId
+                        ? captionService.getOcr(userInfos, documentId, sessionId, userAgent, language)
+                        : captionService.getOcrFromUrl(userInfos, imageUrl, sessionId, userAgent, language);
 
-                            request.response()
-                                    .putHeader("content-type", "application/json")
-                                    .setStatusCode(200)
-                                    .end(body.encode());
-                        })
-                        .onFailure(error -> {
-                            final JsonObject body = new JsonObject().put("error", error.getMessage());
-
-                            request.response().setStatusCode(statusCodeFor(error)).end(body.encode());
-                        });
+                ocr.onSuccess(ocrText -> renderJson(request, new JsonObject().put("text", ocrText)))
+                        .onFailure(error -> renderError(request, new JsonObject().put("error", error.getMessage()),
+                                                        statusCodeFor(error), error.getMessage()));
             });
         }).onFailure(error -> request.response().setStatusCode(401).end(error.getMessage()));
     }
