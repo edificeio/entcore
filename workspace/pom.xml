@@ -33,6 +33,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-client</artifactId>
+            <version>${vertxVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>net.sf</groupId>
             <artifactId>lamejb</artifactId>
             <version>${lamejbVersion}</version>
