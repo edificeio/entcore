@@ -17,20 +17,30 @@ public class SSOGoogle extends AbstractSSOProvider {
 	@Override
 	public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId,
 						 Handler<Either<String, JsonArray>> handler) {
-		final String emailDomain = Vertx.currentContext().config()
-				.getJsonObject("google-email-domain-by-host", new JsonObject())
-				.getString(host);
+		final String email = getNameId(userId, host);
 
-		if (emailDomain == null || emailDomain.isEmpty()) {
+		if (email == null) {
 			String msg = "No email domain configured for host: " + host;
 			log.error("[Auth@SSOGoogle::generate] " + msg);
 			handler.handle(new Either.Left<>(msg));
 			return;
 		}
 
-		final String email = userId + "@" + emailDomain;
 		log.info("[Auth@SSOGoogle::email] " + email);
 		handler.handle(new Either.Right<>(new JsonArray().add(new JsonObject().put(EMAIL, email))));
+	}
+
+	@Override
+	public String getNameId(String userId, String host) {
+		final String emailDomain = Vertx.currentContext().config()
+				.getJsonObject("google-email-domain-by-host", new JsonObject())
+				.getString(host);
+
+		if (emailDomain == null || emailDomain.isEmpty()) {
+			return null;
+		}
+
+		return userId + "@" + emailDomain;
 	}
 
 	@Override

@@ -99,6 +99,15 @@ public class SamlHelper {
         sp.execute(assertion, handler);
     }
 
+    /**
+     * Delegates NameID computation to the service provider registered for serviceProviderId, if any.
+     * Returns null if no such provider is registered or it has no specific NameID to provide.
+     */
+    public String getNameId(String serviceProviderId, String userId, String host) {
+        final SamlServiceProvider sp = spFactory.serviceProvider(serviceProviderId);
+        return sp != null ? sp.getNameId(userId, host) : null;
+    }
+
     public void processACSOAuth2(String base64SamlResponse, jp.eisbahn.oauth2.server.async.Handler<Try<OAuthError, UserData>> handler) {
         if (isNotEmpty(base64SamlResponse)) {
             validateSamlResponseAndGetAssertion(new String(Base64.getDecoder().decode(base64SamlResponse)), ar -> {
