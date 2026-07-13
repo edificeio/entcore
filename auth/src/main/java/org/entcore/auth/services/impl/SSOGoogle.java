@@ -29,6 +29,7 @@ public class SSOGoogle extends AbstractSSOProvider {
 		}
 
 		final String email = userId + "@" + emailDomain;
+		log.info("[Auth@SSOGoogle::email] " + email);
 		handler.handle(new Either.Right<>(new JsonArray().add(new JsonObject().put(EMAIL, email))));
 	}
 
