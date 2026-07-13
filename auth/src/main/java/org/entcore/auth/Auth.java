@@ -142,6 +142,8 @@ public class Auth extends BaseServer {
 				public void handle(AsyncResult<List<String>> event) {
 					if (event.succeeded() && event.result().size() > 0) {
 						try {
+							log.info("Loading SAML metadata from folder : " + samlMetadataFolder +
+									" (" + event.result().size() + " file(s) found)");
 							final SamlHelper samlHelper = new SamlHelper(vertx,
 									new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers")),
 									signKey
@@ -180,6 +182,12 @@ public class Auth extends BaseServer {
 						} catch (Exception e) {
 							log.error("Saml loading error.", e);
 						}
+					} else if (event.failed()) {
+						log.error("Unable to read saml-metadata-folder : " + samlMetadataFolder +
+								". SamlController will not be loaded.", event.cause());
+					} else {
+						log.warn("saml-metadata-folder : " + samlMetadataFolder +
+								" is empty. SamlController will not be loaded.");
 					}
 				}
 			});
