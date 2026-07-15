@@ -54,13 +54,13 @@
 
     <properties>
         <revision>6.16-develop-b2school-SNAPSHOT</revision>
-        <entCoreLibsVersion>6.16-SNAPSHOT</entCoreLibsVersion>
+        <entCoreLibsVersion>6.16-develop-b2school-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
-        <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
-        <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
+        <modSmsProxyVersion>2.2-develop-b2school-SNAPSHOT</modSmsProxyVersion>
+        <webUtilsVersion>3.4-develop-b2school-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
