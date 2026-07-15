@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const LOCAL_FR_I18N_PATH = path.resolve(__dirname, "../../resources/i18n/fr.json");
 
@@ -17,6 +17,7 @@ const createLocalI18nFrMock = () => {
       try {
         res.end(fs.readFileSync(LOCAL_FR_I18N_PATH, "utf-8"));
       } catch (e) {
+        console.error("Failed to read local i18n file:", e);
         res.statusCode = 500;
         res.end(JSON.stringify({ error: "Failed to read local i18n file" }));
       }

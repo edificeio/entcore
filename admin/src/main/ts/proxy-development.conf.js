@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("node:fs");
 const { applyRemoteTarget } = require("./proxy-remote-target");
 const { createLocalI18nFrMock } = require("./proxy-mocks/local-i18n-fr.mock");
 const { createScreebAppIdMock } = require("./proxy-mocks/screeb-app-id.mock");
