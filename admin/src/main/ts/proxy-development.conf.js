@@ -1,5 +1,7 @@
-const { on } = require("events");
-const fs = require("fs");
+const fs = require("node:fs");
+const { applyRemoteTarget } = require("./proxy-remote-target");
+const { createLocalI18nFrMock } = require("./proxy-mocks/local-i18n-fr.mock");
+const { createScreebAppIdMock } = require("./proxy-mocks/screeb-app-id.mock");
 
 const PROXY_CONFIG = {
   context: [
@@ -55,44 +57,34 @@ const parseEnvFile = (content) => {
   return result;
 };
 
+// Combines several proxy bypass handlers: tries each in order, the first to
+// return a truthy result wins, otherwise the request proxies normally.
+const composeBypass = (handlers) => (req, res) => {
+  for (const handler of handlers) {
+    const result = handler(req, res);
+    if (result) {
+      return result;
+    }
+  }
+  return null;
+};
+
+// Each mock below contributes at most one bypass handler.
+const bypassHandlers = [createLocalI18nFrMock()].filter(Boolean);
+
 if (fs.existsSync("./.env")) {
   const env = parseEnvFile(fs.readFileSync("./.env", "utf-8"));
 
-  const {VITE_RECETTE, VITE_XSRF_TOKEN, VITE_ONE_SESSION_ID} = env;
+  applyRemoteTarget(env, PROXY_CONFIG, PROXY_FAVICO);
 
-  // If VITE_RECETTE is set, we override the target of the proxy configuration to point to the remote server.
-  if (VITE_RECETTE) {
-    console.log("Using remote proxy configuration target: ", VITE_RECETTE);
-    PROXY_CONFIG.target = VITE_RECETTE;
-    PROXY_FAVICO.target = VITE_RECETTE;
-    if (VITE_ONE_SESSION_ID && VITE_XSRF_TOKEN) {
-      PROXY_CONFIG.headers = {
-        cookie: `oneSessionId=${VITE_ONE_SESSION_ID}; authenticated=true; XSRF-TOKEN=${VITE_XSRF_TOKEN}`,
-      };
-      PROXY_CONFIG.onProxyRes = (proxyRes, req, res) => {
-        proxyRes.headers["set-cookie"] = [
-          `oneSessionId=${VITE_ONE_SESSION_ID}`,
-          `XSRF-TOKEN=${VITE_XSRF_TOKEN}`,
-        ];
-      };
-    }
+  const screebAppIdMock = createScreebAppIdMock(env);
+  if (screebAppIdMock) {
+    bypassHandlers.push(screebAppIdMock);
   }
+}
 
-  // Dev-only mock: the platform won't serve the Screeb key on /admin/conf/public
-  // until the backend template.j2 change is deployed. Set SCREEB_APP_ID_DEV in
-  // .env to test the Screeb integration locally.
-  const {SCREEB_APP_ID_DEV} = env;
-  if (SCREEB_APP_ID_DEV) {
-    console.log("Mocking /admin/conf/public with SCREEB_APP_ID_DEV");
-    PROXY_CONFIG.bypass = (req, res) => {
-      if (req.url?.split("?")[0] === "/admin/conf/public") {
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ "screeb-app-id": SCREEB_APP_ID_DEV }));
-        return true; // response already sent, skip proxying
-      }
-      return null; // proxy normally
-    };
-  }
+if (bypassHandlers.length > 0) {
+  PROXY_CONFIG.bypass = composeBypass(bypassHandlers);
 }
 
 module.exports = [PROXY_CONFIG, PROXY_FAVICO];
