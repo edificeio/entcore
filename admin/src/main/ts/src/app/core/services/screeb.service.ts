@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Screeb } from '@screeb/sdk-angular';
-import http from 'axios';
 import { Session } from '../store/mappings/session';
 
 type ScreebPublicConf = {
@@ -26,7 +25,11 @@ export class ScreebService {
      * for this platform and allowed for the user's profile.
      */
     public async initFromPlatformConf(session: Session): Promise<void> {
-        const conf = (await http.get<ScreebPublicConf>('/admin/conf/public')).data;
+        const response = await fetch('/admin/conf/public');
+        if (!response.ok) {
+            return;
+        }
+        const conf: ScreebPublicConf = await response.json();
         const appId = conf?.['screeb-app-id'];
         if (!appId) {
             return;
