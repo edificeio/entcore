@@ -128,6 +128,7 @@
   "bbm.video.url.title": "URL de la vidéo",
   "bbm.video.useEmbedCode": "Utiliser un code embed ou iframe",
   "bbm.workspace": "Espace doc",
+  "bbm.nextcloud": "Documents synchronisés",
   "betaSwitch.button": "Quittez la Bêta",
   "betaSwitch.description": "La version classique est toujours là. Revenez-y, vous pouvez repasser sur la bêta à tout moment.",
   "betaSwitch.error": "Erreur de paramétrage.",
