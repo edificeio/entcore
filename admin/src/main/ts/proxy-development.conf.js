@@ -1,7 +1,10 @@
-const fs = require("node:fs");
-const { applyRemoteTarget } = require("./proxy-remote-target");
-const { createLocalI18nFrMock } = require("./proxy-mocks/local-i18n-fr.mock");
-const { createScreebAppIdMock } = require("./proxy-mocks/screeb-app-id.mock");
+const { on } = require("events");
+const fs = require("fs");
+
+const { applyRemoteTarget } = require("./proxy-mocks/proxy-remote-target");
+const { PROXY_ADMIN_I18N, registerLocalI18nFrMock } = require("./proxy-mocks/local-i18n-fr.mock");
+const { PROXY_ADMIN_CONF_PUBLIC, registerScreebAppIdMock } = require("./proxy-mocks/screeb-app-id.mock");
+const { startMockServer } = require("./proxy-mocks/mock-server");
 
 const PROXY_CONFIG = {
   context: [
@@ -13,9 +16,7 @@ const PROXY_CONFIG = {
     "/timeline",
     "/workspace",
     "/cas",
-    "/admin/conf/public",
     "/admin/public/dist/assets/trumbowyg",
-    "/admin/i18n",
     "/i18n",
     "/languages",
     "/zendeskGuide",
@@ -34,6 +35,13 @@ const PROXY_FAVICO = {
   logLevel: "debug",
   changeOrigin: true,
 };
+
+// Each mock module owns its proxy entry (instead of sharing PROXY_CONFIG's
+// context), so that only the entry whose mock is actually enabled gets its
+// `target` redirected to the local mock server (see
+// proxy-mocks/mock-server.js) — the bulk of routes (e.g. /directory) stay
+// untouched.
+const ALL_PROXIES = [PROXY_CONFIG, PROXY_FAVICO, PROXY_ADMIN_CONF_PUBLIC, PROXY_ADMIN_I18N];
 
 // This function parses a .env file and returns an object with key-value pairs.
 // This is used to uniformize the parsing of the .env file and to avoid using a third-party library.
@@ -57,34 +65,13 @@ const parseEnvFile = (content) => {
   return result;
 };
 
-// Combines several proxy bypass handlers: tries each in order, the first to
-// return a truthy result wins, otherwise the request proxies normally.
-const composeBypass = (handlers) => (req, res) => {
-  for (const handler of handlers) {
-    const result = handler(req, res);
-    if (result) {
-      return result;
-    }
-  }
-  return null;
-};
-
-// Each mock below contributes at most one bypass handler.
-const bypassHandlers = [createLocalI18nFrMock()].filter(Boolean);
-
 if (fs.existsSync("./.env")) {
   const env = parseEnvFile(fs.readFileSync("./.env", "utf-8"));
-
-  applyRemoteTarget(env, PROXY_CONFIG, PROXY_FAVICO);
-
-  const screebAppIdMock = createScreebAppIdMock(env);
-  if (screebAppIdMock) {
-    bypassHandlers.push(screebAppIdMock);
-  }
+  applyRemoteTarget(env, ALL_PROXIES);
+  registerScreebAppIdMock(env.SCREEB_APP_ID_DEV);
 }
 
-if (bypassHandlers.length > 0) {
-  PROXY_CONFIG.bypass = composeBypass(bypassHandlers);
-}
+registerLocalI18nFrMock();
+startMockServer();
 
-module.exports = [PROXY_CONFIG, PROXY_FAVICO];
+module.exports = ALL_PROXIES;
