@@ -860,7 +860,7 @@
   "massmail.filename": "publipostage_pdf",
   "massmail.filters": "Filtrer la liste à publiposter",
   "massmail.firstsort": "Par",
-  "massmail.info.authMode": "Dans votre établissement, certains comptes sont paramétrés pour passer par une authentification externe à l'ENT (par exemple : ÉduConnect, Arena, LiÀ, FranceConnect…). Les utilisateurs concernés ne figureront pas dans la liste ci-dessous car il n’est pas prévu que vous leur donniez un identifiant/mot de passe ENT pour se connecter. Les utilisateurs concernés sont les comptes chargés automatiquements (AAF, csv) pour les profils suivant : Parents, Enseignants.",
+  "massmail.info.authMode": "Dans votre établissement, certains comptes sont paramétrés pour passer par une authentification externe à l'ENT (par exemple : ÉduConnect, Arena, LiÀ, FranceConnect…). Les utilisateurs concernés ne figureront pas dans la liste ci-dessous car il n’est pas prévu que vous leur donniez un identifiant/mot de passe ENT pour se connecter. Les utilisateurs concernés sont les comptes chargés automatiquement (AAF, csv) pour les profils suivants : {{profiles}}.",
   "massmail.link.user": "Accéder à la fiche utilisateur",
   "massmail.mail": "Envoyer par mail",
   "massmail.mail.done": "Publipostage mail effectué ",
