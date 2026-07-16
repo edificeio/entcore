@@ -27,31 +27,32 @@ const registerMockRoute = (urlPath, handler) => {
 };
 
 const startMockServer = () => {
-  if (routes.size === 0) {
-    return;
-  }
-  const server = http.createServer((req, res) => {
-    const handler = routes.get(req.url?.split("?")[0]);
-    if (handler) {
-      return handler(req, res);
-    }
-    res.statusCode = 404;
-    res.end();
-  });
-
-  server.on("error", (err) => {
-    if (err && err.code === "EADDRINUSE") {
-      console.warn(
-        `Dev mock server port ${MOCK_SERVER_PORT} already in use; skipping start.`,
-      );
+    if (routes.size === 0) {
       return;
     }
-    throw err;
-  });
+    const server = http.createServer((req, res) => {
+      const handler = routes.get(req.url?.split("?")[0]);
+      if (handler) {
+        return handler(req, res);
+      }
+      res.statusCode = 404;
+      res.end();
+    });
 
-  server.listen(MOCK_SERVER_PORT);
-  console.log(
-    `Dev mock server listening on ${MOCK_SERVER_TARGET} for: ${[...routes.keys()].join(", ")}`,
-  );
+    server.on("error", (err) => {
+      if (err && err.code === "EADDRINUSE") {
+        console.warn(
+          `Dev mock server port ${MOCK_SERVER_PORT} already in use; skipping start.`,
+        );
+        return;
+      }
+      throw err;
+    });
+
+    server.listen(MOCK_SERVER_PORT);
+    console.log(
+      `Dev mock server listening on ${MOCK_SERVER_TARGET} for: ${[...routes.keys()].join(", ")}`,
+    );
+  };
 
 module.exports = { registerMockRoute, startMockServer, MOCK_SERVER_TARGET };
