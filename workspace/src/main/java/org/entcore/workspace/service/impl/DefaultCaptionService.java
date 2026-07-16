@@ -192,8 +192,7 @@ public class DefaultCaptionService implements CaptionService {
             }
 
             return generator.apply(document).compose(fresh -> storeResult(documentId, taskField, fresh));
-        }).onFailure(err -> log.error("Failed to get or generate " + taskField + " for document ID " + documentId + ": "
-                                              + err.getMessage()));
+        }).onFailure(err -> log.error("Failed to get or generate " + taskField + " for document ID " + documentId, err));
     }
 
     /**
@@ -280,7 +279,7 @@ public class DefaultCaptionService implements CaptionService {
 
             return writeToCaptionStorage(s3Path, response.body(), contentType, filename)
                     .compose(v -> requestCaption(createPayload(taskType.value(), user, sessionId, s3Path, userAgent, language)));
-        });
+        }).onFailure(err -> log.error("Failed to generate " + taskType.value() + " from URL " + imageUrl, err));
     }
 
     private Future<HttpResponse<Buffer>> downloadImage(String imageUrl) {
