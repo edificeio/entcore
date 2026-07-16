@@ -7,6 +7,8 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserUtils;
 import org.entcore.workspace.service.impl.DefaultCaptionService;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 public class CaptionController extends BaseController {
+    private static final Logger log = LoggerFactory.getLogger(CaptionController.class);
     private static final String DEFAULT_LANGUAGE = "fr";
 
     public final DefaultCaptionService captionService;
@@ -48,8 +51,13 @@ public class CaptionController extends BaseController {
                         : captionService.getCaptionFromUrl(userInfos, imageUrl, sessionId, userAgent, language);
 
                 caption.onSuccess(altText -> renderJson(request, new JsonObject().put("text", altText)))
-                        .onFailure(error -> renderError(request, new JsonObject().put("error", error.getMessage()),
-                                                        statusCodeFor(error), error.getMessage()));
+                        .onFailure(error -> {
+                            log.error(
+                                    "Error generating caption for " + (hasDocumentId ? "document " + documentId : "url " + imageUrl),
+                                    error);
+                            renderError(request, new JsonObject().put("error", error.getMessage()),
+                                        statusCodeFor(error), error.getMessage());
+                        });
             });
         }).onFailure(error -> request.response().setStatusCode(401).end(error.getMessage()));
     }
@@ -78,8 +86,13 @@ public class CaptionController extends BaseController {
                         : captionService.getOcrFromUrl(userInfos, imageUrl, sessionId, userAgent, language);
 
                 ocr.onSuccess(ocrText -> renderJson(request, new JsonObject().put("text", ocrText)))
-                        .onFailure(error -> renderError(request, new JsonObject().put("error", error.getMessage()),
-                                                        statusCodeFor(error), error.getMessage()));
+                        .onFailure(error -> {
+                            log.error(
+                                    "Error generating ocr for " + (hasDocumentId ? "document " + documentId : "url " + imageUrl),
+                                    error);
+                            renderError(request, new JsonObject().put("error", error.getMessage()),
+                                        statusCodeFor(error), error.getMessage());
+                        });
             });
         }).onFailure(error -> request.response().setStatusCode(401).end(error.getMessage()));
     }
