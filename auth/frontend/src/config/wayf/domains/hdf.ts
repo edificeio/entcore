@@ -42,12 +42,12 @@ export const hdfConfig: WayfDomainConfig = {
         {
           i18n: 'wayf.relative.agri',
           color: 'relative',
-          acs: '/auth/saml/relative-agri',
+          acs: '/auth/login',
         },
         {
           i18n: 'wayf.relative.special',
           color: 'relative',
-          acs: '/auth/saml/relative-special',
+          acs: '/auth/login',
         },
       ],
     },
@@ -59,22 +59,22 @@ export const hdfConfig: WayfDomainConfig = {
         {
           i18n: 'wayf.teacher.lille',
           color: 'teacher',
-          acs: '/auth/saml/teacher-lille',
+          acs: 'https://eduline.ac-lille.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
         },
         {
           i18n: 'wayf.teacher.amiens',
           color: 'teacher',
-          acs: '/auth/saml/teacher-amiens',
+          acs: 'https://portail.ac-amiens.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
         },
         {
           i18n: 'wayf.teacher.agri',
           color: 'teacher',
-          acs: '/auth/saml/teacher-agri',
+          acs: '/auth/login',
         },
         {
           i18n: 'wayf.teacher.special',
           color: 'teacher',
-          acs: '/auth/saml/teacher-special',
+          acs: '/auth/login',
         },
       ],
     },
@@ -86,22 +86,22 @@ export const hdfConfig: WayfDomainConfig = {
         {
           i18n: 'wayf.perseducnat.lille',
           color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-lille',
+          acs: 'https://eduline.ac-lille.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
         },
         {
           i18n: 'wayf.perseducnat.amiens',
           color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-amiens',
+          acs: 'https://portail.ac-amiens.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
         },
         {
           i18n: 'wayf.perseducnat.agri',
           color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-agri',
+          acs: '/auth/login',
         },
         {
           i18n: 'wayf.perseducnat.collectivite',
           color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-collectivite',
+          acs: '/auth/login',
         },
       ],
     },
@@ -109,58 +109,58 @@ export const hdfConfig: WayfDomainConfig = {
       i18n: 'wayf.other',
       color: 'other',
       icon: 'other',
-      acs: '/auth/saml/other',
+      acs: '/auth/login',
     },
   ],
   partners: [
     {
-      logo: '/assets/themes/cg77/img/partners/logo-hdf.png',
+      logo: '/img/partners/logo-hdf.png',
       url: 'https://www.hautsdefrance.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-aisne.png',
+      logo: '/img/partners/logo-aisne.png',
       url: 'https://www.aisne.com/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-nord.jpg',
+      logo: '/img/partners/logo-nord.jpg',
       url: 'https://nordcolleges.enthdf.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-oise.jpg',
+      logo: '/img/partners/logo-oise.jpg',
       url: 'https://www.oise.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-pasdecalais.jpg',
+      logo: '/img/partners/logo-pasdecalais.jpg',
       url: 'https://www.pasdecalais.fr/colleges',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-somme.png',
+      logo: '/img/partners/logo-somme.png',
       url: 'https://www.somme.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-adica.png',
+      logo: '/img/partners/logo-adica.png',
       url: 'https://www.adica.fr/assistance-conseil-informatique',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-oisehd.jpg',
+      logo: '/img/partners/logo-oisehd.jpg',
       url: 'https://oise-thd.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-fibrenum.png',
+      logo: '/img/partners/logo-fibrenum.png',
       url: 'https://www.lafibrenumerique5962.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-somme-numerique.png',
+      logo: '/img/partners/logo-somme-numerique.png',
       url: 'https://www.sommenumerique.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo-argicole.png',
+      logo: '/img/partners/logo-argicole.png',
       url: 'https://draaf.hauts-de-france.agriculture.gouv.fr/',
     },
     {
-      logo: '/assets/themes/cg77/img/partners/logo_RA_HAUTS-DE-FRANCE.png',
+      logo: '/img/partners/logo_RA_HAUTS-DE-FRANCE.png',
       url: 'https://www1.ac-lille.fr/la-region-academique-hauts-de-france-121434',
     },
-    { logo: '/assets/themes/cg77/img/partners/logo-ue.jpg' },
+    { logo: '/img/partners/logo-ue.jpg' },
   ],
 };

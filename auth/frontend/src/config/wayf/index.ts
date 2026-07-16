@@ -1,11 +1,8 @@
 import type { WayfConfig } from '~/models/wayf';
 import { DEFAULT_WAYF_CONFIG } from './default';
-import { hdfConfig } from './domains/hdf';
+import { hdfConfig, natiConfig } from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
-// Re-exported so the config is ready to map to its hostname when its domain
-// goes live (not active yet — kept here to avoid losing the config).
-export { reunionConfig } from './domains/reunion';
 
 /**
  * Per-domain WAYF configurations, indexed by hostname.
@@ -17,6 +14,7 @@ export { reunionConfig } from './domains/reunion';
 export const wayfConfig: WayfConfig = {
   'wayf-v2': {
     'connexion.enthdf.fr': hdfConfig,
+    'nati.pf': natiConfig,
     'localhost': DEFAULT_WAYF_CONFIG,
   },
 };

@@ -33,7 +33,7 @@ export interface WayfParentProvider extends WayfBaseProvider {
 export type WayfProvider = WayfLeafProvider | WayfParentProvider;
 
 export interface WayfPartner {
-  /** Logo asset URL (e.g. `/assets/themes/.../logo.png`) */
+  /** Logo asset path, resolved against `/assets/themes/${childTheme}` (e.g. `/img/partners/logo.png`) */
   logo: string;
   /** Optional link wrapping the logo */
   url?: string;

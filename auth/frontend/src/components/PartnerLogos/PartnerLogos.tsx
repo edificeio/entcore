@@ -3,16 +3,21 @@ import './PartnerLogos.css';
 
 interface PartnerLogosProps {
   partners?: WayfPartner[];
+  childTheme?: string;
 }
 
-export const PartnerLogos = ({ partners }: PartnerLogosProps) => {
-  if (!partners?.length) return null;
+export const PartnerLogos = ({ partners, childTheme }: PartnerLogosProps) => {
+  if (!partners?.length || !childTheme) return null;
 
   return (
     <div className="wayf-partners">
       {partners.map((partner) => {
         const img = (
-          <img src={partner.logo} alt="" className="wayf-partners__logo" />
+          <img
+            src={`/assets/themes/${childTheme}${partner.logo}`}
+            alt=""
+            className="wayf-partners__logo"
+          />
         );
 
         return partner.url ? (

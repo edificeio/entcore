@@ -92,7 +92,7 @@ export const WayfPage = () => {
       {/* Zone éditoriale — gauche */}
       <div className="wayf-editorial">
         <WelcomeMessage state={welcomeState} />
-        <PartnerLogos partners={partners} />
+        <PartnerLogos partners={partners} childTheme={childTheme} />
       </div>
 
       {/* Zone de sélection — droite */}

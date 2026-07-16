@@ -242,7 +242,7 @@
   "wayf.link.cgu": "Charte d'utilisation",
   "wayf.student": "Élève",
   "wayf.teacher": "Enseignant",
-  "wayf.relative": "Représentant légal",
+  "wayf.relative": "Responsable légal",
   "wayf.perseducnat": "Personnel",
   "wayf.other": "Invité",
   "wayf.select.level": "Votre niveau :",
@@ -259,9 +259,11 @@
   "wayf.teacher.amiens": "Académie d'Amiens",
   "wayf.teacher.agri": "Établissement agricole",
   "wayf.teacher.special": "Établissement spécialisé",
+  "wayf.perseducnat.local": "Personnel de l'éducation (compte local ENT)",
+  "wayf.perseducnat.arena": "Personnel de l'éducation (ARENA)",
+  "wayf.perseducnat.collectivite": "Personnel de la collectivité",
   "wayf.perseducnat.lille": "Académie de Lille",
   "wayf.perseducnat.amiens": "Académie d'Amiens",
   "wayf.perseducnat.agri": "Établissement agricole",
-  "wayf.perseducnat.collectivite": "Personnel de la collectivité",
   "weak": "Faible"
 }

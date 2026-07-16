@@ -247,28 +247,25 @@ public class SamlController extends AbstractFederateController {
 				swmf.put("mobile", isMobile);
 			}
 
-			// FIXME: REMOVE the next line and uncomment the following block to switch between old and new WAYF
-			renderView(request, swmf, "wayfv2.html", null);
+			// Check host from vertx conf to show the new WAYF on specific platforms
+			String host = getHost(request);
+			JsonArray specificWayfV2Host = config.getJsonArray("specific-wayf-v2-host");
+			final boolean isSpecificWayfV2Host = specificWayfV2Host != null && !specificWayfV2Host.isEmpty() && host != null && !host.isEmpty() && specificWayfV2Host.contains(host);
+			// Check wayf-beta cookie to switch between old and new WAYF on all platforms
+			final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
+			final boolean isWayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
 
-			// // FIXME: Remplacer par la solution choisie pour l'activation de la WAYF
-			// // Check wayf-beta cookie to switch between old and new WAYF
-			// final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
-			// final boolean wayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
-			// if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
-			// 		(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
-			// 		("true".equals(request.params().get("mobile")))) {
-			// 	if(wayfBeta) {
-			// 		renderView(request, swmf, "wayfv2.html", null);
-			// 	} else {
-			// 		renderView(request, swmf, "wayf-mobile.html", null);
-			// 	}
-			// } else {
-			// 	if(wayfBeta) {
-			// 		renderView(request, swmf, "wayfv2.html", null);
-			// 	} else {
-			// 		renderView(request, swmf, "wayf.html", null);
-			// 	}
-			// }
+			if(isWayfBeta || isSpecificWayfV2Host ) {
+				renderView(request, swmf, "wayfv2.html", null);
+			} else {
+				if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
+					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
+					("true".equals(request.params().get("mobile")))) {
+					renderView(request, swmf, "wayf-mobile.html", null);
+				} else {
+					renderView(request, swmf, "wayf.html", null);
+				}
+			}
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
 					.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
