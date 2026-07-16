@@ -248,7 +248,6 @@ public class SamlController extends AbstractFederateController {
 			}
 
 			// Check host from vertx conf to show the new WAYF on specific platforms
-			String host = getHost(request);
 			JsonArray specificWayfV2Host = config.getJsonArray("specific-wayf-v2-host");
 			final boolean isSpecificWayfV2Host = specificWayfV2Host != null && !specificWayfV2Host.isEmpty() && host != null && !host.isEmpty() && specificWayfV2Host.contains(host);
 			// Check wayf-beta cookie to switch between old and new WAYF on all platforms
@@ -258,9 +257,7 @@ public class SamlController extends AbstractFederateController {
 			if(isWayfBeta || isSpecificWayfV2Host ) {
 				renderView(request, swmf, "wayfv2.html", null);
 			} else {
-				if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
-					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
-					("true".equals(request.params().get("mobile")))) {
+				if (isMobile) {
 					renderView(request, swmf, "wayf-mobile.html", null);
 				} else {
 					renderView(request, swmf, "wayf.html", null);
