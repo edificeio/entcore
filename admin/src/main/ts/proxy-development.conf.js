@@ -1,4 +1,3 @@
-const { on } = require("events");
 const fs = require("fs");
 
 const { applyRemoteTarget } = require("./proxy-mocks/proxy-remote-target");
