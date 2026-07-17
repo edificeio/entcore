@@ -20,8 +20,10 @@
 package org.entcore.feeder.aaf;
 
 import org.apache.commons.lang3.text.translate.*;
+import fr.wseduc.webutils.eventbus.ResultMessage;
 import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.dictionary.structures.Importer;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -99,9 +101,6 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 						try {
 							log.info(e -> "START parsing file : " + file, true);
 							importer.getReport().loadedFile(file);
-							byte[] encoded = Files.readAllBytes(Paths.get(file));
-							String content = UNESCAPE_AAF.translate(new String(encoded, "UTF-8"));
-							InputSource in = new InputSource(new StringReader(content));
 							AAFHandler sh = new AAFHandler(BaseImportProcessing.this);
 							XMLReader xr = XMLReaderFactory.createXMLReader();
 							xr.setContentHandler(sh);
@@ -131,36 +130,37 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 									}
 								}
 							});
-							xr.parse(in);
+							// Parse the raw file directly and unescape only each markup value in
+							// AAFHandler : avoids copying the whole file just to unescape it up-front.
+							try (InputStream is = new BufferedInputStream(Files.newInputStream(Paths.get(file)))) {
+								InputSource in = new InputSource(is);
+								in.setEncoding("UTF-8");
+								xr.parse(in);
+							}
 							log.info(e -> "START peristing file : " + file);
-							importer.persist(new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> message) {
-									if ("ok".equals(message.body().getString("status"))) {
-										log.info(e -> "SUCCEED persist successfully for file : " + file);
-										handlers[j + 1].handle(0);
-									} else {
-										log.error(e -> "FAILED persist for file : " + file);
+							importer.persist(message -> {
+                                if ("ok".equals(message.body().getString("status"))) {
+                                    log.info(e -> "SUCCEED persist successfully for file : " + file);
+									handlers[j] = null;
+                                    handlers[j + 1].handle(0);
+                                } else {
+                                    log.error(e -> "FAILED persist for file : " + file);
 
-										String msg = message.body().getString("message", "");
-										if(nbRetries < MAX_DEADLOCK_RETRIES && DEADLOCK_PATTERN.matcher(msg).find() == true)
-										{
-											log.info(e -> "RETRY persist for file : " + file);
-											handlers[j].handle(nbRetries + 1);
-										}
-										else
-										{
-											error(message, handler);
-										}
-									}
-								}
-							});
+                                    String msg = message.body().getString("message", "");
+                                    if(nbRetries < MAX_DEADLOCK_RETRIES && DEADLOCK_PATTERN.matcher(msg).find() == true)
+                                    {
+                                        log.info(e -> "RETRY persist for file : " + file);
+                                        handlers[j].handle(nbRetries + 1);
+                                    }
+                                    else
+                                    {
+                                        error(message, handler);
+                                    }
+                                }
+                            });
 						} catch (Exception e) {
 							error(e, handler);
 							log.error(t -> "FAILED parsing file : " + file, e);
-						} catch (OutOfMemoryError err) { // badly catch Error to unlock importer
-							log.error(t -> "FAILED parsing file (OOM) : " + file, err);
-							error(new Exception("OOM"), handler);
 						}
 					}
 				};
@@ -174,36 +174,53 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 
 	protected void next(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
 		log.info(t -> "START precommit");
-		preCommit();
-		if (importProcessing != null) {
-			log.info(t -> "START precommit persist....");
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if ("ok".equals(message.body().getString("status"))) {
-						log.info(t -> "SUCCEED precommit persist");
-						importProcessing.start(handler);
-					} else {
-						log.error(t -> "FAILED precommit persist : "+ message.body().encode());
-						error(message, handler);
+		preCommit().onComplete(ar -> {
+			if (ar.failed()) {
+				log.error(t -> "FAILED precommit", ar.cause());
+				error(new Exception(ar.cause()), handler);
+				return;
+			}
+			if (importProcessing != null) {
+				log.info(t -> "START precommit persist....");
+				importer.persist(new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> message) {
+						// A null message means preCommit already committed everything and the
+						// persist transaction was empty : success, not a failure. Normalize it
+						// to a real "ok" message so downstream (and the terminal Feeder handler,
+						// which treats null as an error) does not mistake it for a failure.
+						final Message<JsonObject> m = (message != null) ? message : new ResultMessage();
+						if ("ok".equals(m.body().getString("status"))) {
+							log.info(t -> "SUCCEED precommit persist" + (message == null ? " (empty transaction)" : ""));
+							importProcessing.start(handler);
+						} else {
+							log.error(t -> "FAILED precommit persist : "+ m.body().encode());
+							error(m, handler);
+						}
 					}
-				}
-			});
-		} else {
-			log.info(t -> "START precommit persist....");
-			importer.persist(e->{
-				//log
-				if ("ok".equals(e.body().getString("status"))) {
-					log.info(t -> "SUCCEED precommit persist");
-				} else {
-					log.error(t -> "FAILED precommit persist : "+ e.body().encode());
-				}
-				handler.handle(e);
-			});
-		}
+				});
+			} else {
+				log.info(t -> "START precommit persist....");
+				importer.persist(e->{
+					// A null message means preCommit already committed everything and the
+					// persist transaction was empty : success, not a failure. Normalize it to
+					// a real "ok" message : the terminal Feeder handler treats null as an error.
+					final Message<JsonObject> m = (e != null) ? e : new ResultMessage();
+					if ("ok".equals(m.body().getString("status"))) {
+						log.info(t -> "SUCCEED precommit persist" + (e == null ? " (empty transaction)" : ""));
+					} else {
+						log.error(t -> "FAILED precommit persist : "+ m.body().encode());
+					}
+					handler.handle(m);
+				});
+			}
+		});
 	}
 
-	protected void preCommit() {}
+	protected Future<Void> preCommit() {
+		return Future.succeededFuture();
+	}
+
 
 	protected void error(Exception e, Handler<Message<JsonObject>> handler) {
 		log.error(t -> e.getMessage(), e);

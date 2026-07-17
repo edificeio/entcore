@@ -73,14 +73,18 @@ public class CleanImportProcessingGlobal extends BaseImportProcessing {
 	}
 
 	@Override
-	protected void preCommit() {
-		log.info(e-> "preCommit clean import process global", true);
+	protected Future<Void> preCommit() {
+	log.info(e-> "preCommit clean import process global", true);
 		final JsonArray importPrefixList = importer.getPrefixToImportList();
 
 		if (importPrefixList == null || importPrefixList.isEmpty()) {
 			log.info(e-> "tx removeEmptyClasses", true);
-			importer.removeEmptyClasses();
+			return importer.removeEmptyClasses()
+					.onSuccess(r -> log.info(e-> "SUCCEED tx removeEmptyClasses", true))
+					.onFailure(err -> log.error(e-> "FAILED tx removeEmptyClasses", err))
+					.mapEmpty();
 		}
+		return Future.succeededFuture();
 	}
 
 	@Override

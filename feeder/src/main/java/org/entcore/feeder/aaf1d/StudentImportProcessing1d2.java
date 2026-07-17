@@ -21,6 +21,7 @@ package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.StudentImportProcessing2;
 import org.entcore.feeder.dictionary.structures.ImporterStructure;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -34,8 +35,8 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 	}
 
 	@Override
-	protected void preCommit() {
-		super.preCommit();
+	protected Future<Void> preCommit() {
+		return super.preCommit();
 	}
 
 	@Override

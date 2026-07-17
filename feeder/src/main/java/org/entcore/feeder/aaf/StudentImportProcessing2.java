@@ -20,11 +20,15 @@
 package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StudentImportProcessing2 extends StudentImportProcessing {
 
@@ -37,10 +41,34 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 		parse(handler, new CleanImportProcessing(path, vertx));
 	}
 
+	// Number of structures whose relative links are committed together. Bounds the number
+	// of MERGE per transaction to avoid a single oversized transaction (neo4j OOM).
+	private static final int LINK_RELATIVE_BATCH_SIZE = 25;
+
 	@Override
-	protected void preCommit() {
-		importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
-		importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
+	protected Future<Void> preCommit() {
+		// The global relative-linking queries fan out over the whole graph (hundreds of
+		// thousands of MERGE) and blow up the neo4j heap. Scope the work to the structures
+		// imported in this run and commit in bounded batches : each query is then anchored
+		// on Structure.externalId (unique index) instead of scanning every user.
+		final List<String> structures = new ArrayList<>(importer.getStructureImportedExternalId());
+		log.info(e -> "START preCommit StudentImportProcessing2 (" + structures.size() + " structures)", true);
+		Future<Void> chain = Future.succeededFuture();
+		for (int i = 0; i < structures.size(); i += LINK_RELATIVE_BATCH_SIZE) {
+			int pointer = i;
+			final List<String> batch = structures.subList(i, Math.min(i + LINK_RELATIVE_BATCH_SIZE, structures.size()));
+			chain = chain.compose(v -> {
+				log.info(e -> "tx linkRelative batch : " + pointer, true);
+				for (String structureExternalId : batch) {
+					importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix(), structureExternalId);
+					importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix(), structureExternalId);
+				}
+				return importer.getTransaction().commit().mapEmpty();
+			});
+		}
+		return chain
+				.onSuccess(r -> log.info(e -> "SUCCEED preCommit StudentImportProcessing2", true))
+				.onFailure(err -> log.error(e -> "FAILED preCommit StudentImportProcessing2", err));
 	}
 
 	@Override

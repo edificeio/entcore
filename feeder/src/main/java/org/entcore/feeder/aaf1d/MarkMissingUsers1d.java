@@ -5,6 +5,7 @@ import java.util.Set;
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.StudentImportProcessing2;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -17,8 +18,9 @@ public class MarkMissingUsers1d extends StudentImportProcessing2 {
 	}
 
 	@Override
-	protected void preCommit() {
+	protected Future<Void> preCommit() {
         log.info(e -> "Mark missing users 1d", true);
+        return Future.succeededFuture();
 	}
 
 	@Override
