@@ -750,7 +750,32 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listChildren(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
-		userService.listChildren(userId, arrayResponseHandler(request));
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user == null) {
+				unauthorized(request);
+				return;
+			}
+			final boolean removeFirstName = !userId.equals(user.getUserId());
+			userService.listChildren(userId, event -> {
+				if (event.isRight() && removeFirstName) {
+					removeChildrenFirstName(event.right().getValue());
+				}
+				arrayResponseHandler(request).handle(event);
+			});
+		});
+	}
+
+	private void removeChildrenFirstName(JsonArray structures) {
+		for (Object structureObj : structures) {
+			if (!(structureObj instanceof JsonObject)) continue;
+			final JsonArray children = ((JsonObject) structureObj).getJsonArray("children");
+			if (children == null) continue;
+			for (Object childObj : children) {
+				if (childObj instanceof JsonObject) {
+					((JsonObject) childObj).remove("firstName");
+				}
+			}
+		}
 	}
 
 	@Post("/user/group/:userId/:groupId")
