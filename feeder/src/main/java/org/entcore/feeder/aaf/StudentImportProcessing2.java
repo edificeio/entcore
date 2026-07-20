@@ -41,22 +41,25 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 		parse(handler, new CleanImportProcessing(path, vertx));
 	}
 
-	// Number of structures whose relative links are committed together. Bounds the number
-	// of MERGE per transaction to avoid a single oversized transaction (neo4j OOM).
-	private static final int LINK_RELATIVE_BATCH_SIZE = 25;
+	// Default number of structures whose relative links are committed together. Bounds the
+	// number of MERGE per transaction to avoid a single oversized transaction (neo4j OOM).
+	// Overridable via the "link-relative-batch-size" config key.
+	private static final int DEFAULT_LINK_RELATIVE_BATCH_SIZE = 25;
 
 	@Override
-	protected Future<Void> preCommit() {
+	protected Future<Void> postCommit() {
 		// The global relative-linking queries fan out over the whole graph (hundreds of
 		// thousands of MERGE) and blow up the neo4j heap. Scope the work to the structures
 		// imported in this run and commit in bounded batches : each query is then anchored
 		// on Structure.externalId (unique index) instead of scanning every user.
+		final int batchSize = vertx.getOrCreateContext().config()
+				.getInteger("link-relative-batch-size", DEFAULT_LINK_RELATIVE_BATCH_SIZE);
 		final List<String> structures = new ArrayList<>(importer.getStructureImportedExternalId());
-		log.info(e -> "START preCommit StudentImportProcessing2 (" + structures.size() + " structures)", true);
+		log.info(e -> "START postCommit StudentImportProcessing2 (" + structures.size() + " structures)", true);
 		Future<Void> chain = Future.succeededFuture();
-		for (int i = 0; i < structures.size(); i += LINK_RELATIVE_BATCH_SIZE) {
+		for (int i = 0; i < structures.size(); i += batchSize) {
 			int pointer = i;
-			final List<String> batch = structures.subList(i, Math.min(i + LINK_RELATIVE_BATCH_SIZE, structures.size()));
+			final List<String> batch = structures.subList(i, Math.min(i + batchSize, structures.size()));
 			chain = chain.compose(v -> {
 				log.info(e -> "tx linkRelative batch : " + pointer, true);
 				for (String structureExternalId : batch) {
@@ -67,8 +70,8 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 			});
 		}
 		return chain
-				.onSuccess(r -> log.info(e -> "SUCCEED preCommit StudentImportProcessing2", true))
-				.onFailure(err -> log.error(e -> "FAILED preCommit StudentImportProcessing2", err));
+				.onSuccess(r -> log.info(e -> "SUCCEED postCommit StudentImportProcessing2", true))
+				.onFailure(err -> log.error(e -> "FAILED postCommit StudentImportProcessing2", err));
 	}
 
 	@Override

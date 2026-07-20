@@ -35,11 +35,6 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 	}
 
 	@Override
-	protected Future<Void> preCommit() {
-		return super.preCommit();
-	}
-
-	@Override
 	public void process(JsonObject object) {
 		if (!importer.blockedIne(object)) {
 			super.process(object);

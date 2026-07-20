@@ -17,8 +17,10 @@ public class MarkMissingUsers1d extends StudentImportProcessing2 {
 		super(path, vertx);
 	}
 
+	// This pass only marks missing users : it must NOT run the batched relative-linking that
+	// StudentImportProcessing2 performs in postCommit, so we deliberately override it to a no-op.
 	@Override
-	protected Future<Void> preCommit() {
+	protected Future<Void> postCommit() {
         log.info(e -> "Mark missing users 1d", true);
         return Future.succeededFuture();
 	}

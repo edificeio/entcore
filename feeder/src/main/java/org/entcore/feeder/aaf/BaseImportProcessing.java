@@ -24,6 +24,7 @@ import fr.wseduc.webutils.eventbus.ResultMessage;
 import org.entcore.feeder.FeederLogger;
 import org.entcore.feeder.dictionary.structures.Importer;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -174,51 +175,65 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 
 	protected void next(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
 		log.info(t -> "START precommit");
-		preCommit().onComplete(ar -> {
-			if (ar.failed()) {
-				log.error(t -> "FAILED precommit", ar.cause());
-				error(new Exception(ar.cause()), handler);
-				return;
-			}
-			if (importProcessing != null) {
+		// Enclosing-step finalization, linearized : stage (preCommit) -> commit the staged work
+		// once (persist) -> run the step's own bounded/batched transactions (postCommit) -> hand
+		// over to the next processing step (or forward the result to the terminal handler).
+		preCommit()
+			.compose(v -> {
 				log.info(t -> "START precommit persist....");
-				importer.persist(new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> message) {
-						// A null message means preCommit already committed everything and the
-						// persist transaction was empty : success, not a failure. Normalize it
-						// to a real "ok" message so downstream (and the terminal Feeder handler,
-						// which treats null as an error) does not mistake it for a failure.
-						final Message<JsonObject> m = (message != null) ? message : new ResultMessage();
-						if ("ok".equals(m.body().getString("status"))) {
-							log.info(t -> "SUCCEED precommit persist" + (message == null ? " (empty transaction)" : ""));
-							importProcessing.start(handler);
-						} else {
-							log.error(t -> "FAILED precommit persist : "+ m.body().encode());
-							error(m, handler);
-						}
-					}
-				});
-			} else {
-				log.info(t -> "START precommit persist....");
-				importer.persist(e->{
-					// A null message means preCommit already committed everything and the
-					// persist transaction was empty : success, not a failure. Normalize it to
-					// a real "ok" message : the terminal Feeder handler treats null as an error.
-					final Message<JsonObject> m = (e != null) ? e : new ResultMessage();
-					if ("ok".equals(m.body().getString("status"))) {
-						log.info(t -> "SUCCEED precommit persist" + (e == null ? " (empty transaction)" : ""));
+				final Promise<Message<JsonObject>> promise = Promise.promise();
+				importer.persist(promise::complete);
+				return promise.future();
+			})
+			.compose(message -> {
+				// A null message means the persist transaction was empty (preCommit staged
+				// nothing) : success, not a failure. Normalize it to a real "ok" message.
+				final Message<JsonObject> m = (message != null) ? message : new ResultMessage();
+				if ("ok".equals(m.body().getString("status"))) {
+					log.info(t -> "SUCCEED precommit persist" + (message == null ? " (empty transaction)" : ""));
+					// postCommit owns the enclosing step's bounded transactions ; carry the
+					// persist message through so the terminal step can forward it downstream.
+					return postCommit().map(v -> m);
+				}
+				log.error(t -> "FAILED precommit persist : " + m.body().encode());
+				return Future.failedFuture(new PersistFailure(m));
+			})
+			.onComplete(ar -> {
+				if (ar.succeeded()) {
+					if (importProcessing != null) {
+						importProcessing.start(handler);
 					} else {
-						log.error(t -> "FAILED precommit persist : "+ m.body().encode());
+						handler.handle(ar.result());
 					}
-					handler.handle(m);
-				});
-			}
-		});
+				} else if (ar.cause() instanceof PersistFailure) {
+					error(((PersistFailure) ar.cause()).message, handler);
+				} else {
+					log.error(t -> "FAILED precommit/postcommit", ar.cause());
+					error(new Exception(ar.cause()), handler);
+				}
+			});
 	}
 
+	// Staging hook : add queries to the current transaction ; the persist() that follows in
+	// next() commits them once. Implementations must NOT commit here.
 	protected Future<Void> preCommit() {
 		return Future.succeededFuture();
+	}
+
+	// Finalization hook run after persist() : owns its own (possibly batched) commits for the
+	// enclosing step. Kept separate from preCommit so a step that drives its own bounded
+	// transactions does not distort the staging contract of preCommit.
+	protected Future<Void> postCommit() {
+		return Future.succeededFuture();
+	}
+
+	// Carries a failing persist message through the Future chain so the terminal onComplete can
+	// forward it (error(message, handler)) instead of collapsing it to a bare cause.
+	private static final class PersistFailure extends Exception {
+		private final Message<JsonObject> message;
+		private PersistFailure(Message<JsonObject> message) {
+			this.message = message;
+		}
 	}
 
 

@@ -966,16 +966,14 @@ public class Importer {
 		transactionHelper.add(query3, null);
 	}
 
-	// Number of structures whose empty-class cleanup is committed together. Bounds the
-	// transaction size : AAF can be incremental, so these queries must be scoped to the
+	// batchSize : number of structures whose empty-class cleanup is committed together. Bounds
+	// the transaction size : AAF can be incremental, so these queries must be scoped to the
 	// structures imported in this run instead of sweeping the whole DB (neo4j OOM).
-	private static final int REMOVE_EMPTY_CLASSES_BATCH_SIZE = 25;
-
-	public Future<JsonArray> removeEmptyClasses() {
+	public Future<JsonArray> removeEmptyClasses(int batchSize) {
 		final List<String> structures = new ArrayList<>(structuresImportedExternalId);
 		Future<JsonArray> chain = Future.succeededFuture(new JsonArray());
-		for (int i = 0; i < structures.size(); i += REMOVE_EMPTY_CLASSES_BATCH_SIZE) {
-			final List<String> batch = structures.subList(i, Math.min(i + REMOVE_EMPTY_CLASSES_BATCH_SIZE, structures.size()));
+		for (int i = 0; i < structures.size(); i += batchSize) {
+			final List<String> batch = structures.subList(i, Math.min(i + batchSize, structures.size()));
 			chain = chain.compose(r -> {
 				for (String structureExternalId : batch) {
 					final JsonObject params = new JsonObject().put("structureExternalId", structureExternalId);
