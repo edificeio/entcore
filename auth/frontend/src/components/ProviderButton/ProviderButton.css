@@ -1,13 +1,13 @@
 /* Bouton provider — pill design */
 .wayf-provider-btn {
-  --btn-color: var(--primitives-grey-800);
+  --btn-color: var(--primitive-grey-800);
   width: 100%;
   min-height: 48px;
   display: flex;
   align-items: stretch;
   border: 2px solid var(--btn-color);
-  border-radius: var(--primitives-border-radius-pill);
-  background: var(--primitives-white);
+  border-radius: var(--primitive-border-radius-pill);
+  background: var(--primitive-white);
   cursor: pointer;
   overflow: hidden;
   padding: 0;
@@ -29,13 +29,13 @@
   background-color: color-mix(
     in srgb,
     var(--btn-color) 15%,
-    var(--primitives-white)
+    var(--primitive-white)
   );
   color: var(--btn-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--primitives-spacer-12);
+  padding: var(--primitive-spacer-12);
   flex-shrink: 0;
   border-radius: 10px 0 0 10px;
   min-width: 48px;
@@ -53,10 +53,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--primitives-spacer-12) var(--primitives-spacer-16);
-  font-size: var(--primitives-font-size-default);
-  font-weight: var(--primitives-font-weight-bold);
-  color: var(--primitives-grey-900);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16);
+  font-size: var(--primitive-font-size-default);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-grey-900);
   text-align: center;
 }
 
@@ -64,27 +64,27 @@
 .wayf-provider-btn__arrow {
   display: flex;
   align-items: center;
-  padding-right: var(--primitives-spacer-16);
+  padding-right: var(--primitive-spacer-16);
   color: var(--btn-color);
   flex-shrink: 0;
 }
 
 .wayf-provider-btn--student {
-  --btn-color: var(--primitives-orange-500);
+  --btn-color: var(--primitive-orange-500);
 }
 
 .wayf-provider-btn--relative {
-  --btn-color: var(--primitives-blue-500);
+  --btn-color: var(--primitive-blue-500);
 }
 
 .wayf-provider-btn--teacher {
-  --btn-color: var(--primitives-green-500);
+  --btn-color: var(--primitive-green-500);
 }
 
 .wayf-provider-btn--perseducnat {
-  --btn-color: var(--primitives-pink-500);
+  --btn-color: var(--primitive-pink-500);
 }
 
 .wayf-provider-btn--other {
-  --btn-color: var(--primitives-yellow-500);
+  --btn-color: var(--primitive-yellow-500);
 }

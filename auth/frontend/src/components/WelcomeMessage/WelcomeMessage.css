@@ -1,6 +1,6 @@
 .wayf-welcome {
-  border-radius: var(--primitives-border-radius-2xl);
-  background: var(--primitives-white);
+  border-radius: var(--primitive-border-radius-2xl);
+  background: var(--primitive-white);
   box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.15);
   overflow: hidden;
   flex: 0 1 auto;
@@ -10,7 +10,7 @@
 }
 
 .wayf-welcome__scroll {
-  padding: var(--primitives-spacer-24);
+  padding: var(--primitive-spacer-24);
   overflow-y: auto;
   overflow-wrap: break-word;
   flex: 1;

@@ -22,8 +22,8 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: var(--primitives-spacer-48);
-  padding: var(--primitives-spacer-64);
+  gap: var(--primitive-spacer-48);
+  padding: var(--primitive-spacer-64);
   max-height: 100vh;
   overflow: hidden;
 }
@@ -37,17 +37,17 @@
    ═══════════════════════════════════════════ */
 .wayf-selection {
   grid-area: selection;
-  background: var(--primitives-white);
+  background: var(--primitive-white);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
 .wayf-selection__logo-bar {
-  border-bottom: 1px solid var(--primitives-grey-300);
+  border-bottom: 1px solid var(--primitive-grey-300);
   display: flex;
   justify-content: center;
-  padding: var(--primitives-spacer-16) var(--primitives-spacer-48);
+  padding: var(--primitive-spacer-16) var(--primitive-spacer-48);
   flex-shrink: 0;
 }
 
@@ -62,8 +62,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--primitives-spacer-24);
-  padding-block: var(--primitives-spacer-48);
+  gap: var(--primitive-spacer-24);
+  padding-block: var(--primitive-spacer-48);
   overflow: hidden;
 }
 
@@ -80,15 +80,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--primitives-spacer-32);
-  padding-inline: var(--primitives-spacer-64);
+  gap: var(--primitive-spacer-32);
+  padding-inline: var(--primitive-spacer-64);
   overflow-y: auto;
 }
 
 .wayf-title {
-  font-size: var(--primitives-font-size-s);
-  font-weight: var(--primitives-font-weight-bold);
-  color: var(--primitives-grey-900);
+  font-size: var(--primitive-font-size-s);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-grey-900);
   text-align: center;
   margin: 0;
 }
@@ -97,12 +97,12 @@
    Pied de page droite
    ═══════════════════════════════════════════ */
 .wayf-selection__footer {
-  border-top: 1px solid var(--primitives-grey-300);
+  border-top: 1px solid var(--primitive-grey-300);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--primitives-spacer-12);
-  padding: var(--primitives-spacer-16);
+  gap: var(--primitive-spacer-12);
+  padding: var(--primitive-spacer-16);
   flex-shrink: 0;
 }
 
@@ -112,12 +112,12 @@
 }
 
 .wayf-help-btn {
-  font-size: var(--primitives-font-size-default);
-  font-weight: var(--primitives-font-weight-bold);
-  color: var(--primitives-blue-900);
+  font-size: var(--primitive-font-size-default);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-blue-900);
   text-decoration: none;
-  padding: var(--primitives-spacer-8) var(--primitives-spacer-24);
-  border-radius: var(--primitives-border-radius-pill);
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-24);
+  border-radius: var(--primitive-border-radius-pill);
   transition: background 0.15s ease;
 }
 
@@ -128,13 +128,13 @@
 .wayf-legal-link {
   display: flex;
   align-items: center;
-  gap: var(--primitives-spacer-8);
-  font-size: var(--primitives-font-size-default);
-  font-weight: var(--primitives-font-weight-bold);
-  color: var(--primitives-blue-900);
+  gap: var(--primitive-spacer-8);
+  font-size: var(--primitive-font-size-default);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-blue-900);
   text-decoration: none;
-  padding: var(--primitives-spacer-8) var(--primitives-spacer-24);
-  border-radius: var(--primitives-border-radius-pill);
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-24);
+  border-radius: var(--primitive-border-radius-pill);
   transition: background 0.15s ease;
 }
 
@@ -143,11 +143,11 @@
 }
 
 .wayf-edifice-badge {
-  background: var(--primitives-blue-700);
+  background: var(--primitive-blue-700);
   border-radius: 120px;
   display: flex;
   align-items: center;
-  padding: var(--primitives-spacer-8) var(--primitives-spacer-12);
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-12);
   text-decoration: none;
 }
 
@@ -183,7 +183,7 @@
   }
 
   .wayf-selection__auth {
-    padding-block: var(--primitives-spacer-32);
+    padding-block: var(--primitive-spacer-32);
     overflow: visible;
   }
 
@@ -196,7 +196,7 @@
   .wayf-view-slide {
     grid-area: 1 / 1;
     position: static;
-    padding-inline: var(--primitives-spacer-24);
+    padding-inline: var(--primitive-spacer-24);
     overflow-y: visible;
   }
 
@@ -207,6 +207,6 @@
   .wayf-editorial {
     min-height: 300px;
     max-height: unset;
-    padding: var(--primitives-spacer-16);
+    padding: var(--primitive-spacer-16);
   }
 }

@@ -1,12 +1,12 @@
 .wayf-partners {
-  background: var(--primitives-white);
-  border-radius: var(--primitives-border-radius-2xl);
-  padding: var(--primitives-spacer-16);
+  background: var(--primitive-white);
+  border-radius: var(--primitive-border-radius-2xl);
+  padding: var(--primitive-spacer-16);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--primitives-spacer-16);
+  gap: var(--primitive-spacer-16);
 }
 
 .wayf-partners__link {

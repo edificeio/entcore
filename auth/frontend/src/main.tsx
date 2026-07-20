@@ -7,7 +7,6 @@ import './i18n';
 import { Providers, queryClient } from './providers';
 import { router } from './routes';
 
-import './styles/tokens.css';
 import '@edifice.io/bootstrap/dist/index.css';
 
 const rootElement = document.getElementById('root');
