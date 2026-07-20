@@ -329,7 +329,7 @@ public class PostImport {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (!"ok".equals(event.body().getString("status"))) {
-					logger.error(e-> "FAILED to apply Communication rules pack [" + fromIndex + "-" + toIndex + "] : " + event.body().getString("message"));
+					logger.error(e-> "FAILED to apply Communication rules pack [" + fromIndex + "-" + toIndex + "], pack " + pack + " : " + event.body().getString("message"));
 				} else {
 					logger.info(e-> "SUCCEED apply applyComRules pack [" + fromIndex + "-" + toIndex + "/" + schoolIds.size() + "]");
 				}
