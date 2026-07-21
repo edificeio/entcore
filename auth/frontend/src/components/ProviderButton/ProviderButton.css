@@ -1,0 +1,90 @@
+/* Bouton provider — pill design */
+.wayf-provider-btn {
+  --btn-color: var(--primitive-grey-800);
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: stretch;
+  border: 2px solid var(--btn-color);
+  border-radius: var(--primitive-border-radius-pill);
+  background: var(--primitive-white);
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  transition: box-shadow 0.15s ease;
+  text-decoration: none;
+}
+
+.wayf-provider-btn:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.wayf-provider-btn:focus-visible {
+  outline: 3px solid var(--btn-color);
+  outline-offset: 2px;
+}
+
+/* Zone icône — fond teinté, coins arrondis gauche */
+.wayf-provider-btn__icon-wrap {
+  background-color: color-mix(
+    in srgb,
+    var(--btn-color) 15%,
+    var(--primitive-white)
+  );
+  color: var(--btn-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--primitive-spacer-12);
+  flex-shrink: 0;
+  border-radius: 10px 0 0 10px;
+  min-width: 48px;
+}
+
+.wayf-provider-btn__icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Libellé — centré */
+.wayf-provider-btn__label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16);
+  font-size: var(--primitive-font-size-default);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-grey-900);
+  text-align: center;
+}
+
+/* Flèche */
+.wayf-provider-btn__arrow {
+  display: flex;
+  align-items: center;
+  padding-right: var(--primitive-spacer-16);
+  color: var(--btn-color);
+  flex-shrink: 0;
+}
+
+.wayf-provider-btn--student {
+  --btn-color: var(--primitive-orange-500);
+}
+
+.wayf-provider-btn--relative {
+  --btn-color: var(--primitive-blue-500);
+}
+
+.wayf-provider-btn--teacher {
+  --btn-color: var(--primitive-green-500);
+}
+
+.wayf-provider-btn--perseducnat {
+  --btn-color: var(--primitive-pink-500);
+}
+
+.wayf-provider-btn--other {
+  --btn-color: var(--primitive-yellow-500);
+}

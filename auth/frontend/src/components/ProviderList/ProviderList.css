@@ -1,0 +1,35 @@
+.wayf-provider-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-12);
+}
+
+.wayf-back-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--primitive-spacer-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-12);
+  font-size: var(--primitive-font-size-default);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-blue-900);
+  border-radius: var(--primitive-border-radius-pill);
+  transition: background 0.15s ease;
+  min-height: 48px;
+}
+
+.wayf-back-btn:hover {
+  background: rgba(28, 28, 115, 0.06);
+}
+
+.wayf-back-btn:focus-visible {
+  outline: 2px solid var(--primitive-blue-900);
+  outline-offset: 2px;
+}

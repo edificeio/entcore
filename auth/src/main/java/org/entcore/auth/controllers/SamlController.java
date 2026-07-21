@@ -236,12 +236,32 @@ public class SamlController extends AbstractFederateController {
 
 			final String userAgent = request.getHeader("User-Agent");
 			final String xRequestedWith = request.getHeader("X-Requested-With");
-			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
+
+			// Flag the mobile-app context so the WAYF v2 front intercepts non-provider
+			// links and hands them back to the native app (ENABLING-901).
+			final boolean isMobile =
+					(userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
 					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
-					("true".equals(request.params().get("mobile")))) {
-				renderView(request, swmf, "wayf-mobile.html", null);
+					("true".equals(request.params().get("mobile")));
+			if (swmf != null) {
+				swmf.put("mobile", isMobile);
+			}
+
+			// Check host from vertx conf to show the new WAYF on specific platforms
+			JsonArray specificWayfV2Host = config.getJsonArray("specific-wayf-v2-host");
+			final boolean isSpecificWayfV2Host = specificWayfV2Host != null && !specificWayfV2Host.isEmpty() && host != null && !host.isEmpty() && specificWayfV2Host.contains(host);
+			// Check wayf-beta cookie to switch between old and new WAYF on all platforms
+			final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
+			final boolean isWayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
+
+			if(isWayfBeta || isSpecificWayfV2Host ) {
+				renderView(request, swmf, "wayfv2.html", null);
 			} else {
-				renderView(request, swmf, "wayf.html", null);
+				if (isMobile) {
+					renderView(request, swmf, "wayf-mobile.html", null);
+				} else {
+					renderView(request, swmf, "wayf.html", null);
+				}
 			}
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
