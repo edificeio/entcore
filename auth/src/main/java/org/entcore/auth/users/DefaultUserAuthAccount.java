@@ -286,7 +286,10 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
-				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
+				"OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) "+
+				"WITH n, collect(s.levelsOfEducation) as levelsList " +
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile, " +
+				"reduce(acc = [], levels IN levelsList | acc + [x IN levels WHERE NOT x IN acc]) as levels";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
