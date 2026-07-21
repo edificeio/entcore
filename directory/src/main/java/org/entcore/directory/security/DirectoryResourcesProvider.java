@@ -672,19 +672,39 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		Set<String> ids = getIds(user, true);
-		if (ids.contains(structureId)) {
-			handler.handle(true);
-			return;
-		}
-		String query =
-				"MATCH (c:`Structure` { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
-						"<-[:IN]-(t:`User` { id : {teacherId}}) " +
-						"RETURN count(*) > 0 as exists ";
-		JsonObject params = new JsonObject()
-				.put("structureId", structureId)
-				.put("teacherId", user.getUserId());
-		validateQuery(request, handler, query, params);
+		// structureId may be either the Structure's internal id or its UAI : resolve it to the
+		// canonical id first, so that the ADML scope check below (which only stores real ids)
+		// also works when the resource is addressed by UAI.
+		String resolveQuery = "MATCH (c:`Structure`) WHERE c.id = {structureId} OR c.UAI = {structureId} RETURN c.id as id";
+		JsonObject resolveParams = new JsonObject().put("structureId", structureId);
+		neo.execute(resolveQuery, resolveParams, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				JsonArray res = r.body().getJsonArray("result");
+				if (!"ok".equals(r.body().getString("status")) || res == null || res.size() != 1) {
+					handler.handle(false);
+					return;
+				}
+				final String realStructureId = res.getJsonObject(0).getString("id");
+				if (realStructureId == null) {
+					handler.handle(false);
+					return;
+				}
+				Set<String> ids = getIds(user, true);
+				if (ids.contains(realStructureId)) {
+					handler.handle(true);
+					return;
+				}
+				String query =
+						"MATCH (c:`Structure` { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
+								"<-[:IN]-(t:`User` { id : {teacherId}}) " +
+								"RETURN count(*) > 0 as exists ";
+				JsonObject params = new JsonObject()
+						.put("structureId", realStructureId)
+						.put("teacherId", user.getUserId());
+				validateQuery(request, handler, query, params);
+			}
+		});
 	}
 
 	static Set<String> getIds(UserInfos user) {
