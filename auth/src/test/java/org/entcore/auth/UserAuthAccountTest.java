@@ -1,12 +1,18 @@
 package org.entcore.auth;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.test.DirectoryTestHelper;
 import org.entcore.test.TestHelper;
+
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -14,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
 
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -26,7 +33,14 @@ public class UserAuthAccountTest {
     @ClassRule
     public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
     static final JsonObject authAccountConfig = new JsonObject().put("emailConfig",
-            new JsonObject().put("email", "ne-pas-repondre@cg77.fr").put("host", "http://localhost:8090"));
+            new JsonObject().put("postgresql", new JsonObject()
+                            .put("host", "localhost")
+                            .put("database", "test")
+                            .put("user", "test")
+                            .put("password", "test"))
+                    .put("email", "ne-pas-repondre@cg77.fr")
+                    .put("host", "http://localhost:8090")
+                    .put("type", "postgresql"));
     static EventStore eStore;
     static UserAuthAccount authAccount;
 
@@ -34,8 +48,16 @@ public class UserAuthAccountTest {
     public static void setUp(TestContext context) throws Exception {
         EventStoreFactory.getFactory().setVertx(test.vertx());
         eStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
-        authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig, eStore, new HashMap<>());
-        test.database().initNeo4j(context, neo4jContainer);
+        // EmailFactory is a singleton whose config is only populated through build(); without this the
+        // sender falls back to SmtpSender and NPEs on an uninitialized SharedDataHelper.
+        SharedDataHelper.getInstance().init(test.vertx());
+        final Async async = context.async();
+        EmailFactory.build(test.vertx(), authAccountConfig).onComplete(res -> {
+            context.assertTrue(res.succeeded());
+            authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig, eStore, new HashMap<>());
+            test.database().initNeo4j(context, neo4jContainer);
+            async.complete();
+        });
     }
 
     @Test
@@ -163,6 +185,54 @@ public class UserAuthAccountTest {
                 async.complete();
             });
         });
+    }
+
+    @Test
+    public void testAccountShouldMatchActivationCodeAndFlattenLevelsAcrossStructures(TestContext context) {
+        final Async async = context.async();
+        final DirectoryTestHelper dir = test.directory();
+        // A user attached to several structures used to break the query (non.unique.result -> not.found).
+        // The levels of every structure must now be flattened and de-duplicated into a single array.
+        final JsonObject ids = new JsonObject();
+        dir.createInactiveUser("user14", "activationCode14", "user14@test.com")
+            .compose(userId -> {
+                ids.put("user", userId);
+                return dir.createStructure("struct14a", "UAI14A");
+            })
+            .compose(structA -> {
+                ids.put("structA", structA);
+                return dir.setLevelsOfEducation(structA, new JsonArray().add(1));
+            })
+            .compose(v -> dir.createStructure("struct14b", "UAI14B"))
+            .compose(structB -> {
+                ids.put("structB", structB);
+                // Overlaps struct14a on level 1 to also exercise de-duplication.
+                return dir.setLevelsOfEducation(structB, new JsonArray().add(1).add(2));
+            })
+            .compose(v -> dir.createProfileGroup("group14a"))
+            .compose(groupA -> {
+                ids.put("groupA", groupA);
+                return dir.attachGroupToStruct(groupA, ids.getString("structA"));
+            })
+            .compose(v -> dir.attachUserToGroup(ids.getString("user"), ids.getString("groupA")))
+            .compose(v -> dir.createProfileGroup("group14b"))
+            .compose(groupB -> {
+                ids.put("groupB", groupB);
+                return dir.attachGroupToStruct(groupB, ids.getString("structB"));
+            })
+            .compose(v -> dir.attachUserToGroup(ids.getString("user"), ids.getString("groupB")))
+            .onComplete(setup -> {
+                context.assertTrue(setup.succeeded());
+                authAccount.matchActivationCode("user14", "activationCode14", resActiv -> {
+                    context.assertTrue(resActiv.isRight());
+                    final JsonArray levels = resActiv.right().getValue().getJsonArray("levels");
+                    context.assertNotNull(levels);
+                    context.assertEquals(2, levels.size());
+                    context.assertTrue(levels.stream().map(o -> ((Number) o).intValue())
+                            .collect(Collectors.toSet()).containsAll(Arrays.asList(1, 2)));
+                    async.complete();
+                });
+            });
     }
 
     @Test
