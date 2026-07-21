@@ -106,9 +106,23 @@ export let activationController = ng.controller('ActivationController', ['$scope
 	};
 
 	$scope.activate = function(forceCurrentTheme: boolean){
+		console.log($scope.themes);
+		console.log($scope.user);
+
+
 		if($scope.themes.length > 1 && $scope.noThemePicked() && !forceCurrentTheme){
-			template.open('main', 'activation-themes');
-			return;
+			if($scope.user.levels && $scope.user.levels.length === 1 && $scope.themes.length > 1) {
+				let level = $scope.user.levels[0];
+				let themes = $scope.themes.filter((th) => level === 2 ?  th.parent === "theme-open-ent" :   th.parent !== "theme-open-ent");
+				console.log(themes);
+				if(themes.length === 1 ) {
+					$scope.user.theme = themes[0].child;
+				}
+			}
+			if (!$scope.user.theme) {
+				template.open('main', 'activation-themes');
+				return;
+			}
 		}
 		if($scope.themes.length === 1 && conf.overriding.length > 1){
 			$scope.user.theme = $scope.themes[0].child;

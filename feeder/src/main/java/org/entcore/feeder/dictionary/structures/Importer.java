@@ -420,6 +420,14 @@ public class Importer {
 		s.setSource(currentSource);
 	}
 
+	public int getCurrentLevel() {
+		if( Source.AAF1D.name().equalsIgnoreCase(currentSource)) {
+			return 1;
+		}
+		return 2;
+	}
+
+
 	public Profile createOrUpdateProfile(JsonObject profile) {
 		final String error = profileValidator.validate(profile);
 		Profile p = null;
