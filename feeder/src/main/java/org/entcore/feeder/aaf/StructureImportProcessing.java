@@ -66,6 +66,7 @@ public class StructureImportProcessing extends BaseImportProcessing {
 		ImporterStructure structure = importer.createOrUpdateStructure(object);
 		if (structure != null) {
 			importer.forceStructureSource(structure);
+			structure.addLevel(importer.getCurrentLevel());
 			structure.addAttachment();
 		}
 	}
