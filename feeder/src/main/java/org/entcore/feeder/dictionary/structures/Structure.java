@@ -175,6 +175,14 @@ public class Structure {
 		}
 	}
 
+	public void addLevel(int level) {
+			JsonObject params = new JsonObject().put("externalId", externalId).put("level", level);
+			String query = "MATCH (s:Structure { externalId : {externalId}})" +
+							" WHERE s.levesOfEducation IS NULL OR NOT({level} IN s.levelsOfEducation) " +
+							" set s.levelsOfEducation = coalesce(s.levelsOfEducation, []) + {level} ";
+			getTransaction().add(query, params);
+	}
+
 	public void createClassIfAbsent(String classExternalId, String name) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
