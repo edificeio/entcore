@@ -932,6 +932,7 @@ public class AuthController extends BaseController {
 		json.put("displayName", StringUtils.trimToBlank(infos.getString("displayName")));
 		json.put("email", StringUtils.trimToBlank(infos.getString("email")));
 		json.put("phone", StringUtils.trimToBlank(infos.getString("mobile")));
+		json.put("levels", infos.getJsonArray("levels"));
 		UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {

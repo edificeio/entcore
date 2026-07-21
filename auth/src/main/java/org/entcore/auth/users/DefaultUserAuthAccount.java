@@ -286,7 +286,8 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
-				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
+				"OPTIONAL MATCH n-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) "+
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile, s.levelsOfEducation as levels";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
