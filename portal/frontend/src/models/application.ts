@@ -19,11 +19,12 @@ export type Application = {
 };
 
 export type APP_VERSION =
-  | 'BETA'
+  | 'BÊTA'
   | 'ALPHA'
   | 'STABLE'
   | 'DEPRECATED'
-  | 'EXPERIMENTAL';
+  | 'EXPERIMENTAL'
+  | 'NEW';
 
 type helpType = {
   [lang: string]: string | null;
