@@ -45,19 +45,19 @@ public class DeleteOrphan implements Handler<Long> {
 
 	private static final String SELECT_ORPHAN_ATTACHMENT =
 		"SELECT a.id AS orphanid FROM conversation.attachments a " +
-		"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
+		"WHERE a.orphan = TRUE " +
 		"LIMIT ?;";
 
 	private static final String DELETE_ORPHAN_MESSAGE =
 		"DELETE FROM conversation.messages WHERE id IN " +
 		"(SELECT id FROM conversation.messages m " +
-		"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
+		"WHERE m.orphan = TRUE " +
 		"LIMIT ?);";
 
 	private static final String DELETE_ORPHAN_THREAD =
 		"WITH to_delete AS " +
 		"(SELECT t.id FROM conversation.threads t " +
-		"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
+		"WHERE t.orphan = TRUE " +
 		"ORDER BY t.date LIMIT ?) " +
 		"DELETE FROM conversation.threads th USING to_delete WHERE th.id = to_delete.id;";
 
@@ -322,17 +322,17 @@ public class DeleteOrphan implements Handler<Long> {
 
 		String countMessages =
 			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.messages m " +
-			"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
+			"WHERE m.orphan = TRUE " +
 			"LIMIT 100000) subquery";
 
 		String countThreads =
 			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.threads t " +
-			"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
+			"WHERE t.orphan = TRUE " +
 			"ORDER BY t.date LIMIT 100000) subquery";
 
 		String countAttachments =
 			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.attachments a " +
-			"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
+			"WHERE a.orphan = TRUE " +
 			"LIMIT 100000) subquery";
 
 		AtomicInteger remainingMessages = new AtomicInteger(0);
