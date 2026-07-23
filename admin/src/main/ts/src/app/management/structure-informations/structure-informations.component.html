@@ -3,7 +3,7 @@
     <s5l>management.structure.informations.general</s5l>
   </h2>
   <form #updateForm="ngForm" (ngSubmit)="checkThenUpdate()">
-    <ode-form-field label="management.structure.informations.name">
+    <ode-form-field label="management.structure.informations.name" data-test-id="structure-info-main-name">
       <input
         type="text"
         [(ngModel)]="structName"
@@ -36,13 +36,13 @@
         </ode-message-sticker>
     </ode-form-field>
 
-    <ode-form-field label="management.structure.informations.id">
+    <ode-form-field label="management.structure.informations.id" data-test-id="structure-info-main-id">
       <span>{{ structure.id }}</span>
     </ode-form-field>
 
     <!-- For ADMCs -->
     <div *ngIf="isADMC == true">
-      <ode-form-field label="management.structure.informations.UAI">
+      <ode-form-field label="management.structure.informations.UAI" data-test-id="structure-info-main-UAI">
         <input
           type="text"
           [(ngModel)]="structUAI"
@@ -52,7 +52,7 @@
         />
       </ode-form-field>
       <ode-form-errors [control]="UAIInput"></ode-form-errors>
-      <ode-form-field label="management.structure.informations.hasApp">
+      <ode-form-field label="management.structure.informations.hasApp" data-test-id="structure-info-main-has-app">
         <input
           type="checkbox"
           [(ngModel)]="structHasApp"
@@ -63,7 +63,7 @@
       <ode-form-errors [control]="hasAppInput"></ode-form-errors>
       
       <div *ngIf="withMfa">
-        <ode-form-field label="{{labelEnableMFA}}">
+        <ode-form-field label="{{labelEnableMFA}}" data-test-id="structure-info-main-enable-mfa">
           <input
             type="checkbox"
             [(ngModel)]="structEnableMFA"
@@ -77,7 +77,7 @@
 
     <!-- For ADMLs -->
     <div *ngIf="isADMC != true">
-      <ode-form-field label="management.structure.informations.UAI">
+      <ode-form-field label="management.structure.informations.UAI" data-test-id="structure-info-main-UAI">
         <span>{{ structure.UAI }}</span>
       </ode-form-field>
       <ode-form-field label="management.structure.informations.hasApp">
@@ -90,7 +90,7 @@
       </ode-form-field>
     </div>
 
-    <ode-form-field label="management.structure.informations.sourceType">
+    <ode-form-field data-test-id="structure-info-main-source-type" label="management.structure.informations.sourceType">
       <span>
         <s5l *ngIf="structure.isSourceAutomatic"
           >management.structure.informations.sourceType.automatic</s5l
@@ -218,6 +218,7 @@
         </h3>
         <ode-form-field
           label="management.structure.informations.duplication.setting.applications"
+          data-test-id="structure-info-settings-duplication-applications"
         >
           <input
             type="checkbox"
@@ -227,6 +228,7 @@
         </ode-form-field>
         <ode-form-field
           label="management.structure.informations.duplication.setting.widgets"
+          data-test-id="structure-info-settings-duplication-widgets"
         >
           <input
             type="checkbox"
@@ -236,6 +238,7 @@
         </ode-form-field>
         <ode-form-field
           label="management.structure.informations.duplication.setting.distribution"
+          data-test-id="structure-info-settings-duplication-distribution"
         >
           <input
             type="checkbox"
@@ -245,6 +248,7 @@
         </ode-form-field>
         <ode-form-field
           label="management.structure.informations.duplication.setting.mobileapp"
+          data-test-id="structure-info-settings-duplication-mobile-app"
         >
           <input
             type="checkbox"
@@ -254,6 +258,7 @@
         </ode-form-field>
         <ode-form-field
           label="management.structure.informations.duplication.setting.education"
+          data-test-id="structure-info-settings-duplication-education"
         >
           <input
             type="checkbox"
@@ -263,6 +268,7 @@
         </ode-form-field>
         <ode-form-field
           label="management.structure.informations.duplication.setting.defaultauth"
+          data-test-id="structure-info-settings-duplication-default-auth"
         >
           <input
             type="checkbox"
@@ -272,6 +278,7 @@
         </ode-form-field>
         <ode-form-field
           label="management.structure.informations.duplication.setting.quiethours"
+          data-test-id="structure-info-settings-duplication-quiet-hours"
         >
           <input
             type="checkbox"

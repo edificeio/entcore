@@ -5,19 +5,19 @@
   </span>
 </div>
 <div class="card-body">
-  <button routerLink="users/create">
+  <button routerLink="users/create" data-test-id="home-quick-actions-create-user">
     <s5l>create.user</s5l>
     <i class="fa fa-user-plus"></i>
   </button>
-  <button routerLink="groups/manualGroup/create">
+  <button routerLink="groups/manualGroup/create" data-test-id="home-quick-actions-create-group">
     <s5l>create.group</s5l>
     <i class="fa fa-users"></i>
   </button>
-  <button routerLink="users/list/filter" [queryParams]="{duplicates: true}">
+  <button routerLink="users/list/filter" [queryParams]="{duplicates: true}" data-test-id="home-quick-actions-manage-duplicates">
     <s5l>manage.duplicates</s5l>
     <i class="fa fa-user-times"></i>
   </button>
-  <button routerLink="management/message-flash/create">
+  <button routerLink="management/message-flash/create" data-test-id="home-quick-actions-create-flash-message">
     <s5l>create.flash.message</s5l>
     <i class="fa fa-bullhorn"></i>
   </button>
