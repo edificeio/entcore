@@ -29,6 +29,13 @@
       	"batch-size": {{ conversationDeleteOrphanBatchSize | default('500') }},
       	"max-batches": {{ conversationDeleteOrphanMaxBatches | default('10') }}
       },
+      "purgeMessagesCron" : "{{ conversationPurgeMessagesCron | default('0 0 3 ? * SUN *') }}",
+      "purge-messages": {
+      	"grace-period": {{ conversationPurgeGracePeriod | default('36') }},
+      	"query-timeout": {{ conversationPurgeQueryTimeout | default('300000') }},
+      	"batch-size": {{ conversationPurgeMessagesBatchSize | default('5000') }},
+      	"max-batches": {{ conversationPurgeMessagesMaxBatches | default('100') }}
+      },
     {% endif %}
     "fileAnalyzer": {
       "enabled": {{ fileAnalyzerOn | default('true') }},
@@ -43,7 +50,6 @@
     },
     "sql": true,
     "db-schema": "conversation",
-    "purge-grace-period": {{ conversationPurgeGracePeriod | default('36') }},
     {% if mailToExercizer is defined and mailToExercizer == 'true'  %}
       "mail-to-exercizer": {
     		"langfuse_public_key": "{{ langfuse_public_key }}",
