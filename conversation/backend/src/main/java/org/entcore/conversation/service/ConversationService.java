@@ -201,6 +201,5 @@ public interface ConversationService {
 	void forwardAttachments(String forwardId, String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	// Purge
-	Future<JsonArray> getMessagesToPurge();
-	Future<JsonArray> purgeMessages(final List<String> messagesId);
+	Future<Void> purgeMessages();
 }
