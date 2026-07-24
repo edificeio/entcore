@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import org.entcore.conversation.cron.PurgeAbsenceReplies;
+import org.entcore.conversation.cron.PurgeMessages;
 import org.entcore.conversation.service.impl.DeleteOrphan;
 
 public class TaskController extends BaseController {
@@ -15,9 +16,11 @@ public class TaskController extends BaseController {
 
 	private final DeleteOrphan deleteOrphan;
 	private final PurgeAbsenceReplies purgeAbsenceReplies;
+	private final PurgeMessages purgeMessages;
 
-	public TaskController(DeleteOrphan deleteOrphan, PurgeAbsenceReplies purgeAbsenceReplies) {
+	public TaskController(DeleteOrphan deleteOrphan, PurgeMessages purgeMessages, PurgeAbsenceReplies purgeAbsenceReplies) {
 		this.deleteOrphan = deleteOrphan;
+		this.purgeMessages = purgeMessages;
 		this.purgeAbsenceReplies = purgeAbsenceReplies;
 	}
 
@@ -34,6 +37,13 @@ public class TaskController extends BaseController {
 	public void purgeAbsenceReplies(final HttpServerRequest request) {
 		log.info("Triggered purge absence replies task");
 		this.purgeAbsenceReplies.handle(0L);
+		render(request, null, 202);
+	}
+	@Post("api/internal/purge/messages")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void purgeMessages(final HttpServerRequest request) {
+		log.info("Triggered purge old messages task");
+		this.purgeMessages.handle(0L);
 		render(request, null, 202);
 	}
 }
