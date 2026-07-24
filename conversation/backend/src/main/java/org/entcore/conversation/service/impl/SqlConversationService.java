@@ -1958,52 +1958,60 @@ public class SqlConversationService implements ConversationService{
 	/* Purge */
 
 	@Override
-	public Future<JsonArray> getMessagesToPurge() {
-		final int months = Math.max(36, Config.getConf().getInteger("purge-grace-period", 0));
-		final int timeout = Config.getConf().getInteger("purge-query-timeout", 300000);
-		
-		String query =
-			"SELECT DISTINCT um.message_id " +
-			"FROM conversation.usermessages um " +
-			"JOIN conversation.messages m ON um.message_id = m.id " +
-			"WHERE um.folder_id IS NULL AND m.date > (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400));";
+	public Future<Void> purgeMessages() {
+		final JsonObject purgeConfig = Config.getConf().getJsonObject("purge-messages", new JsonObject());
+	
+		final int months = Math.max(36, purgeConfig.getInteger("grace-period", 0));
+		final int timeout = purgeConfig.getInteger("query-timeout", 300000);
+		final int batchSize = purgeConfig.getInteger("batch-size", 5000);
+		final int maxBatches = purgeConfig.getInteger("max-batches", 100);
 
-		DeliveryOptions deliveryOptions = new DeliveryOptions();
-		deliveryOptions.setSendTimeout(timeout);
+		// Purge par lots des liens usermessages de messages âgés de plus de `months` mois
+		// et rangés dans aucun dossier (folder_id IS NULL). Chaque lot est une transaction
+		// autonome afin de relâcher les verrous entre les lots (cf. SUPPORT-4770).
+		final String query =
+			"DELETE FROM " + userMessageTable + " um " +
+			"USING " + messageTable + " m " +
+			"WHERE um.message_id = m.id " +
+			"AND um.folder_id IS NULL " +
+			"AND m.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
+			"AND (um.user_id, um.message_id) IN (" +
+				"SELECT um2.user_id, um2.message_id FROM " + userMessageTable + " um2 " +
+				"JOIN " + messageTable + " m2 ON um2.message_id = m2.id " +
+				"WHERE um2.folder_id IS NULL " +
+				"AND m2.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
+				"LIMIT ?);";
 
-		Promise<JsonArray> promise = Promise.promise();
-		sql.prepared(query, new JsonArray(), deliveryOptions, SqlResult.validResultHandler(result -> {
-			if (result.isRight() && result.right().getValue() != null) {
-				promise.complete(result.right().getValue());
-			} else {
-				log.error("An error occurred getting messages list to purge:", result.left().getValue());
-				promise.fail("conversation.purge.list.error");
-			}
-		}));
-
-		return promise.future();
+		log.info("Starting old messages purge (retention=" + months + " months, batch-size=" + batchSize + ", max-batches=" + maxBatches + ")");
+		return purgeMessagesBatch(query, batchSize, timeout, maxBatches, 0, 0);
 	}
 
-	@Override
-	public Future<JsonArray> purgeMessages(final List<String> messagesId) {
-	    final int timeout = Config.getConf().getInteger("purge-query-timeout", 300000);
-
-		SqlStatementsBuilder builder = new SqlStatementsBuilder();
-		JsonArray values = new JsonArray();
-		builder.prepared("DELETE FROM conversation.usermessages WHERE message_id IN " + generateInVars(messagesId, values), values);
+	private Future<Void> purgeMessagesBatch(final String query, final int batchSize, final int timeout, final int maxBatches, final int batchNumber, final int totalDeleted) {
+		if (batchNumber >= maxBatches) {
+			log.info("Old messages purge stopped after reaching max batches (" + maxBatches + "), total deleted: " + totalDeleted + " usermessages");
+			return Future.succeededFuture();
+		}
 
 		DeliveryOptions deliveryOptions = new DeliveryOptions();
 		deliveryOptions.setSendTimeout(timeout);
 
-		Promise<JsonArray> promise = Promise.promise();
-		sql.transaction(builder.build(), deliveryOptions, SqlResult.validResultsHandler(result -> {
-			if (result.isRight() && result.right().getValue() != null) {
-				promise.complete(result.right().getValue());
+		Promise<Void> promise = Promise.promise();
+		sql.prepared(query, new JsonArray().add(batchSize), deliveryOptions, result -> {
+			if ("ok".equals(result.body().getString("status"))) {
+				int deleted = result.body().getInteger("rows", 0);
+				if (deleted == 0) {
+					log.info("Old messages purge completed, total deleted: " + totalDeleted + " usermessages");
+					promise.complete();
+				} else {
+					log.info("Old messages purge batch " + batchNumber + " deleted " + deleted + " usermessages");
+					purgeMessagesBatch(query, batchSize, timeout, maxBatches, batchNumber + 1, totalDeleted + deleted).onComplete(promise);
+				}
 			} else {
-				log.error("An error occurred purging messages:", result.left().getValue());
-				promise.fail("conversation.purge.error");
+				String error = result.body().getString("message", "Unknown error");
+				log.error("An error occurred purging old messages (batch " + batchNumber + "): " + error);
+				promise.fail(error);
 			}
-		}));
+		});
 
 		return promise.future();
 	}
