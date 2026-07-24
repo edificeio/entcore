@@ -255,8 +255,7 @@ public interface ConversationService {
 	Future<JsonArray> listMessageRecipients(String messageId, String excludeUserId);
 
 	// Purge
-	Future<JsonArray> getMessagesToPurge();
-	Future<JsonArray> purgeMessages(final List<String> messagesId);
+	Future<Void> purgeMessages();
 
 	/**
 	 * Drops the anti-spam guard rows that can no longer block anything.
