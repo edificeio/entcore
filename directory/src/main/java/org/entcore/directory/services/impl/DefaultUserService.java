@@ -1217,7 +1217,7 @@ public class DefaultUserService implements UserService {
 		final String query =
 				"MATCH (n:User {id : {id}})<-[:RELATED]-(child:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH (child)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-				"WITH COLLECT(distinct c.name) as classesNames, COLLECT({id : c.id, name: c.name}) as cls, s, child " +
+				"WITH COLLECT(distinct c.name) as classesNames, COLLECT(distinct {id : c.id, name: c.name}) as cls, s, child " +
 				"RETURN s.name as structureName, COLLECT(distinct {id: child.id, firstName: child.firstName, displayName: child.displayName, externalId: child.externalId, classesNames : classesNames, classes: cls}) as children ";
 		final JsonObject params = new JsonObject().put("id", userId);
 		neo.execute(query, params, validResultHandler(handler));
