@@ -76,11 +76,14 @@ export function ApplicationIcon({
         )}
       </span>
 
-      {data.version === 'BETA' && (
+      {/* Displays the app version badge if version is defined */}
+      {data.version && (
         <Badge
-          variant={{ type: 'beta', app: webapp }}
-          className="myapps-beta-badge"
-        />
+          variant={{ type: 'appVersion', app: webapp }}
+          className="myapps-appVersion-badge"
+        >
+          {data.version.toUpperCase()}
+        </Badge>
       )}
     </span>
   );
