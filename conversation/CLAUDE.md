@@ -38,6 +38,12 @@ pnpm format          # prettier --write
 
 > `pnpm dev` déclenche `predev` → `pnpm get-tokens` (récupération des tokens de thème avant de servir). Le proxy dev cible `http://localhost:8090` par défaut, ou l'environnement de recette si un fichier `.env` est présent (`VITE_RECETTE`, `VITE_ONE_SESSION_ID`, `VITE_XSRF_TOKEN`).
 
+### Mocks / dev offline
+
+- `pnpm dev:mock` (`vite --mode mock`) lance l'app entièrement offline avec les mocks MSW existants, sans dépendre de la recette — utile pour toute vérification visuelle du front dans ce module. Le worker navigateur est démarré depuis `src/mocks/browser.ts` (`setupWorker(...handlers)`), activé dans `main.tsx` quand `import.meta.env.MODE === 'mock'`.
+- `src/mocks/handlers.ts` ne contient que les handlers propres au module (`config`/`folder`/`message`) — pas de mocks génériques de session/theme/auth. Si un test a besoin de la session utilisateur, mocker `useEdificeClient` directement dans le test (cf. `MessageList.test.tsx` / `MessagePreview.test.tsx`), pas intercepter les appels HTTP de session.
+- **Penser à mettre à jour ces handlers à chaque évolution de l'API** (nouveau champ, nouvel endpoint) pour que `pnpm dev:mock` et les tests restent représentatifs du contrat réel.
+
 ### Structure src/
 ```
 src/
