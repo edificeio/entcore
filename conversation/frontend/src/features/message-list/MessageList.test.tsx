@@ -1,4 +1,5 @@
 import { act } from 'react';
+import { mockCurrentUserPreview } from '~/mocks';
 import { render, renderHook, screen, waitFor, wrapper } from '~/mocks/setup';
 import { useFolderMessages } from '~/services';
 import { MessageList } from './MessageList';
@@ -8,6 +9,7 @@ import { MessageList } from './MessageList';
  */
 const mocks = vi.hoisted(() => ({
   useSelectedFolder: vi.fn(),
+  useEdificeClient: vi.fn(),
 }));
 
 const mockIntersectionObserver = vi.fn().mockReturnValue({
@@ -21,6 +23,17 @@ const mockScrollIntoView = vi.fn();
 // Mock Element.prototype.scrollIntoView
 Element.prototype.scrollIntoView = mockScrollIntoView;
 
+vi.mock('@edifice.io/react', async () => {
+  const actual =
+    await vi.importActual<typeof import('@edifice.io/react')>(
+      '@edifice.io/react',
+    );
+  return {
+    ...actual,
+    useEdificeClient: mocks.useEdificeClient,
+  };
+});
+
 vi.mock('~/hooks/useSelectedFolder', () => ({
   useSelectedFolder: mocks.useSelectedFolder,
 }));
@@ -28,6 +41,9 @@ vi.mock('~/hooks/useSelectedFolder', () => ({
 describe('Message list component', () => {
   beforeAll(() => {
     mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
+    mocks.useEdificeClient.mockReturnValue({
+      user: { userId: mockCurrentUserPreview.id },
+    });
     window.IntersectionObserver = mockIntersectionObserver;
   });
 

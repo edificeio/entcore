@@ -222,4 +222,39 @@ describe('Message preview header component', () => {
 
     await screen.findByTitle('mail-in');
   });
+
+  it('should display sender displayStructure name when defined', async () => {
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
+    const messageWithStructure: MessageMetadata = {
+      ...inboxMessage,
+      from: {
+        ...inboxMessage.from!,
+        displayStructure: {
+          id: '9b1c7d3e-5f4a-4b2c-9d8e-7a6b5c4d3e2f',
+          name: 'Collège Jean Moulin',
+        },
+      },
+    };
+
+    render(<MessagePreview message={messageWithStructure} />);
+
+    const structureLabel = await screen.findByText('Collège Jean Moulin');
+    expect(structureLabel).toBeInTheDocument();
+  });
+
+  it('should not display any structure label when displayStructure is absent', async () => {
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
+    const messageWithoutStructure: MessageMetadata = {
+      ...inboxMessage,
+      from: {
+        ...inboxMessage.from!,
+        displayStructure: undefined,
+      },
+    };
+
+    render(<MessagePreview message={messageWithoutStructure} />);
+
+    await screen.findByText(inboxMessage.from?.displayName || '');
+    expect(screen.queryByText('Collège Jean Moulin')).not.toBeInTheDocument();
+  });
 });
