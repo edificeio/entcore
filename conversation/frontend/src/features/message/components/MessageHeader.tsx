@@ -38,6 +38,11 @@ export function MessageHeader({ message }: { message: Message }) {
                     {message.from?.displayName || ''}
                   </span>
                 )}
+                {message.from?.displayStructure && (
+                  <span className="text-gray-700">
+                    {message.from.displayStructure.name}
+                  </span>
+                )}
                 {message.date && (
                   <span className="text-gray-700 fst-italic">
                     {formatDate(message.date, t('date.format.message'))}
