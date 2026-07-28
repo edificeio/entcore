@@ -55,6 +55,10 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
       id: '91c22b66',
       displayName: 'ISABELLE POLONIO (prof arts plastiques)',
       profile: 'Teacher',
+      displayStructure: {
+        id: '9b1c7d3e-5f4a-4b2c-9d8e-7a6b5c4d3e2f',
+        name: 'Collège Jean Moulin',
+      },
     },
     state: 'SENT',
     date: 1503571892555,
@@ -114,6 +118,10 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
       id: '91c22b66',
       displayName: 'ISABELLE POLONIO (prof arts plastiques)',
       profile: 'Teacher',
+      displayStructure: {
+        id: '3f2e1d0c-9b8a-4f7e-6d5c-4b3a2f1e0d9c',
+        name: "Direction des services départementaux de l'éducation nationale",
+      },
     },
     state: 'SENT',
     date: 1475753026475,
