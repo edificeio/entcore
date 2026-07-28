@@ -288,6 +288,10 @@ export const mockFullMessage: Message = {
     displayName: 'GUEDON Aliénor',
     id: '8f82fb3c-2150-4a1f-a869-33e98b8b836f',
     profile: 'Student',
+    displayStructure: {
+      id: '9b1c7d3e-5f4a-4b2c-9d8e-7a6b5c4d3e2f',
+      name: 'Collège Jean Moulin',
+    },
   },
   state: 'SENT',
   date: 1503571892555,
