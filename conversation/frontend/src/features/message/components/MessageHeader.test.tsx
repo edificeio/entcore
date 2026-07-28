@@ -47,4 +47,23 @@ describe('Message recipient list', () => {
     const ccLabel = screen.queryByText('cc');
     expect(ccLabel).not.toBeInTheDocument();
   });
+
+  it('should display sender displayStructure name when defined', async () => {
+    render(<MessageHeader message={mockFullMessage} />);
+
+    const structureLabel = await screen.findByText('Collège Jean Moulin');
+    expect(structureLabel).toBeInTheDocument();
+    expect(structureLabel.tagName).toBe('SPAN');
+  });
+
+  it('should not display any structure label when displayStructure is absent', async () => {
+    const message = {
+      ...mockFullMessage,
+      from: { ...mockFullMessage.from!, displayStructure: undefined },
+    };
+    render(<MessageHeader message={message} />);
+
+    await screen.findByText(mockFullMessage.from!.displayName);
+    expect(screen.queryByText('Collège Jean Moulin')).not.toBeInTheDocument();
+  });
 });

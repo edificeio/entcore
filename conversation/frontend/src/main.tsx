@@ -20,12 +20,21 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-root.render(
-  <StrictMode>
-    <Providers>
-      <EdificeThemeProvider>
-        <RouterProvider router={router(queryClient)} />
-      </EdificeThemeProvider>
-    </Providers>
-  </StrictMode>,
-);
+async function prepare() {
+  if (import.meta.env.MODE === 'mock') {
+    const { worker } = await import('./mocks/browser');
+    await worker.start({ onUnhandledRequest: 'bypass' });
+  }
+}
+
+prepare().then(() => {
+  root.render(
+    <StrictMode>
+      <Providers>
+        <EdificeThemeProvider>
+          <RouterProvider router={router(queryClient)} />
+        </EdificeThemeProvider>
+      </Providers>
+    </StrictMode>,
+  );
+});
