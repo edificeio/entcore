@@ -163,8 +163,8 @@ export const googleDriveService: IGoogleDriveService = {
       .put(`/googledrive/files/user/${userid}/move/workspace?${urlParams}${parentParam}`)
       .then((res: AxiosResponse) =>
         res.data.data
-          .filter((doc: any) => doc._id)
-          .map((doc: any) => new models.Element(doc)),
+          .filter((doc: any) => doc.workspace && doc.workspace._id)
+          .map((doc: any) => new models.Element(doc.workspace)),
       );
   },
 
@@ -181,8 +181,8 @@ export const googleDriveService: IGoogleDriveService = {
       .put(`/googledrive/files/user/${userid}/copy/workspace?${urlParams}${parentParam}`)
       .then((res: AxiosResponse) =>
         res.data.data
-          .filter((doc: any) => doc._id)
-          .map((doc: any) => new models.Element(doc)),
+          .filter((doc: any) => doc.workspace && doc.workspace._id)
+          .map((doc: any) => new models.Element(doc.workspace)),
       );
   },
 
