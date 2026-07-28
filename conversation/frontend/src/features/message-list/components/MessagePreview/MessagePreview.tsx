@@ -1,4 +1,4 @@
-import { useDate } from '@edifice.io/react';
+import { Tooltip, useDate } from '@edifice.io/react';
 import {
   IconMailRecall,
   IconPaperclip,
@@ -10,6 +10,7 @@ import { MessageMetadata } from '~/models';
 
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { MessageRecipientList } from '../../../../components/MessageRecipientList/MessageRecipientList';
+import './MessagePreview.css';
 import RecipientAvatar from './components/RecipientAvatar';
 import { SenderAvatar } from './components/SenderAvatar';
 import { UserFolderIcon } from './components/UserFolderIcon';
@@ -74,7 +75,24 @@ export function MessagePreview({ message }: MessagePreviewProps) {
                 <MessageRecipientList message={message} inline />
               </div>
             ) : (
-              <span>{senderDisplayName}</span>
+              <div className="d-flex overflow-hidden gap-4">
+                <span className="message-preview-sender-name text-truncate">
+                  {senderDisplayName}
+                </span>
+                {message.from?.displayStructure && (
+                  <div className="message-preview-structure">
+                    <Tooltip
+                      message={message.from.displayStructure.name}
+                      placement="top"
+                      className="message-preview-structure-tooltip"
+                    >
+                      <span className="message-preview-structure-name text-truncate text-gray-700">
+                        {message.from.displayStructure.name}
+                      </span>
+                    </Tooltip>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
