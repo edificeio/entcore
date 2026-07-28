@@ -548,6 +548,7 @@ public class SqlConversationService implements ConversationService{
 		final Promise<JsonArray> promise = Promise.promise();
 		final JsonObject userIndex = new JsonObject();
 		final JsonObject groupIndex = new JsonObject();
+		final JsonObject structureIndex = new JsonObject();
 		this.list(folderId, unread, userInfos, page, pageSize, search, EnumSet.of(State.SENT, State.RECALL), either -> {
 			if (either.isRight()) {
 				final JsonArray messages = either.right().getValue();
@@ -559,13 +560,19 @@ public class SqlConversationService implements ConversationService{
 					MessageUtil.computeUsersAndGroupsDisplayNames((JsonObject) message, userInfos, lang, userIndex, groupIndex);
 				}
 
-				MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
+				// Structures are resolved alongside the other details, from the same index: one batched call
+				// for the whole page. That future never fails, so a directory hiccup only costs the labels.
+				Future.join(
+						MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex),
+						MessageUtil.loadUsersStructures(eb, userIndex, structureIndex)
+				)
 						.onSuccess( unused -> {
 							for (Object m : messages) {
 								if (!(m instanceof JsonObject)) {
 									continue;
 								}
 								MessageUtil.formatRecipients((JsonObject) m, userIndex, groupIndex);
+								MessageUtil.applySenderDisplayStructure((JsonObject) m, structureIndex, userInfos.getUserId());
 							}
 							promise.complete(messages);
 						})
@@ -921,6 +928,7 @@ public class SqlConversationService implements ConversationService{
 		final Promise<JsonObject> promise = Promise.promise();
 		final JsonObject userIndex = new JsonObject();
 		final JsonObject groupIndex = new JsonObject();
+		final JsonObject structureIndex = new JsonObject();
 		this.get(id, userInfos, 1, either -> {
 			if (either.isRight()) {
 				final JsonObject message = either.right().getValue();
@@ -929,9 +937,15 @@ public class SqlConversationService implements ConversationService{
 							// Extract distinct users and groups.
 							MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
 
-							MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
+							// Same two calls as listAndFormat, on purpose: the establishment displayed for a
+							// message must not depend on the surface it is read from.
+							Future.join(
+									MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex),
+									MessageUtil.loadUsersStructures(eb, userIndex, structureIndex)
+							)
 									.onSuccess( unused -> {
 										MessageUtil.formatRecipients(message, userIndex, groupIndex);
+										MessageUtil.applySenderDisplayStructure(message, structureIndex, userInfos.getUserId());
 										promise.complete(message);
 									})
 									.onFailure( throwable -> {

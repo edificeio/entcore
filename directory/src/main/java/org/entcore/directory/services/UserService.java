@@ -184,6 +184,28 @@ public interface UserService {
 	 */
 	void getUsersStructures(JsonArray userIds, JsonArray fields, Handler<Either<String, JsonArray>> handler);
 
+	/**
+	 * Get, for a batch of users, the structures they are attached to and the id of their preferred structure.
+	 * <p>
+	 * Unlike {@link #getUsersStructures(JsonArray, JsonArray, Handler)}, this also resolves the preferred
+	 * structure, read from the user's generic {@code widgets} preference. It is meant for callers that need to
+	 * pick a single structure to display for a user, and must do so without an extra round-trip per user.
+	 * <p>
+	 * A single batched query is issued, whatever the number of users.
+	 *
+	 * @param userIds IDs of users. Users that do not exist, or that are attached to no structure at all, are
+	 * 		simply absent from the result — that is not an error, and callers should read it as "nothing to
+	 * 		display for this user".
+	 * @return an array of JsonObjects, such as
+	 * 		{ id: "ID of the user", structures: [{id: "...", name: "..."}], preferredStructureId: "..." }
+	 * 		<p>
+	 * 		{@code preferredStructureId} is <b>absent</b> when the user has not
+	 * 		defined a preferred structure or when the preference cannot be read — it is never {@code null}, and its
+	 * 		absence is not an error. It is also <b>not guaranteed</b> to be one of the returned {@code structures}:
+	 * 		a preference may point at a structure the user is no longer attached to. Callers must handle that case.
+	 */
+	void getUsersStructuresWithPreferred(JsonArray userIds, Handler<Either<String, JsonArray>> handler);
+
 	void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
 
 	Future<JsonObject> getUsersDisplayNames(JsonArray userIds);
