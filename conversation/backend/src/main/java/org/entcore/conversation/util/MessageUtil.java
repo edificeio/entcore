@@ -20,10 +20,17 @@ package org.entcore.conversation.util;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.entcore.common.user.UserInfos;
@@ -35,12 +42,16 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Utility class for handling messages, particularly for decoding display names stored in the database,
  * extracting users and groups from messages, and formatting recipients.
  */
 public class MessageUtil {
+    private final static Logger log = LoggerFactory.getLogger(MessageUtil.class);
+
     /*
      * Constants representing various message fields.
      */
@@ -52,6 +63,17 @@ public class MessageUtil {
     final static public String MSG_CC = "cc";
     final static public String MSG_CCI = "cci";
     final static public String FROM_DELETED_ID = "FROM_DELETED_ID";
+    /** Field carrying the sender's establishment, on the {@code from} object of a formatted message. */
+    final static public String MSG_FROM_DISPLAY_STRUCTURE = "displayStructure";
+
+    /** Eventbus action of the {@code directory} module resolving structures and preferred structure. */
+    final static private String LIST_USERS_STRUCTURES_ACTION = "list-users-structures";
+    final static private String STRUCTURES = "structures";
+    final static private String PREFERRED_STRUCTURE_ID = "preferredStructureId";
+    final static private String STRUCTURE_ID = "id";
+    final static private String STRUCTURE_NAME = "name";
+    /** Sort key of a structure with no name, so that it never wins the alphabetical fallback. */
+    final static private String LAST_SORT_KEY = "￿";
 
     /**
      * Extracts users and groups from a message loaded from the database and populates the user and group indices.
@@ -145,8 +167,12 @@ public class MessageUtil {
         final String from = message.getString(MSG_FROM);
         boolean isDeleted = message.getString(MSG_FROM).equals(FROM_DELETED_ID);
 
-        // Format the sender
-        final JsonObject fromUserJo = userIndex.getJsonObject(from);
+        // Format the sender.
+        // A copy is used on purpose: the indexed object is shared with the to/cc/cci lists of this and of
+        // every other message of the page, so enriching the sender in place would also decorate the same
+        // user seen as a recipient elsewhere. See applySenderDisplayStructure.
+        final JsonObject indexedSender = userIndex.getJsonObject(from);
+        final JsonObject fromUserJo = indexedSender == null ? null : indexedSender.copy();
         message.put(MSG_FROM, fromUserJo);
         if(isDeleted) {
             fromUserJo.put(RECIPIENT_ID, "");
@@ -241,6 +267,193 @@ public class MessageUtil {
             }
         }));
 		return promise.future();
+    }
+
+    /**
+     * Loads, for every user of the index, the structures they belong to and their preferred structure.
+     * <p>
+     * A single batched eventbus call is issued for the whole page — senders and connected user alike, the
+     * latter being already part of the index (see
+     * {@link #computeUsersAndGroupsDisplayNames(JsonObject, UserInfos, String, JsonObject, JsonObject)}).
+     * <p>
+     * <b>This future never fails.</b> Resolving an establishment is a display nicety: when the directory
+     * cannot answer, messages must still be listed without it rather than not at all.
+     *
+     * @param eb the event bus
+     * @param userIndex the user index, whose keys are the user IDs to resolve
+     * @param structureIndex output, filled with ID &lt;-&gt; {"id", "structures", "preferredStructureId"}.
+     * 		Users the directory does not return — unknown, or attached to no structure — are simply absent.
+     * @return a Future completing once the index has been filled, successfully or not
+     */
+    static public Future<Void> loadUsersStructures(final EventBus eb, final JsonObject userIndex, final JsonObject structureIndex) {
+        final Promise<Void> promise = Promise.promise();
+        final JsonArray userIds = userIndex.stream()
+                .map(entry -> entry.getKey())
+                // The deleted-sender sentinel is not a user the directory could know about.
+                .filter(userId -> !FROM_DELETED_ID.equals(userId))
+                .collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+        if (userIds.isEmpty()) {
+            promise.complete();
+            return promise.future();
+        }
+        final JsonObject action = new JsonObject()
+                .put("action", LIST_USERS_STRUCTURES_ACTION)
+                .put("userIds", userIds);
+        // Deliberately not using handlerToAsyncHandler here: it drops failures, which would leave this
+        // promise pending forever and hang the whole request.
+        eb.<JsonObject>request("directory", action, event -> {
+            if (event.failed()) {
+                log.warn("Unable to resolve senders structures, messages will be listed without it", event.cause());
+            } else if (!"ok".equals(event.result().body().getString("status"))) {
+                log.warn("Unable to resolve senders structures, messages will be listed without it : "
+                        + event.result().body().getString("message"));
+            } else {
+                event.result().body().getJsonArray("result", new JsonArray()).stream()
+                        .filter(entry -> entry instanceof JsonObject)
+                        .map(JsonObject.class::cast)
+                        .forEach(entry -> {
+                            final String userId = entry.getString(RECIPIENT_ID);
+                            if (!StringUtils.isEmpty(userId)) {
+                                structureIndex.put(userId, entry);
+                            }
+                        });
+            }
+            promise.complete();
+        });
+        return promise.future();
+    }
+
+    /**
+     * Sets the sender's establishment on the {@code from} object of an already formatted message.
+     * <p>
+     * Must be called after {@link #formatRecipients(JsonObject, JsonObject, JsonObject)}, which turns
+     * {@code from} into the object this method decorates. Shared by the message list and the message
+     * detail so that both surfaces always display the same establishment for a given message and reader.
+     * <p>
+     * When no establishment can be resolved, {@code from} is left untouched: the field is simply absent
+     * and the client displays no label.
+     *
+     * @param message a formatted message
+     * @param structureIndex the index filled by {@link #loadUsersStructures(EventBus, JsonObject, JsonObject)}
+     * @param recipientUserId ID of the user the message is being rendered for, whose own structures decide
+     * 		which establishment of the sender is the relevant one
+     */
+    static public void applySenderDisplayStructure(final JsonObject message, final JsonObject structureIndex, final String recipientUserId) {
+        final JsonObject from = message.getJsonObject(MSG_FROM);
+        if (from == null) {
+            return;
+        }
+        final String senderId = from.getString(RECIPIENT_ID);
+        if (StringUtils.isEmpty(senderId)) {
+            // Deleted sender: there is no account left to attach an establishment to.
+            return;
+        }
+        final JsonObject resolved = resolveDisplayStructure(
+                structureIndex.getJsonObject(senderId),
+                structureIndex.getJsonObject(recipientUserId));
+        if (resolved != null) {
+            // A fresh object rather than the indexed one, which is shared across the whole page.
+            from.put(MSG_FROM_DISPLAY_STRUCTURE, JsonObject.of(
+                    STRUCTURE_ID, stringOrNull(resolved, STRUCTURE_ID),
+                    STRUCTURE_NAME, stringOrNull(resolved, STRUCTURE_NAME)));
+        }
+    }
+
+    /**
+     * Picks the single establishment to display for a sender, from the point of view of a given reader.
+     * <p>
+     * An establishment shared with the reader is the most meaningful one, hence the order:
+     * <ol>
+     *   <li>an establishment common with the reader — if several are common, the sender's preferred one
+     *       among them, else the first of them alphabetically;</li>
+     *   <li>otherwise the sender's preferred establishment;</li>
+     *   <li>otherwise the first of the sender's establishments alphabetically.</li>
+     * </ol>
+     * The result therefore depends on who is reading: two readers may legitimately see two different
+     * establishments for the same sender.
+     *
+     * @param senderEntry the sender's entry of the structure index, may be {@code null}
+     * @param recipientEntry the reader's entry of the structure index, may be {@code null}
+     * @return the structure to display, or {@code null} when none could be resolved
+     */
+    static JsonObject resolveDisplayStructure(final JsonObject senderEntry, final JsonObject recipientEntry) {
+        final List<JsonObject> senderStructures = structuresOf(senderEntry);
+        if (senderStructures.isEmpty()) {
+            return null;
+        }
+        final String preferredId = stringOrNull(senderEntry, PREFERRED_STRUCTURE_ID);
+
+        final Set<String> readerStructureIds = structuresOf(recipientEntry).stream()
+                .map(structure -> stringOrNull(structure, STRUCTURE_ID))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        final List<JsonObject> common = senderStructures.stream()
+                .filter(structure -> readerStructureIds.contains(stringOrNull(structure, STRUCTURE_ID)))
+                .collect(Collectors.toList());
+
+        // Same tie-break either way: preferred if it is a candidate, alphabetical order otherwise.
+        return pickPreferredOrFirst(common.isEmpty() ? senderStructures : common, preferredId);
+    }
+
+    /**
+     * Reads the structures of an index entry, defensively: anything unexpected yields an empty list.
+     */
+    static private List<JsonObject> structuresOf(final JsonObject indexEntry) {
+        if (indexEntry == null) {
+            return Collections.emptyList();
+        }
+        // Checking the raw type rather than using getJsonArray: that would throw on an unexpected shape,
+        // and this data comes from another module over the bus.
+        final Object structures = indexEntry.getValue(STRUCTURES);
+        if (!(structures instanceof JsonArray)) {
+            return Collections.emptyList();
+        }
+        return ((JsonArray) structures).stream()
+                .filter(structure -> structure instanceof JsonObject)
+                .map(JsonObject.class::cast)
+                .filter(structure -> !StringUtils.isEmpty(stringOrNull(structure, STRUCTURE_ID)))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Among candidates, the preferred one if present, else the first by ascending name.
+     */
+    static private JsonObject pickPreferredOrFirst(final List<JsonObject> candidates, final String preferredId) {
+        if (candidates.size() == 1) {
+            return candidates.get(0);
+        }
+        if (!StringUtils.isEmpty(preferredId)) {
+            for (JsonObject candidate : candidates) {
+                if (preferredId.equals(stringOrNull(candidate, STRUCTURE_ID))) {
+                    return candidate;
+                }
+            }
+        }
+        return candidates.stream()
+                .min(Comparator.comparing(candidate -> sortKey(stringOrNull(candidate, STRUCTURE_NAME))))
+                .orElse(null);
+    }
+
+    /**
+     * Reads a value only if it really is a String. Guards against a shape change in the directory answer:
+     * Vert.x would either coerce a number into a String, inventing a value, or throw on other types.
+     */
+    static private String stringOrNull(final JsonObject holder, final String key) {
+        final Object value = holder.getValue(key);
+        return value instanceof String ? (String) value : null;
+    }
+
+    /**
+     * Sort key making the alphabetical fallback insensitive to case and accents, as expected of a
+     * French-language display. Unnamed structures sort last.
+     */
+    static private String sortKey(final String structureName) {
+        if (StringUtils.isEmpty(structureName)) {
+            return LAST_SORT_KEY;
+        }
+        return Normalizer.normalize(structureName, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .toLowerCase(Locale.FRENCH);
     }
 
     /**
