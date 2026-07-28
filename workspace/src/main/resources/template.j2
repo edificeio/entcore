@@ -54,8 +54,12 @@
     {% endif %}
     "publicConf": {
       "lazy-mode": {{ workspaceLazyMode | default('true') }},
-      {% if workspaceEnableNextCloud is defined and workspaceEnableNextCloud %}"folder-service": ["nextcloud"],{% endif %}
-    {% if googleVersion is defined and (googleDomain is defined or googleProviders is defined) %}"folder-service": ["google-drive"],{% endif %}
+      {% if nextcloudVersion is defined and (nextcloudHost is defined or nextcloudProviders is defined) and googleVersion is defined and (googleDomain is defined or googleProviders is defined) %}
+        "folder-service": ["nextcloud","google-drive"],
+      {% else %}
+        {% if nextcloudVersion is defined and (nextcloudHost is defined or nextcloudProviders is defined) %}"folder-service": ["nextcloud"],{% endif %}
+        {% if googleVersion is defined and (googleDomain is defined or googleProviders is defined) %}"folder-service": ["google-drive"],{% endif %}
+      {% endif %}
       "ttl-documents":{{ workspaceTtlDoc | default('180') }},
       "ttl-folders":{{ workspaceTtlFolder | default('600') }}
     }

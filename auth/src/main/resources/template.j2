@@ -122,6 +122,9 @@
     {% if authIdruideEmail is defined %}
       "idruide-email-domain-by-host": "{{ authIdruideEmail | default('{}') }}",
     {% endif %}
+    {% if authGoogleEmail is defined %}
+      "google-email-domain-by-host": "{{ authGoogleEmail | default('{}') }}",
+    {% endif %}
     "passwordRegex": "{{ authPasswordRegex | default('.{8}.*')}}",
     "specific-wayf-v2-host": {{specificWayfV2Host | default('[]')}}
   }
