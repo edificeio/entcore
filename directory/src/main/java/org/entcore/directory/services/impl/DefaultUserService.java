@@ -65,6 +65,14 @@ public class DefaultUserService implements UserService {
 	private static final Set<String> VALID_SORT_FIELDS = Sets.newHashSet("displayName", "email");
 	private static final Set<String> VALID_SORT_ORDERS = Sets.newHashSet("ASC", "DESC");
 	private static final int LIMIT = 1000;
+	/**
+	 * Key of the home page widget holding the user's preferred structure, inside the {@code widgets} preference blob.
+	 */
+	static final String SCHOOL_WIDGET_KEY = "school-widget";
+	/**
+	 * Key holding the preferred structure id, inside the {@link #SCHOOL_WIDGET_KEY} object.
+	 */
+	static final String SCHOOL_WIDGET_STRUCTURE_ID_KEY = "schoolId";
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EmailSender notification;
 	private final EventBus eb;
@@ -1464,6 +1472,84 @@ public class DefaultUserService implements UserService {
 	            handler.handle(res);
 	        }
 	    }));
+	}
+
+	@Override
+	public void getUsersStructuresWithPreferred(JsonArray userIds, Handler<Either<String, JsonArray>> handler) {
+		if (userIds == null || userIds.isEmpty()) {
+			handler.handle(new Either.Right<>(new JsonArray()));
+			return;
+		}
+		// One batched query for the whole list: structures and preference are read in a single round-trip.
+		// The structure match mirrors getUsersStructures; the preference match is optional because roughly
+		// half of the users have none. A user attached to no structure is absent from the result, which
+		// callers must treat as "nothing to display" rather than as an error.
+		final String query =
+				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"WHERE u.id IN {userIds} " +
+				"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+				"RETURN u.id AS id, " +
+				"COLLECT(DISTINCT {id: s.id, name: s.name}) AS structures, " +
+				"uac.widgets AS widgets";
+
+		final JsonObject params = new JsonObject().put("userIds", userIds);
+		neo.execute(query, params, validResultHandler(res -> {
+			if (res.isLeft()) {
+				handler.handle(res);
+				return;
+			}
+			final JsonArray rows = res.right().getValue();
+			final JsonArray result = new JsonArray();
+			for (Object row : rows) {
+				if (!(row instanceof JsonObject)) {
+					continue;
+				}
+				final JsonObject user = (JsonObject) row;
+				// The raw preference blob holds unrelated user preferences: never forward it to the caller.
+				final String widgets = (String) user.remove("widgets");
+				final Optional<String> preferred = extractPreferredStructureId(widgets);
+				if (preferred.isPresent()) {
+					user.put("preferredStructureId", preferred.get());
+				} else if (!StringUtils.isEmpty(widgets)) {
+					logger.debug("No preferred structure could be read from the widgets preference of user "
+							+ user.getString("id"));
+				}
+				result.add(user);
+			}
+			handler.handle(new Either.Right<>(result));
+		}));
+	}
+
+	/**
+	 * Extracts the preferred structure id from the serialized {@code widgets} preference of a user.
+	 * <p>
+	 * The blob is written by clients and is not formally typed, so this parsing is deliberately defensive:
+	 * any unexpected shape yields {@link Optional#empty()} rather than an error. Callers are expected to
+	 * degrade gracefully when no preferred structure can be read — roughly half of the users have none.
+	 *
+	 * @param widgets the raw value of the {@code widgets} preference, may be {@code null} or malformed
+	 * @return the preferred structure id, or empty if absent, blank or unreadable
+	 */
+	static Optional<String> extractPreferredStructureId(final String widgets) {
+		if (StringUtils.isEmpty(widgets)) {
+			return Optional.empty();
+		}
+		try {
+			final JsonObject schoolWidget = new JsonObject(widgets).getJsonObject(SCHOOL_WIDGET_KEY);
+			if (schoolWidget == null) {
+				return Optional.empty();
+			}
+			// Deliberately checking the raw type rather than using getString: that would coerce a number into
+			// a String, turning invalid data into an id that silently matches no structure at all.
+			final Object structureId = schoolWidget.getValue(SCHOOL_WIDGET_STRUCTURE_ID_KEY);
+			if (!(structureId instanceof String) || StringUtils.isEmpty((String) structureId)) {
+				return Optional.empty();
+			}
+			return Optional.of((String) structureId);
+		} catch (RuntimeException e) {
+			// Malformed JSON, or a value of an unexpected type where an object or a string was expected.
+			return Optional.empty();
+		}
 	}
 
 	public void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> handler) {
