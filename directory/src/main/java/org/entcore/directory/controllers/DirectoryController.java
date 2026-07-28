@@ -595,6 +595,11 @@ public class DirectoryController extends BaseController {
 				String excludeId = message.body().getString("excludeUserId");
 				userService.list(groupIds, userIds, itSelf, excludeId, busArrayHandler(message));
 				break;
+			case "list-users-structures": {
+				JsonArray structuresUserIds = message.body().getJsonArray("userIds", new JsonArray());
+				userService.getUsersStructuresWithPreferred(structuresUserIds, busArrayHandler(message));
+				break;
+			}
 			case "list-structures" :
 				schoolService.list(message.body().getJsonArray("fields"), message.body().getJsonArray("structureIds") , busArrayHandler(message));
 				break;
