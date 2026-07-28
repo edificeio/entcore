@@ -1,0 +1,36 @@
+.message-preview-structure {
+  min-width: 0;
+  /* Shrinks well before the sender name when space is tight. */
+  flex-shrink: 10;
+}
+
+/*
+ * @edifice.io/react's <Tooltip> wraps its trigger in a "d-inline-block"
+ * div, which keeps its natural content width and breaks ellipsis
+ * truncation on the structure name. Force it to shrink like the rest of
+ * the flex row instead.
+ */
+.message-preview-structure-tooltip {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.message-preview-structure-name {
+  display: block;
+}
+
+/*
+ * @edifice.io/react's <Tooltip> hardcodes a "z-2" class (z-index: 2) on its
+ * popper instead of using the design system's --edifice-tooltip-zindex
+ * token, so it renders under any sticky-positioned content (e.g. the
+ * message list's sticky-top header, z-index: 1020). The popper is a
+ * sibling of the trigger inside .message-preview-structure (Tooltip
+ * renders both via a Fragment), so this scopes the override to this
+ * component instead of patching every Tooltip in the app.
+ */
+.message-preview-structure .tooltip.z-2 {
+  z-index: var(--edifice-tooltip-zindex, 1080) !important;
+}
