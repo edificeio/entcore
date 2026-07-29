@@ -1,4 +1,4 @@
-import { Tooltip, useDate } from '@edifice.io/react';
+import { useDate } from '@edifice.io/react';
 import {
   IconMailRecall,
   IconPaperclip,
@@ -81,15 +81,12 @@ export function MessagePreview({ message }: MessagePreviewProps) {
                 </span>
                 {message.from?.displayStructure && (
                   <div className="message-preview-structure">
-                    <Tooltip
-                      message={message.from.displayStructure.name}
-                      placement="top"
-                      className="message-preview-structure-tooltip"
+                    <span
+                      className="message-preview-structure-name text-truncate text-gray-700"
+                      title={message.from.displayStructure.name}
                     >
-                      <span className="message-preview-structure-name text-truncate text-gray-700">
-                        {message.from.displayStructure.name}
-                      </span>
-                    </Tooltip>
+                      {message.from.displayStructure.name}
+                    </span>
                   </div>
                 )}
               </div>
