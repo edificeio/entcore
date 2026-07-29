@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS idx_usermessages_user_folder ON conversation.usermessages(user_id, folder_id);
+CREATE INDEX IF NOT EXISTS idx_messages_thread_id ON conversation.messages(thread_id, id) WHERE thread_id IS NOT NULL;
