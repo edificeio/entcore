@@ -2,7 +2,7 @@
 
 > Projet : Messagerie
 > Statut : Finalisé
-> Version : v3 - 29/07/2026
+> Version : v4 - 29/07/2026
 > Langue : Français
 > Périmètre : Autonome
 > PRD parent : PRD - Message d'absence
@@ -241,7 +241,37 @@ Scénario: Un expéditeur déjà relancé le jour de la désactivation
 - Cliquer sur "Modifier" ouvre la modale de paramétrage du message d'absence, pré-remplie avec les valeurs actuelles (voir US-1).
 - Le bandeau disparaît automatiquement dès que le message d'absence n'est plus actif (désactivation manuelle ou date de fin dépassée).
 
-**Scénarios de test :** *(à compléter par le Designer)*
+**Scénarios de test :**
+
+```gherkin
+Scénario: Affichage du bandeau sur les différents écrans de la Messagerie
+  Étant donné un message d'absence est actif
+  Quand je navigue vers n'importe quel écran de la Messagerie
+  Alors le bandeau de rappel DOIT être visible
+  Et il DOIT afficher un bouton "Modifier"
+```
+
+```gherkin
+Scénario: Ouverture de la modale de paramétrage depuis le bandeau
+  Étant donné le bandeau de rappel est affiché
+  Quand je clique sur le bouton "Modifier"
+  Alors la modale "Paramétrer le message d'absence" DOIT s'ouvrir
+  Et elle DOIT être pré-remplie avec les dates et le texte actuellement enregistrés
+```
+
+```gherkin
+Scénario: Disparition du bandeau après une désactivation manuelle
+  Étant donné le bandeau de rappel est affiché
+  Quand je désactive le message d'absence via la modale de paramétrage
+  Alors le bandeau de rappel NE DOIT PLUS être visible sur les écrans suivants
+```
+
+```gherkin
+Scénario: Disparition du bandeau après dépassement de la date de fin
+  Étant donné un message d'absence était actif jusqu'à hier
+  Quand la date de fin est aujourd'hui dépassée
+  Alors le bandeau de rappel NE DOIT PLUS être visible
+```
 
 ---
 
