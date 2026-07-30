@@ -40,7 +40,7 @@ Aucun (ni path, ni query).
 
 | Champ | Type | Nullable | Description |
 | --- | --- | --- | --- |
-| `enabled` | `boolean` | non | Message d'absence actif ou non |
+| `enabled` | `boolean` | non | Paramétrage **armé** ou non. Ne signifie **pas** « absence en cours » — voir §1.4.1 |
 | `startAt` | `string` (ISO 8601, UTC) | non | Début de la période d'absence |
 | `endAt` | `string` (ISO 8601, UTC) | non | Fin de la période d'absence |
 | `bodyJson` | `object` (JSON tiptap) | non | Contenu normalisé — **sortie** du transformer de contenu, jamais l'entrée brute (voir §2.3) |
@@ -48,6 +48,20 @@ Aucun (ni path, ni query).
 | `updatedAt` | `string` (ISO 8601, UTC) | non | Date de dernière modification |
 
 Si aucun paramétrage n'a jamais été créé pour l'utilisateur : `200` avec `{}` (pas de `404`).
+
+### 1.4.1 `enabled` n'est pas « absence en cours »
+
+L'API n'expose **pas** de booléen « absence en cours » : elle expose un paramétrage armé (`enabled`) et ses bornes. Le consommateur doit dériver lui-même l'état courant :
+
+```
+actif = enabled && startAt ≤ maintenant ≤ endAt
+```
+
+`enabled: true` avec un `startAt` futur décrit une absence **programmée mais pas commencée** — cas explicitement autorisé par la FS (US-1 : « le paramétrage est actif automatiquement dès la date de début », sans action supplémentaire de l'utilisateur). Prendre `enabled` pour « en cours » afficherait donc un état d'absence avant le début de la période.
+
+Ce calcul doit être **refait à chaque évaluation**, et non mémorisé au chargement : l'état bascule tout seul au franchissement de `startAt` et de `endAt`, sans qu'aucune modification du paramétrage ne vienne invalider un cache.
+
+Le back applique la même règle, et c'est la seule qui gouverne l'envoi effectif des réponses automatiques (US-2, détection en lot sur la période active). Il n'y a donc pas deux définitions d'« actif » à maintenir : une seule, appliquée de part et d'autre.
 
 ### 1.5 Exemple `200` — paramétrage existant
 

@@ -2,7 +2,7 @@
 
 > FS source : [FS-IMPULS-6109.md](./FS-IMPULS-6109.md)
 > Repo : entcore (module `conversation`)
-> Date : 29/07/2026
+> Date : 29/07/2026 — révisé le 30/07/2026 : retrait de l'index partiel sur `absence_settings` et du groupement par fuseau dans IMPULS-6144, charge back 35 → 32 SP
 > Participants : Squad Impulsion (dev front, dev back)
 > Statut : Draft
 > Maquettes : [Figma — Messagerie / Message d'absence](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7616-3) — US-4 (bandeau) révisée le 30/07/2026 : [Figma — bandeau-rappel-absence, v2](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7773-2968)
@@ -29,7 +29,7 @@ Le chantier se décompose en un socle de persistance et d'API (US-1), un mécani
 
                     ┌─────────────────────── US-2 ───────────────────────┐
   @Post("send")     │  1. saveAndSend → allUsers (groupes déjà aplatis)  │
-  + timezone        │  2. détection en lot des absents actifs            │──►  absence_settings (index partiel)
+  + timezone        │  2. détection en lot des absents actifs            │──►  absence_settings (PK user_id)
   (optionnel)       │  3. préférences de langue, loties en masse         │
         │           │  4. garde-fou 1/jour/expéditeur                    │──►  absence_replies
         ▼           │  5. émission étalée via saveAndSend                │     (absent, sender) → last_sent_at
@@ -55,8 +55,8 @@ Le chantier se décompose en un socle de persistance et d'API (US-1), un mécani
 
 | # | Risque | Impact | Mitigation |
 |---|---|---|---|
-| 1 | **Fan-out d'émission sur envoi de masse.** Un envoi à 200 000 destinataires en période de congés peut déclencher des milliers de réponses automatiques, chacune étant un `saveAndSend` complet (draft + lignes filles). Le coût est à l'écriture, pas à la détection. | Fort — dégradation plateforme, ce que la FS interdit explicitement | Émission asynchrone découplée + étalement/throttling. Le garde-fou 1/jour borne les répétitions mais **pas** ce pic initial. Sous-tâche dédiée, estimée à 8. |
-| 2 | **Requête de détection à 200 000 identifiants.** `allUsers` entier dans un `WHERE user_id = ANY($1)` n'est pas tenable d'un bloc. | Moyen | Découpage en lots + index partiel `WHERE enabled`. |
+| 1 | **Fan-out d'émission sur envoi de masse.** Un envoi à 200 000 destinataires en période de congés peut déclencher des milliers de réponses automatiques, chacune étant un `saveAndSend` complet (draft + lignes filles). Le coût est à l'écriture, pas à la détection. | Fort — dégradation plateforme, ce que la FS interdit explicitement | Émission asynchrone découplée + étalement/throttling. Le garde-fou 1/jour borne les répétitions mais **pas** ce pic initial. Sous-tâche dédiée, estimée à 5. |
+| 2 | **Requête de détection à 200 000 identifiants.** `allUsers` entier dans un `WHERE user_id = ANY($1)` n'est pas tenable d'un bloc. | Moyen | Découpage en lots — c'est la seule mitigation réelle. Pas d'index dédié : la PK sur `user_id` sert déjà le `= ANY($1)` (voir migration `025`). |
 | 3 | **Collision avec l'envoi différé, en cours de développement.** Même table `messages`, même chemin d'envoi, fonctionnalité inachevée. | Moyen | Coordination avant merge. La FS annonçait « aucune dépendance » : vrai fonctionnellement, faux au niveau du code. |
 | 4 | **Compatibilité mobile du champ fuseau.** Ajouter le fuseau à la charge utile d'envoi casserait les clients mobiles déployés si le champ était requis — or la FS interdit toute rupture. | Fort si le champ est rendu obligatoire | Champ **optionnel**, repli sur le fuseau serveur quand absent. Le garde-fou 1/jour se dégrade légèrement pour ces clients, sans jamais échouer. *Mitigation retenue au cadrage.* |
 | 5 | **Purge RGPD.** Les deux nouvelles tables, clés sur `user_id`, doivent être ajoutées à `ConversationRepositoryEvents.deleteUsers()` (ligne 414), qui purge aujourd'hui `folders` et `usermessages`. | Moyen — lignes orphelines, écart RGPD | Sous-tâche dédiée, pas un rattrapage de fin de chantier. |
@@ -118,11 +118,11 @@ CREATE TABLE conversation.absence_settings (
     body_html  TEXT NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_absence_settings_active
-    ON conversation.absence_settings(user_id) WHERE enabled;
 ```
 
 La PK sur `user_id` matérialise le principe d'unicité de la FS : aucune règle applicative à écrire. La désactivation passe `enabled` à `false` **sans supprimer la ligne**, ce qui satisfait la persistance du paramétrage exigée par la FS et par US-3.
+
+**Aucun index supplémentaire.** Un index partiel `(user_id) WHERE enabled` figurait dans une version antérieure de ce cadrage : il est retiré, la colonne indexée étant déjà la clé primaire, qui sert donc à elle seule le `= ANY($1)` de la détection en lot (US-2). À revoir si la table atteint une volumétrie où le filtre de période justifie un index sur les bornes — ce n'est pas le cas au démarrage, la table partant vide.
 
 Migration `026` — garde-fou anti-spam :
 
@@ -135,7 +135,9 @@ CREATE TABLE conversation.absence_replies (
 );
 ```
 
-Alimentée en upsert (`ON CONFLICT DO UPDATE`) : une ligne par paire, pas une par envoi, donc pas de croissance non bornée. Le test « une réponse par jour » s'évalue dans le fuseau de l'expéditeur, via `date_trunc('day', last_sent_at AT TIME ZONE $tz) = date_trunc('day', now() AT TIME ZONE $tz)`. Les requêtes sont **groupées par fuseau** dans le lot d'émission pour éviter la multiplication des appels.
+Alimentée en upsert (`ON CONFLICT DO UPDATE`) : une ligne par paire, pas une par envoi, donc pas de croissance non bornée. Le test « une réponse par jour » s'évalue dans le fuseau de l'expéditeur, via `date_trunc('day', last_sent_at AT TIME ZONE $tz) = date_trunc('day', now() AT TIME ZONE $tz)`.
+
+**Un seul fuseau par envoi.** Un groupement des requêtes par fuseau figurait dans une version antérieure de ce cadrage : il est retiré, car il n'y a rien à grouper. Le fuseau est celui de l'expéditeur du message initial, et un envoi n'a qu'un seul expéditeur — toutes les réponses automatiques déclenchées par un même envoi partagent donc `$tz`. C'est la même dissymétrie que celle relevée plus bas pour la langue du préfixe d'objet, prise dans l'autre sens : la langue est celle de chaque personne absente, donc à lotir ; le fuseau est celui de l'unique expéditeur, donc constant sur tout le lot.
 
 **Contrat d'API** — deux routes, format Postman (Swagger abandonné) :
 
@@ -212,7 +214,7 @@ Les 17 sous-tâches ont été créées dans Jira. Le contrat d'API, préalable c
 #### US-1 : Paramétrer, activer et modifier un message d'absence *(IMPULS-6130)*
 
 - [ ] `[back]` [IMPULS-6135](https://edifice-community.atlassian.net/browse/IMPULS-6135) — Créer le contrat d'API au format Postman (`GET` / `PUT /conversation/absence`). **Préalable commun, à traiter en premier** — livrable : collection Postman — **2**
-- [ ] `[back]` [IMPULS-6136](https://edifice-community.atlassian.net/browse/IMPULS-6136) — Migration `025` : table `absence_settings` (`start_at` / `end_at` en `TIMESTAMPTZ`) + index partiel `WHERE enabled` — **2**
+- [ ] `[back]` [IMPULS-6136](https://edifice-community.atlassian.net/browse/IMPULS-6136) — Migration `025` : table `absence_settings` (`start_at` / `end_at` en `TIMESTAMPTZ`), PK sur `user_id`, sans index supplémentaire — **2**
 - [ ] `[back]` [IMPULS-6137](https://edifice-community.atlassian.net/browse/IMPULS-6137) — Service et routes `GET` / `PUT` : validation des dates et du texte, restriction de profil sur `HEAD(profiles)`, stockage `body_json` + `body_html` — **5**
 - [ ] `[front]` [IMPULS-6138](https://edifice-community.atlassian.net/browse/IMPULS-6138) — Modale de paramétrage : `Modal` + `Switch` + 2 `DatePicker` en `FormControl` / `Label` / `FormControl.Text` + `Editor` du DS, erreurs en ligne, toast, modale qui reste ouverte, calcul des bornes locales converties en UTC, clés i18n `fr` — **5**
 - [ ] `[front]` [IMPULS-6139](https://edifice-community.atlassian.net/browse/IMPULS-6139) — Service API et hooks TanStack Query (query + mutation avec invalidation) — **3**
@@ -223,7 +225,7 @@ Les 17 sous-tâches ont été créées dans Jira. Le contrat d'API, préalable c
 - [ ] `[back]` [IMPULS-6141](https://edifice-community.atlassian.net/browse/IMPULS-6141) — Migration `026` : table `absence_replies` (`last_sent_at` en `TIMESTAMPTZ`) — **1**
 - [ ] `[back]` [IMPULS-6142](https://edifice-community.atlassian.net/browse/IMPULS-6142) — Service de détection : requête en lot sur `allUsers`, filtre sur la période active, et récupération en masse des préférences de langue des personnes absentes — **5**
 - [ ] `[back]` [IMPULS-6143](https://edifice-community.atlassian.net/browse/IMPULS-6143) — Émission de la réponse automatique via `saveAndSend`, objet préfixé « Réponse automatique : », garde-fou une réponse par jour et par expéditeur en upsert — **5**
-- [ ] `[back]` [IMPULS-6144](https://edifice-community.atlassian.net/browse/IMPULS-6144) — Étalement asynchrone de l'émission, throttling et groupement des requêtes par fuseau, pour tenir les envois de masse sans dégrader la plateforme — **8**
+- [ ] `[back]` [IMPULS-6144](https://edifice-community.atlassian.net/browse/IMPULS-6144) — Étalement asynchrone de l'émission et throttling, pour tenir les envois de masse sans dégrader la plateforme — **5** *(ramené de 8 : le groupement des requêtes par fuseau, initialement inclus, est retiré — un envoi n'a qu'un seul fuseau, voir §Back, migration `026`)*
 - [ ] `[back]` [IMPULS-6145](https://edifice-community.atlassian.net/browse/IMPULS-6145) — Branchement du déclencheur dans le handler `@Post("send")`, après résolution de `allUsers` — **2**
 - [ ] `[back]` [IMPULS-6146](https://edifice-community.atlassian.net/browse/IMPULS-6146) — Accepter le fuseau de l'expéditeur en champ **optionnel** de la charge utile d'envoi, avec repli sur le fuseau serveur — **2**
 - [ ] `[back]` [IMPULS-6148](https://edifice-community.atlassian.net/browse/IMPULS-6148) — Purge RGPD : ajouter `absence_settings` et `absence_replies` à `ConversationRepositoryEvents.deleteUsers()` — **1**
@@ -254,10 +256,10 @@ La création d'un droit workflow dédié a été écartée : fastidieuse à gér
 
 | Compétence | Charge (SP) | Commentaire |
 |---|---|---|
-| Back | 35 | Dont 8 sur le seul étalement de l'émission (risque #1) et 2 sur le contrat d'API préalable |
+| Back | 32 | Dont 5 sur le seul étalement de l'émission (risque #1) et 2 sur le contrat d'API préalable |
 | Front | 16 | Essentiellement de l'assemblage de composants du DS ; aucun composant à créer |
 | Mobile | 0 | Hors-scope. Contrat additif, champ fuseau optionnel, consommation de `bodyHtml` |
-| **Total** | **51** | Aucune sous-tâche au-delà de 8, aucune à 13 |
+| **Total** | **48** | Aucune sous-tâche au-delà de 5 |
 
 ---
 
