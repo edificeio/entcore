@@ -17,8 +17,3 @@ CREATE TABLE IF NOT EXISTS conversation.absence_settings (
 	-- PUT /conversation/absence doit poser updated_at = now() explicitement.
 	"updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
-
--- Le GRANT de 018 ne portait que sur les tables existant à ce moment-là, et le schéma n'a
--- pas d'ALTER DEFAULT PRIVILEGES : toute table créée après doit réaccorder explicitement,
--- comme 019 l'a fait pour originalmessages.
-GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON conversation.absence_settings TO "apps";
