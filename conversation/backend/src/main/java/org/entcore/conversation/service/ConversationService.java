@@ -219,6 +219,17 @@ public interface ConversationService {
 	 */
 	Future<JsonObject> upsertAbsence(JsonObject absence, UserInfos user);
 
+	/**
+	 * Among the given recipients, finds those whose absence message is active right now.
+	 * <p>
+	 * Meant to be fed with the already resolved recipients of a send (groups flattened), so no group
+	 * resolution happens here. The list is queried in batches, since a single send can carry up to
+	 * 200 000 recipients.
+	 * @param userIds the recipients of the message being sent
+	 * @return a {@link Future} of one entry per active absence, holding userId, bodyHtml and bodyJson
+	 */
+	Future<JsonArray> findActiveAbsences(List<String> userIds);
+
 	// Purge
 	Future<Void> purgeMessages();
 }

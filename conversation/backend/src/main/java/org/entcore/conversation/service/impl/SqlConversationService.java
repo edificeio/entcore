@@ -2037,6 +2037,44 @@ public class SqlConversationService implements ConversationService{
 		});
 	}
 
+	@Override
+	public Future<JsonArray> findActiveAbsences(List<String> userIds) {
+		if (userIds == null || userIds.isEmpty()) {
+			return Future.succeededFuture(new JsonArray());
+		}
+		// Batched rather than one big ANY($1) : a send can carry up to 200 000 recipients, and the
+		// batches run one after the other so a mass send never floods the database in one go.
+		return findActiveAbsencesBatch(userIds, 0, new JsonArray());
+	}
+
+	private Future<JsonArray> findActiveAbsencesBatch(final List<String> userIds, final int offset, final JsonArray found) {
+		if (offset >= userIds.size()) {
+			return Future.succeededFuture(found);
+		}
+		final List<String> batch = userIds.subList(offset, Math.min(offset + conversationBatchSize, userIds.size()));
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonArray values = new JsonArray();
+		// The bounds are UTC instants, so the activity test is a plain instant comparison here.
+		final String query =
+				"SELECT user_id AS \"userId\", body_html AS \"bodyHtml\", body_json AS \"bodyJson\"" +
+				" FROM " + absenceSettingsTable +
+				" WHERE user_id IN " + generateInVars(batch, values) +
+				" AND enabled AND now() BETWEEN start_at AND end_at";
+		sql.prepared(query, values,
+				SqlResult.validResultHandler(either -> {
+					if (either.isRight()) {
+						promise.complete(either.right().getValue());
+					} else {
+						promise.fail(either.left().getValue());
+					}
+				}, "bodyJson"));
+		return promise.future()
+				.compose(batchResult -> {
+					batchResult.forEach(found::add);
+					return findActiveAbsencesBatch(userIds, offset + conversationBatchSize, found);
+				});
+	}
+
 	/**
 	 * Normalizes the rich text of an absence message.
 	 * Unlike {@link #transformMessageContent}, the input is tiptap JSON, which the transformer takes
