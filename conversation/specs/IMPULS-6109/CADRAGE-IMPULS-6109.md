@@ -5,7 +5,7 @@
 > Date : 29/07/2026
 > Participants : Squad Impulsion (dev front, dev back)
 > Statut : Draft
-> Maquettes : [Figma — Messagerie / Message d'absence](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7616-3)
+> Maquettes : [Figma — Messagerie / Message d'absence](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7616-3) — US-4 (bandeau) révisée le 30/07/2026 : [Figma — bandeau-rappel-absence, v2](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7773-2968)
 > Tickets : EPIC [IMPULS-6109](https://edifice-community.atlassian.net/browse/IMPULS-6109) — US-1 [IMPULS-6130](https://edifice-community.atlassian.net/browse/IMPULS-6130), US-2 [IMPULS-6131](https://edifice-community.atlassian.net/browse/IMPULS-6131), US-3 [IMPULS-6132](https://edifice-community.atlassian.net/browse/IMPULS-6132), US-4 [IMPULS-6133](https://edifice-community.atlassian.net/browse/IMPULS-6133)
 
 ---
@@ -41,10 +41,12 @@ Le chantier se décompose en un socle de persistance et d'API (US-1), un mécani
             → exclusion par              acquis par construction : l'émission
               construction               ne repasse pas par le handler de route)
 
-                    ┌─────────────────────── US-4 ───────────────────────┐
-  routes/root  ─────┤  Alert pleine largeur sous AppHeader + « Modifier » │
-  useState unique   │  réutilise le hook query de US-1                    │
-  2 déclencheurs    └────────────────────────────────────────────────────┘
+                    ┌─────────────────────── US-4 (révisé 30/07) ────────┐
+  Folder.tsx   ─────┤  Alert dans la colonne de contenu, au-dessus de la │
+  (écrans liste)    │  barre de recherche, + « Modifier »                │
+  2 déclencheurs    │  réutilise le hook query de US-1 ; pas affiché sur │
+  répartis          │  le détail d'un message ni sur la rédaction        │
+                    └────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -71,7 +73,7 @@ Le chantier se décompose en un socle de persistance et d'API (US-1), un mécani
 - **Seuls les envois via la route HTTP `@Post("send")` déclenchent une réponse automatique.** Les messages émis via le `@BusAddress("org.entcore.conversation")` et via `@Post("externe")` n'en déclenchent pas. Décision assumée : le bus est utilisé par des applications, pas par des utilisateurs, et les messages `externe` posent déjà `noReply = true`.
 - Hors périmètre fonctionnel (repris de la FS) : redirection des messages vers un autre destinataire, plages horaires hors journées d'absence, paramétrage par un ADML pour le compte d'un tiers, périodes d'absence multiples en parallèle.
 - Aucune exigence d'audit au-delà de la visibilité native de la réponse automatique dans le dossier « Messages envoyés ».
-- **Écart FS assumé sur le bandeau (US-4)** : la FS le place « à côté du titre Messagerie », le Figma en fait un `Alert` pleine largeur sous l'`AppHeader`. Le Figma est retenu — il évite de toucher au composant `AppHeader` du design system partagé.
+- **US-4 (bandeau) révisée le 30/07/2026** : changement de dernière minute du PM sur la maquette, après un premier arbitrage déjà pris au cadrage (Figma pleine largeur sous l'`AppHeader` plutôt que « à côté du titre » comme l'écrivait la FS v4). La maquette v2 (node `7773-2968`) place le bandeau **dans la colonne de contenu** de l'écran de liste, au-dessus de la barre de recherche — plus au niveau du layout racine. Conséquence fonctionnelle actée avec le PM : le bandeau n'est **plus** visible sur tous les écrans de la Messagerie, seulement sur les écrans de liste (boîte de réception, dossiers, envoyés, corbeille) ; il disparaît de l'écran de lecture d'un message et de celui de rédaction. FS mise à jour en conséquence (v5). Voir §Front pour l'impact sur le point d'insertion et le partage d'état de la modale.
 - **Écart FS assumé sur les composants de bouton** : `ButtonBeta` (edifice2d) et non le `Button` utilisé par `SignatureModal`. La modale d'absence n'aura donc pas exactement le même rendu que celle de la signature.
 - **Écart FS corrigé en séance sur le stockage du texte** : la FS justifiait le double format JSON + HTML par « cohérence avec le fonctionnement actuel de l'éditeur riche », ce qui est faux dans ce module (HTML seul partout : `messages."body"` en `TEXT`, `models/message.ts:28`, `MessageBody.tsx:43`). Le double format est néanmoins retenu, mais pour la vraie raison : une décision d'architecture plateforme fait du JSON le format tiptap par défaut, et le HTML reste nécessaire à l'affichage mobile.
 - **i18n** : français seul en développement.
@@ -142,7 +144,11 @@ Alimentée en upsert (`ON CONFLICT DO UPDATE`) : une ligne par paire, pas une pa
 | `GET` | `/conversation/absence` | Paramétrage de l'utilisateur courant, ou vide |
 | `PUT` | `/conversation/absence` | Upsert : couvre création, modification et désactivation |
 
-Charge utile : `{ enabled, startAt, endAt, bodyJson, bodyHtml }`. Pas de `DELETE`, la désactivation devant conserver les données. Purement additif, donc **aucune rupture de compatibilité mobile** ; le mobile consommera `bodyHtml`.
+Charge utile en entrée du `PUT` : `{ enabled, startAt, endAt, bodyJson, bodyHtml }` — `bodyJson` **requis** ; `bodyHtml`, s'il est envoyé, est **ignoré côté back** (accepté pour tolérance de forme, jamais persisté tel quel, jamais utilisé pour dériver quoi que ce soit). Pas de `DELETE`, la désactivation devant conserver les données. Purement additif, donc **aucune rupture de compatibilité mobile** ; le mobile consomme `bodyHtml`, dérivé côté back et renvoyé par le `GET`.
+
+**Oubli corrigé au cadrage — normalisation côté back.** Le `bodyJson` reçu ne doit pas être stocké tel quel : il passe par le transformer déjà utilisé pour les messages classiques (`SqlConversationService.updateMessageWithTransformedContent`, client `IContentTransformerClient` initialisé dans `Conversation.java:73-76`), qui normalise le contenu et permet d'en dériver le `body_html` stocké. `body_json` et `body_html` stockés sont tous deux des **sorties** du transformer, jamais des entrées brutes — le `bodyHtml` éventuellement reçu en entrée du `PUT` est **explicitement ignoré**, à documenter clairement dans le contrat d'API pour éviter toute confusion côté consommateurs.
+
+Confirmé : le transformer accepte bien le JSON tiptap en entrée. `transformMessageContent` (`SqlConversationService.java:1075-1094`) demande déjà les **deux** formats en sortie via `expectedFormats` — `new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON))` (`SqlConversationService.java:1078`) — mais l'appelant actuel (`updateMessageWithTransformedContent`) ne lit que `getCleanHtml()` et ignore la partie JSON de la réponse. Pour le message d'absence, il faut réutiliser ce même appel (`expectedFormats = {HTML, JSON}`) et, cette fois, exploiter **les deux** sorties de `ContentTransformerResponse` : le HTML nettoyé pour `body_html`, le JSON normalisé pour `body_json`. Le getter exact côté JSON (`ContentTransformerResponse` vient de la lib externe `fr.wseduc:content-transformer`, non vendée dans ce repo) est à vérifier au moment de coder IMPULS-6137.
 
 **Anti-bouclage et exclusion des statistiques, par construction.** `eventHelper.onCreateResource(request, RESOURCE_NAME)` n'est appelé que dans le handler de la route `@Post("send")` (`ConversationController.java:517`) ; ni `saveAndSend` (436-491), ni le handler de bus (1785-1826), ni `sendFromExterne` (1939) ne l'appellent. Les statistiques sont donc alimentées par un événement émis explicitement à cet endroit, pas par une requête sur `messages`.
 
@@ -165,16 +171,18 @@ Le déclencheur se place dans ce même handler, une fois `allUsers` résolu. L'�
 - `FormControl` porte `status: 'valid' | 'invalid'` et un sous-composant `FormControl.Text` : l'affichage d'erreur en ligne sous le champ est **nativement fourni par le DS**, aucun enrobage à écrire.
 - `Editor` du DS (`@edifice.io/react/editor`), et non le wrapper `SignatureEditor` qui n'expose que `getHtmlContent()`. Sa ref expose `getContent(as: 'html' | 'json' | 'plain')` et sa prop `content` accepte directement du `JSONContent` tiptap : les deux formats exigés sont obtenus du même composant, sans pattern nouveau. C'est bien « le même composant que la rédaction d'un message classique » que demandait la FS.
 - `ButtonBeta` (edifice2d) pour les actions de pied de modale. Couleurs `default | destructive | secondary | tertiary`, variantes `filled | outline | ghost` — noter qu'il n'y a pas de `primary`.
-- `Alert` du DS pour le bandeau, déjà utilisé dans le module (`components/MessageBody.tsx:75`) et acceptant une prop `button`, ce qui donne le bouton « Modifier » sans rien créer.
+- `Alert` du DS pour le bandeau, déjà utilisé dans le module (`components/MessageBody.tsx:75`) et acceptant une prop `button`, ce qui donne le bouton « Modifier » sans rien créer. Emplacement révisé le 30/07/2026 (voir ci-dessous).
 - Cache et invalidation : le pattern exigé par la FS est déjà en place — clés `configQueryKeys`, `staleTime`, `setQueryData` optimiste au succès (`services/queries/config.ts`). Aucune sous-tâche de cache dédiée n'est nécessaire.
 
 **À créer.**
 
 Modale de paramétrage servant indifféremment création, modification et désactivation, pré-remplie s'il existe un paramétrage. Validation en ligne sans fermeture de modale, toast de confirmation, et **la modale reste ouverte** après enregistrement (voir risque #6). Les bornes de période sont calculées dans le fuseau local de l'utilisateur — début et fin de journée locale — puis converties en UTC avant envoi.
 
-Point d'insertion du bandeau : `routes/root/index.tsx`, juste après le bloc `<AppHeader render={AppActionHeader}>`, avant les blocs de contenu mobile et desktop. Un seul point d'insertion couvre **tous** les écrans de la Messagerie, ce qui satisfait structurellement l'exigence US-4 sans traitement écran par écran.
+**Point d'insertion du bandeau — révisé le 30/07/2026.** La maquette v2 (Figma, node `7773-2968`) place le bandeau dans la colonne de contenu de l'écran de liste, au-dessus de la barre de recherche — dans `routes/pages/Folder.tsx` (ou un composant qu'il englobe, ex. à côté de `MessageListHeader`), pas au niveau du layout racine `routes/root/index.tsx`. `Folder.tsx` sert les quatre dossiers système (`inbox`, `outbox`, `draft`, `trash`) et les dossiers utilisateur (`routes/index.tsx:24-94`) : un seul point d'insertion suffit toujours pour **ces** écrans. En revanche `Message.tsx` (lecture, rédaction) est une route sœur, rendue à la place de `Folder.tsx` (jamais en même temps) — le bandeau n'y apparaît donc plus, ce qui est désormais l'exigence assumée (voir Limitations/Hors-scope et FS v5, US-4).
 
-La modale a **deux déclencheurs** — l'entrée de menu et le bouton « Modifier » du bandeau. Sans store, un `useState` unique est remonté dans `routes/root/index.tsx`, où l'`AppHeader` et le bandeau cohabitent déjà : une seule instance de modale, deux déclencheurs.
+**Point technique à trancher (IMPULS-6151/6138)** : la modale garde **deux déclencheurs** — l'entrée de menu (`AppActionHeader`, restée au niveau racine) et le bouton « Modifier » du bandeau (désormais dans `Folder.tsx`, un descendant de la racine rendu via `ScrollableOutlet`). Le cadrage initial écartait le store Zustand `openedModal` au profit d'un `useState` unique remonté dans `routes/root/index.tsx`, parce que les deux déclencheurs cohabitaient dans le même fichier. Ce n'est plus le cas : deux options, à trancher en implémentation, pas figées ici :
+  1. **`useOutletContext`** (React Router v6, déjà en dépendance) : `routes/root/index.tsx` passe l'ouvreur de modale via `<Outlet context={...} />` sur `ScrollableOutlet`, `Folder.tsx` le lit avec `useOutletContext()`. Garde le `useState` unique et évite le store, dans l'esprit de la décision initiale.
+  2. **Réutiliser `openedModal`** (`useActionsStore`, déjà store de tous les autres modales de ce fichier — `CreateFolderModal`, `RenameFolderModal`, `TrashFolderModal`, `MoveMessageToFolderModal`, `SignatureModal`) : plus cohérent avec le reste de `routes/root/index.tsx` maintenant que le déclencheur n'est plus localisé au même endroit que la modale.
 
 Restriction de profil : test sur le **premier élément** de `user.type` (et non `includes`), pour rester aligné sur la convention `HEAD(profiles)` du back (voir risque #7).
 
@@ -228,7 +236,7 @@ Les 17 sous-tâches ont été créées dans Jira. Le contrat d'API, préalable c
 
 #### US-4 : Voir en permanence l'état de mon message d'absence actif *(IMPULS-6133)*
 
-- [ ] `[front]` [IMPULS-6151](https://edifice-community.atlassian.net/browse/IMPULS-6151) — Bandeau `Alert` avec bouton « Modifier », inséré sous l'`AppHeader` dans le layout racine, conditionné à l'état actif — **3**
+- [ ] `[front]` [IMPULS-6151](https://edifice-community.atlassian.net/browse/IMPULS-6151) — Bandeau `Alert` avec bouton « Modifier », inséré dans `Folder.tsx` (écrans de liste uniquement, révisé 30/07/2026 — voir §Front), conditionné à l'état actif — **3**
 
 ---
 
@@ -273,7 +281,7 @@ La création d'un droit workflow dédié a été écartée : fastidieuse à gér
 
 ## Questions ouvertes
 
-- **Scénarios de test de US-4** : absents de la FS, mention « à compléter par le Designer ». `Don't know yet`. Sans impact sur l'estimation, mais la traçabilité sous-tâche → critère d'acceptation est incomplète pour cette US.
 - **Métriques produit attendues** : non fournies par le PRD ni la FS. `To be decided later`, à trancher par le PO/PM.
 - **Feature flag** : `To be decided later`, voir la section dédiée.
 - **Troisième entrée du menu contextuel** : le Figma en montre trois, le code n'en a qu'une (signature). Seule l'entrée absence est ajoutée ; la troisième est considérée hors sujet. `Hypothesis to be validated`.
+- **Partage d'état de la modale entre `AppActionHeader` (racine) et le bandeau (`Folder.tsx`)** : `useOutletContext` ou réutilisation du store `openedModal` — voir §Front, révision du 30/07/2026. `To be decided later`, à trancher en implémentation (IMPULS-6138/6151), sans impact sur l'estimation.
