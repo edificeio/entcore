@@ -200,6 +200,25 @@ public interface ConversationService {
 	void removeAttachment(String messageId, String attachmentId, UserInfos user, final Handler<Either<String, JsonObject>> result);
 	void forwardAttachments(String forwardId, String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
+	// Message d'absence
+
+	/**
+	 * Reads the absence message settings of a user.
+	 * @param user the current user
+	 * @return a {@link Future} of the settings, or an empty {@link JsonObject} if the user never set any
+	 */
+	Future<JsonObject> getAbsence(UserInfos user);
+
+	/**
+	 * Creates, updates or disables the absence message settings of a user, in a single upsert.
+	 * The rich text goes through the content transformer : both the stored JSON and the stored HTML
+	 * are transformer outputs, never values supplied by the caller.
+	 * @param absence the payload, holding enabled, startAt, endAt and bodyJson
+	 * @param user the current user
+	 * @return a {@link Future} of the persisted settings, same shape as {@link #getAbsence(UserInfos)}
+	 */
+	Future<JsonObject> upsertAbsence(JsonObject absence, UserInfos user);
+
 	// Purge
 	Future<Void> purgeMessages();
 }

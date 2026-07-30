@@ -137,6 +137,17 @@ Authentification & droits : identiques au `GET` (§1.2) — session requise, res
 
 L'appelant existant (`updateMessageWithTransformedContent`) ne lit aujourd'hui que la sortie HTML et jette la partie JSON ; l'implémentation du message d'absence (IMPULS-6137) doit exploiter **les deux** sorties.
 
+**Quels getters lire — vérifié en recette le 30/07/2026.** Le transformer ne remplit pas les mêmes champs selon le format d'entrée : il renvoie le **format d'entrée assaini** dans `clean*`, et **l'autre format converti** dans `*Content`.
+
+| Entrée envoyée | Champs remplis en réponse |
+| --- | --- |
+| `htmlContent` (messages classiques) | `cleanHtml` + `jsonContent` |
+| `jsonContent` (message d'absence) | `cleanJson` + `htmlContent` |
+
+Le message d'absence envoyant du JSON, il faut donc lire **`getCleanJson()`** pour `body_json` et **`getHtmlContent()`** pour `body_html`. `getCleanHtml()` revient **vide** dans ce sens : le lire — ce que suggérait la symétrie avec le flux des messages — produit un `body_html` vide, donc un rendu mobile vide. Erreur commise puis corrigée pendant l'implémentation.
+
+Le paramètre d'entrée est également distinct : `ContentTransformerRequest(Set<Format>, int, String htmlContent, JsonObject jsonContent, Set<String> extensions)`. Le JSON tiptap passe par le 4ᵉ paramètre, le 3ᵉ restant `null` — `transformMessageContent` du service n'expose que le chemin HTML et n'est donc **pas** réutilisable tel quel.
+
 Conséquence directe : un `bodyHtml` envoyé dans le `PUT` est **accepté mais ignoré** — aucune valeur fournie par l'appelant n'est jamais persistée comme `body_html`. C'est une décision assumée du cadrage (voir CADRAGE-IMPULS-6109.md, section Contrat d'API) : documenter ce point de façon très explicite pour qu'aucun consommateur (front, mobile) ne s'appuie sur un `bodyHtml` qu'il aurait lui-même envoyé.
 
 ### 2.4 Exemple de requête — activation

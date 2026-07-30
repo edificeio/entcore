@@ -75,6 +75,8 @@ import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -2021,5 +2023,99 @@ public class ConversationController extends BaseController {
 	public void noReply(final HttpServerRequest request) {
 		// This route is used to create conversation.allowNoReply workflow right
 		request.response().end();
+	}
+
+	/////////////////////////
+	/* Message d'absence */
+
+	/** Profiles allowed to set an absence message for themselves. */
+	private static final Set<String> ABSENCE_ALLOWED_PROFILES =
+			Collections.unmodifiableSet(new HashSet<>(Arrays.asList("Teacher", "Personnel")));
+
+	@Get("absence")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getAbsence(final HttpServerRequest request) {
+		getUserInfos(eb, request, user -> {
+			if (user == null) {
+				unauthorized(request);
+				return;
+			}
+			if (!ABSENCE_ALLOWED_PROFILES.contains(user.getType())) {
+				forbidden(request, "conversation.absence.forbidden.profile");
+				return;
+			}
+			conversationService.getAbsence(user)
+					.onSuccess(absence -> renderJson(request, absence))
+					.onFailure(th -> {
+						LOGGER.error("Failed reading absence settings", th);
+						renderError(request);
+					});
+		});
+	}
+
+	@Put("absence")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void upsertAbsence(final HttpServerRequest request) {
+		getUserInfos(eb, request, user -> {
+			if (user == null) {
+				unauthorized(request);
+				return;
+			}
+			if (!ABSENCE_ALLOWED_PROFILES.contains(user.getType())) {
+				forbidden(request, "conversation.absence.forbidden.profile");
+				return;
+			}
+			RequestUtils.bodyToJson(request, body -> {
+				final String validationError = validateAbsencePayload(body);
+				if (validationError != null) {
+					badRequest(request, validationError);
+					return;
+				}
+				conversationService.upsertAbsence(body, user)
+						.onSuccess(absence -> renderJson(request, absence))
+						.onFailure(th -> {
+							LOGGER.error("Failed saving absence settings", th);
+							renderError(request);
+						});
+			});
+		});
+	}
+
+	/**
+	 * Validates the payload of PUT /conversation/absence.
+	 * A start date in the past is explicitly allowed, so only the ordering of the bounds is checked.
+	 * @param body the request payload
+	 * @return the error key, or null when the payload is valid
+	 */
+	private String validateAbsencePayload(final JsonObject body) {
+		if (body == null) {
+			return "conversation.absence.invalid.payload";
+		}
+		final Object bodyJson = body.getValue("bodyJson");
+		if (!(bodyJson instanceof JsonObject)) {
+			return "conversation.absence.invalid.body";
+		}
+		if (Boolean.TRUE.equals(body.getBoolean("enabled"))
+				&& ((JsonObject) bodyJson).getJsonArray("content", new JsonArray()).isEmpty()) {
+			// A text is required to activate, an empty tiptap document is not one.
+			return "conversation.absence.empty.body";
+		}
+		final String rawStartAt = body.getString("startAt");
+		final String rawEndAt = body.getString("endAt");
+		if (rawStartAt == null || rawEndAt == null) {
+			return "conversation.absence.invalid.dates";
+		}
+		final Instant startAt;
+		final Instant endAt;
+		try {
+			startAt = Instant.parse(rawStartAt);
+			endAt = Instant.parse(rawEndAt);
+		} catch (DateTimeParseException e) {
+			return "conversation.absence.invalid.dates";
+		}
+		if (endAt.isBefore(startAt)) {
+			return "conversation.absence.end.before.start";
+		}
+		return null;
 	}
 }

@@ -76,6 +76,7 @@ public class SqlConversationService implements ConversationService{
 	private final String userMessageTable;
 	private final String userMessageAttachmentTable;
 	private final String originalMessageTable;
+	private final String absenceSettingsTable;
 	private final boolean optimizedThreadList;
 	private int sendTimeout = DEFAULT_SENDTIMEOUT;
 
@@ -96,6 +97,7 @@ public class SqlConversationService implements ConversationService{
 		userMessageTable = schema + ".usermessages";
 		userMessageAttachmentTable = schema + ".usermessagesattachments";
 		originalMessageTable = schema + ".originalmessages";
+		absenceSettingsTable = schema + ".absence_settings";
 		optimizedThreadList = vertx.getOrCreateContext().config().getBoolean("optimized-thread-list", false);
 		this.contentTransformerClient = contentTransformerClient;
 		this.contentTransformerEventRecorder = contentTransformerEventRecorder;
@@ -1966,6 +1968,101 @@ public class SqlConversationService implements ConversationService{
 				.add(messageId);
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
+	}
+
+	/////////////////////////
+	/* Message d'absence */
+
+	/**
+	 * Projection shared by the read and the upsert, so that both expose exactly what is stored.
+	 * Timestamps are rendered as ISO 8601 UTC because the API contract mandates that form, which is
+	 * not what the driver returns for a TIMESTAMPTZ column by default.
+	 */
+	private static final String ABSENCE_PROJECTION =
+			"enabled, " +
+			"to_char(start_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS \"startAt\", " +
+			"to_char(end_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS \"endAt\", " +
+			"body_json AS \"bodyJson\", " +
+			"body_html AS \"bodyHtml\", " +
+			"to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS \"updatedAt\"";
+
+	@Override
+	public Future<JsonObject> getAbsence(UserInfos user) {
+		final Promise<JsonObject> promise = Promise.promise();
+		final String query = "SELECT " + ABSENCE_PROJECTION + " FROM " + absenceSettingsTable + " WHERE user_id = ?";
+		sql.prepared(query, new JsonArray().add(user.getUserId()),
+				SqlResult.validUniqueResultHandler(either -> {
+					if (either.isRight()) {
+						// No row yields an empty object, which is what the contract expects instead of a 404.
+						promise.complete(either.right().getValue());
+					} else {
+						promise.fail(either.left().getValue());
+					}
+				}, "bodyJson"));
+		return promise.future();
+	}
+
+	@Override
+	public Future<JsonObject> upsertAbsence(JsonObject absence, UserInfos user) {
+		return transformAbsenceContent(absence.getJsonObject("bodyJson")).compose(transformed -> {
+			if (transformed == null || transformed.getCleanJson() == null) {
+				// Storing content that has not been normalized would break the contract, so fail loudly
+				// rather than persist what the caller sent.
+				return Future.failedFuture("conversation.absence.transformation.failed");
+			}
+			final Promise<JsonObject> promise = Promise.promise();
+			final String query =
+					"INSERT INTO " + absenceSettingsTable +
+					" (user_id, start_at, end_at, enabled, body_json, body_html, updated_at)" +
+					" VALUES (?, CAST(? AS TIMESTAMPTZ), CAST(? AS TIMESTAMPTZ), ?, CAST(? AS JSONB), ?, now())" +
+					" ON CONFLICT (user_id) DO UPDATE SET" +
+					" start_at = EXCLUDED.start_at, end_at = EXCLUDED.end_at, enabled = EXCLUDED.enabled," +
+					" body_json = EXCLUDED.body_json, body_html = EXCLUDED.body_html, updated_at = now()" +
+					" RETURNING " + ABSENCE_PROJECTION;
+			final JsonArray values = new JsonArray()
+					.add(user.getUserId())
+					.add(absence.getString("startAt"))
+					.add(absence.getString("endAt"))
+					.add(absence.getBoolean("enabled", Boolean.FALSE))
+					.add(transformed.getCleanJson().encode())
+					.add(getOrElse(transformed.getHtmlContent(), ""));
+			sql.prepared(query, values, SqlResult.validUniqueResultHandler(either -> {
+				if (either.isRight()) {
+					promise.complete(either.right().getValue());
+				} else {
+					promise.fail(either.left().getValue());
+				}
+			}, "bodyJson"));
+			return promise.future();
+		});
+	}
+
+	/**
+	 * Normalizes the rich text of an absence message.
+	 * Unlike {@link #transformMessageContent}, the input is tiptap JSON, which the transformer takes
+	 * through its dedicated jsonContent parameter rather than the HTML one.
+	 * <p>
+	 * Which getters carry the result depends on the input format : the transformer returns the sanitized
+	 * <em>input</em> format as clean* and the converted <em>other</em> format as *Content. Feeding it JSON
+	 * therefore yields getCleanJson() and getHtmlContent(), and leaves getCleanHtml() empty — which is why
+	 * this caller does not read getCleanHtml() the way the message flow does.
+	 * @param bodyJson the tiptap JSON supplied by the caller
+	 * @return a {@link Future} of the transformer response, holding both normalized outputs
+	 */
+	private Future<ContentTransformerResponse> transformAbsenceContent(JsonObject bodyJson) {
+		final Promise<ContentTransformerResponse> promise = Promise.promise();
+		contentTransformerClient.transform(new ContentTransformerRequest(
+				new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON)),
+				0,
+				null,
+				bodyJson,
+				CONVERSATION_TRANSFORMATION_EXTENSIONS))
+				.onSuccess(promise::complete)
+				.onFailure(throwable -> {
+					log.error("Failed transforming absence message content", throwable);
+					promise.fail(throwable);
+				});
+		return promise.future();
 	}
 
 	///////////
