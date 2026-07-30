@@ -86,7 +86,18 @@ src/
 - `cron/` — tâches planifiées (`PurgeMessages` : purge des anciens messages)
 - `util/` — utilitaires
 
+### Transformation de contenu (tiptap transformer)
+
+Le contenu riche des messages (et de toute future donnée éditée avec le même éditeur — ex. message d'absence, `IMPULS-6109`) **ne doit jamais être stocké tel quel**. Il passe systématiquement par un transformer de contenu externe (`fr.wseduc:content-transformer`, lib externe non vendée dans ce repo — pas de source consultable localement, seulement les points d'appel ci-dessous).
+
+- **Client** : `IContentTransformerClient`, instancié dans `Conversation.java:73-76` via `ContentTransformerFactoryProvider.getFactory("conversation", contentTransformerConfig).create()`. Un `IContentTransformerEventRecorder` est instancié à côté pour l'enregistrement des transformations (`ContentTransformerEventRecorderFactory`).
+- **Appel type** : `SqlConversationService.transformMessageContent` (`SqlConversationService.java:1075-1094`). Construit un `ContentTransformerRequest` avec `expectedFormats = new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON))` — **les deux formats de sortie sont déjà demandables en une seule transformation**, en entrée aussi bien HTML que JSON tiptap.
+- **Usage actuel (messages classiques)** : `updateMessageWithTransformedContent` (`SqlConversationService.java:227-246`), appelé par `create`/`update`/`draft`, ne lit que `transformerResponse.getCleanHtml()` et `getContentVersion()` — la sortie JSON de la réponse est demandée mais **jetée**, car ce module stocke aujourd'hui le corps des messages en HTML seul (`messages."body"` en `TEXT`).
+- **Règle pour toute nouvelle fonctionnalité stockant du contenu riche** : ne jamais faire confiance à un HTML ou JSON fourni par le client comme valeur finale de stockage. Toujours repasser par ce transformer, et **exploiter la sortie dont on a besoin** (HTML seul aujourd'hui pour les messages ; JSON **et** HTML si les deux doivent être persistés, comme pour le message d'absence — voir `conversation/specs/IMPULS-6109/CONTRAT-API-IMPULS-6109-US1.md`, §2.3). Un champ équivalent fourni par le client (ex. un `bodyHtml` envoyé alors que le stockage doit être dérivé du JSON) est accepté par tolérance de forme mais **explicitement ignoré**, jamais persisté tel quel.
+- Le getter exact pour récupérer la sortie JSON de `ContentTransformerResponse` n'a pas encore été utilisé dans ce repo (aucun appelant existant ne le lit) — à vérifier au moment de coder une fonctionnalité qui en a besoin.
+
 ### Build
+
 Module Maven déclaré dans le reactor racine sous `conversation/backend` (voir `pom.xml` racine). Build via `./build.sh --module=conversation` depuis la racine du bundle, ou `mvn clean install` directement dans `backend/`.
 
 ## Specs

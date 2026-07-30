@@ -2,7 +2,7 @@
 
 > Projet : Messagerie
 > Statut : Finalisé
-> Version : v4 - 29/07/2026
+> Version : v5 - 30/07/2026 — US-4 révisée (bandeau restreint aux écrans de liste, cf. §4 US-4 et §5), suite à un ajustement de dernière minute du PM sur la maquette (Figma, node `7773-2968`)
 > Langue : Français
 > Périmètre : Autonome
 > PRD parent : PRD - Message d'absence
@@ -30,7 +30,7 @@ Aujourd'hui, un utilisateur absent une ou plusieurs journées entières (justifi
 
 *Owner : PO*
 
-L'utilisateur (personnel administratif ou enseignant) accède au paramétrage de son message d'absence depuis le menu principal de la Messagerie. Il y sélectionne une période d'absence (date de début et date de fin) et saisit le texte de son message. Une fois activé, chaque personne qui lui envoie un message pendant cette période reçoit automatiquement en retour ce message, à chaque message envoyé (dans la limite d'un envoi par jour et par expéditeur, voir principes ci-dessous). Tant que le message d'absence est actif, un bandeau de rappel reste visible sur tous les écrans de la Messagerie.
+L'utilisateur (personnel administratif ou enseignant) accède au paramétrage de son message d'absence depuis le menu principal de la Messagerie. Il y sélectionne une période d'absence (date de début et date de fin) et saisit le texte de son message. Une fois activé, chaque personne qui lui envoie un message pendant cette période reçoit automatiquement en retour ce message, à chaque message envoyé (dans la limite d'un envoi par jour et par expéditeur, voir principes ci-dessous). Tant que le message d'absence est actif, un bandeau de rappel reste visible sur les écrans de liste des messages (boîte de réception, dossiers, messages envoyés, corbeille).
 
 Sont dans le périmètre de cette FS : le paramétrage d'une période et d'un texte, l'activation et la désactivation manuelle, la modification d'un paramétrage déjà activé, le rappel permanent de l'état actif via un bandeau, et le déclenchement de la réponse automatique pour tout expéditeur (personnel, enseignant, parent ou élève), qu'il écrive à la personne absente nominativement ou via un groupe dont elle est membre.
 
@@ -45,7 +45,7 @@ Sont hors périmètre : la redirection des messages vers un autre destinataire, 
 3. **Identification claire** : la réponse automatique doit être immédiatement reconnaissable comme telle par l'expéditeur, et ne pas se confondre avec une réponse personnelle rédigée par la personne absente. Traduit en design par le préfixe d'objet (voir chapitre 5).
 4. **Unicité du paramétrage** : un utilisateur ne peut avoir qu'un seul message d'absence actif ou programmé à la fois. Il n'existe pas de notion de périodes multiples empilées. Traduit en design par un écran unique de création/édition (voir chapitre 5).
 5. **Persistance du paramétrage** : désactiver un message d'absence avant son terme ne doit pas faire perdre les informations saisies (dates, texte) ; l'utilisateur doit pouvoir réactiver rapidement sans tout ressaisir. Traduit en design par le toggle actif/inactif (voir chapitre 5).
-6. **Visibilité permanente** : tant que le message d'absence est actif, l'utilisateur doit pouvoir s'en souvenir et le retrouver facilement depuis n'importe quel écran de la Messagerie, sans avoir à retourner spécifiquement au menu de paramétrage. Traduit en design par le bandeau de rappel (voir chapitre 5, US-4).
+6. **Visibilité permanente** : tant que le message d'absence est actif, l'utilisateur doit pouvoir s'en souvenir et le retrouver facilement depuis les écrans de consultation de ses messages (boîte de réception, dossiers, envoyés, corbeille), sans avoir à retourner spécifiquement au menu de paramétrage. Traduit en design par le bandeau de rappel (voir chapitre 5, US-4).
 
 ---
 
@@ -232,11 +232,12 @@ Scénario: Un expéditeur déjà relancé le jour de la désactivation
 
 **En tant que** personnel administratif ou enseignant
 **je veux** voir un rappel visible en permanence tant que mon message d'absence est actif
-**afin de** ne pas oublier qu'il est actif et pouvoir le modifier rapidement depuis n'importe quel écran de la Messagerie
+**afin de** ne pas oublier qu'il est actif et pouvoir le modifier rapidement depuis les écrans où je consulte mes messages
 
 **Critères d'acceptation :**
 
-- Le bandeau de rappel est visible sur tous les écrans de la Messagerie tant qu'un message d'absence est actif.
+- Le bandeau de rappel est visible sur les écrans de liste des messages (boîte de réception, dossiers, messages envoyés, corbeille) tant qu'un message d'absence est actif.
+- Le bandeau n'est **pas** affiché sur l'écran de lecture d'un message, ni sur celui de rédaction d'un nouveau message. *(Révisé le 30/07/2026 — cf. Version en tête de document : la maquette v2 place le bandeau dans la colonne de contenu de l'écran de liste, au-dessus de la barre de recherche, et non plus dans le bandeau applicatif commun à tous les écrans.)*
 - Le bandeau affiche un bouton "Modifier".
 - Cliquer sur "Modifier" ouvre la modale de paramétrage du message d'absence, pré-remplie avec les valeurs actuelles (voir US-1).
 - Le bandeau disparaît automatiquement dès que le message d'absence n'est plus actif (désactivation manuelle ou date de fin dépassée).
@@ -244,11 +245,18 @@ Scénario: Un expéditeur déjà relancé le jour de la désactivation
 **Scénarios de test :**
 
 ```gherkin
-Scénario: Affichage du bandeau sur les différents écrans de la Messagerie
+Scénario: Affichage du bandeau sur les écrans de liste des messages
   Étant donné un message d'absence est actif
-  Quand je navigue vers n'importe quel écran de la Messagerie
+  Quand je navigue vers un écran de liste des messages (boîte de réception, dossier, messages envoyés ou corbeille)
   Alors le bandeau de rappel DOIT être visible
   Et il DOIT afficher un bouton "Modifier"
+```
+
+```gherkin
+Scénario: Absence du bandeau sur l'écran de lecture ou de rédaction d'un message
+  Étant donné un message d'absence est actif
+  Quand j'ouvre un message pour le lire, ou que je rédige un nouveau message
+  Alors le bandeau de rappel NE DOIT PAS être visible sur cet écran
 ```
 
 ```gherkin
@@ -287,7 +295,7 @@ Les erreurs de validation (date de fin antérieure au début, texte vide) s'affi
 
 Côté identification, la réponse automatique reçue par l'expéditeur porte un objet préfixé « Réponse automatique : [objet original] », sans badge ni bandeau supplémentaire dans le corps du message. Cette même réponse est visible dans le dossier Messages envoyés de la personne absente, avec le même préfixe, pour traçabilité.
 
-Un bandeau de rappel est affiché dans le bandeau du module Messagerie (à côté du titre « Messagerie »), visible sur tous les écrans de l'application tant que le message d'absence est actif (US-4). Il porte un bouton « Modifier » qui ouvre la modale de paramétrage existante, pré-remplie : le bandeau ne duplique donc pas le formulaire, il agit comme raccourci d'accès.
+Un bandeau de rappel est affiché dans la colonne de contenu des écrans de liste des messages (boîte de réception, dossiers, envoyés, corbeille), au-dessus de la barre de recherche, tant que le message d'absence est actif (US-4) — *révisé le 30/07/2026, maquette v2 : [Figma — bandeau-rappel-absence](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7773-2968)*. Il n'apparaît pas sur l'écran de lecture d'un message ni sur celui de rédaction — ces écrans n'ont pas de colonne de liste/recherche dans laquelle l'insérer. Il porte un bouton « Modifier » qui ouvre la modale de paramétrage existante, pré-remplie : le bandeau ne duplique donc pas le formulaire, il agit comme raccourci d'accès.
 
 Aucun nouveau composant n'est créé : l'éditeur riche, le pattern modale/toggle et le mécanisme de toast sont repris tels quels des écrans existants (signature, planification d'envoi différé).
 
@@ -310,7 +318,7 @@ Toutes les décisions UX/UI identifiées en phase PO ont été tranchées durant
 - **Volumétrie et SLA** : le mécanisme doit rester fonctionnel et garanti dans les cas d'envois de masse (jusqu'à 200 000 destinataires simultanés observés aujourd'hui sur la Messagerie), avec un traitement complet dans une marge de quelques minutes, sans dégrader le service pour les autres utilisateurs de la plateforme.
 - **Droits d'accès** : seuls les profils enseignant et personnel administratif peuvent créer/paramétrer un message d'absence pour leur propre compte (pas de paramétrage pour le compte d'un tiers, cf. contraintes fonctionnelles).
 - **Compatibilité API mobile** : le contrat d'API exposé pour le paramétrage et le déclenchement du message d'absence ne doit pas introduire de rupture de compatibilité avec les versions antérieures de l'API consommées par les applications mobiles.
-- **Bandeau de rappel (US-4)** : l'état actif du message d'absence est mis en cache côté front pour permettre l'affichage du bandeau sur tous les écrans sans appel réseau répété par écran. Ce cache doit être invalidé côté front à chaque modification du paramétrage (activation, modification, désactivation). Pas de cache nécessaire côté back.
+- **Bandeau de rappel (US-4)** : l'état actif du message d'absence est mis en cache côté front pour permettre l'affichage du bandeau sur les écrans de liste sans appel réseau répété par écran. Ce cache doit être invalidé côté front à chaque modification du paramétrage (activation, modification, désactivation). Pas de cache nécessaire côté back.
 - **Absence d'exigence d'audit** : aucun besoin de traçabilité ou d'audit dédié au-delà de la visibilité déjà native de la réponse automatique dans le dossier « Messages envoyés » de la personne absente.
 - **Exclusion des statistiques** : les réponses automatiques ne doivent pas être comptabilisées dans les statistiques de messages envoyés existantes.
 - **Dépendances** : aucune dépendance technique identifiée avec les autres évolutions en cours de la Messagerie (envoi différé, refonte back, accusé de lecture).
