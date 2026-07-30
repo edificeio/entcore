@@ -2085,6 +2085,25 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
+	public Future<JsonArray> listMessageRecipients(String messageId, String excludeUserId) {
+		final Promise<JsonArray> promise = Promise.promise();
+		// No ORDER BY : the whole set is read in one pass through idx_usermessages_message_id, and pacing
+		// happens later in memory. Sorting would cost a sort of every recipient for no benefit here.
+		final String query =
+				"SELECT user_id AS \"userId\" FROM " + userMessageTable +
+				" WHERE message_id = ? AND user_id <> ?";
+		sql.prepared(query, new JsonArray().add(messageId).add(excludeUserId),
+				SqlResult.validResultHandler(either -> {
+					if (either.isRight()) {
+						promise.complete(either.right().getValue());
+					} else {
+						promise.fail(either.left().getValue());
+					}
+				}));
+		return promise.future();
+	}
+
+	@Override
 	public Future<JsonArray> claimAbsenceReplySlots(List<String> absentUserIds, String senderId, String timezone) {
 		if (absentUserIds == null || absentUserIds.isEmpty()) {
 			return Future.succeededFuture(new JsonArray());

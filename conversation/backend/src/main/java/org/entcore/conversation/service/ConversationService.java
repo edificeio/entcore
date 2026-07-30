@@ -243,6 +243,17 @@ public interface ConversationService {
 	 */
 	Future<JsonArray> claimAbsenceReplySlots(List<String> absentUserIds, String senderId, String timezone);
 
+	/**
+	 * Lists the recipients a message was delivered to, minus one user.
+	 * <p>
+	 * Read back from storage rather than carried over from the send, so that the absence replies can be
+	 * processed away from the request that triggered them without moving a 200 000 entry list around.
+	 * @param messageId the message that was sent
+	 * @param excludeUserId user to leave out, in practice the expeditor
+	 * @return a {@link Future} of the recipient user ids
+	 */
+	Future<JsonArray> listMessageRecipients(String messageId, String excludeUserId);
+
 	// Purge
 	Future<Void> purgeMessages();
 }
