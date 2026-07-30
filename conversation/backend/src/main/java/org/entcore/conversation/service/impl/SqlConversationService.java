@@ -77,6 +77,7 @@ public class SqlConversationService implements ConversationService{
 	private final String userMessageAttachmentTable;
 	private final String originalMessageTable;
 	private final String absenceSettingsTable;
+	private final String absenceRepliesTable;
 	private final boolean optimizedThreadList;
 	private int sendTimeout = DEFAULT_SENDTIMEOUT;
 
@@ -84,6 +85,12 @@ public class SqlConversationService implements ConversationService{
 	private final IContentTransformerClient contentTransformerClient;
 	private final IContentTransformerEventRecorder contentTransformerEventRecorder;
 	private final Set<String> CONVERSATION_TRANSFORMATION_EXTENSIONS = Collections.singleton("conversation-history");
+
+	/**
+	 * Payload fields that are read by the send flow but never persisted : both the insert and the update
+	 * build their statement from the whole message, so an unknown field would become a column.
+	 */
+	private static final Set<String> TRANSPORT_ONLY_FIELDS = Collections.singleton("timezone");
 
 	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
@@ -98,6 +105,7 @@ public class SqlConversationService implements ConversationService{
 		userMessageAttachmentTable = schema + ".usermessagesattachments";
 		originalMessageTable = schema + ".originalmessages";
 		absenceSettingsTable = schema + ".absence_settings";
+		absenceRepliesTable = schema + ".absence_replies";
 		optimizedThreadList = vertx.getOrCreateContext().config().getBoolean("optimized-thread-list", false);
 		this.contentTransformerClient = contentTransformerClient;
 		this.contentTransformerEventRecorder = contentTransformerEventRecorder;
@@ -154,6 +162,7 @@ public class SqlConversationService implements ConversationService{
 			// 1 - Insert message
 			JsonObject sanitized = message.copy();
 			sanitized.remove("scheduleAt");
+			TRANSPORT_ONLY_FIELDS.forEach(sanitized::remove);
 			builder.insert(messageTable, sanitized, "id");
 
 			// 2 - Link message to the user
@@ -192,7 +201,7 @@ public class SqlConversationService implements ConversationService{
 			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 			for (String attr : message.fieldNames()) {
-				if("scheduleAt".equals(attr)) {
+				if("scheduleAt".equals(attr) || TRANSPORT_ONLY_FIELDS.contains(attr)) {
 					continue;
 				}
 				if("to".equals(attr) || "cc".equals(attr) || "displayNames".equals(attr)){
@@ -2072,6 +2081,53 @@ public class SqlConversationService implements ConversationService{
 				.compose(batchResult -> {
 					batchResult.forEach(found::add);
 					return findActiveAbsencesBatch(userIds, offset + conversationBatchSize, found);
+				});
+	}
+
+	@Override
+	public Future<JsonArray> claimAbsenceReplySlots(List<String> absentUserIds, String senderId, String timezone) {
+		if (absentUserIds == null || absentUserIds.isEmpty()) {
+			return Future.succeededFuture(new JsonArray());
+		}
+		return claimAbsenceReplySlotsBatch(absentUserIds, senderId, timezone, 0, new JsonArray());
+	}
+
+	private Future<JsonArray> claimAbsenceReplySlotsBatch(final List<String> absentUserIds, final String senderId,
+			final String timezone, final int offset, final JsonArray claimed) {
+		if (offset >= absentUserIds.size()) {
+			return Future.succeededFuture(claimed);
+		}
+		final List<String> batch = absentUserIds.subList(offset, Math.min(offset + conversationBatchSize, absentUserIds.size()));
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonArray values = new JsonArray();
+		final StringBuilder rows = new StringBuilder();
+		for (String absentUserId : batch) {
+			rows.append("(?,?,now()),");
+			values.add(absentUserId).add(senderId);
+		}
+		rows.deleteCharAt(rows.length() - 1);
+		// A pair absent from the table is inserted, hence claimed. A pair already there is only updated when
+		// its last reply falls on an earlier day, so the row comes back exactly once per day and per pair.
+		final String query =
+				"INSERT INTO " + absenceRepliesTable + " AS ar (absent_user_id, sender_id, last_sent_at)" +
+				" VALUES " + rows +
+				" ON CONFLICT (absent_user_id, sender_id) DO UPDATE SET last_sent_at = now()" +
+				" WHERE date_trunc('day', ar.last_sent_at AT TIME ZONE ?)" +
+				" < date_trunc('day', now() AT TIME ZONE ?)" +
+				" RETURNING absent_user_id AS \"absentUserId\"";
+		values.add(timezone).add(timezone);
+		sql.prepared(query, values, SqlResult.validResultHandler(either -> {
+			if (either.isRight()) {
+				promise.complete(either.right().getValue());
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		}));
+		return promise.future()
+				.compose(batchResult -> {
+					batchResult.forEach(claimed::add);
+					return claimAbsenceReplySlotsBatch(absentUserIds, senderId, timezone,
+							offset + conversationBatchSize, claimed);
 				});
 	}
 

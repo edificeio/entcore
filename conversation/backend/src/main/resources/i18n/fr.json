@@ -31,6 +31,7 @@
   "conversation.absence.invalid.body": "Le contenu du message d'absence est absent ou mal formé",
   "conversation.absence.invalid.dates": "Les dates du message d'absence sont absentes ou mal formées",
   "conversation.absence.invalid.payload": "La requête de paramétrage du message d'absence est invalide",
+  "conversation.absence.reply.subject": "Réponse automatique : {0}",
   "conversation.cci.info": "Les utilisateurs/groupes inscrits en copie cachée n'apparaissent pas dans le message reçu par les autres destinataires",
   "conversation.copy.action": "Copier",
   "conversation.copy.all.toworkspace": "Copier toutes les pièces jointes dans l'espace documentaire",

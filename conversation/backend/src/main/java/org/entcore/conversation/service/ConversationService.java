@@ -230,6 +230,19 @@ public interface ConversationService {
 	 */
 	Future<JsonArray> findActiveAbsences(List<String> userIds);
 
+	/**
+	 * Claims the daily reply slot for each (absent user, sender) pair, and reports which ones were won.
+	 * <p>
+	 * Claiming and marking happen in the same statement, so two concurrent sends cannot both win the slot
+	 * for the same pair. The slot is consumed before the reply is emitted : a failed emission costs that
+	 * reply rather than risking a duplicate, since the FS forbids spamming an expeditor, not losing a reply.
+	 * @param absentUserIds the absent users about to reply
+	 * @param senderId the expeditor of the original message, who receives the replies
+	 * @param timezone IANA timezone the day boundary is evaluated in, that of the expeditor
+	 * @return a {@link Future} of the absent user ids whose slot was claimed, hence cleared to reply today
+	 */
+	Future<JsonArray> claimAbsenceReplySlots(List<String> absentUserIds, String senderId, String timezone);
+
 	// Purge
 	Future<Void> purgeMessages();
 }

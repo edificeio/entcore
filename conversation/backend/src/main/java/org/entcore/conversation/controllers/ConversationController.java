@@ -31,6 +31,7 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerResponse;
 
@@ -526,6 +527,9 @@ public class ConversationController extends BaseController {
 													.put("thread_id", result.getString("thread_id"))
 													.put("sentIds", message1.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
 											timelineNotification(request, timelineParams, user);
+											// Same guard as the timeline notification and the quota update : a scheduled
+											// message is not delivered yet, so no absence reply is due until it is sent.
+											sendAbsenceReplies(message1, user, request);
 										}
                                         JsonArray inactive = message1.getJsonArray("inactives", new JsonArray());
                                         message1.put("inactivesCount", inactive.size());
@@ -2079,6 +2083,101 @@ public class ConversationController extends BaseController {
 						});
 			});
 		});
+	}
+
+	/**
+	 * Emits the absence replies triggered by a message that has just been sent.
+	 * <p>
+	 * Recipients come from {@code allUsers}, already resolved with groups flattened, so no group resolution
+	 * happens here. Emission goes through {@link #saveAndSend} : the reply never passes back through the
+	 * route handler, so it cannot trigger an absence test of its own — the anti-looping requirement of the
+	 * FS holds by construction, with no marker to persist.
+	 * <p>
+	 * Every reply is emitted as soon as its slot is claimed. Pacing a mass send is deliberately left out,
+	 * it belongs to the throttling sub-task.
+	 * @param sentMessage the message that was just sent, holding allUsers, subject and the optional timezone
+	 * @param sender the expeditor, who receives the replies
+	 * @param request the request the original send came from
+	 */
+	private void sendAbsenceReplies(final JsonObject sentMessage, final UserInfos sender, final HttpServerRequest request) {
+		final List<String> candidates = new ArrayList<>();
+		for (Object recipient : sentMessage.getJsonArray("allUsers", new JsonArray())) {
+			// Never reply to oneself : the expeditor is among the recipients when writing to a group they belong to.
+			if (!recipient.toString().equals(sender.getUserId())) {
+				candidates.add(recipient.toString());
+			}
+		}
+		if (candidates.isEmpty()) {
+			return;
+		}
+		// Absent from the payload for mobile clients that predate the field, hence the server fallback.
+		final String timezone = getOrElse(sentMessage.getString("timezone"), TimeZone.getDefault().getID(), false);
+		final int batchSize = Config.getConf().getInteger("conversation-batch-size", Conversation.DEFAULT_CONVERSATION_BATCH_SIZE);
+
+		conversationService.findActiveAbsences(candidates)
+			.compose(absences -> {
+				if (absences.isEmpty()) {
+					return Future.succeededFuture();
+				}
+				final Map<String, JsonObject> byUserId = new HashMap<>();
+				for (Object absence : absences) {
+					byUserId.put(((JsonObject) absence).getString("userId"), (JsonObject) absence);
+				}
+				return conversationService
+					.claimAbsenceReplySlots(new ArrayList<>(byUserId.keySet()), sender.getUserId(), timezone)
+					.compose(claimed -> {
+						final List<String> clearedIds = new ArrayList<>();
+						for (Object row : claimed) {
+							clearedIds.add(((JsonObject) row).getString("absentUserId"));
+						}
+						if (clearedIds.isEmpty()) {
+							return Future.succeededFuture();
+						}
+						return userService.findUsersLanguages(clearedIds, batchSize)
+							.map(languages -> {
+								for (String absentUserId : clearedIds) {
+									emitAbsenceReply(byUserId.get(absentUserId),
+										languages.getString(absentUserId, Neo4jConversationService.DEFAULT_LANGUAGE),
+										sender, sentMessage, request);
+								}
+								return null;
+							});
+					});
+			})
+			.onFailure(th -> LOGGER.error("Failed sending absence replies for message "
+					+ sentMessage.getString("id"), th));
+	}
+
+	/**
+	 * Emits one absence reply, from the absent user to the expeditor of the original message.
+	 * @param absence the absence settings, holding the body to reply with
+	 * @param language language of the absent user, used for the subject prefix
+	 * @param sender the expeditor, who receives the reply
+	 * @param sentMessage the original message, whose subject is quoted in the prefix
+	 * @param request the request the original send came from
+	 */
+	private void emitAbsenceReply(final JsonObject absence, final String language, final UserInfos sender,
+			final JsonObject sentMessage, final HttpServerRequest request) {
+		final String absentUserId = absence.getString("userId");
+		// No session exists for the absent user : the save and send chain only ever reads getUserId().
+		final UserInfos absentUser = new UserInfos();
+		absentUser.setUserId(absentUserId);
+
+		final JsonObject reply = new JsonObject()
+			.put("subject", I18n.getInstance().translate("conversation.absence.reply.subject",
+					getHost(request), language, getOrElse(sentMessage.getString("subject"), "")))
+			.put("body", getOrElse(absence.getString("bodyHtml"), ""))
+			.put("to", new JsonArray().add(sender.getUserId()))
+			// Set before addDisplayNames, which reads "from" to resolve the name shown to the recipient.
+			.put("from", absentUserId);
+
+		userService.addDisplayNames(reply, null, named ->
+			saveAndSend(null, named, absentUser, null, null, either -> {
+				if (either.isLeft()) {
+					LOGGER.error("Failed sending absence reply from " + absentUserId
+							+ " : " + either.left().getValue());
+				}
+			}, request));
 	}
 
 	/**
