@@ -92,6 +92,15 @@ public class SqlConversationService implements ConversationService{
 	 */
 	private static final Set<String> TRANSPORT_ONLY_FIELDS = Collections.singleton("timezone");
 
+	/** Default retention of the anti-spam guard rows, in days. */
+	private static final int DEFAULT_ABSENCE_REPLIES_RETENTION_DAYS = 7;
+
+	/**
+	 * Retention below which the guard would break : timezones span 26 hours, so a row up to two days old can
+	 * still be the one answering "a reply already went out today" for a distant expeditor.
+	 */
+	private static final int MIN_ABSENCE_REPLIES_RETENTION_DAYS = 2;
+
 	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
 		this.sql = Sql.getInstance();
@@ -2237,6 +2246,59 @@ public class SqlConversationService implements ConversationService{
 			}
 		});
 
+		return promise.future();
+	}
+
+	@Override
+	public Future<Void> purgeAbsenceReplies() {
+		final JsonObject purgeConfig = Config.getConf().getJsonObject("purge-absence-replies", new JsonObject());
+		// Two days is the functional floor, not a preference : below it a row could still be the one that
+		// blocks a same day second reply for an expeditor in a distant timezone.
+		final int days = Math.max(MIN_ABSENCE_REPLIES_RETENTION_DAYS, purgeConfig.getInteger("retention-days", DEFAULT_ABSENCE_REPLIES_RETENTION_DAYS));
+		final int timeout = purgeConfig.getInteger("query-timeout", 300000);
+		final int batchSize = purgeConfig.getInteger("batch-size", 10000);
+		final int maxBatches = purgeConfig.getInteger("max-batches", 100);
+
+		// Deleted in batches so the table is never held under one long transaction. No index on last_sent_at
+		// on purpose : that column is rewritten on every reply, and indexing it would tax the write path to
+		// speed up a task that runs once a day.
+		final String query =
+			"DELETE FROM " + absenceRepliesTable +
+			" WHERE (absent_user_id, sender_id) IN (" +
+				"SELECT absent_user_id, sender_id FROM " + absenceRepliesTable +
+				" WHERE last_sent_at < now() - interval '" + days + " days'" +
+				" LIMIT ?)";
+
+		log.info("Starting absence replies purge (retention=" + days + " days, batch-size=" + batchSize + ", max-batches=" + maxBatches + ")");
+		return purgeAbsenceRepliesBatch(query, batchSize, timeout, maxBatches, 0, 0);
+	}
+
+	private Future<Void> purgeAbsenceRepliesBatch(final String query, final int batchSize, final int timeout,
+			final int maxBatches, final int batchNumber, final int totalDeleted) {
+		if (batchNumber >= maxBatches) {
+			log.info("Absence replies purge stopped after reaching max batches (" + maxBatches + "), total deleted: " + totalDeleted + " rows");
+			return Future.succeededFuture();
+		}
+		final DeliveryOptions deliveryOptions = new DeliveryOptions();
+		deliveryOptions.setSendTimeout(timeout);
+
+		final Promise<Void> promise = Promise.promise();
+		sql.prepared(query, new JsonArray().add(batchSize), deliveryOptions, result -> {
+			if ("ok".equals(result.body().getString("status"))) {
+				final int deleted = result.body().getInteger("rows", 0);
+				if (deleted == 0) {
+					log.info("Absence replies purge completed, total deleted: " + totalDeleted + " rows");
+					promise.complete();
+				} else {
+					purgeAbsenceRepliesBatch(query, batchSize, timeout, maxBatches, batchNumber + 1, totalDeleted + deleted)
+							.onComplete(promise);
+				}
+			} else {
+				final String error = result.body().getString("message", "Unknown error");
+				log.error("An error occurred purging absence replies (batch " + batchNumber + "): " + error);
+				promise.fail(error);
+			}
+		});
 		return promise.future();
 	}
 

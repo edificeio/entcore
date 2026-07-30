@@ -256,4 +256,15 @@ public interface ConversationService {
 
 	// Purge
 	Future<Void> purgeMessages();
+
+	/**
+	 * Drops the anti-spam guard rows that can no longer block anything.
+	 * <p>
+	 * The guard only ever asks whether a reply went out <em>today</em> in the expeditor timezone. Timezones
+	 * span 26 hours, so a row older than two days cannot answer yes in any of them and is inert. Retention is
+	 * configurable above that floor, which is enforced in the implementation so configuration cannot break
+	 * the guard.
+	 * @return a {@link Future} completed once every batch has run
+	 */
+	Future<Void> purgeAbsenceReplies();
 }
