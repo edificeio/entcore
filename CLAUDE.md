@@ -44,6 +44,15 @@ Bundle de **15 modules Maven** déclarés à la racine (`pom.xml`) : `admin`, `a
 2. Builder **le module ciblé** (`--module=`) plutôt que tout le bundle quand c'est possible.
 3. Respecter les conventions **propres au module** (et son CLAUDE.md imbriqué s'il en a un, comme `auth`).
 
+## Pièges backend transverses
+
+Trois comportements de `org.entcore:common` qui échouent **silencieusement** et coûtent cher à diagnostiquer. Ils ne sont propres à aucun module.
+
+- **Requête fabriquée → `X-Forwarded-For` obligatoire.** Hors contexte HTTP (handler de bus, cron, tâche interne), on fabrique une requête avec `JsonHttpServerRequest`. Si le traitement alimente l'`EventStore` — ce que fait tout envoi de message, via l'enregistrement de transformation de contenu — `Renders.getIp()` lève un `NullPointerException` quand cet en-tête manque. Le piège n'est pas l'exception mais son moment : dans `transformMessageContent`, l'enregistrement se fait **avant** le `complete()` de la promesse, donc la future n'est jamais résolue et la chaîne se bloque **sans erreur, sans log, sans timeout**. Toujours reprendre le gabarit existant : `{"method":"POST","headers":{"X-Forwarded-For":"127.0.0.1"}}` (voir `ConversationController.send(Message)`).
+- **Transformer de contenu : les getters ne sont pas symétriques.** `ContentTransformerResponse` renvoie le **format d'entrée assaini** dans `clean*` et **l'autre format converti** dans `*Content`. Une entrée HTML remplit `cleanHtml` + `jsonContent` ; une entrée JSON remplit `cleanJson` + **`htmlContent`**, et laisse `cleanHtml` **vide**. Lire `getCleanHtml()` par symétrie avec le flux des messages produit donc un HTML vide sans rien signaler. Le format d'entrée se choisit aussi par paramètre distinct : `ContentTransformerRequest(formats, version, String htmlContent, JsonObject jsonContent, extensions)`.
+- **Migrations SQL : le chargeur transforme le fichier avant exécution.** `DB.java` supprime les commentaires `-- ` puis remplace retours à la ligne et tabulations par des espaces, et joue le script **en une seule ligne**. Un fichier valide sous `psql` ne l'est donc pas forcément une fois déployé — valider après cette transformation, pas seulement dans un client SQL. Les fichiers sont tracés par **nom** dans `<schema>.scripts` : un script déjà joué ne sera pas rejoué si on le modifie.
+- **Pas de `GRANT` à écrire pour une nouvelle table.** Les `GRANT ... TO "apps"` des migrations anciennes sont un reliquat : le module exécute ses requêtes avec l'utilisateur qui a joué les migrations, donc propriétaire des tables. Vérifier la configuration `postgresql` de l'environnement avant d'en ajouter un « par sécurité ».
+
 ## À faire / à éviter
 
 - ✅ Garder les changements **circonscrits à un module**.

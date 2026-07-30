@@ -2,7 +2,7 @@
 
 > FS source : [FS-IMPULS-6109.md](./FS-IMPULS-6109.md)
 > Repo : entcore (module `conversation`)
-> Date : 29/07/2026 — révisé le 30/07/2026 : retrait de l'index partiel sur `absence_settings` et du groupement par fuseau dans IMPULS-6144, charge back 35 → 32 SP
+> Date : 29/07/2026 — révisé le 30/07/2026 : retrait de l'index partiel sur `absence_settings` et du groupement par fuseau dans IMPULS-6144 ; ajout de la purge du garde-fou (IMPULS-6166). Charge back 35 → 34 SP
 > Participants : Squad Impulsion (dev front, dev back)
 > Statut : Draft
 > Maquettes : [Figma — Messagerie / Message d'absence](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7616-3) — US-4 (bandeau) révisée le 30/07/2026 : [Figma — bandeau-rappel-absence, v2](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7773-2968)
@@ -235,6 +235,7 @@ Les 17 sous-tâches ont été créées dans Jira. Le contrat d'API, préalable c
 - [ ] `[back]` [IMPULS-6146](https://edifice-community.atlassian.net/browse/IMPULS-6146) — Accepter le fuseau de l'expéditeur en champ **optionnel** de la charge utile d'envoi, avec repli sur le fuseau serveur — **2**
 - [ ] `[back]` [IMPULS-6148](https://edifice-community.atlassian.net/browse/IMPULS-6148) — Purge RGPD : ajouter `absence_settings` et `absence_replies` à `ConversationRepositoryEvents.deleteUsers()` — **1**
 - [ ] `[front]` [IMPULS-6147](https://edifice-community.atlassian.net/browse/IMPULS-6147) — Transmettre le fuseau de l'expéditeur dans la charge utile d'envoi — **1**
+- [ ] `[back]` [IMPULS-6166](https://edifice-community.atlassian.net/browse/IMPULS-6166) — Purge des lignes du garde-fou (`absence_replies`) : tâche `PurgeAbsenceReplies`, route `api/internal/purge/absence-replies`, cron conditionnel. Rétention 7 jours configurable, **plancher de 2 jours en dur** — *ajouté le 30/07/2026, hors cadrage initial* — **2**
 
 #### US-3 : Désactiver un message d'absence avant la fin prévue *(IMPULS-6132)*
 
@@ -261,10 +262,10 @@ La création d'un droit workflow dédié a été écartée : fastidieuse à gér
 
 | Compétence | Charge (SP) | Commentaire |
 |---|---|---|
-| Back | 32 | Dont 5 sur le seul étalement de l'émission (risque #1) et 2 sur le contrat d'API préalable |
+| Back | 34 | Dont 5 sur le seul étalement de l'émission (risque #1), 2 sur le contrat d'API préalable et 2 sur la purge du garde-fou ajoutée le 30/07 |
 | Front | 16 | Essentiellement de l'assemblage de composants du DS ; aucun composant à créer |
 | Mobile | 0 | Hors-scope. Contrat additif, champ fuseau optionnel, consommation de `bodyHtml` |
-| **Total** | **48** | Aucune sous-tâche au-delà de 5 |
+| **Total** | **50** | Aucune sous-tâche au-delà de 5 |
 
 ---
 
@@ -273,7 +274,8 @@ La création d'un droit workflow dédié a été écartée : fastidieuse à gér
 - **Aucune affectation de droit workflow n'est nécessaire** — c'est le bénéfice direct du choix de s'appuyer sur le profil de session. Ce point figurait initialement comme risque fort de MEP ; il est supprimé.
 - Deux migrations SQL à appliquer dans l'ordre (`025` puis `026`), additives, sans réécriture de lignes existantes.
 - Monitoring à prévoir sur le volume de réponses automatiques émises par envoi et sur la durée de traitement du lot (voir Métriques produit) — ce sont les deux signaux d'alerte du risque #1.
-- Purge éventuelle de `absence_replies` : réutiliser le pattern `CronTrigger` déjà en place plutôt qu'introduire un nouveau mécanisme de scheduling, conformément aux contraintes techniques de la FS.
+- **Purge de `absence_replies` : décidée et cadrée le 30/07/2026** (IMPULS-6166), là où ce cadrage ne l'envisageait que comme éventuelle. Tâche `PurgeAbsenceReplies` sur le modèle de `PurgeMessages`, déclenchable par `POST api/internal/purge/absence-replies` — donc par un job k8s — et par `CronTrigger` si la clé `purgeAbsenceRepliesCron` est configurée. Sans cette clé, la tâche n'existe que par l'API.
+- **Rétention du garde-fou : 7 jours par défaut, plancher de 2 jours appliqué en dur.** Ce plancher n'est pas une marge de confort : le garde-fou teste l'appartenance à la journée courante *dans le fuseau de l'expéditeur*, et les fuseaux couvrent 26 heures. Purger en deçà de deux jours rouvrirait le droit à une seconde réponse le même jour pour un expéditeur dans un fuseau lointain. Configuration sous `purge-absence-replies` : `retention-days`, `batch-size`, `max-batches`, `query-timeout`.
 
 ---
 
