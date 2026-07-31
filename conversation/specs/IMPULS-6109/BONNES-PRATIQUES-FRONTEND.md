@@ -1,0 +1,26 @@
+# Bonnes pratiques frontend — retours de pairing (IMPULS-6138)
+
+> Issu du pairing sur la modale de paramétrage du message d'absence (`AbsenceModal`, module `conversation`). Ce document rassemble les remarques faites pendant la session, pour partage avec le reste de l'équipe front.
+
+---
+
+## 1. Spécifique au module `conversation`
+
+- **Pas de clés de traduction communes.** Ne pas utiliser `common_t('cancel')` / `common_t('save')` (namespace `common`) pour du texte propre au module. Créer des clés spécifiques dans le fichier i18n du module (`conversation.absence.modal.cancel`, `conversation.absence.modal.save`), comme le reste des clés déjà en place. Objectif : pouvoir faire évoluer le texte d'une feature du module sans dépendre du bundle commun partagé par toutes les apps.
+- **Préfixer les clés i18n ajoutées par le nom du module** (`conversation.xxx`), même à l'intérieur du fichier de traduction déjà scopé au module par le mécanisme de namespace. Permet d'identifier la provenance d'une clé au premier coup d'œil, notamment si les fichiers de traduction venaient à être consultés/fusionnés en dehors du contexte applicatif.
+- **CSS colocalisé par composant.** Créer un fichier `NomDuComposant.css` à côté du composant (convention déjà en place avec `FolderModalInDropdown.css`) plutôt que d'empiler des classes utilitaires conditionnelles (`clsx('transition-opacity', { 'opacity-50': ... })`) pour gérer l'affichage dès que ça dépasse un cas trivial.
+- **Appliquer un style d'état au plus près de l'élément concerné.** Exemple : l'opacité "désactivé" doit cibler uniquement l'éditeur de texte, pas un conteneur englobant qui dimmerait aussi le label — sinon des éléments qui doivent rester pleinement lisibles (labels, titres) sont dégradés sans raison.
+- **Documenter tout écart assumé par rapport à la FS/US au moment où la décision est prise.** Quand l'implémentation s'écarte des critères d'acceptation ou des scénarios Gherkin documentés (ex. suppression des messages d'erreur inline au profit d'un bouton désactivé), mettre à jour le ticket Jira, la FS et le doc de cadrage dans la foulée — pas seulement le code. Une FS qui ne reflète plus le comportement réel devient un piège pour la suite (revue, QA, futurs devs).
+
+## 2. Applicable à toute la stack frontend React (Edifice)
+
+- **Extraire la logique d'un composant dans un hook dédié** (`useNomDuComposant`). Le composant ne fait que du rendu et du branchement de props ; le hook porte l'état, la validation et les actions. Plus lisible, plus facile à faire évoluer, et testable indépendamment du JSX.
+- **Séparer les tests en conséquence.** Logique/validation testée sur le hook via `renderHook` (pas besoin de monter le composant) ; rendu et câblage testés sur le composant. Évite de dupliquer la couverture et isole les responsabilités.
+  - ⚠️ Piège : les règles de validation passées via la prop `rules` d'un `<Controller>` react-hook-form ne s'enregistrent qu'au montage réel du composant. Si un `renderHook` seul (sans monter le JSX) doit pouvoir déclencher/vérifier cette validation, il faut centraliser la logique dans un `resolver` passé à `useForm`, pas dans des `rules` par champ.
+- **Utiliser react-hook-form pour tout formulaire**, y compris ceux combinant des composants non natifs (`DatePicker`, éditeur riche) via `Controller` — pas de gestion manuelle de state (`useState` par champ + fonction `validate()` maison).
+- **Étendre le design system (EFF) plutôt que de le contourner localement** quand un composant n'expose pas une prop pourtant déjà supportée par la librairie sous-jacente (ex. `disabled` sur le `DatePicker`, déjà géré nativement par AntD en dessous). Ajouter la prop côté EFF (typage + test + story Storybook mise à jour), pas un cast/hack côté application consommatrice.
+- **Servir les vraies traductions en dev/mock**, via un plugin Vite dédié (`serveLocalI18n`) qui lit directement les fichiers `fr.json` réels du backend, plutôt qu'un mock HTTP qui renvoie un objet vide/factice et laisse afficher des clés brutes.
+- **Préférer une contrainte UI réactive à une validation a posteriori**, quand c'est possible. Exemple : `minDate` réactif sur un `DatePicker` de fin de période (borné à la date de début choisie) plutôt qu'un message d'erreur affiché après coup.
+- **Ne corriger un champ dépendant que quand il devient invalide.** Quand on introduit une correction réactive entre deux champs liés (ex. date de fin qui doit suivre une date de début), ne recalculer la valeur que si l'ancienne devient invalide suite au changement — ne jamais écraser un choix de l'utilisateur encore valide.
+- **`data-testid` sur les éléments interactifs**, en complétant la convention QA du repo (module + mot-clé d'élément) par le composant concerné : `<module>-<composant>-<élément>-<nom>` (ex. `conversation-absence-modal-button-save`). Le format module-seul ne suffit pas à identifier de quoi il s'agit au premier coup d'œil dès qu'un module a plusieurs modales/écrans.
+- **Minimiser le code de test manuel jetable.** Pour tester visuellement un composant pas encore branché dans l'app réelle (avant que le ticket qui l'intègre ne soit fait), privilégier l'option la plus légère à retirer ensuite (ex. état initial forcé à l'ouverture) plutôt que d'ajouter un élément d'UI dédié (bouton flottant, etc.).

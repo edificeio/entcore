@@ -70,6 +70,7 @@ Sont hors périmètre : la redirection des messages vers un autre destinataire, 
 - Le texte et les dates (début et fin) restent modifiables pendant que le message d'absence est actif, via le même écran que la création (pré-rempli avec les valeurs existantes).
 - Si la date de fin est modifiée à une date antérieure ou égale à aujourd'hui, cela équivaut à désactiver le message d'absence (voir US-3).
 - Il n'y a pas de contrainte empêchant de saisir une date de début dans le passé, aussi bien à la création qu'à la modification.
+- **Écart assumé le 31/07/2026, vu avec le PM :** le bouton "Enregistrer" est désactivé tant que la date de fin n'est pas renseignée ou antérieure à la date de début, ou que le texte est vide alors que le message est activé. Aucun message d'erreur n'est affiché sous les champs. La date de fin ne propose d'ailleurs pas de sélection antérieure à la date de début dans le calendrier (`minDate` réactif).
 
 **Scénarios de test :**
 
@@ -87,21 +88,21 @@ Scénario: Activation d'un message d'absence avec des dates et un texte valides
 ```
 
 ```gherkin
-Scénario: Tentative d'activation avec une date de fin antérieure à la date de début
+Scénario: Le bouton Enregistrer reste désactivé tant que les dates ne sont pas valides
   Étant donné je suis en train de paramétrer mon message d'absence
-  Quand je saisis une date de fin antérieure à la date de début
-  Et je clique sur "Enregistrer"
-  Alors une erreur DOIT s'afficher sous le champ date de fin
+  Quand la date de fin n'est pas renseignée, ou est antérieure à la date de début
+  Alors le bouton "Enregistrer" DOIT être désactivé
+  Et aucune erreur NE DOIT s'afficher sous les champs de date
   Et le message d'absence NE DOIT PAS être activé
-  Et la modale NE DOIT PAS se fermer
 ```
 
 ```gherkin
-Scénario: Tentative d'activation avec un texte vide
+Scénario: Le bouton Enregistrer reste désactivé tant que le texte est vide et le message activé
   Étant donné je suis en train de paramétrer mon message d'absence
-  Et le champ texte est vide
-  Quand je clique sur "Enregistrer"
-  Alors une erreur DOIT s'afficher sous l'éditeur de texte
+  Et le toggle d'activation est actif
+  Quand le champ texte est vide
+  Alors le bouton "Enregistrer" DOIT être désactivé
+  Et aucune erreur NE DOIT s'afficher sous l'éditeur de texte
   Et le message d'absence NE DOIT PAS être activé
 ```
 
