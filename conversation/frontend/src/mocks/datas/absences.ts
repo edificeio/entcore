@@ -17,7 +17,7 @@ const mockAbsenceEnd = new Date(mockAbsenceStart);
 mockAbsenceEnd.setDate(mockAbsenceEnd.getDate() + 7);
 
 /** Always active: today through today + 7 days, so `dev:mock` shows an active absence. */
-export const mockAbsenceSettings: AbsenceSettingsResponse = {
+export let mockAbsenceSettings: AbsenceSettingsResponse = {
   enabled: true,
   startAt: startOfLocalDayUtc(mockAbsenceStart),
   endAt: endOfLocalDayUtc(mockAbsenceEnd),
@@ -39,3 +39,8 @@ export const mockAbsenceSettings: AbsenceSettingsResponse = {
     '<p>Je suis absent(e) du 1er au 31 août 2026. Je ne serai pas en mesure de répondre à vos messages durant cette période.</p>',
   updatedAt: new Date().toISOString(),
 };
+
+/** Persists a `PUT` in the mock so a subsequent `GET` reflects the last save. */
+export function setMockAbsenceSettings(next: AbsenceSettingsResponse): void {
+  mockAbsenceSettings = next;
+}

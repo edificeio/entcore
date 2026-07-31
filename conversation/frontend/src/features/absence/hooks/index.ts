@@ -1,2 +1,2 @@
 export * from './useAbsenceModal';
-export * from './useAbsenceModalContainer';
+export * from './useAbsenceModalData';

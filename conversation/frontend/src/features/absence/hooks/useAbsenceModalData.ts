@@ -1,7 +1,7 @@
 import { AbsenceSettings } from '~/models/absence';
 import { useAbsenceSettings, useSaveAbsenceSettings } from '~/services';
 
-export function useAbsenceModalContainer() {
+export function useAbsenceModalData() {
   const { data: settings, isPending: isLoadingSettings } = useAbsenceSettings();
   const { mutateAsync, isPending: isSaving } = useSaveAbsenceSettings();
 

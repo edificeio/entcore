@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useLoaderData, useLocation, useParams } from 'react-router-dom';
 import { Config, existingActions } from '~/config';
 import {
-  AbsenceModalContainer,
+  AbsenceModal,
   CreateFolderModal,
   DesktopMenu,
   MobileMenu,
@@ -128,7 +128,7 @@ export function Component() {
 
         {/* TODO(IMPULS-6139 QA): temporary, remove before commit. Opens automatically on launch to ease manual testing. */}
         {isAbsenceModalOpenForQA && (
-          <AbsenceModalContainer
+          <AbsenceModal
             isOpen={true}
             onModalClose={() => setIsAbsenceModalOpenForQA(false)}
           />
