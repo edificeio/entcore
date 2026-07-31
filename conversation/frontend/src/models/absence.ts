@@ -8,3 +8,13 @@ export type AbsenceSettings = {
   endAt: string;
   bodyJson: Content;
 };
+
+/**
+ * Shape returned by `GET`/`PUT /conversation/absence`: `AbsenceSettings` plus
+ * server-derived fields. `bodyHtml` is derived from `bodyJson` and must never
+ * be sent back as-is.
+ */
+export type AbsenceSettingsResponse = AbsenceSettings & {
+  bodyHtml: string;
+  updatedAt: string;
+};
