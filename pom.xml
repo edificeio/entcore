@@ -61,6 +61,7 @@
         <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
         <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
         <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
+        <imageResizerVersion>3.2-SNAPSHOT</imageResizerVersion>
         <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>

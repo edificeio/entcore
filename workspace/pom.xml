@@ -11,9 +11,6 @@
     </parent>
 
     <artifactId>workspace</artifactId>
-    <properties>
-        <imageResizerVersion>3.2-SNAPSHOT</imageResizerVersion>
-    </properties>
 
     <dependencies>
         <dependency>
