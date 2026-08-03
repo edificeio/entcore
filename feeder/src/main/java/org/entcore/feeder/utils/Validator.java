@@ -163,7 +163,9 @@ public class Validator {
 				}
 
 				if (value instanceof JsonArray) {
-					calcChecksum.append(((JsonArray) value).encode());
+					// AAF exports don't guarantee a stable element order for multi-valued
+					// attributes from one import to the next, so the checksum must ignore it.
+					calcChecksum.append(sortedArrayEncode((JsonArray) value));
 				} else if (value instanceof JsonObject) {
 					calcChecksum.append(((JsonObject) value).encode());
 				} else {
@@ -271,6 +273,15 @@ public class Validator {
 			nowDate("modified", object);
 		}
 		return (object.size() > 0) ? null : "Empty object.";
+	}
+
+	private static String sortedArrayEncode(JsonArray array) {
+		final List<Object> sorted = new ArrayList<>();
+		for (Object o : array) {
+			sorted.add(o);
+		}
+		sorted.sort(Comparator.comparing(String::valueOf));
+		return new JsonArray(sorted).encode();
 	}
 
 	private void checksum(JsonObject object, String values) throws NoSuchAlgorithmException {
