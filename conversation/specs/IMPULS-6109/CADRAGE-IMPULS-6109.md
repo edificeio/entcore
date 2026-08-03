@@ -2,7 +2,7 @@
 
 > FS source : [FS-IMPULS-6109.md](./FS-IMPULS-6109.md)
 > Repo : entcore (module `conversation`)
-> Date : 29/07/2026 — révisé le 30/07/2026 : retrait de l'index partiel sur `absence_settings` et du groupement par fuseau dans IMPULS-6144, charge back 35 → 32 SP
+> Date : 29/07/2026 — révisé le 30/07/2026 : retrait de l'index partiel sur `absence_settings` et du groupement par fuseau dans IMPULS-6144 ; ajout de la purge du garde-fou (IMPULS-6166). Charge back 35 → 34 SP
 > Participants : Squad Impulsion (dev front, dev back)
 > Statut : Draft
 > Maquettes : [Figma — Messagerie / Message d'absence](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7616-3) — US-4 (bandeau) révisée le 30/07/2026 : [Figma — bandeau-rappel-absence, v2](https://www.figma.com/design/B8KkuSYSpB3SZYnM3MDRJB/W---Messagerie--Portage-03-2024-?node-id=7773-2968)
@@ -150,7 +150,12 @@ Charge utile en entrée du `PUT` : `{ enabled, startAt, endAt, bodyJson, bodyHtm
 
 **Oubli corrigé au cadrage — normalisation côté back.** Le `bodyJson` reçu ne doit pas être stocké tel quel : il passe par le transformer déjà utilisé pour les messages classiques (`SqlConversationService.updateMessageWithTransformedContent`, client `IContentTransformerClient` initialisé dans `Conversation.java:73-76`), qui normalise le contenu et permet d'en dériver le `body_html` stocké. `body_json` et `body_html` stockés sont tous deux des **sorties** du transformer, jamais des entrées brutes — le `bodyHtml` éventuellement reçu en entrée du `PUT` est **explicitement ignoré**, à documenter clairement dans le contrat d'API pour éviter toute confusion côté consommateurs.
 
-Confirmé : le transformer accepte bien le JSON tiptap en entrée. `transformMessageContent` (`SqlConversationService.java:1075-1094`) demande déjà les **deux** formats en sortie via `expectedFormats` — `new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON))` (`SqlConversationService.java:1078`) — mais l'appelant actuel (`updateMessageWithTransformedContent`) ne lit que `getCleanHtml()` et ignore la partie JSON de la réponse. Pour le message d'absence, il faut réutiliser ce même appel (`expectedFormats = {HTML, JSON}`) et, cette fois, exploiter **les deux** sorties de `ContentTransformerResponse` : le HTML nettoyé pour `body_html`, le JSON normalisé pour `body_json`. Le getter exact côté JSON (`ContentTransformerResponse` vient de la lib externe `fr.wseduc:content-transformer`, non vendée dans ce repo) est à vérifier au moment de coder IMPULS-6137.
+Confirmé : le transformer accepte bien le JSON tiptap en entrée. `transformMessageContent` (`SqlConversationService.java:1075-1094`) demande déjà les **deux** formats en sortie via `expectedFormats` — `new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON))` (`SqlConversationService.java:1078`) — mais l'appelant actuel (`updateMessageWithTransformedContent`) ne lit que `getCleanHtml()` et ignore la partie JSON de la réponse. Pour le message d'absence, il faut exploiter **les deux** sorties de `ContentTransformerResponse` avec les mêmes `expectedFormats = {HTML, JSON}`.
+
+**Tranché en implémentation (30/07/2026), et sur deux points le cadrage se trompait :**
+
+1. L'appel **n'est pas réutilisable tel quel**. La signature est `ContentTransformerRequest(Set<Format>, int, String htmlContent, JsonObject jsonContent, Set<String> extensions)` : le JSON tiptap passe par le 4ᵉ paramètre, alors que `transformMessageContent` n'expose que le 3ᵉ (HTML). Un `transformAbsenceContent(JsonObject)` a donc été ajouté à côté.
+2. Les getters à lire **ne sont pas ceux de la symétrie attendue**. Le transformer renvoie le format d'entrée assaini dans `clean*` et l'autre format converti dans `*Content` : une entrée JSON remplit `cleanJson` et `htmlContent`, et laisse `cleanHtml` **vide**. Il faut donc `getCleanJson()` pour `body_json` et **`getHtmlContent()`** pour `body_html` — lire `getCleanHtml()` produit un `body_html` vide, ce qui vide le rendu mobile. Détail complet dans le contrat d'API, §2.3.
 
 **Anti-bouclage et exclusion des statistiques, par construction.** `eventHelper.onCreateResource(request, RESOURCE_NAME)` n'est appelé que dans le handler de la route `@Post("send")` (`ConversationController.java:517`) ; ni `saveAndSend` (436-491), ni le handler de bus (1785-1826), ni `sendFromExterne` (1939) ne l'appellent. Les statistiques sont donc alimentées par un événement émis explicitement à cet endroit, pas par une requête sur `messages`.
 
@@ -230,6 +235,7 @@ Les 17 sous-tâches ont été créées dans Jira. Le contrat d'API, préalable c
 - [ ] `[back]` [IMPULS-6146](https://edifice-community.atlassian.net/browse/IMPULS-6146) — Accepter le fuseau de l'expéditeur en champ **optionnel** de la charge utile d'envoi, avec repli sur le fuseau serveur — **2**
 - [ ] `[back]` [IMPULS-6148](https://edifice-community.atlassian.net/browse/IMPULS-6148) — Purge RGPD : ajouter `absence_settings` et `absence_replies` à `ConversationRepositoryEvents.deleteUsers()` — **1**
 - [ ] `[front]` [IMPULS-6147](https://edifice-community.atlassian.net/browse/IMPULS-6147) — Transmettre le fuseau de l'expéditeur dans la charge utile d'envoi — **1**
+- [ ] `[back]` [IMPULS-6166](https://edifice-community.atlassian.net/browse/IMPULS-6166) — Purge des lignes du garde-fou (`absence_replies`) : tâche `PurgeAbsenceReplies`, route `api/internal/purge/absence-replies`, cron conditionnel. Rétention 7 jours configurable, **plancher de 2 jours en dur** — *ajouté le 30/07/2026, hors cadrage initial* — **2**
 
 #### US-3 : Désactiver un message d'absence avant la fin prévue *(IMPULS-6132)*
 
@@ -256,10 +262,10 @@ La création d'un droit workflow dédié a été écartée : fastidieuse à gér
 
 | Compétence | Charge (SP) | Commentaire |
 |---|---|---|
-| Back | 32 | Dont 5 sur le seul étalement de l'émission (risque #1) et 2 sur le contrat d'API préalable |
+| Back | 34 | Dont 5 sur le seul étalement de l'émission (risque #1), 2 sur le contrat d'API préalable et 2 sur la purge du garde-fou ajoutée le 30/07 |
 | Front | 16 | Essentiellement de l'assemblage de composants du DS ; aucun composant à créer |
 | Mobile | 0 | Hors-scope. Contrat additif, champ fuseau optionnel, consommation de `bodyHtml` |
-| **Total** | **48** | Aucune sous-tâche au-delà de 5 |
+| **Total** | **50** | Aucune sous-tâche au-delà de 5 |
 
 ---
 
@@ -268,7 +274,8 @@ La création d'un droit workflow dédié a été écartée : fastidieuse à gér
 - **Aucune affectation de droit workflow n'est nécessaire** — c'est le bénéfice direct du choix de s'appuyer sur le profil de session. Ce point figurait initialement comme risque fort de MEP ; il est supprimé.
 - Deux migrations SQL à appliquer dans l'ordre (`025` puis `026`), additives, sans réécriture de lignes existantes.
 - Monitoring à prévoir sur le volume de réponses automatiques émises par envoi et sur la durée de traitement du lot (voir Métriques produit) — ce sont les deux signaux d'alerte du risque #1.
-- Purge éventuelle de `absence_replies` : réutiliser le pattern `CronTrigger` déjà en place plutôt qu'introduire un nouveau mécanisme de scheduling, conformément aux contraintes techniques de la FS.
+- **Purge de `absence_replies` : décidée et cadrée le 30/07/2026** (IMPULS-6166), là où ce cadrage ne l'envisageait que comme éventuelle. Tâche `PurgeAbsenceReplies` sur le modèle de `PurgeMessages`, déclenchable par `POST api/internal/purge/absence-replies` — donc par un job k8s — et par `CronTrigger` si la clé `purgeAbsenceRepliesCron` est configurée. Sans cette clé, la tâche n'existe que par l'API.
+- **Rétention du garde-fou : 7 jours par défaut, plancher de 2 jours appliqué en dur.** Ce plancher n'est pas une marge de confort : le garde-fou teste l'appartenance à la journée courante *dans le fuseau de l'expéditeur*, et les fuseaux couvrent 26 heures. Purger en deçà de deux jours rouvrirait le droit à une seconde réponse le même jour pour un expéditeur dans un fuseau lointain. Configuration sous `purge-absence-replies` : `retention-days`, `batch-size`, `max-batches`, `query-timeout`.
 
 ---
 

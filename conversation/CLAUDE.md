@@ -83,7 +83,7 @@ src/
 - `controllers/` — `ApiController`, `ConversationController`, `TaskController`
 - `service/` (+ `service/impl/`) — logique métier
 - `filters/` — filtres de sécurité/droits
-- `cron/` — tâches planifiées (`PurgeMessages` : purge des anciens messages)
+- `cron/` — tâches planifiées (`PurgeMessages` : anciens messages ; `PurgeAbsenceReplies` : garde-fou anti-spam du message d'absence). Déclenchables aussi par `TaskController` (`api/internal/purge/…`) pour un job k8s ; le `CronTrigger` n'est branché que si l'expression est configurée.
 - `util/` — utilitaires
 
 ### Transformation de contenu (tiptap transformer)
@@ -94,7 +94,20 @@ Le contenu riche des messages (et de toute future donnée éditée avec le même
 - **Appel type** : `SqlConversationService.transformMessageContent` (`SqlConversationService.java:1075-1094`). Construit un `ContentTransformerRequest` avec `expectedFormats = new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON))` — **les deux formats de sortie sont déjà demandables en une seule transformation**, en entrée aussi bien HTML que JSON tiptap.
 - **Usage actuel (messages classiques)** : `updateMessageWithTransformedContent` (`SqlConversationService.java:227-246`), appelé par `create`/`update`/`draft`, ne lit que `transformerResponse.getCleanHtml()` et `getContentVersion()` — la sortie JSON de la réponse est demandée mais **jetée**, car ce module stocke aujourd'hui le corps des messages en HTML seul (`messages."body"` en `TEXT`).
 - **Règle pour toute nouvelle fonctionnalité stockant du contenu riche** : ne jamais faire confiance à un HTML ou JSON fourni par le client comme valeur finale de stockage. Toujours repasser par ce transformer, et **exploiter la sortie dont on a besoin** (HTML seul aujourd'hui pour les messages ; JSON **et** HTML si les deux doivent être persistés, comme pour le message d'absence — voir `conversation/specs/IMPULS-6109/CONTRAT-API-IMPULS-6109-US1.md`, §2.3). Un champ équivalent fourni par le client (ex. un `bodyHtml` envoyé alors que le stockage doit être dérivé du JSON) est accepté par tolérance de forme mais **explicitement ignoré**, jamais persisté tel quel.
-- Le getter exact pour récupérer la sortie JSON de `ContentTransformerResponse` n'a pas encore été utilisé dans ce repo (aucun appelant existant ne le lit) — à vérifier au moment de coder une fonctionnalité qui en a besoin.
+- **Quels getters lire — tranché le 30/07/2026, et ce n'est pas symétrique.** Le transformer renvoie le **format d'entrée assaini** dans `clean*` et **l'autre format converti** dans `*Content` :
+
+  | Entrée | Champs remplis |
+  | --- | --- |
+  | `htmlContent` (messages classiques) | `cleanHtml` + `jsonContent` |
+  | `jsonContent` (message d'absence) | `cleanJson` + **`htmlContent`** |
+
+  Envoyer du JSON et lire `getCleanHtml()` par symétrie avec le flux des messages renvoie donc une chaîne **vide**, sans erreur — c'est-à-dire un rendu mobile vide. Lire `getCleanJson()` **et** `getHtmlContent()` dans ce sens. Le format d'entrée se choisit également par paramètre distinct : `ContentTransformerRequest(formats, version, String htmlContent, JsonObject jsonContent, extensions)` ; `transformMessageContent` n'expose que le chemin HTML et n'est donc pas réutilisable tel quel pour une entrée JSON (cf. `transformAbsenceContent`).
+
+### Chemin d'envoi d'un message — trois comportements à connaître
+
+- **`save()` et `update()` persistent le message entier.** `Utils.validAndGet(message, MESSAGE_FIELDS, …)` ne sert qu'à la **validation** : l'insertion part de `message.copy()` et la mise à jour construit son `SET` en itérant `message.fieldNames()`. Tout champ ajouté à la charge utile d'envoi devient donc une colonne, et l'envoi échoue sur `column "<champ>" of relation "messages" does not exist`. Un champ de transport, non destiné au stockage, doit être déclaré dans `TRANSPORT_ONLY_FIELDS` (`SqlConversationService`), comme `timezone` — `scheduleAt` est l'exception historique, retirée à la main.
+- **`eventHelper.onCreateResource` n'est appelé que dans le handler de la route `@Post("send")`.** Ni `saveAndSend`, ni le handler de `@BusAddress`, ni `sendFromExterne` ne l'appellent. Ce n'est **pas un oubli** : c'est ce qui donne, sans code ni marqueur, l'anti-bouclage et l'exclusion des statistiques des messages émis en interne — dont la réponse automatique du message d'absence, qui passe par `saveAndSend`. Uniformiser cette asymétrie casserait les deux garanties d'un coup, sans faire échouer un seul test.
+- **Les destinataires sont persistés, `allUsers` ne l'est pas.** `allUsers` (groupes déjà aplatis) n'existe qu'en mémoire pendant la requête, mais `addRecipientStatements` écrit une ligne par destinataire dans `usermessages` — sauf pour un message programmé, dont les destinataires ne sont peuplés qu'à l'échéance. Un traitement post-envoi peut donc relire la liste depuis la base plutôt que la transporter.
 
 ### Build
 
