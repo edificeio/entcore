@@ -1,5 +1,5 @@
 /**
- * Test suite for the AbsenceModal component (IMPULS-6138).
+ * Test suite for the AbsenceModalForm component (IMPULS-6138).
  *
  * Deliberate departure from the FS (IMPULS-6130 US-1 Gherkin scenarios),
  * decided in pairing: no inline error messages under the fields. Instead the
@@ -18,7 +18,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '~/mocks/setup';
-import { AbsenceModal } from './AbsenceModal';
+import { AbsenceModalForm } from './AbsenceModalForm';
 
 const mocks = vi.hoisted(() => ({
   useToast: {
@@ -114,15 +114,14 @@ function getDatePickers() {
   return { startDate, endDate };
 }
 
-describe('AbsenceModal component', () => {
+describe('AbsenceModalForm component', () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
 
   it('pre-fills the form from existing settings', () => {
     render(
-      <AbsenceModal
-        isOpen={true}
+      <AbsenceModalForm
         onModalClose={vi.fn()}
         onSave={vi.fn()}
         settings={{
@@ -150,9 +149,7 @@ describe('AbsenceModal component', () => {
   });
 
   it('disables the dates and the editor when the message is disabled', () => {
-    render(
-      <AbsenceModal isOpen={true} onModalClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    render(<AbsenceModalForm onModalClose={vi.fn()} onSave={vi.fn()} />);
 
     const { startDate, endDate } = getDatePickers();
     expect(startDate).toBeDisabled();
@@ -177,9 +174,7 @@ describe('AbsenceModal component', () => {
   });
 
   it('applies the start date as a reactive minDate on the end date', () => {
-    render(
-      <AbsenceModal isOpen={true} onModalClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    render(<AbsenceModalForm onModalClose={vi.fn()} onSave={vi.fn()} />);
 
     const { startDate, endDate } = getDatePickers();
     expect(endDate).toHaveAttribute('data-min-date', '');
@@ -190,9 +185,7 @@ describe('AbsenceModal component', () => {
   });
 
   it('disables the Save button until the dates are filled in', () => {
-    render(
-      <AbsenceModal isOpen={true} onModalClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    render(<AbsenceModalForm onModalClose={vi.fn()} onSave={vi.fn()} />);
 
     const saveButton = screen.getByTestId(
       'conversation-absence-modal-button-save',
@@ -208,9 +201,7 @@ describe('AbsenceModal component', () => {
   });
 
   it('bumps the end date the day after the start date once it is no longer valid', () => {
-    render(
-      <AbsenceModal isOpen={true} onModalClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    render(<AbsenceModalForm onModalClose={vi.fn()} onSave={vi.fn()} />);
 
     const { startDate, endDate } = getDatePickers();
     fireEvent.change(startDate, { target: { value: '2026-01-10' } });
@@ -226,9 +217,7 @@ describe('AbsenceModal component', () => {
   });
 
   it('disables the Save button when the message is enabled without text', () => {
-    render(
-      <AbsenceModal isOpen={true} onModalClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    render(<AbsenceModalForm onModalClose={vi.fn()} onSave={vi.fn()} />);
 
     const saveButton = screen.getByTestId(
       'conversation-absence-modal-button-save',
@@ -255,13 +244,7 @@ describe('AbsenceModal component', () => {
   it('does not close the modal after a successful save (toast only)', async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const onModalClose = vi.fn();
-    render(
-      <AbsenceModal
-        isOpen={true}
-        onModalClose={onModalClose}
-        onSave={onSave}
-      />,
-    );
+    render(<AbsenceModalForm onModalClose={onModalClose} onSave={onSave} />);
 
     const { startDate, endDate } = getDatePickers();
     fireEvent.change(startDate, { target: { value: '2026-01-10' } });
@@ -280,13 +263,7 @@ describe('AbsenceModal component', () => {
   it('shows an error toast and does not close the modal when onSave fails', async () => {
     const onSave = vi.fn().mockRejectedValue(new Error('network error'));
     const onModalClose = vi.fn();
-    render(
-      <AbsenceModal
-        isOpen={true}
-        onModalClose={onModalClose}
-        onSave={onSave}
-      />,
-    );
+    render(<AbsenceModalForm onModalClose={onModalClose} onSave={onSave} />);
 
     const { startDate, endDate } = getDatePickers();
     fireEvent.change(startDate, { target: { value: '2026-01-10' } });
@@ -302,9 +279,7 @@ describe('AbsenceModal component', () => {
   });
 
   it('toggles the enabled state on click', () => {
-    render(
-      <AbsenceModal isOpen={true} onModalClose={vi.fn()} onSave={vi.fn()} />,
-    );
+    render(<AbsenceModalForm onModalClose={vi.fn()} onSave={vi.fn()} />);
 
     const toggle = screen.getByLabelText(
       'conversation.absence.modal.toggle.label',
