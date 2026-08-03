@@ -16,8 +16,7 @@ import { AbsenceSettings } from '~/models/absence';
 import './AbsenceModal.css';
 import { useAbsenceModal } from './hooks';
 
-export interface AbsenceModalProps {
-  isOpen: boolean;
+export interface AbsenceModalFormProps {
   onModalClose: () => void;
   /** Existing settings to pre-fill the form, or `undefined` if none exist yet. */
   settings?: AbsenceSettings;
@@ -27,13 +26,12 @@ export interface AbsenceModalProps {
   onSave: (payload: AbsenceSettings) => Promise<void>;
 }
 
-export function AbsenceModal({
-  isOpen,
+export function AbsenceModalForm({
   onModalClose,
   settings,
   isSaving,
   onSave,
-}: AbsenceModalProps) {
+}: AbsenceModalFormProps) {
   const { t } = useI18n();
   const { md } = useBreakpoint();
   const {
@@ -48,16 +46,7 @@ export function AbsenceModal({
   } = useAbsenceModal({ settings, onSave });
 
   return (
-    <Modal
-      size="lg"
-      id="modalAbsence"
-      isOpen={isOpen}
-      onModalClose={onModalClose}
-    >
-      <Modal.Header onModalClose={onModalClose}>
-        {t('conversation.absence.modal.title')}
-      </Modal.Header>
-
+    <>
       <Modal.Body>
         <Flex direction="column" gap="16">
           <Switch
@@ -161,6 +150,6 @@ export function AbsenceModal({
           {t('conversation.absence.modal.save')}
         </ButtonBeta>
       </Modal.Footer>
-    </Modal>
+    </>
   );
 }

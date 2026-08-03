@@ -78,7 +78,7 @@ export function Component() {
 
   const openedModal = useActionsStore.use.openedModal();
 
-  // TODO(IMPULS-6138 QA): temporary, remove before commit. Real entry point is IMPULS-6140.
+  // TODO(IMPULS-6139 QA): temporary, remove before commit. Real entry point is IMPULS-6140.
   const [isAbsenceModalOpenForQA, setIsAbsenceModalOpenForQA] = useState(true);
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
@@ -126,15 +126,11 @@ export function Component() {
         {openedModal === 'move-message' && <MoveMessageToFolderModal />}
         {openedModal === 'signature' && <SignatureModal />}
 
-        {/* TODO(IMPULS-6138 QA): temporary, remove before commit. Opens automatically on launch to ease manual testing. */}
+        {/* TODO(IMPULS-6139 QA): temporary, remove before commit. Opens automatically on launch to ease manual testing. */}
         {isAbsenceModalOpenForQA && (
           <AbsenceModal
             isOpen={true}
             onModalClose={() => setIsAbsenceModalOpenForQA(false)}
-            onSave={async (payload) => {
-              console.log('[QA] AbsenceModal onSave payload:', payload);
-              await new Promise((resolve) => setTimeout(resolve, 500));
-            }}
           />
         )}
       </Layout>
