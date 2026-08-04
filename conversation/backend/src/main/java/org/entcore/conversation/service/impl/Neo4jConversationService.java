@@ -21,20 +21,95 @@ package org.entcore.conversation.service.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.entcore.common.neo4j.Neo4j;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class Neo4jConversationService {
 
+	private static final Logger log = LoggerFactory.getLogger(Neo4jConversationService.class);
+
+	/** Language used when a user has no preference, or one that cannot be read. */
+	public static final String DEFAULT_LANGUAGE = "fr";
+
 	private Neo4j neo;
 
 	public Neo4jConversationService(){
 		this.neo = Neo4j.getInstance();
+	}
+
+	/**
+	 * Reads the preferred language of several users at once.
+	 * <p>
+	 * Batched on purpose : a single send can concern thousands of absent users, and language
+	 * preferences are stored as serialized JSON strings, which makes one-by-one access costly.
+	 * @param userIds the users whose language is needed
+	 * @param batchSize how many users to resolve per query
+	 * @return a {@link Future} of a userId to language code mapping, holding only the users that have one
+	 */
+	public Future<JsonObject> findUsersLanguages(final List<String> userIds, final int batchSize) {
+		if (userIds == null || userIds.isEmpty()) {
+			return Future.succeededFuture(new JsonObject());
+		}
+		return findUsersLanguagesBatch(userIds, 0, batchSize, new JsonObject());
+	}
+
+	private Future<JsonObject> findUsersLanguagesBatch(final List<String> userIds, final int offset,
+			final int batchSize, final JsonObject languages) {
+		if (offset >= userIds.size()) {
+			return Future.succeededFuture(languages);
+		}
+		final List<String> batch = userIds.subList(offset, Math.min(offset + batchSize, userIds.size()));
+		final Promise<JsonObject> promise = Promise.promise();
+		final String query =
+			"MATCH (u:User) WHERE u.id IN {userIds} " +
+			"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
+			"RETURN u.id as id, uac.language as language";
+		final JsonObject params = new JsonObject().put("userIds", new JsonArray(new ArrayList<>(batch)));
+		neo.execute(query, params, event -> {
+			if (!"ok".equals(event.body().getString("status"))) {
+				promise.fail("conversation.absence.languages.failed");
+				return;
+			}
+			for (Object row : event.body().getJsonArray("result", new JsonArray())) {
+				final JsonObject user = (JsonObject) row;
+				final String language = readLanguage(user.getString("id"), user.getString("language"));
+				if (language != null) {
+					languages.put(user.getString("id"), language);
+				}
+			}
+			promise.complete(languages);
+		});
+		return promise.future()
+				.compose(v -> findUsersLanguagesBatch(userIds, offset + batchSize, batchSize, languages));
+	}
+
+	/**
+	 * Extracts the language code from the raw preference, which is a JSON string such as
+	 * {@code {"default-domain":"fr"}}.
+	 * @param userId the user the preference belongs to, for logging
+	 * @param rawPreference the serialized preference, possibly null
+	 * @return the language code, or null when there is none to read
+	 */
+	private String readLanguage(final String userId, final String rawPreference) {
+		if (rawPreference == null || rawPreference.trim().isEmpty()) {
+			return null;
+		}
+		try {
+			return new JsonObject(rawPreference).getString("default-domain");
+		} catch (Exception e) {
+			log.error("UserId [" + userId + "] - Bad language preferences format");
+			return null;
+		}
 	}
 
 	public void addDisplayNames(final JsonObject message, final JsonObject parentMessage, final Handler<JsonObject> handler) {

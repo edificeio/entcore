@@ -200,6 +200,71 @@ public interface ConversationService {
 	void removeAttachment(String messageId, String attachmentId, UserInfos user, final Handler<Either<String, JsonObject>> result);
 	void forwardAttachments(String forwardId, String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
+	// Message d'absence
+
+	/**
+	 * Reads the absence message settings of a user.
+	 * @param user the current user
+	 * @return a {@link Future} of the settings, or an empty {@link JsonObject} if the user never set any
+	 */
+	Future<JsonObject> getAbsence(UserInfos user);
+
+	/**
+	 * Creates, updates or disables the absence message settings of a user, in a single upsert.
+	 * The rich text goes through the content transformer : both the stored JSON and the stored HTML
+	 * are transformer outputs, never values supplied by the caller.
+	 * @param absence the payload, holding enabled, startAt, endAt and bodyJson
+	 * @param user the current user
+	 * @return a {@link Future} of the persisted settings, same shape as {@link #getAbsence(UserInfos)}
+	 */
+	Future<JsonObject> upsertAbsence(JsonObject absence, UserInfos user);
+
+	/**
+	 * Among the given recipients, finds those whose absence message is active right now.
+	 * <p>
+	 * Meant to be fed with the already resolved recipients of a send (groups flattened), so no group
+	 * resolution happens here. The list is queried in batches, since a single send can carry up to
+	 * 200 000 recipients.
+	 * @param userIds the recipients of the message being sent
+	 * @return a {@link Future} of one entry per active absence, holding userId, bodyHtml and bodyJson
+	 */
+	Future<JsonArray> findActiveAbsences(List<String> userIds);
+
+	/**
+	 * Claims the daily reply slot for each (absent user, sender) pair, and reports which ones were won.
+	 * <p>
+	 * Claiming and marking happen in the same statement, so two concurrent sends cannot both win the slot
+	 * for the same pair. The slot is consumed before the reply is emitted : a failed emission costs that
+	 * reply rather than risking a duplicate, since the FS forbids spamming an expeditor, not losing a reply.
+	 * @param absentUserIds the absent users about to reply
+	 * @param senderId the expeditor of the original message, who receives the replies
+	 * @param timezone IANA timezone the day boundary is evaluated in, that of the expeditor
+	 * @return a {@link Future} of the absent user ids whose slot was claimed, hence cleared to reply today
+	 */
+	Future<JsonArray> claimAbsenceReplySlots(List<String> absentUserIds, String senderId, String timezone);
+
+	/**
+	 * Lists the recipients a message was delivered to, minus one user.
+	 * <p>
+	 * Read back from storage rather than carried over from the send, so that the absence replies can be
+	 * processed away from the request that triggered them without moving a 200 000 entry list around.
+	 * @param messageId the message that was sent
+	 * @param excludeUserId user to leave out, in practice the expeditor
+	 * @return a {@link Future} of the recipient user ids
+	 */
+	Future<JsonArray> listMessageRecipients(String messageId, String excludeUserId);
+
 	// Purge
 	Future<Void> purgeMessages();
+
+	/**
+	 * Drops the anti-spam guard rows that can no longer block anything.
+	 * <p>
+	 * The guard only ever asks whether a reply went out <em>today</em> in the expeditor timezone. Timezones
+	 * span 26 hours, so a row older than two days cannot answer yes in any of them and is inert. Retention is
+	 * configurable above that floor, which is enforced in the implementation so configuration cannot break
+	 * the guard.
+	 * @return a {@link Future} completed once every batch has run
+	 */
+	Future<Void> purgeAbsenceReplies();
 }

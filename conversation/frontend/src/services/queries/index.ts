@@ -1,3 +1,4 @@
+export * from './absence';
 export * from './action';
 export * from './config';
 export * from './folder';
