@@ -1,19 +1,37 @@
-import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
-import { IconSettings, IconSignature } from '@edifice.io/react/icons';
-import { Fragment, RefAttributes } from 'react';
+import {
+  Dropdown,
+  IconButton,
+  IconButtonProps,
+  useEdificeClient,
+} from '@edifice.io/react';
+import {
+  IconCalendar,
+  IconSettings,
+  IconSignature,
+} from '@edifice.io/react/icons';
+import { Fragment, RefAttributes, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { NewMessageButton } from '~/components/NewMessageButton';
+import { AbsenceModal } from '~/features';
 import { useI18n } from '~/hooks/useI18n';
 import { useActionsStore } from '~/store/actions';
 import { AppActionMenuOptions } from './AppActionMenuOptions';
 
+const ABSENCE_ALLOWED_PROFILES = ['ENSEIGNANT', 'PERSEDUCNAT'];
+
 export function AppActionHeader() {
   const { t, common_t } = useI18n();
+  const { user } = useEdificeClient();
   const setOpenedModal = useActionsStore.use.setOpenedModal();
   const location = useLocation();
   const draftRoute = '/draft/create';
 
   const isDraft = location.pathname === draftRoute;
+
+  const [isAbsenceModalOpen, setIsAbsenceModalOpen] = useState(false);
+
+  const canManageAbsence =
+    !!user?.type && ABSENCE_ALLOWED_PROFILES.includes(user.type);
 
   const dropdownOptions: AppActionMenuOptions[] = [
     {
@@ -22,6 +40,13 @@ export function AppActionHeader() {
       icon: <IconSignature />,
       action: () => setOpenedModal('signature'),
       visibility: true,
+    },
+    {
+      id: 'absence',
+      label: t('conversation.absence.menu.label'),
+      icon: <IconCalendar />,
+      action: () => setIsAbsenceModalOpen(true),
+      visibility: canManageAbsence,
     },
   ];
 
@@ -69,6 +94,13 @@ export function AppActionHeader() {
             )}
           </Dropdown>
         </div>
+      )}
+
+      {isAbsenceModalOpen && (
+        <AbsenceModal
+          isOpen={isAbsenceModalOpen}
+          onModalClose={() => setIsAbsenceModalOpen(false)}
+        />
       )}
     </>
   );
