@@ -1,4 +1,5 @@
 import { Modal } from '@edifice.io/react';
+import { PortalModal } from '~/components';
 import { useI18n } from '~/hooks/useI18n';
 import { AbsenceModalForm } from './AbsenceModalForm';
 import { AbsenceModalSkeleton } from './AbsenceModalSkeletonBody';
@@ -15,7 +16,7 @@ export function AbsenceModal({ isOpen, onModalClose }: AbsenceModalProps) {
     useAbsenceModalData();
 
   return (
-    <Modal
+    <PortalModal
       size="lg"
       id="modalAbsence"
       isOpen={isOpen}
@@ -35,6 +36,6 @@ export function AbsenceModal({ isOpen, onModalClose }: AbsenceModalProps) {
           onSave={handleSave}
         />
       )}
-    </Modal>
+    </PortalModal>
   );
 }
