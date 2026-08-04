@@ -31,6 +31,7 @@
   "conversation.absence.invalid.body": "Le contenu du message d'absence est absent ou mal formé",
   "conversation.absence.invalid.dates": "Les dates du message d'absence sont absentes ou mal formées",
   "conversation.absence.invalid.payload": "La requête de paramétrage du message d'absence est invalide",
+  "conversation.absence.menu.label": "Message d'absence",
   "conversation.absence.reply.subject": "Réponse automatique : {0}",
   "conversation.absence.modal.cancel": "Annuler",
   "conversation.absence.modal.dateFormat": "DD/MM/YYYY",
