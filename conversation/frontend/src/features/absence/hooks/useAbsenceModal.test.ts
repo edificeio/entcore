@@ -4,9 +4,10 @@
  * Deliberate departure from the FS (IMPULS-6130 US-1 Gherkin scenarios),
  * decided in pairing: no inline error messages. Instead `canSave` reflects
  * whether the Save button should be enabled — end date defined and on/after
- * the start date, text filled in whenever the message is enabled — and
- * `handleSave` refuses to call `onSave` when it's false, as a defensive
- * backstop behind the disabled button.
+ * the start date, text filled in whenever the message is enabled, and at
+ * least one field changed since the last load/save — and `handleSave`
+ * refuses to call `onSave` when it's false, as a defensive backstop behind
+ * the disabled button.
  *
  * Covers pre-fill from `settings`, the UTC conversion of the payload passed
  * to `onSave`, and that a save — successful or not — never touches
@@ -91,6 +92,56 @@ describe('useAbsenceModal', () => {
     expect(result.current.endDate).toEqual(
       new Date('2026-01-20T23:59:59.999Z'),
     );
+    // Nothing has changed since load: saving would be a no-op.
+    expect(result.current.canSave).toBe(false);
+  });
+
+  it('forbids saving when nothing has changed since the settings were loaded', async () => {
+    const onSave = vi.fn();
+    const { result } = renderAbsenceModal({
+      onSave,
+      settings: {
+        enabled: true,
+        startAt: '2026-01-10T00:00:00.000Z',
+        endAt: '2026-01-20T23:59:59.999Z',
+        bodyJson: 'Je suis absent',
+      },
+    });
+
+    expect(result.current.canSave).toBe(false);
+    await act(async () => result.current.handleSave());
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('allows saving once a field is changed from its loaded value', () => {
+    const { result } = renderAbsenceModal({
+      settings: {
+        enabled: true,
+        startAt: '2026-01-10T00:00:00.000Z',
+        endAt: '2026-01-20T23:59:59.999Z',
+        bodyJson: 'Je suis absent',
+      },
+    });
+
+    act(() => result.current.setValue('endDate', new Date('2026-01-25')));
+
+    expect(result.current.canSave).toBe(true);
+  });
+
+  it('allows saving once only the body text is changed from its loaded value', () => {
+    const { result } = renderAbsenceModal({
+      settings: {
+        enabled: true,
+        startAt: '2026-01-10T00:00:00.000Z',
+        endAt: '2026-01-20T23:59:59.999Z',
+        bodyJson: 'Je suis absent',
+      },
+    });
+
+    expect(result.current.canSave).toBe(false);
+    act(() => setEditorText(result, 'Nouveau message'));
+    act(() => result.current.handleBodyChange());
+
     expect(result.current.canSave).toBe(true);
   });
 

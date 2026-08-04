@@ -51,24 +51,32 @@ function dayAfter(date: Date): Date {
  * Deliberate departure from the FS (IMPULS-6130 US-1 Gherkin scenarios),
  * decided in pairing: no inline error messages under the fields. Instead,
  * the Save button is simply disabled — via `canSave` — until the end date
- * is defined and on/after the start date, and the text is filled in
- * whenever the message is enabled.
+ * is defined and on/after the start date, the text is filled in whenever
+ * the message is enabled, and at least one field has actually changed
+ * since the last load/save (`isDirty`) — otherwise saving would be a no-op.
  */
 export function useAbsenceModal({ settings, onSave }: UseAbsenceModalProps) {
   const { t } = useI18n();
   const toast = useToast();
   const editor = useRef<EditorRef>(null);
+  const initialBodyJson = useRef(settings?.bodyJson);
   const [hasBody, setHasBody] = useState(() =>
     hasBodyContent(settings?.bodyJson),
   );
+  const [isBodyDirty, setIsBodyDirty] = useState(false);
 
-  const form = useForm<AbsenceFormValues>({
-    defaultValues: {
-      enabled: settings?.enabled ?? false,
-      startDate: settings?.startAt ? new Date(settings.startAt) : undefined,
-      endDate: settings?.endAt ? new Date(settings.endAt) : undefined,
-    },
-  });
+  const defaultValues: AbsenceFormValues = {
+    enabled: settings?.enabled ?? false,
+    startDate: settings?.startAt ? new Date(settings.startAt) : undefined,
+    endDate: settings?.endAt ? new Date(settings.endAt) : undefined,
+  };
+  // Own snapshot of the last loaded/saved field values: `formState.isDirty`
+  // only reflects changes made with `shouldDirty: true`, which the reactive
+  // end-date effect below deliberately doesn't set, so it can't be relied on
+  // here.
+  const initialFieldValues = useRef(defaultValues);
+
+  const form = useForm<AbsenceFormValues>({ defaultValues });
   const { control, register, setValue, handleSubmit } = form;
 
   const enabled = useWatch({ control, name: 'enabled' });
@@ -88,11 +96,25 @@ export function useAbsenceModal({ settings, onSave }: UseAbsenceModalProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDate]);
 
+  const isFieldsDirty =
+    enabled !== initialFieldValues.current.enabled ||
+    startDate?.getTime() !== initialFieldValues.current.startDate?.getTime() ||
+    endDate?.getTime() !== initialFieldValues.current.endDate?.getTime();
+  const isDirty = isFieldsDirty || isBodyDirty;
+
   const canSave =
-    !!startDate && !!endDate && endDate >= startDate && (!enabled || hasBody);
+    !!startDate &&
+    !!endDate &&
+    endDate >= startDate &&
+    (!enabled || hasBody) &&
+    isDirty;
 
   function handleBodyChange() {
+    const bodyJson = editor.current?.getContent('json');
     setHasBody(hasBodyContent(editor.current?.getContent('plain')));
+    setIsBodyDirty(
+      JSON.stringify(bodyJson) !== JSON.stringify(initialBodyJson.current),
+    );
   }
 
   const handleSave = handleSubmit(async (values) => {
@@ -110,7 +132,12 @@ export function useAbsenceModal({ settings, onSave }: UseAbsenceModalProps) {
     try {
       await onSave(payload);
       toast.success(t('conversation.absence.notify.saved'));
-      // The modal intentionally stays open after a successful save (FS risk #6).
+      // The modal intentionally stays open after a successful save (FS risk #6):
+      // rebase the dirty-tracking baseline so canSave goes back to false until
+      // the user makes a further change.
+      initialFieldValues.current = values;
+      initialBodyJson.current = payload.bodyJson;
+      setIsBodyDirty(false);
     } catch (error) {
       toast.error(t('conversation.absence.notify.error'));
       console.error('error:', error);
