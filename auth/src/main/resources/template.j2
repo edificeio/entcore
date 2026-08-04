@@ -126,6 +126,6 @@
       "google-email-domain-by-host": "{{ authGoogleEmail | default('{}') }}",
     {% endif %}
     "passwordRegex": "{{ authPasswordRegex | default('.{8}.*')}}",
-    "specific-wayf-v2-host": {{specificWayfV2Host | default('[]')}}
+    "specific-wayf-v2-host": {{authSpecificWayfV2Host | default('[]')}}
   }
 }
