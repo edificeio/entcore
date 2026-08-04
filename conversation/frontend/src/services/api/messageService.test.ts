@@ -71,6 +71,21 @@ describe('Conversation Message Mutation Methods', () => {
     expect(response).toHaveProperty('sent');
   });
 
+  test('includes the sender timezone in the send payload', async () => {
+    const postMock = vi.spyOn(odeServices.http(), 'post');
+
+    await messageService.send('message_draft', { body: 'New content' });
+
+    expect(postMock).toHaveBeenCalledWith(
+      expect.stringContaining('/send?id=message_draft'),
+      expect.objectContaining({
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }),
+    );
+
+    postMock.mockRestore();
+  });
+
   test('makes a PUT request to move messages to trash', async () => {
     const messageIds = ['f43d3783', '4d14920b'];
 
