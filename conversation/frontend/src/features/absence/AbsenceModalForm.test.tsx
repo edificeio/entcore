@@ -9,7 +9,8 @@
  * the editor become non-interactive when the message is disabled, that the
  * end date picker's `minDate` reactively follows the chosen start date, that
  * the Save button is disabled until required fields are filled in, and that
- * the modal never closes itself after a save (success or failure).
+ * the modal closes itself after a successful save but stays open on failure
+ * (so the user can see the error toast and retry).
  *
  * AntD's `DatePicker` calendar popup and the tiptap `Editor` are not worth
  * driving through jsdom: both are replaced with plain controllable inputs
@@ -241,7 +242,7 @@ describe('AbsenceModalForm component', () => {
     expect(saveButton).not.toBeDisabled();
   });
 
-  it('does not close the modal after a successful save (toast only)', async () => {
+  it('closes the modal after a successful save', async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const onModalClose = vi.fn();
     render(<AbsenceModalForm onModalClose={onModalClose} onSave={onSave} />);
@@ -257,7 +258,7 @@ describe('AbsenceModalForm component', () => {
 
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(mocks.useToast.success).toHaveBeenCalledTimes(1);
-    expect(onModalClose).not.toHaveBeenCalled();
+    expect(onModalClose).toHaveBeenCalledTimes(1);
   });
 
   it('shows an error toast and does not close the modal when onSave fails', async () => {

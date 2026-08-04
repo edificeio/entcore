@@ -10,6 +10,8 @@ export interface UseAbsenceModalProps {
   settings?: AbsenceSettings;
   /** Called with the full payload when the user saves a valid form. */
   onSave: (payload: AbsenceSettings) => Promise<void>;
+  /** Called once a save succeeds, to close the modal. */
+  onModalClose: () => void;
 }
 
 export interface AbsenceFormValues {
@@ -55,7 +57,11 @@ function dayAfter(date: Date): Date {
  * the message is enabled, and at least one field has actually changed
  * since the last load/save (`isDirty`) — otherwise saving would be a no-op.
  */
-export function useAbsenceModal({ settings, onSave }: UseAbsenceModalProps) {
+export function useAbsenceModal({
+  settings,
+  onSave,
+  onModalClose,
+}: UseAbsenceModalProps) {
   const { t } = useI18n();
   const toast = useToast();
   const editor = useRef<EditorRef>(null);
@@ -132,12 +138,12 @@ export function useAbsenceModal({ settings, onSave }: UseAbsenceModalProps) {
     try {
       await onSave(payload);
       toast.success(t('conversation.absence.notify.saved'));
-      // The modal intentionally stays open after a successful save (FS risk #6):
-      // rebase the dirty-tracking baseline so canSave goes back to false until
-      // the user makes a further change.
+      // Rebase the dirty-tracking baseline in case the modal instance
+      // survives the close (e.g. reopened without remounting).
       initialFieldValues.current = values;
       initialBodyJson.current = payload.bodyJson;
       setIsBodyDirty(false);
+      onModalClose();
     } catch (error) {
       toast.error(t('conversation.absence.notify.error'));
       console.error('error:', error);

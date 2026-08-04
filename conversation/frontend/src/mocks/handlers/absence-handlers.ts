@@ -18,6 +18,11 @@ export const absenceHandlers = [
 
   http.put(`${baseUrl}/absence`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
+    // Only in `dev:mock` (never in tests): lets the saving state (spinner)
+    // be observed instead of resolving instantly.
+    if (import.meta.env.MODE === 'mock') {
+      await delay(1000);
+    }
     const next = {
       ...mockAbsenceSettings,
       ...body,

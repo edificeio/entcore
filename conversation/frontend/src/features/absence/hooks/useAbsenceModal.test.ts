@@ -10,9 +10,9 @@
  * the disabled button.
  *
  * Covers pre-fill from `settings`, the UTC conversion of the payload passed
- * to `onSave`, and that a save — successful or not — never touches
- * modal-closing concerns: the hook has no `onModalClose` at all, which is
- * what structurally guarantees the modal stays open (FS risk #6).
+ * to `onSave`, and that `onModalClose` is called once a save succeeds
+ * (closing the modal so the success toast isn't hidden behind it) but never
+ * when it fails, so the user can see the error and retry.
  * Rendering/wiring is covered separately in AbsenceModal.test.tsx.
  */
 import { act, renderHook } from '@testing-library/react';
@@ -64,6 +64,7 @@ function renderAbsenceModal(
     () =>
       useAbsenceModal({
         onSave: vi.fn().mockResolvedValue(undefined),
+        onModalClose: vi.fn(),
         ...props,
       }),
     { wrapper: MockedProviders },
@@ -268,9 +269,10 @@ describe('useAbsenceModal', () => {
     expect(payload.bodyJson).toEqual({ text: 'Je suis en congés' });
   });
 
-  it('shows a success toast after a successful save', async () => {
+  it('shows a success toast and closes the modal after a successful save', async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
-    const { result } = renderAbsenceModal({ onSave });
+    const onModalClose = vi.fn();
+    const { result } = renderAbsenceModal({ onSave, onModalClose });
 
     act(() => {
       result.current.setValue('startDate', new Date('2026-01-10'));
@@ -279,11 +281,13 @@ describe('useAbsenceModal', () => {
     await act(async () => result.current.handleSave());
 
     expect(mocks.useToast.success).toHaveBeenCalledTimes(1);
+    expect(onModalClose).toHaveBeenCalledTimes(1);
   });
 
-  it('shows an error toast when onSave fails', async () => {
+  it('shows an error toast and keeps the modal open when onSave fails', async () => {
     const onSave = vi.fn().mockRejectedValue(new Error('network error'));
-    const { result } = renderAbsenceModal({ onSave });
+    const onModalClose = vi.fn();
+    const { result } = renderAbsenceModal({ onSave, onModalClose });
 
     act(() => {
       result.current.setValue('startDate', new Date('2026-01-10'));
@@ -292,5 +296,6 @@ describe('useAbsenceModal', () => {
     await act(async () => result.current.handleSave());
 
     expect(mocks.useToast.error).toHaveBeenCalledTimes(1);
+    expect(onModalClose).not.toHaveBeenCalled();
   });
 });

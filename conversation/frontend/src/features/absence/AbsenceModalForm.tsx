@@ -43,7 +43,7 @@ export function AbsenceModalForm({
     canSave,
     handleBodyChange,
     handleSave,
-  } = useAbsenceModal({ settings, onSave });
+  } = useAbsenceModal({ settings, onSave, onModalClose });
 
   return (
     <>
