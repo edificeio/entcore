@@ -130,7 +130,12 @@ export const createMessageService = (baseURL: string) => ({
     if (inReplyToId) {
       postUrl += '&In-Reply-To=' + inReplyToId;
     }
-    return odeServices.http().post<MessageSentResponse>(postUrl, payload);
+    // Transport-only field: reference timezone for the back's absence auto-reply
+    // daily guard. Optional server-side, with a server-side fallback when absent.
+    return odeServices.http().post<MessageSentResponse>(postUrl, {
+      ...payload,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
   },
 
   recall(messageId: string) {
