@@ -425,6 +425,8 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      */
     @Override
     public Future<GetClassAdminResponseDTO> getClassAdminUsers(GetClassAdminRequestDTO request) {
+        log.info("Received request for getClassAdminUsers: {}", request);
+
         final Promise<GetClassAdminResponseDTO> promise = Promise.promise();
 
         if (request == null || !request.isValid()) {
@@ -434,21 +436,35 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         }
 
         String userId = request.getUserId();
+
+        log.info("Fetching user infos for userId: {}", userId);
+
         if (userId == null || userId.trim().isEmpty()) {
             promise.fail("request.parameters.userid.invalid");
             return promise.future();
         }
 
         this.userService.getUserInfos(request.getUserId(), request.getIncludes(), result -> {
+            log.info("Received result for getUserInfos: {}", result);
+
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
+                    log.info("User infos found for userId {}: {}", userId, result.right().getValue());
+
                     try {
                         JsonObject userInfoJson = result.right().getValue();
+                        log.info("Converting JsonObject to UserProfileDTOClassAdmin: {}", userInfoJson);
+
                         UserProfileDTOClassAdmin userProfile = objectMapper.readValue(
                             userInfoJson.toString(),
                             UserProfileDTOClassAdmin.class
                         );
-                        promise.complete(new GetClassAdminResponseDTO(userProfile));
+                        log.info("Successfully converted to UserProfileDTOClassAdmin: {}", userProfile);
+
+                        GetClassAdminResponseDTO responseDTO = new GetClassAdminResponseDTO(userProfile);
+                        log.info("Completing promise with responseDTO: {}", responseDTO);
+
+                        promise.complete(responseDTO);
                     } catch (Exception e) {
                         log.error("Error converting JsonObject to UserProfileDTOClassAdmin", e);
                         promise.fail("Error processing user data");

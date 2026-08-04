@@ -1311,8 +1311,14 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void getUserInfos(String userId, final Set<ClassIncludeField> fields, final Handler<Either<String,JsonObject>> handler) {
+		logger.info("getUserInfos for userId: " + userId + " with fields: " + fields);
+
 		final String schoolsExtraFields = getSchoolsExtraFields(fields);
+		logger.info("schoolsExtraFields: " + schoolsExtraFields);
+
 		final String classsExtraFields = getClasssExtraFields(fields);
+		logger.info("classsExtraFields: " + classsExtraFields);
+
 		String query;
 		try {
 			query = "MATCH (u:`User` { id : {userId}}) " +
@@ -1337,24 +1343,36 @@ public class DefaultUserService implements UserService {
 			handler.handle(new Either.Left<>("invalid.hobby"));
 			return;
 		}
+		logger.info("getUserInfos query: " + query);
+
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
 		neo.execute(query, params, validUniqueResultHandler(res->{
+			logger.info("getUserInfos result: " + res);
+
 			if(res.isRight()){
 				final JsonObject result = res.right().getValue();
+				logger.info("getUserInfos result JsonObject: " + result);
+
 				result.put("hobbies", UserBookService.extractHobbies(userBookData, result, true));
 				// Add an information about this user's email being updatable or not
 				// As of 2022-10-07, ADML emails cannot be changed except by the ADML himself.
 				listFunctions(userId, funcs -> {
+					logger.info("getUserInfos listFunctions result: " + funcs);
+
 					if( funcs.isRight() ) {
 						final JsonArray functions = funcs.right().getValue();
+						logger.info("getUserInfos listFunctions result JsonArray: " + functions);
+
 						if( functions!=null && functions.encode().contains(DefaultFunctions.ADMIN_LOCAL)) {
 							result.put("lockedEmail", true);
 						}
 					}
+					logger.info("getUserInfos final result JsonObject: " + result);
 					handler.handle(new Either.Right<>(result));
 				});
 			}else{
+				logger.info("getUserInfos result is not right: " + res);
 				handler.handle(res);
 			}
 		}));
