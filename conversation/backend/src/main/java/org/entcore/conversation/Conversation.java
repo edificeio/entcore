@@ -32,6 +32,7 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ApiController;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.controllers.TaskController;
+import org.entcore.conversation.cron.PurgeAbsenceReplies;
 import org.entcore.conversation.cron.PurgeMessages;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
@@ -99,8 +100,10 @@ public class Conversation extends BaseServer {
 		final DeleteOrphan deleteOrphan = new DeleteOrphan(storage);
 		final String purgeMessagesCron = config.getString("purgeMessagesCron");
 		final PurgeMessages purgeMessages = new PurgeMessages(conversationService);
-		// Enable delete orphan and purge old messages tasks to be triggered via API
-		addController(new TaskController(deleteOrphan, purgeMessages));
+		final String purgeAbsenceRepliesCron = config.getString("purge-absence-replies-cron");
+		final PurgeAbsenceReplies purgeAbsenceReplies = new PurgeAbsenceReplies(conversationService);
+		// Enable delete orphan, purge old messages and purge absence replies tasks to be triggered via API
+		addController(new TaskController(deleteOrphan, purgeMessages, purgeAbsenceReplies));
 		// Schedule delete orphan task from cron expression
 		if (deleteOrphanCron != null) {
 			try {
@@ -115,6 +118,14 @@ public class Conversation extends BaseServer {
 				new CronTrigger(vertx, purgeMessagesCron).schedule(purgeMessages);
 			} catch (ParseException e) {
 				log.error("Invalid purge messages cron expression.", e);
+			}
+		}
+		// Schedule purge absence replies task from cron expression
+		if (purgeAbsenceRepliesCron != null) {
+			try {
+				new CronTrigger(vertx, purgeAbsenceRepliesCron).schedule(purgeAbsenceReplies);
+			} catch (ParseException e) {
+				log.error("Invalid purge absence replies cron expression.", e);
 			}
 		}
 		return Future.succeededFuture();
