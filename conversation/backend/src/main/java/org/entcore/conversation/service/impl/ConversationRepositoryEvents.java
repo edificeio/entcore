@@ -443,6 +443,22 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 			"WHERE um.user_id IN " + Sql.listPrepared(userIds.getList());
 		builder.prepared(deleteUserMessages, userIds);
 
+		String deleteAbsenceSettings =
+			"DELETE FROM conversation.absence_settings " +
+			"WHERE user_id IN " + Sql.listPrepared(userIds.getList());
+		builder.prepared(deleteAbsenceSettings, userIds);
+
+		// The anti-spam guard keys on two users, the absent one and the expeditor, so a deleted user has to
+		// be purged from either side : filtering on the absent user alone would leave rows naming them as
+		// expeditor of someone else's reply.
+		String deleteAbsenceReplies =
+			"DELETE FROM conversation.absence_replies " +
+			"WHERE absent_user_id IN " + Sql.listPrepared(userIds.getList()) +
+			" OR sender_id IN " + Sql.listPrepared(userIds.getList());
+		JsonArray absenceRepliesParams = new fr.wseduc.webutils.collections.JsonArray();
+		absenceRepliesParams.addAll(userIds).addAll(userIds);
+		builder.prepared(deleteAbsenceReplies, absenceRepliesParams);
+
 		String setFrom =
 			"UPDATE conversation.messages " +
 			"SET " +
