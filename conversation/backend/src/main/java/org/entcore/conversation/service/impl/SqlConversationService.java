@@ -76,13 +76,38 @@ public class SqlConversationService implements ConversationService{
 	private final String userMessageTable;
 	private final String userMessageAttachmentTable;
 	private final String originalMessageTable;
+	private final String absenceSettingsTable;
+	private final String absenceRepliesTable;
 	private final boolean optimizedThreadList;
 	private int sendTimeout = DEFAULT_SENDTIMEOUT;
 
 	private final int conversationBatchSize;
+
+	private final int absenceRepliesRetentionDays;
+	private final int absenceRepliesPurgeTimeout;
+	private final int absenceRepliesPurgeBatchSize;
+	private final int absenceRepliesPurgeMaxBatches;
+	/** Deletes one batch of expired guard rows, its single parameter being the batch size. */
+	private final String purgeAbsenceRepliesQuery;
+
 	private final IContentTransformerClient contentTransformerClient;
 	private final IContentTransformerEventRecorder contentTransformerEventRecorder;
 	private final Set<String> CONVERSATION_TRANSFORMATION_EXTENSIONS = Collections.singleton("conversation-history");
+
+	/**
+	 * Payload fields that are read by the send flow but never persisted : both the insert and the update
+	 * build their statement from the whole message, so an unknown field would become a column.
+	 */
+	private static final Set<String> TRANSPORT_ONLY_FIELDS = Collections.singleton("timezone");
+
+	/** Default retention of the anti-spam guard rows, in days. */
+	private static final int DEFAULT_ABSENCE_REPLIES_RETENTION_DAYS = 7;
+
+	/**
+	 * Retention below which the guard would break : timezones span 26 hours, so a row up to two days old can
+	 * still be the one answering "a reply already went out today" for a distant expeditor.
+	 */
+	private static final int MIN_ABSENCE_REPLIES_RETENTION_DAYS = 2;
 
 	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
@@ -96,6 +121,25 @@ public class SqlConversationService implements ConversationService{
 		userMessageTable = schema + ".usermessages";
 		userMessageAttachmentTable = schema + ".usermessagesattachments";
 		originalMessageTable = schema + ".originalmessages";
+		absenceSettingsTable = schema + ".absence_settings";
+		absenceRepliesTable = schema + ".absence_replies";
+		final JsonObject purgeConfig = Config.getConf().getJsonObject("purge-absence-replies", new JsonObject());
+		// Two days is the functional floor, not a preference : below it a row could still be the one that
+		// blocks a same day second reply for an expeditor in a distant timezone.
+		absenceRepliesRetentionDays = Math.max(MIN_ABSENCE_REPLIES_RETENTION_DAYS,
+				purgeConfig.getInteger("retention-days", DEFAULT_ABSENCE_REPLIES_RETENTION_DAYS));
+		absenceRepliesPurgeTimeout = purgeConfig.getInteger("query-timeout", 300000);
+		absenceRepliesPurgeBatchSize = purgeConfig.getInteger("batch-size", 10000);
+		absenceRepliesPurgeMaxBatches = purgeConfig.getInteger("max-batches", 100);
+		// Deleted in batches so the table is never held under one long transaction. No index on last_sent_at
+		// on purpose : that column is rewritten on every reply, and indexing it would tax the write path to
+		// speed up a task that runs once a day.
+		purgeAbsenceRepliesQuery =
+			"DELETE FROM " + absenceRepliesTable +
+			" WHERE (absent_user_id, sender_id) IN (" +
+				"SELECT absent_user_id, sender_id FROM " + absenceRepliesTable +
+				" WHERE last_sent_at < now() - interval '" + absenceRepliesRetentionDays + " days'" +
+				" LIMIT ?)";
 		optimizedThreadList = vertx.getOrCreateContext().config().getBoolean("optimized-thread-list", false);
 		this.contentTransformerClient = contentTransformerClient;
 		this.contentTransformerEventRecorder = contentTransformerEventRecorder;
@@ -152,6 +196,7 @@ public class SqlConversationService implements ConversationService{
 			// 1 - Insert message
 			JsonObject sanitized = message.copy();
 			sanitized.remove("scheduleAt");
+			TRANSPORT_ONLY_FIELDS.forEach(sanitized::remove);
 			builder.insert(messageTable, sanitized, "id");
 
 			// 2 - Link message to the user
@@ -190,7 +235,7 @@ public class SqlConversationService implements ConversationService{
 			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 			for (String attr : message.fieldNames()) {
-				if("scheduleAt".equals(attr)) {
+				if("scheduleAt".equals(attr) || TRANSPORT_ONLY_FIELDS.contains(attr)) {
 					continue;
 				}
 				if("to".equals(attr) || "cc".equals(attr) || "displayNames".equals(attr)){
@@ -1968,6 +2013,205 @@ public class SqlConversationService implements ConversationService{
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
 
+	/////////////////////////
+	/* Message d'absence */
+
+	/**
+	 * Projection shared by the read and the upsert, so that both expose exactly what is stored.
+	 * Timestamps are rendered as ISO 8601 UTC because the API contract mandates that form, which is
+	 * not what the driver returns for a TIMESTAMPTZ column by default.
+	 */
+	private static final String ABSENCE_PROJECTION =
+			"enabled, " +
+			"to_char(start_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS \"startAt\", " +
+			"to_char(end_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS \"endAt\", " +
+			"body_json AS \"bodyJson\", " +
+			"body_html AS \"bodyHtml\", " +
+			"to_char(updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS \"updatedAt\"";
+
+	@Override
+	public Future<JsonObject> getAbsence(UserInfos user) {
+		final Promise<JsonObject> promise = Promise.promise();
+		final String query = "SELECT " + ABSENCE_PROJECTION + " FROM " + absenceSettingsTable + " WHERE user_id = ?";
+		sql.prepared(query, new JsonArray().add(user.getUserId()),
+				SqlResult.validUniqueResultHandler(either -> {
+					if (either.isRight()) {
+						// No row yields an empty object, which is what the contract expects instead of a 404.
+						promise.complete(either.right().getValue());
+					} else {
+						promise.fail(either.left().getValue());
+					}
+				}, "bodyJson"));
+		return promise.future();
+	}
+
+	@Override
+	public Future<JsonObject> upsertAbsence(JsonObject absence, UserInfos user) {
+		return transformAbsenceContent(absence.getJsonObject("bodyJson")).compose(transformed -> {
+			if (transformed == null || transformed.getCleanJson() == null) {
+				// Storing content that has not been normalized would break the contract, so fail loudly
+				// rather than persist what the caller sent.
+				return Future.failedFuture("conversation.absence.transformation.failed");
+			}
+			final Promise<JsonObject> promise = Promise.promise();
+			final String query =
+					"INSERT INTO " + absenceSettingsTable +
+					" (user_id, start_at, end_at, enabled, body_json, body_html, updated_at)" +
+					" VALUES (?, CAST(? AS TIMESTAMPTZ), CAST(? AS TIMESTAMPTZ), ?, CAST(? AS JSONB), ?, now())" +
+					" ON CONFLICT (user_id) DO UPDATE SET" +
+					" start_at = EXCLUDED.start_at, end_at = EXCLUDED.end_at, enabled = EXCLUDED.enabled," +
+					" body_json = EXCLUDED.body_json, body_html = EXCLUDED.body_html, updated_at = now()" +
+					" RETURNING " + ABSENCE_PROJECTION;
+			final JsonArray values = new JsonArray()
+					.add(user.getUserId())
+					.add(absence.getString("startAt"))
+					.add(absence.getString("endAt"))
+					.add(absence.getBoolean("enabled", Boolean.FALSE))
+					.add(transformed.getCleanJson().encode())
+					.add(getOrElse(transformed.getHtmlContent(), ""));
+			sql.prepared(query, values, SqlResult.validUniqueResultHandler(either -> {
+				if (either.isRight()) {
+					promise.complete(either.right().getValue());
+				} else {
+					promise.fail(either.left().getValue());
+				}
+			}, "bodyJson"));
+			return promise.future();
+		});
+	}
+
+	@Override
+	public Future<JsonArray> findActiveAbsences(List<String> userIds) {
+		if (userIds == null || userIds.isEmpty()) {
+			return Future.succeededFuture(new JsonArray());
+		}
+		// Batched rather than one big ANY($1) : a send can carry up to 200 000 recipients, and the
+		// batches run one after the other so a mass send never floods the database in one go.
+		return findActiveAbsencesBatch(userIds, 0, new JsonArray());
+	}
+
+	private Future<JsonArray> findActiveAbsencesBatch(final List<String> userIds, final int offset, final JsonArray found) {
+		if (offset >= userIds.size()) {
+			return Future.succeededFuture(found);
+		}
+		final List<String> batch = userIds.subList(offset, Math.min(offset + conversationBatchSize, userIds.size()));
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonArray values = new JsonArray();
+		// The bounds are UTC instants, so the activity test is a plain instant comparison here.
+		final String query =
+				"SELECT user_id AS \"userId\", body_html AS \"bodyHtml\", body_json AS \"bodyJson\"" +
+				" FROM " + absenceSettingsTable +
+				" WHERE user_id IN " + generateInVars(batch, values) +
+				" AND enabled AND now() BETWEEN start_at AND end_at";
+		sql.prepared(query, values,
+				SqlResult.validResultHandler(either -> {
+					if (either.isRight()) {
+						promise.complete(either.right().getValue());
+					} else {
+						promise.fail(either.left().getValue());
+					}
+				}, "bodyJson"));
+		return promise.future()
+				.compose(batchResult -> {
+					batchResult.forEach(found::add);
+					return findActiveAbsencesBatch(userIds, offset + conversationBatchSize, found);
+				});
+	}
+
+	@Override
+	public Future<JsonArray> listMessageRecipients(String messageId, String excludeUserId) {
+		final Promise<JsonArray> promise = Promise.promise();
+		// No ORDER BY : the whole set is read in one pass through idx_usermessages_message_id, and pacing
+		// happens later in memory. Sorting would cost a sort of every recipient for no benefit here.
+		final String query =
+				"SELECT user_id AS \"userId\" FROM " + userMessageTable +
+				" WHERE message_id = ? AND user_id <> ?";
+		sql.prepared(query, new JsonArray().add(messageId).add(excludeUserId),
+				SqlResult.validResultHandler(either -> {
+					if (either.isRight()) {
+						promise.complete(either.right().getValue());
+					} else {
+						promise.fail(either.left().getValue());
+					}
+				}));
+		return promise.future();
+	}
+
+	@Override
+	public Future<JsonArray> claimAbsenceReplySlots(List<String> absentUserIds, String senderId, String timezone) {
+		if (absentUserIds == null || absentUserIds.isEmpty()) {
+			return Future.succeededFuture(new JsonArray());
+		}
+		return claimAbsenceReplySlotsBatch(absentUserIds, senderId, timezone, 0, new JsonArray());
+	}
+
+	private Future<JsonArray> claimAbsenceReplySlotsBatch(final List<String> absentUserIds, final String senderId,
+			final String timezone, final int offset, final JsonArray claimed) {
+		if (offset >= absentUserIds.size()) {
+			return Future.succeededFuture(claimed);
+		}
+		final List<String> batch = absentUserIds.subList(offset, Math.min(offset + conversationBatchSize, absentUserIds.size()));
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonArray values = new JsonArray();
+		final StringBuilder rows = new StringBuilder();
+		for (String absentUserId : batch) {
+			rows.append("(?,?,now()),");
+			values.add(absentUserId).add(senderId);
+		}
+		rows.deleteCharAt(rows.length() - 1);
+		// A pair absent from the table is inserted, hence claimed. A pair already there is only updated when
+		// its last reply falls on an earlier day, so the row comes back exactly once per day and per pair.
+		final String query =
+				"INSERT INTO " + absenceRepliesTable + " AS ar (absent_user_id, sender_id, last_sent_at)" +
+				" VALUES " + rows +
+				" ON CONFLICT (absent_user_id, sender_id) DO UPDATE SET last_sent_at = now()" +
+				" WHERE date_trunc('day', ar.last_sent_at AT TIME ZONE ?)" +
+				" < date_trunc('day', now() AT TIME ZONE ?)" +
+				" RETURNING absent_user_id AS \"absentUserId\"";
+		values.add(timezone).add(timezone);
+		sql.prepared(query, values, SqlResult.validResultHandler(either -> {
+			if (either.isRight()) {
+				promise.complete(either.right().getValue());
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		}));
+		return promise.future()
+				.compose(batchResult -> {
+					batchResult.forEach(claimed::add);
+					return claimAbsenceReplySlotsBatch(absentUserIds, senderId, timezone,
+							offset + conversationBatchSize, claimed);
+				});
+	}
+
+	/**
+	 * Normalizes the rich text of an absence message.
+	 * Unlike {@link #transformMessageContent}, the input is tiptap JSON, which the transformer takes
+	 * through its dedicated jsonContent parameter rather than the HTML one.
+	 * <p>
+	 * Which getters carry the result depends on the input format : the transformer returns the sanitized
+	 * <em>input</em> format as clean* and the converted <em>other</em> format as *Content. Feeding it JSON
+	 * therefore yields getCleanJson() and getHtmlContent(), and leaves getCleanHtml() empty — which is why
+	 * this caller does not read getCleanHtml() the way the message flow does.
+	 * @param bodyJson the tiptap JSON supplied by the caller
+	 * @return a {@link Future} of the transformer response, holding both normalized outputs
+	 */
+	private Future<ContentTransformerResponse> transformAbsenceContent(JsonObject bodyJson) {
+		final Promise<ContentTransformerResponse> promise = Promise.promise();
+		contentTransformerClient.transform(new ContentTransformerRequest(
+				new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON)),
+				0,
+				null,
+				bodyJson,
+				CONVERSATION_TRANSFORMATION_EXTENSIONS))
+				.onSuccess(promise::complete)
+				.onFailure(throwable -> {
+					log.error("Failed transforming absence message content", throwable);
+					promise.fail(throwable);
+				});
+		return promise.future();
+	}
+
 	///////////
 	/* Purge */
 
@@ -2027,6 +2271,42 @@ public class SqlConversationService implements ConversationService{
 			}
 		});
 
+		return promise.future();
+	}
+
+	@Override
+	public Future<Void> purgeAbsenceReplies() {
+		log.info("Starting absence replies purge (retention=" + absenceRepliesRetentionDays + " days, batch-size="
+				+ absenceRepliesPurgeBatchSize + ", max-batches=" + absenceRepliesPurgeMaxBatches + ")");
+		return purgeAbsenceRepliesBatch(0, 0);
+	}
+
+	private Future<Void> purgeAbsenceRepliesBatch(final int batchNumber, final int totalDeleted) {
+		if (batchNumber >= absenceRepliesPurgeMaxBatches) {
+			log.info("Absence replies purge stopped after reaching max batches (" + absenceRepliesPurgeMaxBatches
+					+ "), total deleted: " + totalDeleted + " rows");
+			return Future.succeededFuture();
+		}
+		final DeliveryOptions deliveryOptions = new DeliveryOptions();
+		deliveryOptions.setSendTimeout(absenceRepliesPurgeTimeout);
+
+		final Promise<Void> promise = Promise.promise();
+		sql.prepared(purgeAbsenceRepliesQuery, new JsonArray().add(absenceRepliesPurgeBatchSize), deliveryOptions, result -> {
+			if ("ok".equals(result.body().getString("status"))) {
+				final int deleted = result.body().getInteger("rows", 0);
+				if (deleted == 0) {
+					log.info("Absence replies purge completed, total deleted: " + totalDeleted + " rows");
+					promise.complete();
+				} else {
+					purgeAbsenceRepliesBatch(batchNumber + 1, totalDeleted + deleted)
+							.onComplete(promise);
+				}
+			} else {
+				final String error = result.body().getString("message", "Unknown error");
+				log.error("An error occurred purging absence replies (batch " + batchNumber + "): " + error);
+				promise.fail(error);
+			}
+		});
 		return promise.future();
 	}
 

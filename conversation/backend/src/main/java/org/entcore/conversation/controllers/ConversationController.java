@@ -31,6 +31,8 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerResponse;
 
@@ -89,6 +91,8 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
+import org.entcore.conversation.util.AbsenceValidator;
+import org.entcore.conversation.util.AsyncUtil;
 import org.entcore.conversation.util.DecodedDisplayName;
 
 import fr.wseduc.security.ActionType;
@@ -97,6 +101,19 @@ public class ConversationController extends BaseController {
 	
 	public static final String RESOURCE_NAME = "message";
 	private final static String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
+
+	/** Profiles allowed to set an absence message for themselves. */
+	private static final Set<String> ABSENCE_ALLOWED_PROFILES =
+			Collections.unmodifiableSet(new HashSet<>(Arrays.asList("Teacher", "Personnel")));
+
+	/** Where a sent message hands its absence replies over, for processing away from the request. */
+	private static final String ABSENCE_REPLIES_ADDRESS = "conversation.absence.replies";
+
+	/** How many recipients one slice looks at before yielding. */
+	private static final int DEFAULT_ABSENCE_REPLY_SLICE_SIZE = 500;
+
+	/** How long a slice yields for, in milliseconds. */
+	private static final long DEFAULT_ABSENCE_REPLY_PAUSE_MS = 200L;
 
 	private final Storage storage;
 	private int threshold;
@@ -138,6 +155,9 @@ public class ConversationController extends BaseController {
 		this.threshold = config.getInteger("alertStorage", 80);
 		this.mailToExercizer = new MailToExercizer(vertx, config);
 		this.inactiveUserThreshold = config.getInteger("inactive-user-threshold", 50);
+		// Local on purpose : the replies are processed by the node that handled the send, and a clustered
+		// address would either duplicate the work or ship it to a node with nothing to gain from it.
+		vertx.eventBus().localConsumer(ABSENCE_REPLIES_ADDRESS, this::handleAbsenceReplies);
 	}
 
 	private void renderViewWeb(HttpServerRequest request) {
@@ -524,6 +544,10 @@ public class ConversationController extends BaseController {
 													.put("thread_id", result.getString("thread_id"))
 													.put("sentIds", message1.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
 											timelineNotification(request, timelineParams, user);
+											// Same guard as the timeline notification and the quota update : a scheduled
+											// message is not delivered yet, so no absence reply is due until it is sent.
+											dispatchAbsenceReplies(result.getString("id"), result.getString("subject"),
+													message1.getString("timezone"), user, request);
 										}
                                         JsonArray inactive = message1.getJsonArray("inactives", new JsonArray());
                                         message1.put("inactivesCount", inactive.size());
@@ -2022,4 +2046,223 @@ public class ConversationController extends BaseController {
 		// This route is used to create conversation.allowNoReply workflow right
 		request.response().end();
 	}
+
+	/////////////////////////
+	/* Message d'absence */
+
+	@Get("absence")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getAbsence(final HttpServerRequest request) {
+		getUserInfos(eb, request, user -> {
+			if (user == null) {
+				unauthorized(request);
+				return;
+			}
+			if (!ABSENCE_ALLOWED_PROFILES.contains(user.getType())) {
+				forbidden(request, "conversation.absence.forbidden.profile");
+				return;
+			}
+			conversationService.getAbsence(user)
+					.onSuccess(absence -> renderJson(request, absence))
+					.onFailure(th -> {
+						LOGGER.error("Failed reading absence settings", th);
+						renderError(request);
+					});
+		});
+	}
+
+	@Put("absence")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void upsertAbsence(final HttpServerRequest request) {
+		getUserInfos(eb, request, user -> {
+			if (user == null) {
+				unauthorized(request);
+				return;
+			}
+			if (!ABSENCE_ALLOWED_PROFILES.contains(user.getType())) {
+				forbidden(request, "conversation.absence.forbidden.profile");
+				return;
+			}
+			RequestUtils.bodyToJson(request, body -> {
+				final String validationError = AbsenceValidator.validatePayload(body);
+				if (validationError != null) {
+					badRequest(request, validationError);
+					return;
+				}
+				conversationService.upsertAbsence(body, user)
+						.onSuccess(absence -> renderJson(request, absence))
+						.onFailure(th -> {
+							LOGGER.error("Failed saving absence settings", th);
+							renderError(request);
+						});
+			});
+		});
+	}
+
+	/**
+	 * Hands the absence replies of a sent message over to the local consumer, and returns immediately.
+	 * <p>
+	 * Nothing but a handful of scalars crosses the bus : the recipients are read back from storage on the
+	 * consumer side, so a send to 200 000 people does not move that list around. The reply to the expeditor
+	 * of the original send is therefore never delayed by the replies it triggers.
+	 * @param messageId the message that was just sent
+	 * @param subject its subject, quoted in the reply prefix
+	 * @param timezone expeditor timezone, absent for mobile clients that predate the field
+	 * @param sender the expeditor, who receives the replies
+	 * @param request the request the send came from, only read for its host
+	 */
+	private void dispatchAbsenceReplies(final String messageId, final String subject, final String timezone,
+			final UserInfos sender, final HttpServerRequest request) {
+		vertx.eventBus().send(ABSENCE_REPLIES_ADDRESS, new JsonObject()
+				.put("messageId", messageId)
+				.put("subject", getOrElse(subject, ""))
+				.put("senderId", sender.getUserId())
+				.put("timezone", getOrElse(timezone, TimeZone.getDefault().getID(), false))
+				.put("host", getHost(request)));
+	}
+
+	/**
+	 * Emits the absence replies of one sent message, spread over time.
+	 * <p>
+	 * Recipients were resolved with groups flattened when the message was delivered, so no group resolution
+	 * happens here. Emission goes through {@link #saveAndSend} : a reply never passes back through the route
+	 * handler, so it cannot trigger an absence test of its own — the anti-looping requirement of the FS holds
+	 * by construction, with no marker to persist.
+	 * <p>
+	 * Recipients are handled in slices, each slice emitting its replies one after another and yielding for a
+	 * configurable pause before the next one. The point is not raw speed but leaving room for the rest of the
+	 * platform : a mass send can concern thousands of absent users, and every reply is a full write.
+	 */
+	private void handleAbsenceReplies(final Message<JsonObject> event) {
+		final JsonObject work = event.body();
+		final String messageId = work.getString("messageId");
+		final String senderId = work.getString("senderId");
+		final long startedAt = System.currentTimeMillis();
+
+		conversationService.listMessageRecipients(messageId, senderId)
+			.compose(recipients -> {
+				final List<String> candidates = new ArrayList<>();
+				for (Object recipient : recipients) {
+					candidates.add(((JsonObject) recipient).getString("userId"));
+				}
+				return emitAbsenceRepliesSlice(work, candidates, 0, 0);
+			})
+			.onSuccess(sent -> {
+				if (sent > 0) {
+					// The two signals the risk on mass sends is watched with.
+					LOGGER.info(String.format("[Conversation][absence] %d replies sent for message %s in %d ms",
+							sent, messageId, System.currentTimeMillis() - startedAt));
+				}
+			})
+			.onFailure(th -> LOGGER.error("Failed sending absence replies for message " + messageId, th));
+	}
+
+	/**
+	 * Processes one slice of recipients, then schedules the next one after a pause.
+	 * @param work the dispatched payload
+	 * @param candidates every recipient of the message, expeditor excluded
+	 * @param offset where the slice starts
+	 * @param sentSoFar replies emitted by the previous slices
+	 * @return a {@link Future} of the total number of replies emitted
+	 */
+	private Future<Integer> emitAbsenceRepliesSlice(final JsonObject work, final List<String> candidates,
+			final int offset, final int sentSoFar) {
+		if (offset >= candidates.size()) {
+			return Future.succeededFuture(sentSoFar);
+		}
+		final int sliceSize = Config.getConf().getInteger("absence-reply-slice-size", DEFAULT_ABSENCE_REPLY_SLICE_SIZE);
+		final long pause = Config.getConf().getLong("absence-reply-pause-ms", DEFAULT_ABSENCE_REPLY_PAUSE_MS);
+		final int batchSize = Config.getConf().getInteger("conversation-batch-size", Conversation.DEFAULT_CONVERSATION_BATCH_SIZE);
+		final List<String> slice = candidates.subList(offset, Math.min(offset + sliceSize, candidates.size()));
+
+		return conversationService.findActiveAbsences(slice)
+			.compose(absences -> {
+				if (absences.isEmpty()) {
+					return Future.succeededFuture(0);
+				}
+				final Map<String, JsonObject> byUserId = new LinkedHashMap<>();
+				for (Object absence : absences) {
+					byUserId.put(((JsonObject) absence).getString("userId"), (JsonObject) absence);
+				}
+				return conversationService
+					.claimAbsenceReplySlots(new ArrayList<>(byUserId.keySet()), work.getString("senderId"), work.getString("timezone"))
+					.compose(claimed -> {
+						final List<String> clearedIds = new ArrayList<>();
+						for (Object row : claimed) {
+							clearedIds.add(((JsonObject) row).getString("absentUserId"));
+						}
+						if (clearedIds.isEmpty()) {
+							return Future.succeededFuture(0);
+						}
+						return userService.findUsersLanguages(clearedIds, batchSize)
+							.compose(languages -> emitAbsenceRepliesOneByOne(work, byUserId, clearedIds, languages, 0));
+					});
+			})
+			.compose(sentInSlice -> AsyncUtil.pause(vertx, pause)
+					.compose(v -> emitAbsenceRepliesSlice(work, candidates, offset + sliceSize, sentSoFar + sentInSlice)));
+	}
+
+	/**
+	 * Emits the replies of a slice strictly one after another, so a slice never opens more than one write at
+	 * a time.
+	 * @return a {@link Future} of how many replies the slice emitted
+	 */
+	private Future<Integer> emitAbsenceRepliesOneByOne(final JsonObject work, final Map<String, JsonObject> byUserId,
+			final List<String> clearedIds, final JsonObject languages, final int index) {
+		if (index >= clearedIds.size()) {
+			return Future.succeededFuture(clearedIds.size());
+		}
+		final String absentUserId = clearedIds.get(index);
+		return emitAbsenceReply(work, byUserId.get(absentUserId),
+					languages.getString(absentUserId, Neo4jConversationService.DEFAULT_LANGUAGE))
+				.recover(th -> {
+					// The daily slot is already spent : one lost reply must not cost the whole slice.
+					LOGGER.error("Failed sending absence reply from " + absentUserId, th);
+					return Future.succeededFuture();
+				})
+				.compose(v -> emitAbsenceRepliesOneByOne(work, byUserId, clearedIds, languages, index + 1));
+	}
+
+	/**
+	 * Emits one absence reply, from the absent user to the expeditor of the original message.
+	 * @param work the dispatched payload, holding the expeditor, the original subject and the host
+	 * @param absence the absence settings, holding the body to reply with
+	 * @param language language of the absent user, used for the subject prefix
+	 * @return a {@link Future} completed once the reply is sent
+	 */
+	private Future<Void> emitAbsenceReply(final JsonObject work, final JsonObject absence, final String language) {
+		final String absentUserId = absence.getString("userId");
+		// No session exists for the absent user : the save and send chain only ever reads getUserId().
+		final UserInfos absentUser = new UserInfos();
+		absentUser.setUserId(absentUserId);
+		// Same fabricated request the bus originated sends already rely on, the send flow needs one.
+		// X-Forwarded-For is not optional : the send records a transformation event, whose event store
+		// resolves the caller ip, and Renders.getIp throws without it. That throw would happen before the
+		// transformation promise completes, stalling the whole chain with no error surfaced.
+		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject()
+				.put("method", "POST")
+				.put("headers", new JsonObject()
+						.put("X-Forwarded-For", "127.0.0.1")
+						.put("Host", work.getString("host", ""))));
+
+		final JsonObject reply = new JsonObject()
+			.put("subject", I18n.getInstance().translate("conversation.absence.reply.subject",
+					work.getString("host", ""), language, work.getString("subject", "")))
+			.put("body", getOrElse(absence.getString("bodyHtml"), ""))
+			.put("to", new JsonArray().add(work.getString("senderId")))
+			// Set before addDisplayNames, which reads "from" to resolve the name shown to the recipient.
+			.put("from", absentUserId);
+
+		final Promise<Void> promise = Promise.promise();
+		userService.addDisplayNames(reply, null, named ->
+			saveAndSend(null, named, absentUser, null, null, either -> {
+				if (either.isRight()) {
+					promise.complete();
+				} else {
+					promise.fail(either.left().getValue());
+				}
+			}, request));
+		return promise.future();
+	}
+
 }
