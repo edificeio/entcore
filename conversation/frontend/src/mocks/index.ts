@@ -1,5 +1,7 @@
 import { Folder, Message, MessageMetadata, User } from '~/models';
 
+export * from './datas/absences';
+
 export const mockConfiguration: {
   'max-depth': number;
   'recall-delay-minutes': number;

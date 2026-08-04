@@ -1,0 +1,7 @@
+.absence-editor {
+  transition: opacity 0.2s ease;
+}
+
+.absence-editor--disabled {
+  opacity: 0.5;
+}

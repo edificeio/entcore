@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv, ProxyOptions } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { serveLocalI18nPlugin } from './plugins/serveLocalI18n';
 import {
   hashEdificeBootstrap,
   queryHashVersion,
@@ -96,6 +97,19 @@ export default ({ mode }: { mode: string }) => {
     },
 
     plugins: [
+      serveLocalI18nPlugin({
+        routes: [
+          {
+            routePath: '/conversation/i18n',
+            filePath: '../backend/src/main/resources/i18n/fr.json',
+          },
+          {
+            routePath: '/i18n',
+            filePath: '../../portal/backend/src/main/resources/i18n/fr.json',
+          },
+        ],
+        rootDir: __dirname,
+      }),
       react(),
       tsconfigPaths(),
       hashEdificeBootstrap({

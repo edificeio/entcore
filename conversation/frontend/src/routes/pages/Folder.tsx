@@ -4,6 +4,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
+import { AbsenceReminderBanner } from '~/features/absence/AbsenceReminderBanner';
 import { MessageList } from '~/features/message-list/MessageList';
 import { MessageListSkeleton } from '~/features/message-list/MessageListSkeleton';
 import { MessageListEmpty } from '~/features/message-list/components/MessageListEmpty';
@@ -54,6 +55,7 @@ export function Component() {
 
   return (
     <>
+      <AbsenceReminderBanner />
       {(!!messages?.length ||
         searchParams.get('search') ||
         searchParams.get('unread')) && <MessageListHeader />}
