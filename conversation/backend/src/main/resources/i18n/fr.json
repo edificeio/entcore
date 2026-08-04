@@ -25,6 +25,8 @@
   "confirm": "Confirmer",
   "confirm.empty.trash": "Attention ! Vous allez supprimer définitivement l'ensemble des messages et dossiers présents dans votre corbeille",
   "content": "Objet",
+  "conversation.absence.banner.edit": "Modifier",
+  "conversation.absence.banner.text": "Votre message d'absence est actif jusqu'au [[endDate]].",
   "conversation.absence.empty.body": "Saisissez un message avant d'activer votre message d'absence",
   "conversation.absence.end.before.start": "La date de fin doit être postérieure ou égale à la date de début",
   "conversation.absence.forbidden.profile": "Votre profil ne permet pas de paramétrer un message d'absence",
