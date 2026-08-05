@@ -18,37 +18,54 @@
 
 package org.entcore.timeline.services.impl;
 
-import fr.wseduc.webutils.Either;
+import com.google.common.collect.Lists;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.notification.NotificationUtils;
-import org.entcore.common.notification.TimelineNotificationsLoader;
-import org.entcore.timeline.services.TimelineConfigService;
-import org.entcore.timeline.services.TimelinePushNotifService;
-import org.entcore.common.notification.ws.OssFcm;
-import org.entcore.common.utils.HtmlUtils;
-
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.entcore.common.notification.TimelineNotificationsLoader;
+import org.entcore.common.notification.push.PushNotifBuilder;
+import org.entcore.common.notification.push.PushNotifDto;
+import org.entcore.common.notification.push.PushNotifService;
+import org.entcore.common.notification.push.impl.SqlPushNotifService;
+import org.entcore.common.notification.ws.OssFcm;
+import org.entcore.common.user.dto.QuietHoursPreference;
+import org.entcore.common.user.dto.TimezonePreference;
+import org.entcore.common.utils.HtmlUtils;
+import org.entcore.timeline.controllers.helper.QuietHoursHelper;
+import org.entcore.timeline.services.TimelinePushNotifService;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static org.entcore.timeline.controllers.helper.NotificationHelper.*;
+import static org.entcore.timeline.controllers.helper.QuietHoursHelper.resolveTimezone;
 
 
 public class DefaultPushNotifService extends Renders implements TimelinePushNotifService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultPushNotifService.class);
-    private static final String USERBOOK_ADDRESS = "userbook.preferences";
+
+    private static final String DELAYED_TYPE = "DELAYED_TYPE";
+    private static final String TIMELINE_QUIET_HOUR_RECAP_BODY = "timeline.notification.quiet-hour.body";
+    private static final String TIMELINE_QUIET_HOUR_RECAP_BODIES = "timeline.notification.quiet-hour.bodies";
+    private static final String TIMELINE_QUIET_HOUR_RECAP_TITLE = "timeline.notification.quiet-hour.title";
     private static final int MAX_BODY_LENGTH = 50;
-    private TimelineConfigService configService;
+
+    private PushNotifService pushNotifService = new SqlPushNotifService();
     private final EventBus eb;
+    private final boolean legacy;
     private final OssFcm ossFcm;
     private Map<String,String> eventsI18n;
     private Map<String,JsonObject> cacheI18N = new HashMap<>();
@@ -57,72 +74,15 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
         super(vertx, config);
         eb = Server.getEventBus(vertx);
         this.ossFcm = ossFcm;
+        this.legacy = config.getBoolean("legacy-push-notif", true);
     }
 
     @Override
-    public void sendImmediateNotifs(String notificationName, JsonObject notification, JsonArray userList, JsonObject notificationProperties) {
-        sendUsers(notificationName, notification, userList, notificationProperties, true, true);
+    public void sendPushNotifs(String notificationName, JsonObject notification, JsonArray userList, JsonObject notificationProperties) {
+        sendUsers(notificationName, notification, userList, notificationProperties);
     }
 
-    @Override
-    public void sendNotificationMessageUsers(final String notificationName,final JsonObject notification,final JsonArray recipientIds, boolean addData) {
-        configService.getNotificationProperties(notificationName, properties -> {
-            if(properties.isLeft() || properties.right().getValue() == null){
-                log.error("[sendPushNotification] Issue while retrieving notification (" + notificationName + ") properties.");
-                return;
-            }
-            //Get users preferences (overrides notification properties)
-            NotificationUtils.getUsersPreferences(eb, recipientIds, "tokens: uac.fcmTokens", userList -> {
-                if(userList == null){
-                    log.error("[sendPushNotification] Issue while retrieving users preferences.");
-                    return;
-                }
-                sendUsers(notificationName, notification, userList, properties.right().getValue(), true, addData);
-
-            });
-        });
-    }
-
-    @Override
-    public void sendNotificationMessageTopic(String notificationName, JsonObject notification, JsonObject templateParameters, String topic, boolean addData) {
-        this.sendTopic(notificationName, notification, topic,true, addData);
-    }
-
-    @Override
-    public void sendNotificationMessageCondition(String notificationName, JsonObject notification, JsonObject templateParameters, String condition, boolean addData) {
-        this.sendCondition(notificationName, notification, condition, true, addData);
-    }
-
-    @Override
-    public void sendDataMessageUsers(String notificationName, JsonObject notification, JsonObject templateParameters, JsonArray recipientIds) {
-        configService.getNotificationProperties(notificationName, properties -> {
-            if(properties.isLeft() || properties.right().getValue() == null){
-                log.error("[sendPushNotification] Issue while retrieving notification (" + notificationName + ") properties.");
-                return;
-            }
-            //Get users preferences (overrides notification properties)
-            NotificationUtils.getUsersPreferences(eb, recipientIds, "tokens: uac.fcmTokens", userList -> {
-                if(userList == null){
-                    log.error("[sendPushNotification] Issue while retrieving users preferences.");
-                    return;
-                }
-                sendUsers(notificationName, notification, userList, properties.right().getValue() ,false, true);
-            });
-        });
-    }
-
-    @Override
-    public void sendDataMessageTopic(String notificationName, JsonObject notification, JsonObject templateParameters, String topic) {
-        this.sendTopic(notificationName, notification, topic,false, true);
-    }
-
-    @Override
-    public void sendDataMessageCondition(String notificationName, JsonObject notification, JsonObject templateParameters, String condition) {
-        this.sendCondition(notificationName, notification, condition, false, true);
-    }
-
-
-    private void sendUsers(final String notificationName,final JsonObject notification, final JsonArray userList, final JsonObject notificationProperties, boolean typeNotification, boolean typeData){
+    private void sendUsers(final String notificationName,final JsonObject notification, final JsonArray userList, final JsonObject notificationProperties){
 
         for(Object userObj : userList){
             final JsonObject userPref = ((JsonObject) userObj);
@@ -132,54 +92,120 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                     .getJsonObject("config", new JsonObject())
                     .getJsonObject(notificationName, new JsonObject());
 
-            if(notificationPreference.getBoolean("push-notif", notificationProperties.getBoolean("push-notif")) &&
-                    !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
-                            notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
-                    !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
-                            notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
-                    userPref.getJsonArray("tokens") != null && userPref.getJsonArray("tokens").size() > 0){
-                processMessage(notification, this.getUserLanguage(userPref), typeNotification, typeData, message -> {
-                    for(Object token : userPref.getJsonArray("tokens")){
-                        if ("null".equals(token)) {
-                            continue;
-                        }
-                        try {
-                            ossFcm.sendNotifications(userPref.getString("userId"),
-                                    new JsonObject().put("message", message.copy().put("token", (String) token)));
-                        } catch (Exception e) {
-                            log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
-                        }
+            if( notificationPreference.getBoolean("push-notif", notificationProperties.getBoolean("push-notif")) &&
+                !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
+                        notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
+                !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
+                        notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
+                userPref.getJsonArray("tokens") != null && !userPref.getJsonArray("tokens").isEmpty()){
+                boolean deferred = notification.getJsonArray("recipients", new JsonArray())
+                                               .stream()
+                                               .map(JsonObject.class::cast)
+                                                .anyMatch( r -> r.getString("userId").equals(userPref.getString("userId")) && r.getBoolean(DEFERRED_TO_DAILY, false));
+                String language =  this.getUserLanguage(userPref);
+
+                if(legacy && deferred) {
+                    processMessage(notification, this.getUserLanguage(userPref), message -> {
+                            for (Object token : userPref.getJsonArray("tokens")) {
+                                if ("null".equals(token)) {
+                                    continue;
+                                }
+                                try {
+                                    ossFcm.sendNotifications(userPref.getString("userId"),
+                                            new JsonObject().put("message", message.copy().put("token", token)));
+                                } catch (Exception e) {
+                                    log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
+                                }
+
+                    }});
+                } else {
+                    //pas l'ancien sender ou bien deferred, ce que l'on ne peut pas traitre en legacy
+                    QuietHoursPreference quietHoursPreference = parseQuietHours(userPref);
+                    TimezonePreference timezonePreference = parseTimezone(userPref);
+                    ZoneId zoneId = resolveTimezone(timezonePreference);
+                    Instant nextSendTime = !deferred ? null :  QuietHoursHelper.computeNextSendTime(Instant.now(), quietHoursPreference, zoneId);
+
+                    if(deferred) {
+                        processQuietHourMessage(notification, language, h -> {
+                            pushNotifService.findPending(userPref.getString("userId"), DELAYED_TYPE)
+                                    .onSuccess( pendings -> upsertDeferredNotification(pendings, notification, nextSendTime, h, userPref, language))
+                                    .onFailure(t -> log.error("Error while retrieving current pending push notif", t));
+                        });
+                    } else {
+                        processMessage(notification, language, message -> {
+                            PushNotifBuilder pushNotifBuilder = PushNotifBuilder.create()
+                                    .withMessage(message)
+                                    .withNotificationIds(Lists.newArrayList(notification.getString("_id")))
+                                    .immediate()
+                                    .withUserId(userPref.getString("userId"))
+                                    .withStatus(PushNotifDto.Status.PENDING)
+                                    .scheduledAt(nextSendTime)
+                                    .withNotifType(notification.getString("type"))
+                                    .withNotifSubType(notification.getString("event-type"));
+                            pushNotifService.create(pushNotifBuilder)
+                                    .onFailure(t -> log.error("Error while creating pushNotif", t))
+                                    .onSuccess((v) -> log.info("Successfully insert notification " + pushNotifBuilder.getId() + " for user " + userPref.getString("userId")));
+                        });
                     }
-                });
+                }
             }
         }
     }
 
-    private void sendTopic(final String notificationName,final JsonObject notification,final String topic, boolean typeNotification, boolean typeData){
+    private void upsertDeferredNotification(List<PushNotifDto> pushNotifs, JsonObject notification, Instant nextSendingTime, JsonObject message, JsonObject userPref, String language) {
+        if (CollectionUtils.isEmpty(pushNotifs)) {
+            String body = I18n.getInstance().translate(TIMELINE_QUIET_HOUR_RECAP_BODY, I18n.getLocale(language));
+            body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
+            String updatedBody = body.replace("[[count]]", "1");
 
-        this.processMessage(notification, "fr", typeNotification, typeData, message -> {
-            try {
-                ossFcm.sendNotifications(new JsonObject().put("message", message.copy().put("topic", topic)));
-            } catch (Exception e) {
-                log.error("[sendNotificationToTopic] Issue while sending notification (" + notificationName + ").", e);
+            message.getJsonObject("notification").put("body", updatedBody);
+            message.getJsonObject("notification").remove("bodies");
+            PushNotifBuilder pushNotifBuilder = PushNotifBuilder.create()
+              .withMessage(message)
+              .withNotificationIds(Lists.newArrayList(notification.getString("_id")))
+              .withStatus(PushNotifDto.Status.PENDING)
+              .scheduledAt(nextSendingTime)
+              .withNotifType(DELAYED_TYPE)
+              .withUserId(userPref.getString("userId"))
+              .withMessageParams(new JsonObject().put("count", 1));
+            pushNotifService.create(pushNotifBuilder)
+               .onFailure(t -> log.error("Error while creating pushNotif", t));
+        } else {
+            PushNotifDto pushNotif = pushNotifs.get(0);
+            pushNotif.getNotificationIds().add(notification.getString("_id"));
+            Integer count = pushNotif.getMessageParams().getInteger("count", 1) + 1;
 
-            }
-        });
+            String body = I18n.getInstance().translate(TIMELINE_QUIET_HOUR_RECAP_BODIES, I18n.getLocale(language));
+            body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
+            String updatedBody = body.replace("[[count]]", count.toString());
+            pushNotif.getMessageParams().put("count", count);
+            PushNotifBuilder builder = PushNotifBuilder.from(pushNotif);
+            JsonObject previousMessage = pushNotif.getMessage();
+            previousMessage.getJsonObject("message").getJsonObject("notification").put("body", updatedBody);
+            builder.withMessage(previousMessage)
+                            .scheduledAt(pushNotif.getScheduleAt())
+                            .withMessageParams(pushNotif.getMessageParams())
+                            .withMessage(pushNotif.getMessage().getJsonObject("message"))
+                            .withNotificationIds(pushNotif.getNotificationIds());
+            pushNotifService.update(builder);
+        }
     }
 
-    private void sendCondition(final String notificationName,final JsonObject notification,final String condition,  boolean typeNotification, boolean typeData){
-        this.processMessage(notification, "fr", typeNotification, typeData, message -> {
-            try {
-                ossFcm.sendNotifications(new JsonObject().put("message", message.copy().put("condition", condition)));
-            } catch (Exception e) {
-                log.error("[sendNotificationToCondition] Issue while sending notification (" + notificationName + ").", e);
+    public void processQuietHourMessage(final JsonObject notification, String language, final Handler<JsonObject> handler){
+        final JsonObject message = new JsonObject();
 
-            }
-        });
+            final JsonObject notif = new JsonObject();
+            final JsonObject data = new JsonObject();
+            notif.put("title", HtmlUtils.unescapeHtmlEntities(I18n.getInstance().translate(TIMELINE_QUIET_HOUR_RECAP_TITLE, I18n.getLocale(language))));
+            data.put("type", "QUIET_HOUR_RECAP");
+            if (notification.containsKey("sender"))
+                data.put("sender", notification.getString("sender"));
+            message.put("data", data);
+            message.put("notification", notif);
+            handler.handle(message);
     }
 
-
-    public void processMessage(final JsonObject notification, String language, final boolean typeNotification,final boolean typeData, final Handler<JsonObject> handler){
+    public void processMessage(final JsonObject notification, String language, final Handler<JsonObject> handler){
         final JsonObject message = new JsonObject();
 
         translateMessage(language, keys -> {
@@ -195,30 +221,24 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
             notif.put("title", HtmlUtils.unescapeHtmlEntities(keys.getString(pushNotif.getString("title"), pushNotif.getString("title", ""))));
             notif.put("body",HtmlUtils.unescapeHtmlEntities(body));
-            if(typeData) {
-                if (notification.containsKey("type"))
-                    data.put("type", notification.getString("type"));
-                if (notification.containsKey("event-type"))
-                    data.put("event-type", notification.getString("event-type"));
-                if (notification.containsKey("params"))
-                    data.put("params", notification.getJsonObject("params").toString());
-                if (notification.containsKey("resource"))
-                    data.put("resource", notification.getString("resource"));
-                if (notification.containsKey("sender"))
-                    data.put("sender", notification.getString("sender"));
-                if (notification.containsKey("sub-resource"))
-                    data.put("sub-resource", notification.getString("sub-resource"));
-                if(!typeNotification)
-                    data.put("notification", notif);
-                message.put("data", data);
-            }
-            if(typeNotification) {
-                message.put("notification", notif);
-                // "content-avaiable" is required here to make the mobile app awake every time it receives a notification.
-                // When the back will be able to put the right number for the "badge" value, "content-available" could be removed to preserve user battery life.
-                apns.put("payload", new JsonObject().put("aps", new JsonObject().put("content-available", 1)));
-                message.put("apns", apns);
-            }
+            if (notification.containsKey("type"))
+                data.put("type", notification.getString("type"));
+            if (notification.containsKey("event-type"))
+                data.put("event-type", notification.getString("event-type"));
+            if (notification.containsKey("params"))
+                data.put("params", notification.getJsonObject("params").toString());
+            if (notification.containsKey("resource"))
+                data.put("resource", notification.getString("resource"));
+            if (notification.containsKey("sender"))
+                data.put("sender", notification.getString("sender"));
+            if (notification.containsKey("sub-resource"))
+                data.put("sub-resource", notification.getString("sub-resource"));
+            message.put("data", data);
+            message.put("notification", notif);
+            // "content-avaiable" is required here to make the mobile app awake every time it receives a notification.
+            // When the back will be able to put the right number for the "badge" value, "content-available" could be removed to preserve user battery life.
+            apns.put("payload", new JsonObject().put("aps", new JsonObject().put("content-available", 1)));
+            message.put("apns", apns);
 
             handler.handle(message);
         });
@@ -239,10 +259,6 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
         }
         final JsonObject translations = this.cacheI18N.get(key);
         handler.handle(translations);
-    }
-
-    public void setConfigService(TimelineConfigService configService) {
-        this.configService = configService;
     }
 
     public void setEventsI18n(Map<String,String> eventsI18n) {

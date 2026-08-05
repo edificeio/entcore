@@ -1023,6 +1023,7 @@ public class TimelineController extends BaseController {
 					});
 				}
 			} else {
+				notification.put("_id", result.getString("_id"));
 				notificationHelper.sendImmediateNotifications(
 						new JsonHttpServerRequest(notification.getJsonObject("request")),
 						notification, deferredUserIds, immediateUserList

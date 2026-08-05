@@ -18,7 +18,6 @@
 
 package org.entcore.timeline.controllers.helper;
 
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -51,7 +50,7 @@ public class NotificationHelper {
     private List<TimelinePushNotifService> pushNotifServices;
     private TimelineMailerService mailerService;
     private TimelineConfigService configService;
-    private static final String DEFERRED_TO_DAILY = "deferredToDaily";
+    public static final String DEFERRED_TO_DAILY = "deferredToDaily";
     private final EventBus eb;
 
 
@@ -159,10 +158,6 @@ public class NotificationHelper {
         }
 
         final JsonArray activeUserList = buildActiveUserList(json, deferredUserIds, userList);
-        if (activeUserList.isEmpty()) {
-            log.debug("[NotificationHelper] No active users for " + notificationName + ", skipping immediate send");
-            return;
-        }
 
         configService.getNotificationProperties(notificationName, properties -> {
             if (properties.isLeft() || properties.right().getValue() == null) {
@@ -170,8 +165,12 @@ public class NotificationHelper {
                 return;
             }
             final JsonObject notificationProperties = properties.right().getValue();
-            sendMails(request, json, notificationName, activeUserList, notificationProperties);
-            sendPushNotifications(json, notificationName, activeUserList, notificationProperties);
+            if (activeUserList.isEmpty()) {
+                log.debug("[NotificationHelper] No active users for " + notificationName + ", skipping immediate send mail");
+            } else {
+                sendMails(request, json, notificationName, activeUserList, notificationProperties);
+            }
+            sendPushNotifications(json, notificationName, userList, notificationProperties);
         });
     }
 
@@ -198,13 +197,13 @@ public class NotificationHelper {
         return activeUserList;
     }
 
-    private void sendMails(HttpServerRequest request, JsonObject json, String notificationName, JsonArray activeUserList, JsonObject notificationProperties) {
+    private void sendMails(HttpServerRequest request, JsonObject json, String notificationName, JsonArray users, JsonObject notificationProperties) {
         if (!Boolean.TRUE.equals(json.getBoolean("disableMailNotification", false))) {
-            mailerService.sendImmediateMails(request, notificationName, json.getJsonObject("notification"), json.getJsonObject("params"), activeUserList, notificationProperties);
+            mailerService.sendImmediateMails(request, notificationName, json.getJsonObject("notification"), json.getJsonObject("params"), users, notificationProperties);
         }
     }
 
-    private void sendPushNotifications(JsonObject json, String notificationName, JsonArray activeUserList, JsonObject notificationProperties) {
+    private void sendPushNotifications(JsonObject json, String notificationName, JsonArray users, JsonObject notificationProperties) {
         if (pushNotifServices == null || pushNotifServices.isEmpty()) {
             return;
         }
@@ -222,7 +221,7 @@ public class NotificationHelper {
             return;
         }
         pushNotifServices.forEach(pushNotifService -> {
-            pushNotifService.sendImmediateNotifs(notificationName, json, activeUserList, notificationProperties);
+            pushNotifService.sendPushNotifs(notificationName, json, users, notificationProperties);
         });
     }
 
