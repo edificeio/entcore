@@ -122,15 +122,15 @@ export const hdfConfig: WayfDomainConfig = {
       url: 'https://www.aisne.com/',
     },
     {
-      logo: '/img/partners/logo-nord.jpg',
+      logo: '/img/partners/logo-nord.png',
       url: 'https://nordcolleges.enthdf.fr/',
     },
     {
-      logo: '/img/partners/logo-oise.jpg',
+      logo: '/img/partners/logo-oise.png',
       url: 'https://www.oise.fr/',
     },
     {
-      logo: '/img/partners/logo-pasdecalais.jpg',
+      logo: '/img/partners/logo-pasdecalais.png',
       url: 'https://www.pasdecalais.fr/colleges',
     },
     {
@@ -142,7 +142,7 @@ export const hdfConfig: WayfDomainConfig = {
       url: 'https://www.adica.fr/assistance-conseil-informatique',
     },
     {
-      logo: '/img/partners/logo-oisehd.jpg',
+      logo: '/img/partners/logo-oisehd.png',
       url: 'https://oise-thd.fr/',
     },
     {
@@ -161,6 +161,6 @@ export const hdfConfig: WayfDomainConfig = {
       logo: '/img/partners/logo_RA_HAUTS-DE-FRANCE.png',
       url: 'https://www1.ac-lille.fr/la-region-academique-hauts-de-france-121434',
     },
-    { logo: '/img/partners/logo-ue.jpg' },
+    { logo: '/img/partners/logo-ue.png' },
   ],
 };

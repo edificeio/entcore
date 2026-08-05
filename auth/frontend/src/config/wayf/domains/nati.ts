@@ -51,8 +51,14 @@ export const natiConfig: WayfDomainConfig = {
   ],
   partners: [
     {
+      logo: '/img/partners/logo-ministere.png',
+    },
+    {
       logo: '/img/partners/logo-dgee.png',
       url: 'https://www.education.pf/',
+    },
+    {
+      logo: '/img/partners/logo-rectorat.png',
     },
   ],
 };
