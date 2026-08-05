@@ -100,7 +100,7 @@ public class Conversation extends BaseServer {
 		final DeleteOrphan deleteOrphan = new DeleteOrphan(storage);
 		final String purgeMessagesCron = config.getString("purgeMessagesCron");
 		final PurgeMessages purgeMessages = new PurgeMessages(conversationService);
-		final String purgeAbsenceRepliesCron = config.getString("purgeAbsenceRepliesCron");
+		final String purgeAbsenceRepliesCron = config.getString("purge-absence-replies-cron");
 		final PurgeAbsenceReplies purgeAbsenceReplies = new PurgeAbsenceReplies(conversationService);
 		// Enable delete orphan, purge old messages and purge absence replies tasks to be triggered via API
 		addController(new TaskController(deleteOrphan, purgeMessages, purgeAbsenceReplies));
