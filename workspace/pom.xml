@@ -29,7 +29,7 @@
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>5.4.0</version>
+            <version>${jnaVersion}</version>
         </dependency>
         <dependency>
             <groupId>net.sf</groupId>
@@ -60,7 +60,7 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <classpathDependencyExcludes>
-                        <classpathDependencyExclude>com.sun.jna:jna</classpathDependencyExclude>
+                        <classpathDependencyExclude>net.java.dev.jna:jna</classpathDependencyExclude>
                     </classpathDependencyExcludes>
                 </configuration>
             </plugin>
