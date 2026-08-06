@@ -27,9 +27,10 @@
             <classifier>fat</classifier>
         </dependency>
         <dependency>
-            <groupId>net.java.dev.jna</groupId>
+            <groupId>com.sun.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>5.4.0</version>
+            <version>${jnaVersion}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.sf</groupId>
