@@ -70,7 +70,7 @@
         <jacksonVersion>2.15.2</jacksonVersion>
         <casVersion>0.3-SNAPSHOT</casVersion>
         <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
-        <jnaVersion>3.0.2</jnaVersion>
+        <jnaVersion>5.4.0</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
         <opencsvVersion>3.9</opencsvVersion>
         <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
