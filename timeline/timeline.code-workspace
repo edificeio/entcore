@@ -33,6 +33,15 @@
     ],
     "git.openRepositoryInParentFolders": "never",
     "workbench.startupEditor": "none",
+    "files.exclude": {
+      "**/frontend-crna": true,
+    },
+    "search.exclude": {
+      "**/frontend-crna": true,
+    },
+    "files.watcherExclude": {
+      "**/frontend-crna/**": true,
+    },
     "scss.format.spaceAroundSelectorSeparator": true,
     "scss.format.enable": false,
     "eslint.format.enable": true,
