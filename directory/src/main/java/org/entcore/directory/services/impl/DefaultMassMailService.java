@@ -274,6 +274,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 " MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
         String condition = "";
+        // Warning : the following `optional` var is overriden when one or more Classes are explicitely filtered.
+        // See //Classes section below.
         String optional =
                 " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                 " OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
@@ -311,7 +313,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         //Classes
         if (filterObj.containsKey("classes") && filterObj.getJsonArray("classes").size() > 0) {
             filter += ", (c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) ";
-            optional = "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+            // TODO Is this override of `optional` really needed ?
+            optional = " OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) "
+                     + " OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(u.profiles), auth: 'FEDERATED' }) ";
             condition += " AND c.id IN {classesArray} ";
             params.put("classesArray", filterObj.getJsonArray("classes"));
         }
