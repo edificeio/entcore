@@ -274,8 +274,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 " MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
         String condition = "";
-        // Warning : the following `optional` var is overriden when one or more Classes are explicitely filtered.
-        // See //Classes section below.
+        // Warning: the following `optional` variable is overridden when one or more classes are explicitly filtered.
+        // See the //Classes section below.
         String optional =
                 " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                 " OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
