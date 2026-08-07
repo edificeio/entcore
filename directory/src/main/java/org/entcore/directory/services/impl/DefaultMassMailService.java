@@ -313,7 +313,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         //Classes
         if (filterObj.containsKey("classes") && filterObj.getJsonArray("classes").size() > 0) {
             filter += ", (c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) ";
-            // TODO Is this override of `optional` really needed ?
+            // Override optional matches for the class-filter case; keep `auths` bound for later collect(auths)/hasFederatedIdentity computation.
             optional = " OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) "
                      + " OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(u.profiles), auth: 'FEDERATED' }) ";
             condition += " AND c.id IN {classesArray} ";
