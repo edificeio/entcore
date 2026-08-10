@@ -3,9 +3,9 @@
 -- balaye les lignes flaggées et gère la suppression des fichiers dans le storage.
 
 -- 1. Colonne orphan sur les 3 tables "contenu"
-ALTER TABLE conversation.messages ADD COLUMN orphan BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE conversation.attachments ADD COLUMN orphan BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE conversation.threads ADD COLUMN orphan BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE conversation.messages ADD COLUMN IF NOT EXISTS orphan BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE conversation.attachments ADD COLUMN IF NOT EXISTS orphan BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE conversation.threads ADD COLUMN IF NOT EXISTS orphan BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- 2. Index partiels : le cron ne scanne que les orphelins
 CREATE INDEX IF NOT EXISTS idx_messages_orphan ON conversation.messages(id) WHERE orphan;
@@ -42,14 +42,19 @@ $$ LANGUAGE plpgsql;
 
 -- 4. Triggers AFTER DELETE sur les tables de liaison.
 --    usermessagesattachments se déclenche aussi via le CASCADE depuis usermessages.
+--    PostgreSQL n'a pas de CREATE TRIGGER IF NOT EXISTS : le DROP IF EXISTS préalable
+--    est la forme idempotente portable (CREATE OR REPLACE TRIGGER exigerait PG >= 14).
+DROP TRIGGER IF EXISTS flagOrphanMessage_trigger ON conversation.usermessages;
 CREATE TRIGGER flagOrphanMessage_trigger
 AFTER DELETE ON conversation.usermessages
     FOR EACH ROW EXECUTE PROCEDURE conversation.flagOrphanMessage();
 
+DROP TRIGGER IF EXISTS flagOrphanAttachment_trigger ON conversation.usermessagesattachments;
 CREATE TRIGGER flagOrphanAttachment_trigger
 AFTER DELETE ON conversation.usermessagesattachments
     FOR EACH ROW EXECUTE PROCEDURE conversation.flagOrphanAttachment();
 
+DROP TRIGGER IF EXISTS flagOrphanThread_trigger ON conversation.userthreads;
 CREATE TRIGGER flagOrphanThread_trigger
 AFTER DELETE ON conversation.userthreads
     FOR EACH ROW EXECUTE PROCEDURE conversation.flagOrphanThread();
