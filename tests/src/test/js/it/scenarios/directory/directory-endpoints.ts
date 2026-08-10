@@ -729,6 +729,22 @@ export function testStructureEndpoints(data: InitData) {
     });
   });
 
+  group('[Directory] GET /structure/:structureId/massMail/users - Get massmail users with class filter', () => {
+    authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const classes = getClassesOfStructureOrFail(data.structure.id);
+    if (classes.length > 0) {
+      const classId = classes[0].id;
+      const res = http.get(
+        `${rootUrl}/directory/structure/${data.structure.id}/massMail/users?c=${classId}&a=all`,
+        { headers: getHeaders() }
+      );
+      check(res, {
+        'get massmail users with class filter returns 200': (r) => r.status === 200,
+        'get massmail users with class filter is array': (r) => Array.isArray(JSON.parse(<string>r.body)),
+      });
+    }
+  });
+
   group('[Directory] GET /structure/:structureId/massMail/allUsers - Get all massmail users', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const res = http.get(`${rootUrl}/directory/structure/${data.structure.id}/massMail/allUsers`, { headers: getHeaders() });
