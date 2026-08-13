@@ -16,6 +16,7 @@
   "workspace.contrib-folder": "Contribution dans un dossier (seulement pour les gestionnaires du dossier)",
   "workspace.contrib-version": "Ajout d'une version à un document",
   "workspace.share": "Partage d'un fichier",
+  "workspace.share-external": "Partage d'un fichier depuis un service externe",
   "workspace.share-folder": "Partage d'un dossier",
   "workspace.storage": "Espace de stockage bientôt plein"
 }
