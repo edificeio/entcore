@@ -25,7 +25,7 @@ export const Root = () => {
   const { init } = useEdificeClient();
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
     useNotificationsLayout();
-  const { md, sm } = useBreakpoint();
+  const { md } = useBreakpoint();
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -40,7 +40,7 @@ export const Root = () => {
       <PageLayout.Header onNotificationsClick={toggleNotifications} />
       <PageLayout.SidebarLeft className="bg-white">
         <div className="d-flex flex-column py-16 gap-16 ">
-          {sm && !md && <MessageFlashListContainer />}
+          {!md && <MessageFlashListContainer />}
 
           <SchoolSpaceContainer />
           <LastInfosContainer />
