@@ -2223,6 +2223,7 @@ public class SqlConversationService implements ConversationService{
 		final int timeout = purgeConfig.getInteger("query-timeout", 300000);
 		final int batchSize = purgeConfig.getInteger("batch-size", 5000);
 		final int maxBatches = purgeConfig.getInteger("max-batches", 100);
+		final String protectedSubject = purgeConfig.getString("protected-subject", "Message de persdir");
 
 		// Purge par lots des liens usermessages de messages âgés de plus de `months` mois
 		// et rangés dans aucun dossier (folder_id IS NULL). Chaque lot est une transaction
@@ -2241,7 +2242,31 @@ public class SqlConversationService implements ConversationService{
 				"LIMIT ?);";
 
 		log.info("Starting old messages purge (retention=" + months + " months, batch-size=" + batchSize + ", max-batches=" + maxBatches + ")");
-		return purgeMessagesBatch(query, batchSize, timeout, maxBatches, 0, 0);
+		// Repousse la date des messages de supervision protégés avant la purge : ils ne franchissent ainsi jamais le seuil d'ancienneté et échappent à la purge. 
+		// En cas d'échec du refresh, la purge n'est pas lancée (fail-safe).
+		return refreshProtectedMessages(protectedSubject, timeout)
+			.compose(v -> purgeMessagesBatch(query, batchSize, timeout, maxBatches, 0, 0));
+	}
+
+	/**
+	 * Repousse à maintenant la date des messages de supervision dont l'objet correspond, afin de les soustraire à la purge des anciens messages.
+	 */
+	private Future<Void> refreshProtectedMessages(final String protectedSubject, final int timeout) {
+		final String update = "UPDATE " + messageTable + " SET date = (EXTRACT(EPOCH FROM NOW())::bigint) * 1000 WHERE subject = ?;";
+		final DeliveryOptions deliveryOptions = new DeliveryOptions();
+		deliveryOptions.setSendTimeout(timeout);
+		final Promise<Void> promise = Promise.promise();
+		sql.prepared(update, new JsonArray().add(protectedSubject), deliveryOptions, result -> {
+			if ("ok".equals(result.body().getString("status"))) {
+				log.info("Refreshed date of " + result.body().getInteger("rows", 0) + " protected supervision message(s)");
+				promise.complete();
+			} else {
+				final String error = result.body().getString("message", "Unknown error");
+				log.error("Failed refreshing protected supervision messages: " + error);
+				promise.fail(error);
+			}
+		});
+		return promise.future();
 	}
 
 	private Future<Void> purgeMessagesBatch(final String query, final int batchSize, final int timeout, final int maxBatches, final int batchNumber, final int totalDeleted) {
