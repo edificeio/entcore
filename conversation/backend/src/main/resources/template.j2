@@ -23,6 +23,7 @@
     ],
     "block-route-filter": {{ conversationBlockRouteFilter | default('false') }},
     {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
+      "purge-absence-replies-cron": "{{conversationPurgeAbsenceRepliesCron | default('0 45 4 ? * 1 *')}}",
       "deleteOrphanCron" : "{{ conversationDeleteOrphanCron | default('0 45 4 * * ? *') }}",
       "orphans-killer": {
       	"sql-timeout": {{ conversationDeleteOrphanTimeout | default(60000)}},
