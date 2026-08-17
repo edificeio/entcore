@@ -29,52 +29,41 @@
     "import-files": "{{ feederImportAAF }}",
     "execute-merge-ine": {{ executeMergeIne | default('true') }},
     "support-perseducnat-1d-2d": {{ supportPerseducnat1d2d | default('true') }},
-    {% if platform_name is defined and platform_name == 'prod-nc' %}
+    "feeder" : "{{feederType}}",
+    {% if feederImportCSV is defined and feederImportCSV %}
       "csv" : {
-        "path":"/home/wse/Educasud",
+        "path":"{{feederImportCSVPath}}",
         "config" : {
-            "namePattern" : ".*?/Educasud_[0-9]{8}_[0-9]{7}[A-Z]_(.*?).zip",
+            "namePattern" : "{{feederImportCSVNamePAttern}}",
             "profiles" : {
               "_Eleves_":"Student",
               "_Enseignants_":"Teacher",
               "_Personnels_":"Personnel",
               "_Parents_":"Relative"
             },
-            "preDelete" : true
+            "preDelete" : {{feederImportCSVPreDelete}}
         },
-        "cron" : {% if inventory_hostname_short is defined and inventory_hostname_short == 'jobs' %}"{{ educasudCron | default('0 0 3 * * ? *') }}"{% else %}"0 0 3 * * ? 2099"{% endif %}
+        "cron" : "{{ feederImportCSVCron | default('0 0 3 * * ? 2099')}}"
       },
-      "csv-imports-timeout" : 900000,
-      "feeder" : "CSV",
+      "csv-imports-timeout" : {{feederImportCSVPreDelete | default('900000') }},
+    {% endif %}
+    {% if feederImportAAF is defined or feederImportAAF1D is defined %}
       "imports": {
-        {% if feederAafCron is defined and inventory_hostname_short is defined and inventory_hostname_short == 'jobs' %}
-        	"AAF": {
-          	"files" : "{{ feederImportAAF }}",
-          	"auto-export": false,
-          	"cron" : "{{ feederAafCron }}"
-        	}
+        {% if feederImportAAF is defined %}
+          "AAF": {
+            "files" : "{{ feederImportAAF }}",
+            "auto-export": {{ feederAafAutoExport | default('false') }},
+            "cron" : "{{ feederAafCron | default('0 0 1 * * ? 2099') }}"
+          }
+        {% endif %}
+        {% if feederImportAAF is defined and feederImportAAF1D is defined %},{% endif %}
+        {% if feederImportAAF1D is defined %}
+          "AAF1D": {
+            "files" : "{{ feederImportAAF1D }}",
+            "cron" : "{{ feederAaf1dCron | default('0 0 3 * * ? 2099') }}"
+          }
         {% endif %}
       },
-    {% else %}
-      "feeder": "AAF",
-      {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
-        "imports": {
-          {% if feederAafCron is defined %}
-            "AAF": {
-              "files" : "{{ feederImportAAF }}",
-              "auto-export": false,
-              "cron" : "{{ feederAafCron }}"
-            }
-          {% endif %}
-          {% if feederAafCron is defined and feederAaf1dCron is defined %},{% endif %}
-          {% if feederAaf1dCron is defined %}
-            "AAF1D": {
-              "files" : "{{ feederImportAAF }}1d",
-              "cron" : "{{ feederAaf1dCron }}"
-            }
-          {% endif %}
-        },
-      {% endif %}
     {% endif %}
     {% if edtKey is defined %}
       "edt" : {
