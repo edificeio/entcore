@@ -28,7 +28,8 @@ esac
 # build options
 NO_DOCKER=""
 SPRINGBOARD="recette"
-MODULE=""
+# Initialize MODULE from env; --module=/-m= overrides it.
+MODULE="${MODULE:-}"
 MVN_OPTS="-Duser.home=/var/maven -T 4"
 for i in "$@"
 do
