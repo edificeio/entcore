@@ -81,7 +81,7 @@ public class DefaultImportService implements ImportService {
 			final JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
 					.put("action", "validate")
 					.put("adml-structures", admlValidate.getAdmlStructures());
-			eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT).setLocalOnly(true), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if ("ok".equals(res.body().getString("status"))) {
