@@ -453,7 +453,7 @@ public class DefaultTimetableService implements TimetableService {
 							.put("feeder", "PRONOTE")
 							.put("structureExternalId", externalId)
 							.put("path", path),
-						new DeliveryOptions().setSendTimeout(600000l),
+						new DeliveryOptions().setSendTimeout(600000l).setLocalOnly(true),
 						fr.wseduc.webutils.Utils.handlerToAsyncHandler(new Handler<Message<JsonObject>>()
 						{
 							@Override
@@ -495,7 +495,7 @@ public class DefaultTimetableService implements TimetableService {
 				.put("updateGroups", isPunctual == false)
 				.put("updateTimetable", groupsOnly == false)
 				.put("language", acceptLanguage);
-		eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l).setLocalOnly(true), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
