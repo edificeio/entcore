@@ -8,6 +8,14 @@ import { manageRedirections } from './redirections';
 const routes = (queryClient: QueryClient): RouteObject[] => {
   void queryClient; // Mark `queryClient` as used to satisfy TypeScript's unused-parameter check
   return [
+    /* Customization page */
+    {
+      path: '/cutomize',
+      async lazy() {
+        return await import('~/routes/customize');
+      },
+      errorElement: <PageError />,
+    },
     /* Main route */
     {
       path: '/',
