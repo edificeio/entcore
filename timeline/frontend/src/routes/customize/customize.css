@@ -1,0 +1,23 @@
+.customize-content {
+  margin: var(--primitive-spacer-16) var(--primitive-spacer-16)
+    var(--primitive-spacer-16) var(--primitive-spacer-16);
+}
+
+.customize-back-button {
+  margin-bottom: 10px;
+}
+
+.customize-content h2 {
+  color: var(--primitive-grey-900, #383838);
+}
+
+@media only screen and (min-width: 768px) {
+  .customize-content {
+    margin: var(--primitive-spacer-32) var(--primitive-spacer-32)
+      var(--primitive-spacer-32) var(--primitive-spacer-64);
+  }
+  .customize-right {
+    margin: var(--primitive-spacer-32) var(--primitive-spacer-64)
+      var(--primitive-spacer-32) var(--primitive-spacer-0);
+  }
+}
