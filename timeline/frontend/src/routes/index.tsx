@@ -10,7 +10,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
   return [
     /* Customization page */
     {
-      path: '/cutomize',
+      path: '/customize',
       async lazy() {
         return await import('~/routes/customize');
       },
