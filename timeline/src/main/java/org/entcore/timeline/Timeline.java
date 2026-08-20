@@ -34,6 +34,7 @@ import org.entcore.common.user.DefaultPreferenceHelper;
 import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.TaskController;
+import org.entcore.timeline.controllers.CustomizeController;
 import org.entcore.timeline.controllers.FlashMsgController;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
@@ -116,6 +117,9 @@ public class Timeline extends BaseServer {
 
 		setRepositoryEvents(new FlashMsgRepositoryEventsSql());
 
+		final CustomizeController customizeController = new CustomizeController();
+		addController(customizeController);
+		
 		addController(timelineController);
 		BrokerProxyUtils.addBrokerProxy(new TimelineBrokerListenerImpl(vertx), vertx);
 
