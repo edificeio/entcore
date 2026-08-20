@@ -31,6 +31,7 @@ export default ({ mode }: { mode: string }) => {
           'node_modules/@edifice.io/bootstrap/dist/images',
         ),
       },
+      dedupe: ['react', 'react-dom'],
     },
 
     server: {
@@ -71,6 +72,17 @@ export default ({ mode }: { mode: string }) => {
           });
         },
       },
+      {
+        name: 'rewrite-customize',
+        configureServer(server) {
+          server.middlewares.use((req, _res, next) => {
+            if (req.url === '/customize') {
+              req.url = '/homepage.html';
+            }
+            next();
+          });
+        },
+      },
       react(),
       tsconfigPaths(),
     ],
@@ -87,6 +99,23 @@ export default ({ mode }: { mode: string }) => {
       rollupOptions: {
         input: {
           main: resolve(__dirname, 'homepage.html'),
+        },
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+
+            if (id.includes('react-router')) return 'router';
+            if (id.includes('@tanstack')) return 'tanstack';
+            if (id.includes('i18next')) return 'i18n';
+            if (
+              id.includes('@edifice.io') ||
+              id.includes('edifice-frontend-framework')
+            ) {
+              return 'edifice';
+            }
+
+            return 'vendor';
+          },
         },
       },
     },
