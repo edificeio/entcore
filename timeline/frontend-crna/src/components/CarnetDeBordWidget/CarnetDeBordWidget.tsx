@@ -18,7 +18,7 @@ interface CarnetDeBordWidgetProps {
 }
 
 export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const { eleves, isLoading, isError } = useCarnetDeBord();
 
   useEffect(() => {

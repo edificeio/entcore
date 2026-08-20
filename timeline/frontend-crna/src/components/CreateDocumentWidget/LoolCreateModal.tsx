@@ -18,7 +18,7 @@ export interface LoolCreateModalProps {
 }
 
 export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const { data: docTypes = [], isLoading } = useLoolProviders();
 
   const [selectedDocTypeId, setSelectedDocTypeId] = useState<LoolDocTypeId>(docTypeId);

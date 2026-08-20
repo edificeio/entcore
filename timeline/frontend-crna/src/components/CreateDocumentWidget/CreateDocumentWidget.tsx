@@ -42,7 +42,7 @@ interface CreateDocumentWidgetProps {
 }
 
 export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const hasLoolRight = useHasWorkflow("fr.openent.lool.controller.LoolController|createDocumentFromTemplate");
   const hasVideoRight = useHasWorkflow("com.opendigitaleducation.video.controllers.VideoController|capture");
   const [selectedDocTypeId, setSelectedDocTypeId] = useState<LoolDocTypeId | null>(null);

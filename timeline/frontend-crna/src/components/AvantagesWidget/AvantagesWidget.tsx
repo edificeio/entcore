@@ -12,7 +12,7 @@ export function AvantagesWidget({
 }: {
   onSeeMore?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const items: ListWidgetItem[] = [
     {
       id: '1',

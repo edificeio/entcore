@@ -14,7 +14,7 @@ interface KidTabsProps {
 }
 
 export function KidTabs({ eleves, currentEleveIndex, onSelect }: KidTabsProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
 
   if (eleves.length <= 1) return null;
 

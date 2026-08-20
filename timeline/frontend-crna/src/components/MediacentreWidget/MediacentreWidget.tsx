@@ -26,7 +26,7 @@ export function MediacentreWidget({
 }: {
   onSeeMore?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const { sessionQuery } = useEdificeClient();
   const schools = sessionQuery.data?.userDescription?.schools ?? [];
 

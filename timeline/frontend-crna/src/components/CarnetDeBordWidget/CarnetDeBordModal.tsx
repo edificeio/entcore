@@ -139,7 +139,7 @@ export function CarnetDeBordModal({
   initialTab,
   address,
 }: CarnetDeBordModalProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const { md } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<ContentTitle>(initialTab);
 
