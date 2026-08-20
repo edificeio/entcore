@@ -7,7 +7,6 @@ import { RenderOptions, render } from '@testing-library/react';
 import { ReactElement } from 'react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import '../i18n';
-import { Providers } from '../providers';
 import { server } from './server';
 
 // Enable API mocking before tests.
@@ -27,7 +26,10 @@ afterAll(() => server.close());
 const customRender = (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>,
-) => render(ui, { wrapper: Providers, ...options });
+) => {
+  // Keep tests isolated from the real app provider tree.
+  return render(ui, options);
+};
 
 export * from '@testing-library/react';
 export { customRender as render };
