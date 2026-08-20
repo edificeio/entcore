@@ -24,7 +24,7 @@ export function WelcomeWidget({
   onOpenSettings,
   onOpenHistory,
 }: WelcomeWidgetProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const { user, avatar } = useUser();
   const { md } = useBreakpoint();
 

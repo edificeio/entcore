@@ -42,7 +42,7 @@ export function ListWidget({
   errorState,
   itemClassName,
 }: ListWidgetProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   return (
     <HomeCard variant="user" style={style}>
       <HomeCard.Header
