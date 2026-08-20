@@ -560,10 +560,26 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		});
 	}
 
+	/**
+	 * Ajoute l'externalId d'un enfant à la liste des rattachements, débarrassé de ses
+	 * caractères réservés. Une valeur qui n'en contient que est ignorée.
+	 */
+	private void addLinkStudent(JsonArray linkStudents, String childExternalId) {
+		final String childExtId = ExternalIdValidator.clean(childExternalId);
+		if (isEmpty(childExtId)) {
+			log.warn("Ignored childExternalId with reserved chars only : " + childExternalId);
+			return;
+		}
+		if (!childExternalId.equals(childExtId)) {
+			log.warn("Reserved chars removed in childExternalId : " + childExternalId + " -> " + childExtId);
+		}
+		linkStudents.add(childExtId);
+	}
+
 	private void filterExternalIdExists(List<String> admlStructures, String profile,
 			Set<String> externalIds, final Handler<AsyncResult<JsonArray>> handler) {
 		final List<String> cleanExtIds = externalIds.stream()
-				.map(s -> s.contains(" ") ? s.replaceAll("\\s+", "") : s)
+				.map(ExternalIdValidator::clean)
 				.collect(Collectors.toList());
 		final JsonObject params = new JsonObject().put("externalIds", new JsonArray(cleanExtIds));
 		try {
@@ -787,8 +803,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							}
 							state = State.NEW;
 						} else {
-							if (externalId.contains(" ")) {
-								externalId = externalId.replaceAll("\\s+", "");
+							final String cleanExternalId = ExternalIdValidator.clean(externalId);
+							if (!externalId.equals(cleanExternalId)) {
+								log.warn("Reserved chars removed in externalId : " + externalId + " -> " + cleanExternalId);
+								externalId = cleanExternalId;
 								user.put("externalId", externalId);
 							}
 							if (existExternalIdLogin.containsKey(externalId)) {
@@ -844,18 +862,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 										if (o instanceof JsonArray) {
 											for (Object c : (JsonArray) o) {
 												if (!(c instanceof String)) continue;
-												String childExtId = (String) c;
-												if (childExtId.contains(" ")) {
-													childExtId = childExtId.replaceAll("\\s+", "");
-												}
-												linkStudents.add(childExtId);
+												addLinkStudent(linkStudents, (String) c);
 											}
 										} else if (o instanceof String){
-											String childExtId = (String) o;
-											if (childExtId.contains(" ")) {
-												childExtId = childExtId.replaceAll("\\s+", "");
-											}
-											linkStudents.add(childExtId);
+											addLinkStudent(linkStudents, (String) o);
 										}
 									} else if ("childUsername".equals(attr)) {
 										Object childUsername = user.getValue(attr);
