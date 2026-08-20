@@ -12,7 +12,7 @@ interface UniversalisSearchProps {
 }
 
 export function UniversalisSearch({ uai }: UniversalisSearchProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const disabled = !uai;
   const placeholder = t(
     disabled

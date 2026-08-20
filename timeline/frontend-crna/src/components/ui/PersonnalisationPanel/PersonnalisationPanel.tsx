@@ -5,7 +5,7 @@ import { useLanguagePreference } from '~/hooks/useLanguagePreference';
 import './PersonnalisationPanel.css';
 
 export function PersonnalisationPanel() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const { updateOverlayOpen } = useOverlay();
   const closeOverlay = () => updateOverlayOpen(false);
   const { languages, currentLang, setLanguage } = useLanguagePreference();

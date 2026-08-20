@@ -11,7 +11,7 @@ interface MediaRecordModalProps {
 }
 
 export function MediaRecordModal({ type, isOpen, onClose, onSuccess }: MediaRecordModalProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
 
   if (!isOpen) return null;
 

@@ -8,7 +8,7 @@ import { WidgetSkeleton } from '../ui/WidgetSkeleton';
 import './FlashMessageHistoryPanel.css';
 
 export function FlashMessageHistoryPanel() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   const { updateOverlayOpen } = useOverlay();
   const closeOverlay = () => updateOverlayOpen(false);
   const { data: messages, isLoading, isError } = useFlashMessageHistory();
