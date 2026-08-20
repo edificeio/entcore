@@ -18,7 +18,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
     },
     /* Main route */
     {
-      path: '/',
+      path: import.meta.env.PROD ? '/timeline' : '/',
       async lazy() {
         const { loader, Root: Component } = await import('~/routes/root');
         return {
@@ -35,7 +35,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
     },
   ];
 };
-export const basename = import.meta.env.PROD ? '/timeline/timeline' : '/';
+export const basename = import.meta.env.PROD ? '/timeline' : '/';
 
 export const router = (queryClient: QueryClient) => {
   const redirectPath = manageRedirections();
