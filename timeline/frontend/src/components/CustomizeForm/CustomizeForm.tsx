@@ -1,16 +1,15 @@
-import { ButtonSkeleton, Flex } from '@edifice.io/react';
+import { ButtonBeta, ButtonSkeleton, Flex } from '@edifice.io/react';
+import { useCustomizeForm } from '~/hooks/useCustomizeForm';
 import { useI18n } from '~/hooks/useI18n';
 
 type CustomizeFormProps = {
-  form: {
-    languages?: string[];
-  };
+  form: ReturnType<typeof useCustomizeForm>;
 };
 
 export const CustomizeForm = ({ form }: CustomizeFormProps) => {
-  const { t } = useI18n();
+  const { t, common_t } = useI18n();
 
-  const { languages } = form;
+  const { languages, onLanguageChange } = form;
 
   return (
     <Flex direction="column" gap="32" className="w-100">
@@ -22,11 +21,17 @@ export const CustomizeForm = ({ form }: CustomizeFormProps) => {
       </Flex>
       <Flex direction="column" gap="16" className="w-100">
         <h3>{t('homepage.customize.form.languages')}</h3>
-        <ul>
+        <Flex>
           {languages
-            ? languages.map((e) => <li>{e}</li>)
+            ? languages.map((e) => (
+                <li>
+                  <ButtonBeta onClick={() => onLanguageChange(e)}>
+                    {t(`language.${e}`)}
+                  </ButtonBeta>
+                </li>
+              ))
             : [1, 2, 3].map(() => <ButtonSkeleton size="lg" />)}
-        </ul>
+        </Flex>
       </Flex>
     </Flex>
   );
