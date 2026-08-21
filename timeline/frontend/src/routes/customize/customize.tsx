@@ -9,6 +9,8 @@ import {
 
 import { IconArrowLeft } from '@edifice.io/react/icons';
 
+import { CustomizeForm } from '~/components/CustomizeForm/CustomizeForm';
+import { useCustomizeForm } from '~/hooks/useCustomizeForm';
 import { useI18n } from '~/hooks/useI18n';
 import './customize.css';
 
@@ -22,6 +24,8 @@ export const Component = () => {
   const { md } = useBreakpoint();
   const { common_t } = useI18n();
 
+  const form = useCustomizeForm();
+
   if (!init) return <LoadingScreen position={false} />;
 
   return (
@@ -32,7 +36,7 @@ export const Component = () => {
     >
       <PageLayout.Header />
       <PageLayout.Content className="customize-content">
-        <Flex direction="column" gap="16">
+        <Flex direction="column" gap="16" align="start">
           <div>
             <Button
               data-testid="customize-back-button"
@@ -44,6 +48,19 @@ export const Component = () => {
             </Button>
             <h1>{common_t('navbar.customize')}</h1>
           </div>
+
+          <CustomizeForm form={form} />
+
+          <Flex
+            direction="row"
+            gap="8"
+            justify="end"
+            align="center"
+            className="w-100"
+          >
+            <Button variant="ghost">{common_t('cancel')}</Button>
+            <Button variant="filled">{common_t('save')}</Button>
+          </Flex>
         </Flex>
       </PageLayout.Content>
 

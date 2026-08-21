@@ -12,7 +12,7 @@ export default ({ mode }: { mode: string }) => {
       '/conf/public',
       '^/(?=applications-list)',
       '^/(?=assets)',
-      '^/(?=theme|locale|i18n|skin)',
+      '^/(?=theme|locale|i18n|skin|languages|themes)',
       '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
       '^/calendar/(?!public/)',
       '^/actualites/api/',
