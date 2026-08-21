@@ -274,13 +274,13 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 " MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
         String condition = "";
-        // Warning: the following `optional` variable is overridden when one or more classes are explicitly filtered.
-        // See the //Classes section below.
-        String optional =
-                " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+        // Optional match on classes, dropped when one or more classes are explicitly filtered:
+        // `c` is then bound by a mandatory MATCH (see the //Classes section below).
+        String classOptional =
+                " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) ";
+        final String optional =
                 " OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
                 " OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(u.profiles), auth: 'FEDERATED' }) ";
-        ;
 
         JsonObject params = new JsonObject().put("structureId", structureId);
 
@@ -313,9 +313,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         //Classes
         if (filterObj.containsKey("classes") && filterObj.getJsonArray("classes").size() > 0) {
             filter += ", (c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) ";
-            // Override optional matches for the class-filter case; keep `auths` bound for later collect(auths)/hasFederatedIdentity computation.
-            optional = " OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) "
-                     + " OPTIONAL MATCH (s)-[:HAS_AUTH_DEFAULT]->(auths:AuthDefault { profile: HEAD(u.profiles), auth: 'FEDERATED' }) ";
+            classOptional = "";
             condition += " AND c.id IN {classesArray} ";
             params.put("classesArray", filterObj.getJsonArray("classes"));
         }
@@ -436,7 +434,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         }
         sort += "TOLOWER(lastName) ";
 
-        String query = filter + condition + optional + withStr + returnStr + sort;
+        String query = filter + condition + classOptional + optional + withStr + returnStr + sort;
 
         neo.execute(query.toString(), params, validResultHandler(results));
     }
