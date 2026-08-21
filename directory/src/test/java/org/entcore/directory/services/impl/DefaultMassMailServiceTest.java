@@ -150,6 +150,32 @@ public class DefaultMassMailServiceTest {
 
     /**
      * <h1>Goal</h1>
+     * <p>Ensures that massmailUsers, when the "classes" filter is set, still returns the users of the filtered
+     * class with their class fields. This filter builds a different Neo4j query (see the //Classes section of
+     * massmailUsers), which has already been broken twice without any test noticing.</p>
+     */
+    @Test
+    public void testMassmailUsersWithClassFilter(final TestContext testContext) {
+        final Async async = testContext.async();
+        final JsonObject filter = new JsonObject()
+                .put("activated", "all")
+                .put("profiles", new JsonArray().add(Profile.Student.name))
+                .put("classes", new JsonArray().add("massmail-structure-01-class-01"));
+        defaultMassMailService.massmailUsers("massmail-structure-01", filter, superAdmin(), h -> {
+            testContext.assertTrue(h.isRight(), "Failed to find users of the filtered class " + h);
+            final JsonArray users = h.right().getValue();
+            final JsonObject simpleStudent = findById(users, student.getId());
+            testContext.assertNotNull(simpleStudent, "Simple student should be in the filtered class");
+            testContext.assertEquals(new JsonArray().add("massmail structure 01 class 01"), simpleStudent.getJsonArray("classes"));
+            testContext.assertEquals("massmail structure 01 class 01", simpleStudent.getString("firstClass"));
+            testContext.assertEquals(Boolean.TRUE, simpleStudent.getBoolean("isInClass"));
+            testContext.assertEquals(Boolean.FALSE, simpleStudent.getBoolean("hasFederatedIdentity"));
+            async.complete();
+        });
+    }
+
+    /**
+     * <h1>Goal</h1>
      * <p>Ensures that massMailAllUsersByStructure returns the users of the structure with federated flag = false
      * when the user is not federated and federated flag = true when federated = true and federatedIDP != null.</p>
      */
