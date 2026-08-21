@@ -24,9 +24,13 @@ export const Component = () => {
   const { md } = useBreakpoint();
   const { common_t } = useI18n();
 
-  const form = useCustomizeForm();
+  const { resetChanges, saveChanges, ...form } = useCustomizeForm();
 
   if (!init) return <LoadingScreen position={false} />;
+
+  const handleSaveClick = () => {
+    saveChanges();
+  };
 
   return (
     <PageLayout
@@ -58,8 +62,12 @@ export const Component = () => {
             align="center"
             className="w-100"
           >
-            <Button variant="ghost">{common_t('cancel')}</Button>
-            <Button variant="filled">{common_t('save')}</Button>
+            <Button variant="ghost" onClick={resetChanges}>
+              {common_t('cancel')}
+            </Button>
+            <Button variant="filled" onClick={handleSaveClick}>
+              {common_t('save')}
+            </Button>
           </Flex>
         </Flex>
       </PageLayout.Content>

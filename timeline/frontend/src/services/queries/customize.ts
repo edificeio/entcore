@@ -7,7 +7,7 @@ import { customizeService } from '../api/customizeService';
 export const customizeQueryKeys = {
   all: () => ['customize'],
   languages: () => [...customizeQueryKeys.all(), 'languages'],
-  themes: () => [...customizeQueryKeys.all(), 'themes'],
+  fonts: () => [...customizeQueryKeys.all(), 'fonts'],
 };
 
 /**
@@ -25,12 +25,12 @@ export const customizeQueryOptions = {
     });
   },
   /**
-   * @returns Query options for fetching the list of available themes. The query is cached indefinitely since it is not expected to change.
+   * @returns Query options for fetching the list of available fonts. The query is cached indefinitely since it is not expected to change.
    */
-  getThemes() {
+  getFonts() {
     return queryOptions({
-      queryKey: customizeQueryKeys.themes(),
-      queryFn: () => customizeService.listThemes(),
+      queryKey: customizeQueryKeys.fonts(),
+      queryFn: () => customizeService.listFonts(),
       staleTime: Infinity,
     });
   },
@@ -38,4 +38,4 @@ export const customizeQueryOptions = {
 
 export const useLanguages = () =>
   useQuery(customizeQueryOptions.getLanguages());
-export const useThemes = () => useQuery(customizeQueryOptions.getThemes());
+export const useFonts = () => useQuery(customizeQueryOptions.getFonts());
