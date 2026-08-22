@@ -23,7 +23,7 @@ import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
 import { FlashMessageHistoryPanel } from '~/components/WelcomeWidget/FlashMessageHistoryPanel';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
 
-type OverlayPanel = 'settings' | 'flash-history' | null;
+type OverlayPanel = 'settings' | 'flash-history' | 'notifications' | null;
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -40,6 +40,17 @@ export const Root = () => {
   );
   const { isOverlayOpen, updateOverlayOpen } = useOverlay();
   const [activePanel, setActivePanel] = useState<OverlayPanel>(null);
+  const { md, lg } = useBreakpoint();
+  // Below `md` (768px), PageLayout stacks into a single column — drop the
+  // SidebarLeft split and reflow everything into Content in the requested
+  // order instead of the default breadcrumb → sidebarLeft → content order.
+  const isMobile = !md;
+
+  const isNotificationsOpen = activePanel === 'notifications';
+  // On desktop, notifications live in the SidebarRight (grid column) instead
+  // of the slide-in overlay, so they don't need `overlayOpen` to be true.
+  const isSidebarOpen = isNotificationsOpen && lg;
+
   const openSettings = () => {
     setActivePanel('settings');
     updateOverlayOpen(true);
@@ -48,18 +59,34 @@ export const Root = () => {
     setActivePanel('flash-history');
     updateOverlayOpen(true);
   };
+  const openNotifications = () => {
+    setActivePanel('notifications');
+    updateOverlayOpen(!lg);
+  };
+  const closeNotifications = () => {
+    setActivePanel(null);
+    updateOverlayOpen(false);
+  };
+  const toggleNotifications = () =>
+    isNotificationsOpen ? closeNotifications() : openNotifications();
+
   useEffect(() => {
-    if (!isOverlayOpen) setActivePanel(null);
-  }, [isOverlayOpen]);
-  const { lg } = useBreakpoint();
+    if (isOverlayOpen) return;
+    // Switching from overlay to SidebarRight closes the overlay without
+    // actually dismissing the notifications panel — keep it active.
+    if (activePanel === 'notifications' && lg) return;
+    setActivePanel(null);
+  }, [isOverlayOpen, activePanel, lg]);
+
+  // Keep the shared overlay state in sync when resizing while notifications
+  // are open, so it opens/closes the slide-in panel as the layout switches
+  // between SidebarRight (desktop) and Overlay (mobile/tablet).
+  useEffect(() => {
+    if (activePanel === 'notifications') updateOverlayOpen(!lg);
+  }, [lg, activePanel, updateOverlayOpen]);
+
   const [pageErrors, setPageErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-
-  const toggleNotifications = () => setIsNotificationsOpen((prev) => !prev);
-  const closeNotifications = () => setIsNotificationsOpen(false);
-
-  const isSidebarOpen = isNotificationsOpen && lg;
 
   const handleWidgetError = (message: string) => {
     setPageErrors((prev) =>
@@ -83,7 +110,16 @@ export const Root = () => {
       noPadding={{ sidebarRight: true }}
     >
       <PageLayout.Header onNotificationsClick={toggleNotifications} />
-      <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
+      {!isMobile && (
+        <PageLayout.SidebarLeft className="d-grid align-content-start bg-white py-16 gap-16">
+          <SchoolSpaceContainer />
+
+          <WidgetErrorBoundary>
+            <LastInfosContainer />
+          </WidgetErrorBoundary>
+        </PageLayout.SidebarLeft>
+      )}
+      <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
         {successMessage && (
           <Alert
             type="success"
@@ -96,13 +132,6 @@ export const Root = () => {
             {successMessage}
           </Alert>
         )}
-        <SchoolSpaceContainer />
-
-        <WidgetErrorBoundary>
-          <LastInfosContainer />
-        </WidgetErrorBoundary>
-      </PageLayout.SidebarLeft>
-      <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
         <MessageFlashListContainer />
 
         <WidgetErrorBoundary>
@@ -112,6 +141,16 @@ export const Root = () => {
             onOpenHistory={openHistory}
           />
         </WidgetErrorBoundary>
+
+        {isMobile && (
+          <>
+            <SchoolSpaceContainer />
+
+            <WidgetErrorBoundary>
+              <LastInfosContainer />
+            </WidgetErrorBoundary>
+          </>
+        )}
 
         <WidgetMasonry>
           {hasMediacentreWidget && <MediacentreWidget />}
@@ -125,27 +164,26 @@ export const Root = () => {
           )}
         </WidgetMasonry>
       </PageLayout.Content>
-      <PageLayout.Overlay backdrop closeButton={false}>
+      <PageLayout.Overlay
+        backdrop
+        closeButton={false}
+        onClose={isNotificationsOpen ? closeNotifications : undefined}
+      >
         {activePanel === 'settings' && <PersonnalisationPanel />}
         {activePanel === 'flash-history' && <FlashMessageHistoryPanel />}
+        {isNotificationsOpen && !isSidebarOpen && (
+          <NotificationListContainer
+            onCloseNotifications={closeNotifications}
+          />
+        )}
       </PageLayout.Overlay>
 
-      {isSidebarOpen ? (
+      {isSidebarOpen && (
         <PageLayout.SidebarRight>
           <NotificationListContainer
             onCloseNotifications={closeNotifications}
           />
         </PageLayout.SidebarRight>
-      ) : (
-        isNotificationsOpen && (
-          <PageLayout.Overlay
-            closeButton={true}
-            onClose={closeNotifications}
-            backdrop={true}
-          >
-            <NotificationListContainer />
-          </PageLayout.Overlay>
-        )
       )}
     </PageLayout>
   );
