@@ -1,4 +1,11 @@
-import { Avatar, ButtonBeta, Grid, Heading, useBreakpoint, useUser } from '@edifice.io/react';
+import {
+  Avatar,
+  ButtonBeta,
+  Grid,
+  Heading,
+  useBreakpoint,
+  useUser,
+} from '@edifice.io/react';
 import { IconClock, IconSettings } from '@edifice.io/react/icons';
 import { FavoritesContainer, HomeCard } from '@edifice.io/react/homepage';
 import { useTranslation } from 'react-i18next';
@@ -38,7 +45,8 @@ export function WelcomeWidget({
           <Avatar alt={firstName} src={avatar} size="md" variant="circle" />
           <div className="d-flex flex-column">
             <Heading level="h2" headingStyle="h4" className="mb-0 fw-bold">
-              {t('homepage.crna.widget.welcome.greeting', 'Bonjour')} {firstName}
+              {t('homepage.crna.widget.welcome.greeting', 'Bonjour')}{' '}
+              {firstName}
             </Heading>
             <span className="text-muted small">
               {t(
@@ -48,14 +56,19 @@ export function WelcomeWidget({
             </span>
           </div>
         </div>
-        <div className={`d-flex gap-8${md ? '' : ' flex-column align-items-start'}`}>
+        <div
+          className={`d-flex gap-6${md ? '' : ' flex-column align-items-start'}`}
+        >
           <ButtonBeta
             color="default"
             variant="ghost"
             leftIcon={<IconClock width={20} height={20} />}
             onClick={onOpenHistory}
           >
-            {t('homepage.crna.widget.welcome.history', 'Historique des message flash')}
+            {t(
+              'homepage.crna.widget.welcome.history',
+              'Historique des message flash',
+            )}
           </ButtonBeta>
           <ButtonBeta
             color="default"
@@ -68,14 +81,28 @@ export function WelcomeWidget({
         </div>
       </div>
 
-      <Grid>
-        <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-          <FavoritesContainer />
-        </Grid.Col>
-        <Grid.Col sm="12" lg="6" className="d-flex flex-column gap-16">
-          <CreateDocumentWidget onSuccess={onCreateDocumentSuccess} />
-        </Grid.Col>
-      </Grid>
+      <HomeCard.Content>
+        <Grid>
+          <Grid.Col
+            sm="4"
+            md="8"
+            lg="8"
+            xl="6"
+            className="d-flex flex-column gap-16"
+          >
+            <FavoritesContainer />
+          </Grid.Col>
+          <Grid.Col
+            sm="4"
+            md="8"
+            lg="8"
+            xl="6"
+            className="d-flex flex-column gap-16"
+          >
+            <CreateDocumentWidget onSuccess={onCreateDocumentSuccess} />
+          </Grid.Col>
+        </Grid>
+      </HomeCard.Content>
     </HomeCard>
   );
 }
