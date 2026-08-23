@@ -1,7 +1,7 @@
 import { EmptyScreen, Heading, IconButton, useOverlay } from '@edifice.io/react';
 import { MessageFlash } from '@edifice.io/react/homepage';
 import { IconClose } from '@edifice.io/react/icons';
-import illuEmptyNotification from '@edifice.io/bootstrap/dist/images/emptyscreen/illu-notifications.png';
+import illuEmptyNotification from '@edifice.io/bootstrap/dist/images/homepage/illu-empty-notifications.png';
 import { useTranslation } from 'react-i18next';
 import { useFlashMessageHistory } from '~/services/queries/flashMessage.queries';
 import { WidgetSkeleton } from '../ui/WidgetSkeleton';
