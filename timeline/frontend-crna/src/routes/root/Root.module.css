@@ -16,24 +16,3 @@
     grid-template-columns: 1fr 3fr 1fr;
   }
 }
-
-/*
- * PageLayout.Overlay slides in via `transform: translateX(...)`, but a CSS
- * transform on an ancestor creates a new containing block for `position:
- * fixed` descendants — any Modal (notification filter, report...) opened
- * from inside this overlay then centers on the overlay's own box instead
- * of the viewport. Reimplement the same slide using `right` instead of
- * `transform`, so descendants keep the real viewport as their containing
- * block. The framework already keeps `right: 0` at rest; overriding it to
- * a large negative value while closed hides the panel off-screen without
- * ever touching `transform`.
- */
-.layout :global(.pagelayout-overlay) {
-  transform: none;
-  right: -100%;
-  transition: right 0.3s ease-in-out;
-}
-
-.layout :global(.pagelayout-overlay-open) {
-  right: 0;
-}
