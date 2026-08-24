@@ -5,23 +5,24 @@ import type { LoolDocTypeId } from '~/models/createDocument';
 import { useLoolProviders } from '~/hooks/useLoolProviders';
 import { ButtonBeta } from '@edifice.io/react';
 
-const DOC_TYPE_TO_EXT: Record<LoolDocTypeId, 'docx' | 'pptx' | 'xlsx'> = {
-  word: 'docx',
-  powerpoint: 'pptx',
-  excel: 'xlsx',
-};
-
 export interface LoolCreateModalProps {
   isOpen: boolean;
   docTypeId: LoolDocTypeId;
+  nextcloudAddress: string | undefined;
   onClose: () => void;
 }
 
-export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalProps) {
+export function LoolCreateModal({
+  isOpen,
+  docTypeId,
+  nextcloudAddress,
+  onClose,
+}: LoolCreateModalProps) {
   const { t } = useTranslation('timeline');
   const { data: docTypes = [], isLoading } = useLoolProviders();
 
-  const [selectedDocTypeId, setSelectedDocTypeId] = useState<LoolDocTypeId>(docTypeId);
+  const [selectedDocTypeId, setSelectedDocTypeId] =
+    useState<LoolDocTypeId>(docTypeId);
   const [filename, setFilename] = useState('');
 
   // Sync pre-selection when modal opens with a new docTypeId
@@ -34,20 +35,28 @@ export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalP
 
   const handleCreate = () => {
     const trimmed = filename.trim();
-    if (!trimmed) return;
-    const params = new URLSearchParams({
-      type: DOC_TYPE_TO_EXT[selectedDocTypeId],
-      name: trimmed.replace(/[/\\<>|]/g, ''),
-      protected: 'false',
-    });
-    window.open(`/lool/document?${params.toString()}`, '_blank');
+    if (!trimmed || !nextcloudAddress) return;
+
+    const redirectUrlMarkerIndex = nextcloudAddress.indexOf('redirectUrl=');
+    if (redirectUrlMarkerIndex === -1) return;
+
+    const redirectUrl = `/index.php/apps/edifice_documents/create?type=${selectedDocTypeId}&name=${encodeURIComponent(trimmed)}`;
+    const addressPrefix = nextcloudAddress.slice(0, redirectUrlMarkerIndex);
+    const oidcUrl = `${addressPrefix}redirectUrl=${encodeURIComponent(redirectUrl)}`;
+
+    window.open(oidcUrl, '_blank', 'noopener,noreferrer');
     onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <Modal id="lool-create-modal" isOpen={isOpen} onModalClose={onClose} size="md">
+    <Modal
+      id="lool-create-modal"
+      isOpen={isOpen}
+      onModalClose={onClose}
+      size="md"
+    >
       <Modal.Header onModalClose={onClose}>
         {t('homepage.crna.widget.create.modal.title', 'Créer un document')}
       </Modal.Header>
@@ -55,7 +64,9 @@ export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalP
       <Modal.Body>
         <div className="d-flex flex-column gap-24">
           {isLoading ? (
-            <p>{t('homepage.crna.widget.create.modal.loading', 'Chargement…')}</p>
+            <p>
+              {t('homepage.crna.widget.create.modal.loading', 'Chargement…')}
+            </p>
           ) : (
             <div className="d-flex gap-12">
               {docTypes.map((dt) => (
@@ -73,14 +84,20 @@ export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalP
 
           <FormControl id="lool-filename">
             <Label>
-              {t('homepage.crna.widget.create.modal.filename', 'Nom du document')}
+              {t(
+                'homepage.crna.widget.create.modal.filename',
+                'Nom du document',
+              )}
             </Label>
             <Input
               type="text"
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-              placeholder={t('homepage.crna.widget.create.modal.filename.placeholder', 'Saisissez un nom…')}
+              placeholder={t(
+                'homepage.crna.widget.create.modal.filename.placeholder',
+                'Saisissez un nom…',
+              )}
               size="md"
             />
           </FormControl>
@@ -93,7 +110,7 @@ export function LoolCreateModal({ isOpen, docTypeId, onClose }: LoolCreateModalP
         </ButtonBeta>
         <ButtonBeta
           color="default"
-          disabled={!filename.trim()}
+          disabled={!filename.trim() || !nextcloudAddress}
           onClick={handleCreate}
         >
           {t('homepage.crna.widget.create.modal.create', 'Créer')}
