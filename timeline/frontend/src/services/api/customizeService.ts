@@ -4,6 +4,4 @@ export const customizeService = {
   listLanguages: () => odeServices.http().get<string[]>('/languages'),
 
   listFonts: () => odeServices.http().get<IThemeDesc[]>('/themes'),
-
-  // ctrl.themeSvc.getBootstrapThemePath()
 };
