@@ -280,10 +280,31 @@ public class PortalController extends BaseController {
 	}
 
 	private String getThemePrefix(HttpServerRequest request) {
-		return "/assets/themes/" + getSkinFromConditions(request);
+		// Le skin est un nom de repertoire, jamais un fragment de chemin : on retire tout ce qui
+		// n'est pas alphanumerique, tiret ou souligne. Neutralise l'injection « theme=../../.. »
+		// (cookie non signe) exploitee dans la traversee de repertoire.
+		final String skin = getSkinFromConditions(request).replaceAll("[^A-Za-z0-9_-]", "");
+		return "/assets/themes/" + skin;
+	}
+
+	// Confinement : le chemin servi doit rester sous assetsPath. Refuse toute traversee,
+	// y compris celle reintroduite par le decodage-et-nouvelle-tentative ci-dessous.
+	private static boolean isPathUnder(String root, String candidate) {
+		if (candidate == null) return false;
+		try {
+			final java.nio.file.Path base = java.nio.file.Paths.get(root).toAbsolutePath().normalize();
+			final java.nio.file.Path p = java.nio.file.Paths.get(candidate).toAbsolutePath().normalize();
+			return p.startsWith(base);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private void sendWithLastModified(final HttpServerRequest request, final String path, final boolean decodeIfNeeded) {
+		if (!isPathUnder(assetsPath, path)) {
+			notFound(request);
+			return;
+		}
 		if (staticRessources.containsKey(request.uri())) {
 			final String safePath = fixResources.getOrDefault(request.uri(), path);
 			final String modifiedDate = staticRessources.get(request.uri());
@@ -298,6 +319,10 @@ public class PortalController extends BaseController {
 					if(decodeIfNeeded && af.cause() instanceof FileSystemException && af.cause().getCause() != null && af.cause().getCause() instanceof NoSuchFileException){
 						try {
 							final String decoded = URLDecoder.decode(path, "UTF-8");
+							if (!isPathUnder(assetsPath, decoded)) { // le decodage ne doit pas rouvrir la traversee
+								notFound(request);
+								return;
+							}
 							fixResources.put(request.uri(), decoded);
 							sendWithLastModified(request, decoded, false);
 							return;
