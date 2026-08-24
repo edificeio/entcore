@@ -11,6 +11,15 @@ type CustomizeFormProps = {
   >;
 };
 
+/* Map a lang code to a country code. */
+function getCountryCode(lang: string) {
+  switch (lang) {
+    case 'en':
+      return 'gb';
+  }
+  return lang;
+}
+
 export const CustomizeForm = ({ form }: CustomizeFormProps) => {
   const { t, common_t } = useI18n();
 
@@ -50,15 +59,22 @@ export const CustomizeForm = ({ form }: CustomizeFormProps) => {
         <h3>{t('homepage.customize.form.languages')}</h3>
         <Flex>
           {languages ? (
-            languages.map((lang) => (
-              <ChoiceButton
-                key={lang}
-                isSelected={lang === selectedLanguage}
-                onClick={() => handleLanguageChange(lang)}
-              >
-                {t(`language.${lang}`)}
-              </ChoiceButton>
-            ))
+            languages.map((lang) => {
+              const label = t(`language.${lang}`);
+              return (
+                <ChoiceButton
+                  key={lang}
+                  isSelected={lang === selectedLanguage}
+                  onClick={() => handleLanguageChange(lang)}
+                >
+                  <img
+                    src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
+                    alt={label}
+                  />
+                  <span className="personnalisation-lang-label">{label}</span>
+                </ChoiceButton>
+              );
+            })
           ) : (
             <ChoiceSkeleton />
           )}

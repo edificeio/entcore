@@ -1,4 +1,11 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
+import { useToast } from '@edifice.io/react';
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { useI18n } from '~/hooks/useI18n';
 import { customizeService } from '../api/customizeService';
 
 /**
@@ -38,4 +45,19 @@ export const customizeQueryOptions = {
 
 export const useLanguages = () =>
   useQuery(customizeQueryOptions.getLanguages());
+
 export const useFonts = () => useQuery(customizeQueryOptions.getFonts());
+
+export const useSaveCustomization = (lang) => {
+  const queryClient = useQueryClient();
+  const { t } = useI18n();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: async ({ lang }: { lang: string }) =>
+      await Promise.all([customizeService.saveLanguagePreference(lang)]),
+    onSuccess: () => {
+      toast.success(t('homepage.customize.form.save.success'));
+    },
+  });
+};

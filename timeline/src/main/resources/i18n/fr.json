@@ -205,6 +205,7 @@
   "homepage.customize.form.languages": "Langue de l’interface",
   "homepage.customize.form.fonts": "Police",
   "homepage.customize.form.themes": "Mes thèmes",
+  "homepage.customize.form.save.success": "Votre personnalisation est enregistrée.",
   "homeworks": "Cahier de textes",
   "infotip.quiethours.structure.text": "Les notifications mails prévues entre 20h et 7h en semaine, ainsi que du vendredi 20h au lundi 7h, sont suspendues. Vous recevrez un récapitulatif chaque matin à 7h.",
   "infotip.quiethours.structure.title": "Votre établissement a mis en pause les notifications le soir et le week-end.",
