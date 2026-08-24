@@ -280,12 +280,15 @@ public class PortalController extends BaseController {
 	}
 
 	private String getThemePrefix(HttpServerRequest request) {
-		// Sanitize theme name to avoid file system access
+		// Le skin est un nom de repertoire, jamais un fragment de chemin : on retire tout ce qui
+		// n'est pas alphanumerique, tiret ou souligne. Neutralise l'injection « theme=../../.. »
+		// (cookie non signe) exploitee dans la traversee de repertoire.
 		final String skin = getSkinFromConditions(request).replaceAll("[^A-Za-z0-9_-]", "");
 		return "/assets/themes/" + skin;
 	}
 
-	// Check that path is a subdirectory of assetsPath
+	// Confinement : le chemin servi doit rester sous assetsPath. Refuse toute traversee,
+	// y compris celle reintroduite par le decodage-et-nouvelle-tentative ci-dessous.
 	private static boolean isPathUnder(String root, String candidate) {
 		if (candidate == null) return false;
 		try {
@@ -316,7 +319,7 @@ public class PortalController extends BaseController {
 					if(decodeIfNeeded && af.cause() instanceof FileSystemException && af.cause().getCause() != null && af.cause().getCause() instanceof NoSuchFileException){
 						try {
 							final String decoded = URLDecoder.decode(path, "UTF-8");
-							if (!isPathUnder(assetsPath, decoded)) { 
+							if (!isPathUnder(assetsPath, decoded)) { // le decodage ne doit pas rouvrir la traversee
 								notFound(request);
 								return;
 							}
