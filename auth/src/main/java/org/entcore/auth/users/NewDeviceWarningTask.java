@@ -46,7 +46,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -381,7 +381,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
         JsonObject templateParams = new JsonObject()
             .put("displayName", user.displayName)
             .put("device", c.device.toString())
-            .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC) * 1000)
+            .put("date", LocalDateTime.parse(c.date).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
             .put("ip", c.ip.indexOf("/") > -1 ? c.ip.substring(0, c.ip.indexOf("/")) : c.ip)
             .put("changePasswordLink", user.scheme + "://" + user.host);
 
