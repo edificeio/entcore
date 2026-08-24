@@ -55,8 +55,6 @@ import org.entcore.common.validation.StringValidation;
 import org.joda.time.DateTime;
 
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -479,7 +477,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 
 		JsonObject templateParams = new JsonObject()
 				.put("displayName", firstName)
-				.put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000);
+				.put("date", System.currentTimeMillis());
 
 		final String emailTemplate = reset ? "email/resetPassword.html" : "email/changedPassword.html";
 		final String i18nKey = reset ? "email.password.reset.subject" : "email.password.change.subject";
