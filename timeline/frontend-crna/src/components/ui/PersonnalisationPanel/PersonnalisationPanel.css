@@ -30,14 +30,27 @@
   gap: 10px;
 }
 
-.personnalisation-toggle {
+.personnalisation-toggle.btn-beta {
   flex: 1;
+  justify-content: center;
   padding: var(--primitive-spacer-12);
+  border: 1.5px solid var(--primitive-grey-200);
+  border-radius: var(--primitive-border-radius-md);
+  background: var(--primitive-white);
+  font-family: var(--primitive-font-family-arimo);
+  font-weight: var(--primitive-font-weight-bold);
+  transition: border-color 0.15s, background-color 0.15s;
 }
 
 .personnalisation-toggle--dyslexic {
   font-family: OpenDyslexic, sans-serif;
+  font-weight: var(--primitive-font-weight-regular);
   line-height: 26px;
+}
+
+.personnalisation-toggle--active.btn-beta {
+  border-color: var(--primitive-orange-300);
+  background: var(--primitive-orange-200);
 }
 
 /* Langue */
