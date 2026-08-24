@@ -81,6 +81,8 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
     'video' | 'audio' | null
   >(null);
 
+  const displayMediaButtons = false; // TODO: Enable when video/audio recording is implemented
+
   const nextcloudConnector = user?.apps.find(
     (app) => app.name === 'nextcloud-files-connector',
   );
@@ -121,7 +123,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
                 ),
               )}
 
-            {APP_ACTIONS.map(
+            {displayMediaButtons &&APP_ACTIONS.map(
               ({ labelKey, label, icon, colorVar, mediaType, workflowKey }) => {
                 if (workflowKey && hasVideoRight !== true) return null;
                 return (
@@ -156,7 +158,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
           />
         )}
 
-        {mediaRecordType && (
+        {displayMediaButtons && mediaRecordType && (
           <MediaRecordModal
             type={mediaRecordType}
             isOpen={true}
