@@ -280,10 +280,28 @@ public class PortalController extends BaseController {
 	}
 
 	private String getThemePrefix(HttpServerRequest request) {
-		return "/assets/themes/" + getSkinFromConditions(request);
+		// Sanitize theme name to avoid file system access
+		final String skin = getSkinFromConditions(request).replaceAll("[^A-Za-z0-9_-]", "");
+		return "/assets/themes/" + skin;
+	}
+
+	// Check that path is a subdirectory of assetsPath
+	private static boolean isPathUnder(String root, String candidate) {
+		if (candidate == null) return false;
+		try {
+			final java.nio.file.Path base = java.nio.file.Paths.get(root).toAbsolutePath().normalize();
+			final java.nio.file.Path p = java.nio.file.Paths.get(candidate).toAbsolutePath().normalize();
+			return p.startsWith(base);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private void sendWithLastModified(final HttpServerRequest request, final String path, final boolean decodeIfNeeded) {
+		if (!isPathUnder(assetsPath, path)) {
+			notFound(request);
+			return;
+		}
 		if (staticRessources.containsKey(request.uri())) {
 			final String safePath = fixResources.getOrDefault(request.uri(), path);
 			final String modifiedDate = staticRessources.get(request.uri());
@@ -298,6 +316,10 @@ public class PortalController extends BaseController {
 					if(decodeIfNeeded && af.cause() instanceof FileSystemException && af.cause().getCause() != null && af.cause().getCause() instanceof NoSuchFileException){
 						try {
 							final String decoded = URLDecoder.decode(path, "UTF-8");
+							if (!isPathUnder(assetsPath, decoded)) { 
+								notFound(request);
+								return;
+							}
 							fixResources.put(request.uri(), decoded);
 							sendWithLastModified(request, decoded, false);
 							return;
