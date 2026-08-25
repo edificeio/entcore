@@ -1099,6 +1099,8 @@
   "notify.user.remove.structure.error.content": "La structure {{structure}} n'a pas pu être supprimée.",
   "notify.user.remove.structure.error.title": "Erreur lors de la suppression de la structure.",
   "notify.user.remove.structure.title": "Structure supprimée.",
+  "notify.user.renewal.error.content": "Le code de renouvellement de mot de passe n'a pas pu être généré.",
+  "notify.user.renewal.error.title": "Erreur lors de la génération du code.",
   "notify.user.restore.content": "L'utilisateur {{user}} a bien été restauré.",
   "notify.user.restore.error.content": "L'utilisateur {{user}} n'a pas pu être restauré.",
   "notify.user.restore.error.title": "Erreur lors de la restauration",
