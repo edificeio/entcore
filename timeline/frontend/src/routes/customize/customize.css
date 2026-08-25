@@ -7,6 +7,12 @@
   margin-bottom: 10px;
 }
 
+.choice-button {
+}
+
+.choice-button.isSelected {
+}
+
 @media only screen and (min-width: 768px) {
   .customize-content {
     margin: var(--primitive-spacer-32) var(--primitive-spacer-32)

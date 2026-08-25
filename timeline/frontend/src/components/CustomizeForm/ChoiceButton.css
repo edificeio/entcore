@@ -1,0 +1,13 @@
+.choice-button {
+  padding: var(--primitive-spacer-12);
+  border-radius: 12px;
+}
+
+.choice-button.isSelected {
+}
+
+.choice-button img {
+  border: transparent 2px solid;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
