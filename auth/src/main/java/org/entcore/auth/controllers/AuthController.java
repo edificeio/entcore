@@ -1641,6 +1641,8 @@ public class AuthController extends BaseController {
 		userAuthAccount.generateResetCode(login, checkFederatedLogin, (Either<String, JsonObject> either) -> {
 			if (either.isRight()) {
 				renderJson(request, new JsonObject().put("renewalCode", either.right().getValue().getString("code")));
+			} else if (isNotEmpty(either.left().getValue())) {
+				conflict(request, either.left().getValue());
 			} else {
 				renderError(request);
 			}
