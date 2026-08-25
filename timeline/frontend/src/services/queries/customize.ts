@@ -1,10 +1,5 @@
 import { useToast } from '@edifice.io/react';
-import {
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { queryOptions, useMutation, useQuery } from '@tanstack/react-query';
 import { useI18n } from '~/hooks/useI18n';
 import { customizeService } from '../api/customizeService';
 
@@ -49,7 +44,6 @@ export const useLanguages = () =>
 export const useFonts = () => useQuery(customizeQueryOptions.getFonts());
 
 export const useSaveCustomization = () => {
-  const queryClient = useQueryClient();
   const { t } = useI18n();
   const toast = useToast();
 
