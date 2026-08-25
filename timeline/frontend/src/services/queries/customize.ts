@@ -48,13 +48,13 @@ export const useLanguages = () =>
 
 export const useFonts = () => useQuery(customizeQueryOptions.getFonts());
 
-export const useSaveCustomization = (lang) => {
+export const useSaveCustomization = () => {
   const queryClient = useQueryClient();
   const { t } = useI18n();
   const toast = useToast();
 
   return useMutation({
-    mutationFn: async ({ lang }: { lang: string }) =>
+    mutationFn: async ({ lang }: { lang: string; font: string }) =>
       await Promise.all([customizeService.saveLanguagePreference(lang)]),
     onSuccess: () => {
       toast.success(t('homepage.customize.form.save.success'));
