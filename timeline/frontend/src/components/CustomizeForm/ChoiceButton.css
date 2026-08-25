@@ -1,9 +1,21 @@
 .choice-button {
   padding: var(--primitive-spacer-12);
   border-radius: 12px;
+  box-shadow: none;
 }
 
-.choice-button.isSelected {
+.choice-button[aria-pressed='true'] {
+  color: red;
+  background-color: var(--primitive-yellow-200, #fcf3cf);
+  border: 2px solid var(--primitive-yellow-500, #ffc403);
+}
+
+.choice-button[aria-pressed='false'] {
+  color: var(--primitive-grey-900);
+  background-color: transparent;
+}
+.choice-button[aria-pressed='false']:hover {
+  background-color: var(--primitive-yellow-200, #fcf3cf);
 }
 
 .choice-button img {
