@@ -10,7 +10,7 @@ interface WidgetMasonryProps {
 
 export function WidgetMasonry({
   children,
-  columns = { xs: 1, sm: 1, md: 2, lg: 2 },
+  columns = { xs: 1, sm: 1, md: 1, lg: 2 },
   gutter = 16,
 }: WidgetMasonryProps) {
   const items = Children.toArray(children).map((child, index) => ({

@@ -1,8 +1,18 @@
-/* Sidebar gauche réduite à ~25% (1fr/4fr) au lieu de 33% (1fr/3fr) par défaut */
-.layout :global(.pagelayout-mainarea.has-left-sidebar-only) {
-  grid-template-columns: 1fr 3fr;
-}
+/*
+ * Sidebar gauche réduite à ~25% (1fr/4fr) au lieu de 33% (1fr/3fr) par défaut.
+ * Scoped to `md` (768px) and up: PageLayout stacks its grid into a single
+ * column below that, and this override has the same CSS specificity as the
+ * framework's stacking rule (3 classes) but wins the cascade tie-break since
+ * it's loaded later — forcing `grid-template-columns: 1fr 3fr` back on top
+ * of a single-column `grid-template-areas` squeezed sidebarLeft/content into
+ * the first ~25% track, leaving the rest of the screen empty on mobile.
+ */
+@media (min-width: 1024px) {
+  .layout :global(.pagelayout-mainarea.has-left-sidebar-only) {
+    grid-template-columns: 1fr 3fr;
+  }
 
-.layout :global(.pagelayout-mainarea.has-both-sidebars) {
-  grid-template-columns: 1fr 3fr 1fr;
+  .layout :global(.pagelayout-mainarea.has-both-sidebars) {
+    grid-template-columns: 1fr 3fr 1fr;
+  }
 }

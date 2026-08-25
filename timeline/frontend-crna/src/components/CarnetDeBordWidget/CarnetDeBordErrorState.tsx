@@ -3,7 +3,7 @@ import illuError from '@edifice.io/bootstrap/dist/images/emptyscreen/illu-error.
 import { useTranslation } from 'react-i18next';
 
 export function CarnetDeBordErrorState() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('timeline');
   return (
     <EmptyScreen
       imageSrc={illuError}

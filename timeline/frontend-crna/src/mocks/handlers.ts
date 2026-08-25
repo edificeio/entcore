@@ -154,6 +154,19 @@ const defaultHandlers = [
           scope: [''],
           isExternal: false,
         },
+        {
+          name: 'nextcloud-files-connector',
+          address:
+            'https://nextcloud.fake.edifice.io/index.php/apps/user_oidc/login/3?redirectUrl=https%3A%2F%2Fnextcloud.fake.edifice.io%2F',
+          icon: 'nextcloud-files-connector-large',
+          target: '',
+          displayName: 'nextcloud-files-connector',
+          display: true,
+          prefix: '/nextcloud-files-connector',
+          casType: null,
+          scope: [''],
+          isExternal: true,
+        },
       ],
       childrenIds: [],
       children: {},
@@ -191,8 +204,16 @@ const defaultHandlers = [
 
   http.get('/themes', () => {
     return HttpResponse.json([
-      { _id: 'default',  displayName: 'Défaut',     path: '/assets/themes/fake-theme/skins/default/' },
-      { _id: 'dyslexic', displayName: 'Dyslexique', path: '/assets/themes/fake-theme/skins/dyslexic/' },
+      {
+        _id: 'default',
+        displayName: 'Défaut',
+        path: '/assets/themes/fake-theme/skins/default/',
+      },
+      {
+        _id: 'dyslexic',
+        displayName: 'Dyslexique',
+        path: '/assets/themes/fake-theme/skins/dyslexic/',
+      },
     ]);
   }),
 
