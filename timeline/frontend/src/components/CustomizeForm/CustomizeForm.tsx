@@ -69,16 +69,14 @@ export const CustomizeForm = ({ form }: CustomizeFormProps) => {
                   isSelected={lang === selectedLanguage}
                   onClick={() => handleLanguageChange(lang)}
                 >
-                  <Flex direction="column" align="center">
-                    <div>
-                      <img
-                        width={56}
-                        height={36}
-                        src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
-                        alt={label}
-                        loading="lazy"
-                      />
-                    </div>
+                  <Flex direction="column" align="center" gap="8">
+                    <img
+                      width={56}
+                      height={36}
+                      src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
+                      alt={label}
+                      loading="lazy"
+                    />
                     <span className="customize-language-label">{label}</span>
                   </Flex>
                 </ChoiceButton>
