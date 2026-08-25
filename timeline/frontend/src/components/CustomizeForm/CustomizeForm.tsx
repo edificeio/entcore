@@ -36,12 +36,12 @@ export const CustomizeForm = ({ form }: CustomizeFormProps) => {
     <Flex direction="column" gap="32" className="w-100">
       <Flex direction="column" gap="16" className="w-100">
         <h3>{t('homepage.customize.form.fonts')}</h3>
-        <Flex>
+        <Flex gap="8" wrap="wrap">
           {fonts && selectedFont ? (
             fonts.map(({ _id, displayName }) => (
               <ChoiceButton
                 key={_id}
-                className="font-choice"
+                className="customize-font-choice"
                 isSelected={_id === selectedFont}
                 onClick={() => handleFontChange(_id)}
               >
@@ -53,9 +53,13 @@ export const CustomizeForm = ({ form }: CustomizeFormProps) => {
           )}
         </Flex>
       </Flex>
+
+      {/*
       <Flex direction="column" gap="16" className="w-100">
         <h3>{t('homepage.customize.form.themes')}</h3>
       </Flex>
+      */}
+
       <Flex direction="column" gap="16" className="w-100">
         <h3>{t('homepage.customize.form.languages')}</h3>
         <Flex gap="12" wrap="wrap">

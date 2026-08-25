@@ -2,10 +2,11 @@
   padding: var(--primitive-spacer-12);
   border-radius: 12px;
   box-shadow: none;
+  filter: grayscale(0%);
+  transition: filter 0.3s ease-in-out;
 }
 
 .choice-button[aria-pressed='true'] {
-  color: red;
   background-color: var(--primitive-yellow-200, #fcf3cf);
   border: 2px solid var(--primitive-yellow-500, #ffc403);
 }
@@ -13,13 +14,8 @@
 .choice-button[aria-pressed='false'] {
   color: var(--primitive-grey-900);
   background-color: transparent;
+  filter: grayscale(100%);
 }
 .choice-button[aria-pressed='false']:hover {
   background-color: var(--primitive-yellow-200, #fcf3cf);
-}
-
-.choice-button img {
-  border: transparent 2px solid;
-  box-sizing: border-box;
-  border-radius: 8px;
 }
