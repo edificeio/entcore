@@ -41,6 +41,7 @@ export const CustomizeForm = ({ form }: CustomizeFormProps) => {
             fonts.map(({ _id, displayName }) => (
               <ChoiceButton
                 key={_id}
+                className="font-choice"
                 isSelected={_id === selectedFont}
                 onClick={() => handleFontChange(_id)}
               >
@@ -57,21 +58,29 @@ export const CustomizeForm = ({ form }: CustomizeFormProps) => {
       </Flex>
       <Flex direction="column" gap="16" className="w-100">
         <h3>{t('homepage.customize.form.languages')}</h3>
-        <Flex>
+        <Flex gap="12" wrap="wrap">
           {languages ? (
             languages.map((lang) => {
               const label = t(`language.${lang}`);
               return (
                 <ChoiceButton
                   key={lang}
+                  className="customize-language-choice"
                   isSelected={lang === selectedLanguage}
                   onClick={() => handleLanguageChange(lang)}
                 >
-                  <img
-                    src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
-                    alt={label}
-                  />
-                  <span className="personnalisation-lang-label">{label}</span>
+                  <Flex direction="column" align="center">
+                    <div>
+                      <img
+                        width={56}
+                        height={36}
+                        src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
+                        alt={label}
+                        loading="lazy"
+                      />
+                    </div>
+                    <span className="customize-language-label">{label}</span>
+                  </Flex>
                 </ChoiceButton>
               );
             })
