@@ -656,8 +656,8 @@ export class UserConnectionSectionComponent
         this.renewalCode = data.renewalCode;
         this.cdRef.markForCheck();
       },
-      error: (payload:{error:string}) => {
-        this.ns.error(payload.error || 'notify.user.renewal.error.content', 'notify.user.renewal.error.title')
+      error: (err) => {
+        this.ns.error('notify.user.renewal.error.content', 'notify.user.renewal.error.title', err);
       },
     });
   }

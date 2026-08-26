@@ -1101,6 +1101,7 @@
   "notify.user.remove.structure.title": "Structure supprimée.",
   "notify.user.renewal.error.content": "Le code de renouvellement de mot de passe n'a pas pu être généré.",
   "notify.user.renewal.error.title": "Erreur lors de la génération du code.",
+  "federated.user.reset.code.error": "L'utilisateur doit se connecter via un guichet externe.",
   "notify.user.restore.content": "L'utilisateur {{user}} a bien été restauré.",
   "notify.user.restore.error.content": "L'utilisateur {{user}} n'a pas pu être restauré.",
   "notify.user.restore.error.title": "Erreur lors de la restauration",
