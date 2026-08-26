@@ -651,9 +651,14 @@ export class UserConnectionSectionComponent
   clickOnGenerateRenewalCode() {
     if( this.isForbidden )
       return;
-    this.generateRenewalCode(this.user.login).subscribe(data => {
-      this.renewalCode = data.renewalCode;
-      this.cdRef.markForCheck();
+    this.generateRenewalCode(this.user.login).subscribe({
+      next: (data) => {
+        this.renewalCode = data.renewalCode;
+        this.cdRef.markForCheck();
+      },
+      error: (err) => {
+        this.ns.error('notify.user.renewal.error.content', 'notify.user.renewal.error.title', { message: err?.error?.error ?? err?.message });
+      },
     });
   }
 

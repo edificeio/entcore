@@ -71,6 +71,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserAuthAccount.class);
 	private static final long SEND_EMAIL_ACK_DELAY = 10000L;
+	private static final String FEDERATED_USER_RESET_CODE_ERROR = "federated.user.reset.code.error";
 
 	private final Neo neo;
 	private final Vertx vertx;
@@ -750,10 +751,11 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		String query =
 				"MATCH (n:User) " +
 						"WHERE n.login={login} AND n.activationCode IS NULL " +
-						(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
-						"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
-						"RETURN count(n) as nb, n.displayName as displayName";
-		JsonObject params = new JsonObject().put("login", login).put("resetCode", code).put("today", new Date().getTime());
+						"WITH n, (HAS(n.federated) AND n.federated = true) AS federated " +
+						"FOREACH (i IN CASE WHEN {checkFederatedLogin} AND federated THEN [] ELSE [1] END | " +
+						"SET n.resetCode = {resetCode}, n.resetDate = {today}) " +
+						"RETURN n.displayName as displayName, federated as federated";
+		JsonObject params = new JsonObject().put("login", login).put("resetCode", code).put("today", new Date().getTime()).put("checkFederatedLogin", checkFederatedLogin);
 		neo.execute(query, params, event -> {
 			if ("ok".equals(event.body().getString("status")))
 			{
@@ -761,15 +763,17 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				if(result != null && result.size() == 1)
 				{
 					JsonObject result_data = result.getJsonObject(0);
-					if(result_data.getInteger("nb") == 1)
+					if(checkFederatedLogin && Boolean.TRUE.equals(result_data.getBoolean("federated")))
 					{
-						handler.handle(new Either.Right<>(
-							new JsonObject()
-								.put("code", code)
-								.put("displayName", result_data.getString("displayName"))
-						));
+						handler.handle(new Either.Left<>(FEDERATED_USER_RESET_CODE_ERROR));
 						return;
 					}
+					handler.handle(new Either.Right<>(
+						new JsonObject()
+							.put("code", code)
+							.put("displayName", result_data.getString("displayName"))
+					));
+					return;
 				}
 			}
 			handler.handle(new Either.Left<>("failed to set reset code"));
