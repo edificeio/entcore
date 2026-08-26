@@ -170,16 +170,14 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     }
 
     isToday(): boolean {
-        const now: Date = new Date();
-        const startDate: Date = new Date(this.message.startDate);
-        const res = now.getDate() === startDate.getDate()
-            && now.getMonth() === startDate.getMonth()
-            && now.getFullYear() === startDate.getFullYear();
-        if (!res) {
+        const startDate = this.message.startDate; // already formated as 'YYYY-MM-DD' or empty string or undefined;
+        const now = dayjs().format('YYYY-MM-DD');
+        if (now !== startDate) {
             this.mailNotification = false;
             this.pushNotification = false;
+            return false;
         }
-        return res;
+        return true;
     }
 
     public showUserPositionField(): boolean {
