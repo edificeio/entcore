@@ -657,7 +657,7 @@ export class UserConnectionSectionComponent
         this.cdRef.markForCheck();
       },
       error: (err) => {
-        this.ns.error('notify.user.renewal.error.content', 'notify.user.renewal.error.title', err);
+        this.ns.error('notify.user.renewal.error.content', 'notify.user.renewal.error.title', { message: err?.error?.error ?? err?.message });
       },
     });
   }
