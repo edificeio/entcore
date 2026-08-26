@@ -170,7 +170,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     }
 
     isToday(): boolean {
-        const startDate = this.message.startDate; // already formated as 'YYYY-MM-DD' or empty string or undefined;
+        const startDate = this.message.startDate; // already formatted as 'YYYY-MM-DD', an empty string, or undefined
         const now = dayjs().format('YYYY-MM-DD');
         if (now !== startDate) {
             this.mailNotification = false;
