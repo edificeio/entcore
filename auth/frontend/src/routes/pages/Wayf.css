@@ -47,13 +47,14 @@
   border-bottom: 1px solid var(--primitive-grey-300);
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: var(--primitive-spacer-16) var(--primitive-spacer-48);
   flex-shrink: 0;
 }
 
 .wayf-logo {
-  max-width: 200px;
-  max-height: 80px;
+  width: 200px;
+  height: 80px;
   object-fit: contain;
 }
 

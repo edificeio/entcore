@@ -13,7 +13,7 @@ export { DEFAULT_WAYF_CONFIG } from './default';
  */
 export const wayfConfig: WayfConfig = {
   'wayf-v2': {
-    'connexion.enthdf.fr': hdfConfig,
+    'enthdf.fr': hdfConfig,
     'nati.pf': natiConfig,
     'localhost': DEFAULT_WAYF_CONFIG,
   },
