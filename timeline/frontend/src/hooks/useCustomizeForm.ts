@@ -2,7 +2,7 @@ import { useEdificeClient, useEdificeTheme } from '@edifice.io/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useFonts, useLanguages } from '~/services/queries/customize';
 
-export function useCustomizeForm() {
+export function useCustomizationForm() {
   const languagesQuery = useLanguages();
   const fontsQuery = useFonts();
   const { currentLanguage } = useEdificeClient();

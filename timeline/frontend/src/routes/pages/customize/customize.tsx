@@ -9,8 +9,8 @@ import {
 
 import { IconArrowLeft } from '@edifice.io/react/icons';
 
-import { CustomizeForm } from '~/components/CustomizeForm/CustomizeForm';
-import { useCustomizeForm } from '~/hooks/useCustomizeForm';
+import { CustomizationForm } from '~/components/CustomizationForm';
+import { useCustomizationForm } from '~/hooks/useCustomizeForm';
 import { useI18n } from '~/hooks/useI18n';
 import './customize.css';
 
@@ -24,7 +24,7 @@ export const Component = () => {
   const { md } = useBreakpoint();
   const { common_t } = useI18n();
 
-  const { resetChanges, saveChanges, ...form } = useCustomizeForm();
+  const { resetChanges, saveChanges, ...form } = useCustomizationForm();
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -53,7 +53,7 @@ export const Component = () => {
             <h1>{common_t('navbar.customize')}</h1>
           </div>
 
-          <CustomizeForm form={form} />
+          <CustomizationForm form={form} />
 
           <Flex
             direction="row"

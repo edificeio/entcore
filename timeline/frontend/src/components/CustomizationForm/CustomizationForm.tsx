@@ -1,12 +1,12 @@
 import { Flex } from '@edifice.io/react';
-import { useCustomizeForm } from '~/hooks/useCustomizeForm';
+import { useCustomizationForm } from '~/hooks/useCustomizeForm';
 import { useI18n } from '~/hooks/useI18n';
 import { ChoiceButton } from './ChoiceButton';
 import { ChoiceSkeleton } from './ChoiceSkeleton';
 
-type CustomizeFormProps = {
+type CustomizationFormProps = {
   form: Omit<
-    ReturnType<typeof useCustomizeForm>,
+    ReturnType<typeof useCustomizationForm>,
     'resetChanges' | 'saveChanges'
   >;
 };
@@ -20,7 +20,7 @@ function getCountryCode(lang: string) {
   return lang;
 }
 
-export const CustomizeForm = ({ form }: CustomizeFormProps) => {
+export const CustomizationForm = ({ form }: CustomizationFormProps) => {
   const { t, common_t } = useI18n();
 
   const {
