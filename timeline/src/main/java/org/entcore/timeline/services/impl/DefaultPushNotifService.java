@@ -119,7 +119,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
                     }});
                 } else {
-                    //pas l'ancien sender ou bien deferred, ce que l'on ne peut pas traitre en legacy
+                    //pas l'ancien sender ou bien deferred, ce que l'on ne peut pas traiter en legacy
                     QuietHoursPreference quietHoursPreference = parseQuietHours(userPref);
                     TimezonePreference timezonePreference = parseTimezone(userPref);
                     ZoneId zoneId = resolveTimezone(timezonePreference);
