@@ -9,6 +9,7 @@ import {
 
 import { IconArrowLeft } from '@edifice.io/react/icons';
 
+import { useNavigate } from 'react-router-dom';
 import { CustomizationForm } from '~/components/CustomizationForm';
 import { useCustomizationForm } from '~/hooks/useCustomizeForm';
 import { useI18n } from '~/hooks/useI18n';
@@ -22,6 +23,7 @@ export const loader = async () => {
 export const Component = () => {
   const { init } = useEdificeClient();
   const { md } = useBreakpoint();
+  const navigate = useNavigate();
   const { common_t } = useI18n();
 
   const { resetChanges, saveChanges, ...form } = useCustomizationForm();
@@ -30,6 +32,10 @@ export const Component = () => {
 
   const handleSaveClick = () => {
     saveChanges();
+  };
+
+  const handleBackClick = () => {
+    navigate(-1);
   };
 
   return (
@@ -47,6 +53,7 @@ export const Component = () => {
               className="customize-back-button"
               leftIcon={<IconArrowLeft />}
               variant="ghost"
+              onClick={handleBackClick}
             >
               {common_t('back')}
             </Button>
