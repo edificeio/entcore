@@ -32,21 +32,21 @@ export function WelcomeWidget({
   onOpenHistory,
 }: WelcomeWidgetProps) {
   const { t } = useTranslation('timeline');
-  const { user, avatar } = useUser();
+  const { user, avatar, userDescription } = useUser();
   const { md } = useBreakpoint();
 
-  const firstName = user?.firstName ?? '';
+  const displayName = userDescription?.displayName ?? '';
   const profile = user?.type ?? '';
 
   return (
     <HomeCard variant="user" className="welcome-widget">
       <div className="home-card-header d-flex align-items-center justify-content-between gap-8 flex-wrap">
         <div className="welcome-widget-user">
-          <Avatar alt={firstName} src={avatar} size="md" variant="circle" />
+          <Avatar alt={displayName} src={avatar} size="md" variant="circle" />
           <div className="d-flex flex-column">
             <Heading level="h2" headingStyle="h4" className="mb-0 fw-bold">
               {t('homepage.crna.widget.welcome.greeting', 'Bonjour')}{' '}
-              {firstName}
+              {displayName}
             </Heading>
             <span className="text-muted small">
               {t(
