@@ -32,7 +32,7 @@ export const useNotificationsLayout = () => {
       updateOverlayOpen(isNotificationsOpen);
       setIsSidebarOpen(false);
     }
-  }, [md, sm, isNotificationsOpen]);
+  }, [md, sm, isNotificationsOpen, updateOverlayOpen]);
 
   return {
     isSidebarOpen,
