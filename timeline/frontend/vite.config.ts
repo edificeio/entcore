@@ -52,7 +52,7 @@ export default ({ mode }: { mode: string }) => {
         routes: [
           {
             routePath: '/timeline/i18n',
-            filePath: '../src/main/resources/i18n/timeline/fr.json',
+            filePath: '../src/main/resources/i18n/fr.json',
           },
           {
             routePath: '/i18n',
