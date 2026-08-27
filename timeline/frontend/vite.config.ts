@@ -12,7 +12,7 @@ export default ({ mode }: { mode: string }) => {
       '/conf/public',
       '^/(?=applications-list)',
       '^/(?=assets)',
-      '^/(?=theme|locale|i18n|skin)',
+      '^/(?=theme|locale|i18n|skin|languages|themes)',
       '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
       '^/calendar/(?!public/)',
       '^/actualites/api/',
@@ -52,7 +52,7 @@ export default ({ mode }: { mode: string }) => {
         routes: [
           {
             routePath: '/timeline/i18n',
-            filePath: '../src/main/resources/i18n/timeline/fr.json',
+            filePath: '../src/main/resources/i18n/fr.json',
           },
           {
             routePath: '/i18n',
