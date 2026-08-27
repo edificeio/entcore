@@ -2,6 +2,7 @@
   padding: var(--primitive-spacer-12);
   border-radius: 12px;
   box-shadow: none;
+  border: 2px solid transparent;
   filter: grayscale(0%);
   transition: filter 0.3s ease-in-out;
 }
