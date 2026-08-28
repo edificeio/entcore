@@ -1,0 +1,176 @@
+/*
+ * Homepage silhouette. Dimensions come from the Figma mockup
+ * (node 7458-152181), expressed in rem (10px root).
+ */
+
+.customization-preview {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 42.2rem;
+  flex-grow: 1;
+  height: auto;
+  overflow: hidden;
+  border: 2px solid var(--primitive-grey-300);
+  border-radius: var(--primitive-border-radius-2xl);
+  /* Selected theme background, hardcoded for now. */
+  background-color: var(--primitive-blue-200);
+}
+
+/* Navigation bar */
+
+.customization-preview-navbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  height: 4.5rem;
+  padding-inline: var(--primitive-spacer-16);
+  background-color: var(--primitive-white);
+  /* Same gradient rule as the platform navbar (see .navbar) */
+  border-bottom: 2px solid;
+  border-image-slice: 1;
+  border-image-source: linear-gradient(67.55deg, #ffc403, #fc94ff);
+}
+
+.customization-preview-navbar-logo {
+  width: 5rem;
+  height: 1.6rem;
+  border-radius: var(--primitive-border-radius-sm);
+  background-color: var(--primitive-grey-200);
+}
+
+.customization-preview-navbar-icons {
+  display: flex;
+  gap: var(--primitive-spacer-8);
+}
+
+.customization-preview-navbar-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--primitive-border-radius-sm);
+  background-color: var(--primitive-grey-200);
+}
+
+/* Body: white left column, right column over the theme background */
+
+.customization-preview-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.customization-preview-sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--primitive-spacer-16);
+  width: 15.7rem;
+  padding: var(--primitive-spacer-16);
+  background-color: var(--primitive-white);
+}
+
+.customization-preview-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--primitive-spacer-16);
+  padding: var(--primitive-spacer-16);
+}
+
+/* White cards */
+
+.customization-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-8);
+  padding: var(--primitive-spacer-16);
+  border-radius: var(--primitive-border-radius-lg);
+  background-color: var(--primitive-white);
+}
+
+.customization-preview-card-wide {
+  height: 9.2rem;
+}
+
+.customization-preview-cards-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--primitive-spacer-16);
+}
+
+.customization-preview-card-tall,
+.customization-preview-card-short {
+  flex: 1;
+  min-width: 0;
+}
+
+.customization-preview-card-tall {
+  height: 15.3rem;
+}
+
+.customization-preview-card-short {
+  height: 8.3rem;
+}
+
+/* Actual texts */
+
+.customization-preview-lastinfos,
+.customization-preview-greeting {
+  margin: 0;
+  color: var(--primitive-grey-900);
+  font-family: var(--primitive-font-family-title);
+  font-weight: var(--primitive-font-weight-bold);
+}
+
+.customization-preview-lastinfos {
+  font-size: var(--primitive-font-size-default);
+  line-height: 2.6rem;
+}
+
+.customization-preview-greeting {
+  font-size: var(--primitive-font-size-s);
+  line-height: 2.8rem;
+}
+
+.customization-preview-greeting-header {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-8);
+}
+
+.customization-preview-avatar {
+  flex-shrink: 0;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: var(--primitive-border-radius-pill);
+  background-color: var(--primitive-grey-200);
+}
+
+/* Decorative blocks */
+
+.customization-preview-block {
+  border-radius: var(--primitive-border-radius-md);
+  background-color: var(--primitive-grey-200);
+}
+
+.customization-preview-block-sidebar-header {
+  height: 4rem;
+}
+
+.customization-preview-block-sidebar-item {
+  height: 6rem;
+}
+
+.customization-preview-block-greeting {
+  height: 6rem;
+}
+
+.customization-preview-block-label {
+  width: 10rem;
+  height: 1.6rem;
+}
+
+.customization-preview-block-label-full {
+  height: 1.6rem;
+}
