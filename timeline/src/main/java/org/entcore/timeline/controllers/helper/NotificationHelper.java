@@ -157,7 +157,7 @@ public class NotificationHelper {
             return;
         }
 
-        final JsonArray activeUserList = buildActiveUserList(json, deferredUserIds, userList);
+        final JsonArray notDeferredUserList = buildNotDeferredUserList(json, deferredUserIds, userList);
 
         configService.getNotificationProperties(notificationName, properties -> {
             if (properties.isLeft() || properties.right().getValue() == null) {
@@ -165,16 +165,17 @@ public class NotificationHelper {
                 return;
             }
             final JsonObject notificationProperties = properties.right().getValue();
-            if (activeUserList.isEmpty()) {
+            if (notDeferredUserList.isEmpty()) {
                 log.debug("[NotificationHelper] No active users for " + notificationName + ", skipping immediate send mail");
             } else {
-                sendMails(request, json, notificationName, activeUserList, notificationProperties);
+                sendMails(request, json, notificationName, notDeferredUserList, notificationProperties);
             }
+            // we always use the full user list to send recap of deferred notifs
             sendPushNotifications(json, notificationName, userList, notificationProperties);
         });
     }
 
-    private JsonArray buildActiveUserList(JsonObject json, Set<String> deferredUserIds, JsonArray userList) {
+    private JsonArray buildNotDeferredUserList(JsonObject json, Set<String> deferredUserIds, JsonArray userList) {
         final Set<String> activeRecipientIds = new HashSet<>();
         final JsonArray recipientIds = json.getJsonArray("recipientsIds", new JsonArray());
         for (int i = 0; i < recipientIds.size(); i++) {

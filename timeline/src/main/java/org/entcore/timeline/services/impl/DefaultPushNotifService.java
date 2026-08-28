@@ -29,11 +29,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.common.notification.push.PushNotifBuilder;
-import org.entcore.common.notification.push.PushNotifDto;
 import org.entcore.common.notification.push.PushNotifService;
+import org.entcore.common.notification.push.PushNotifStatus;
 import org.entcore.common.notification.push.impl.SqlPushNotifService;
 import org.entcore.common.notification.ws.OssFcm;
 import org.entcore.common.user.dto.QuietHoursPreference;
@@ -45,7 +44,6 @@ import org.entcore.timeline.services.TimelinePushNotifService;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -61,7 +59,9 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     private static final String TIMELINE_QUIET_HOUR_RECAP_BODY = "timeline.notification.quiet-hour.body";
     private static final String TIMELINE_QUIET_HOUR_RECAP_BODIES = "timeline.notification.quiet-hour.bodies";
     private static final String TIMELINE_QUIET_HOUR_RECAP_TITLE = "timeline.notification.quiet-hour.title";
-    private static final int MAX_BODY_LENGTH = 50;
+    private static final int MAX_BODY_LENGTH = 90;
+    /** Stands for the number of notifications a recap covers, in the recap body translations. */
+    private static final String COUNT_PLACEHOLDER = "[[count]]";
 
     private PushNotifService pushNotifService = new SqlPushNotifService();
     private final EventBus eb;
@@ -104,8 +104,9 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                                                 .anyMatch( r -> r.getString("userId").equals(userPref.getString("userId")) && r.getBoolean(DEFERRED_TO_DAILY, false));
                 String language =  this.getUserLanguage(userPref);
 
-                if(legacy && deferred) {
-                    processMessage(notification, this.getUserLanguage(userPref), message -> {
+                if(legacy) {
+                    if(!deferred) {
+                        processMessage(notification, this.getUserLanguage(userPref), message -> {
                             for (Object token : userPref.getJsonArray("tokens")) {
                                 if ("null".equals(token)) {
                                     continue;
@@ -117,7 +118,9 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                                     log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
                                 }
 
-                    }});
+                            }
+                        });
+                    }
                 } else {
                     //pas l'ancien sender ou bien deferred, ce que l'on ne peut pas traiter en legacy
                     QuietHoursPreference quietHoursPreference = parseQuietHours(userPref);
@@ -127,9 +130,17 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
                     if(deferred) {
                         processQuietHourMessage(notification, language, h -> {
-                            pushNotifService.findPending(userPref.getString("userId"), DELAYED_TYPE)
-                                    .onSuccess( pendings -> upsertDeferredNotification(pendings, notification, nextSendTime, h, userPref, language))
-                                    .onFailure(t -> log.error("Error while retrieving current pending push notif", t));
+                            pushNotifService.appendToPendingRecap(userPref.getString("userId"), DELAYED_TYPE,
+                                            notification.getString("_id"),
+                                            recapBody(TIMELINE_QUIET_HOUR_RECAP_BODIES, language), COUNT_PLACEHOLDER)
+                                    .onSuccess(appended -> {
+                                        // No recap to append to: none queued yet, or push-manager took
+                                        // the one that was. Either way this notification opens a new one.
+                                        if (!appended) {
+                                            createDeferredNotification(notification, nextSendTime, h, userPref, language);
+                                        }
+                                    })
+                                    .onFailure(t -> log.error("Error while adding notification to the pending push notif recap", t));
                         });
                     } else {
                         processMessage(notification, language, message -> {
@@ -138,7 +149,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                                     .withNotificationIds(Lists.newArrayList(notification.getString("_id")))
                                     .immediate()
                                     .withUserId(userPref.getString("userId"))
-                                    .withStatus(PushNotifDto.Status.PENDING)
+                                    .withStatus(PushNotifStatus.PENDING)
                                     .scheduledAt(nextSendTime)
                                     .withNotifType(notification.getString("type"))
                                     .withNotifSubType(notification.getString("event-type"));
@@ -152,43 +163,27 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
         }
     }
 
-    private void upsertDeferredNotification(List<PushNotifDto> pushNotifs, JsonObject notification, Instant nextSendingTime, JsonObject message, JsonObject userPref, String language) {
-        if (CollectionUtils.isEmpty(pushNotifs)) {
-            String body = I18n.getInstance().translate(TIMELINE_QUIET_HOUR_RECAP_BODY, I18n.getLocale(language));
-            body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
-            String updatedBody = body.replace("[[count]]", "1");
+    private void createDeferredNotification(JsonObject notification, Instant nextSendingTime, JsonObject message, JsonObject userPref, String language) {
+        String body = recapBody(TIMELINE_QUIET_HOUR_RECAP_BODY, language).replace(COUNT_PLACEHOLDER, "1");
 
-            message.getJsonObject("notification").put("body", updatedBody);
-            message.getJsonObject("notification").remove("bodies");
-            PushNotifBuilder pushNotifBuilder = PushNotifBuilder.create()
-              .withMessage(message)
-              .withNotificationIds(Lists.newArrayList(notification.getString("_id")))
-              .withStatus(PushNotifDto.Status.PENDING)
-              .scheduledAt(nextSendingTime)
-              .withNotifType(DELAYED_TYPE)
-              .withUserId(userPref.getString("userId"))
-              .withMessageParams(new JsonObject().put("count", 1));
-            pushNotifService.create(pushNotifBuilder)
-               .onFailure(t -> log.error("Error while creating pushNotif", t));
-        } else {
-            PushNotifDto pushNotif = pushNotifs.get(0);
-            pushNotif.getNotificationIds().add(notification.getString("_id"));
-            Integer count = pushNotif.getMessageParams().getInteger("count", 1) + 1;
+        message.getJsonObject("notification").put("body", body);
+        message.getJsonObject("notification").remove("bodies");
+        PushNotifBuilder pushNotifBuilder = PushNotifBuilder.create()
+          .withMessage(message)
+          .withNotificationIds(Lists.newArrayList(notification.getString("_id")))
+          .withStatus(PushNotifStatus.PENDING)
+          .scheduledAt(nextSendingTime)
+          .withNotifType(DELAYED_TYPE)
+          .withUserId(userPref.getString("userId"))
+          .withMessageParams(new JsonObject().put("count", 1));
+        pushNotifService.create(pushNotifBuilder)
+           .onFailure(t -> log.error("Error while creating pushNotif", t));
+    }
 
-            String body = I18n.getInstance().translate(TIMELINE_QUIET_HOUR_RECAP_BODIES, I18n.getLocale(language));
-            body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
-            String updatedBody = body.replace("[[count]]", count.toString());
-            pushNotif.getMessageParams().put("count", count);
-            PushNotifBuilder builder = PushNotifBuilder.from(pushNotif);
-            JsonObject previousMessage = pushNotif.getMessage();
-            previousMessage.getJsonObject("message").getJsonObject("notification").put("body", updatedBody);
-            builder.withMessage(previousMessage)
-                            .scheduledAt(pushNotif.getScheduleAt())
-                            .withMessageParams(pushNotif.getMessageParams())
-                            .withMessage(pushNotif.getMessage().getJsonObject("message"))
-                            .withNotificationIds(pushNotif.getNotificationIds());
-            pushNotifService.update(builder);
-        }
+    /** Recap body as it is stored, with {@link #COUNT_PLACEHOLDER} left for the count to render against. */
+    private String recapBody(String i18nKey, String language) {
+        String body = I18n.getInstance().translate(i18nKey, I18n.getLocale(language));
+        return body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH) + "...";
     }
 
     public void processQuietHourMessage(final JsonObject notification, String language, final Handler<JsonObject> handler){
