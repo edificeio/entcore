@@ -155,7 +155,7 @@ buildFrontend () {
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --legacy-peer-deps --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm rm --legacy-peer-deps --no-save entcore ode-ts-client ode-ngjs-front && npm install --legacy-peer-deps --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
         case `uname -s` in
           MINGW*)
             docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
