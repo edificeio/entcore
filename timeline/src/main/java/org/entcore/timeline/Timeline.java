@@ -192,7 +192,7 @@ public class Timeline extends BaseServer {
 					if( o!=null && JsonObject.class.isAssignableFrom(o.getClass()) ) {
 						final JsonObject pushNotif = (JsonObject) o;
 						final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(
-								pushNotif, eventsI18n, configService, logPushNotifs, removeTokenIf404);
+								pushNotif, eventsI18n, logPushNotifs, removeTokenIf404);
 						if( pushNotifService != null ) {
 							list.add( pushNotifService );
 						}
@@ -208,7 +208,7 @@ public class Timeline extends BaseServer {
 			JsonObject pushNotif = config.getJsonObject("push-notif");
 			if(pushNotif != null){
 				final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(
-						pushNotif, eventsI18n, configService, logPushNotifs, removeTokenIf404);
+						pushNotif, eventsI18n, logPushNotifs, removeTokenIf404);
 				if( pushNotifService != null ) {
 					list.add( pushNotifService );
 				}
@@ -239,7 +239,6 @@ public class Timeline extends BaseServer {
 	protected TimelinePushNotifService pushNotifServiceFactory(
 			final JsonObject pushNotif,
 			final Map<String,String> eventsI18n,
-			final TimelineConfigService configService,
 			final boolean logPushNotifs,
 			final boolean removeTokenIf404
 		) {
@@ -254,7 +253,6 @@ public class Timeline extends BaseServer {
 
 			final DefaultPushNotifService pushNotifService = new DefaultPushNotifService(vertx, config, oss);
 			pushNotifService.setEventsI18n(eventsI18n);
-			pushNotifService.setConfigService(configService);
 
 			log.info("[timeline] will push-notif to "+ pushNotif.getString("url"));
 			return pushNotifService;
