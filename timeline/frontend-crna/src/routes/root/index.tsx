@@ -26,6 +26,7 @@ import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
 import { TimetableWidget } from '~/components/TimetableWidget';
 import { FlashMessageHistoryPanel } from '~/components/WelcomeWidget/FlashMessageHistoryPanel';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
+import { useWidgetPreferences } from '~/hooks/useWidgetPreferences';
 
 type OverlayPanel = 'settings' | 'flash-history' | 'notifications' | null;
 
@@ -47,6 +48,7 @@ export const Root = () => {
   const hasAgendaWidget = user?.widgets?.some(
     (w) => (w.name as string) === 'agenda-widget',
   );
+  const { isVisible } = useWidgetPreferences();
   const { isOverlayOpen, updateOverlayOpen } = useOverlay();
   const [activePanel, setActivePanel] = useState<OverlayPanel>(null);
   const { md, lg } = useBreakpoint();
@@ -165,32 +167,40 @@ export const Root = () => {
           </>
         )}
 
-        <WidgetErrorBoundary>
-          <CommunitiesContainer
-            onCommunityClick={(community) => openCommunity(community.id)}
-            onHeaderActionClick={openCommunities}
-          />
-        </WidgetErrorBoundary>
+        {isVisible('communities') && (
+          <WidgetErrorBoundary>
+            <CommunitiesContainer
+              onCommunityClick={(community) => openCommunity(community.id)}
+              onHeaderActionClick={openCommunities}
+            />
+          </WidgetErrorBoundary>
+        )}
 
         <WidgetMasonry>
-          {hasMediacentreWidget && <MediacentreWidget />}
-          <WidgetErrorBoundary>
-            <AvantagesWidget />
-          </WidgetErrorBoundary>
-          {hasCarnetDeBord && (
+          {hasMediacentreWidget && isVisible('mediacentre') && (
+            <MediacentreWidget />
+          )}
+          {isVisible('avantages') && (
+            <WidgetErrorBoundary>
+              <AvantagesWidget />
+            </WidgetErrorBoundary>
+          )}
+          {hasCarnetDeBord && isVisible('carnet-de-bord') && (
             <WidgetErrorBoundary>
               <CarnetDeBordWidget onError={handleWidgetError} />
             </WidgetErrorBoundary>
           )}
-          {hasAgendaWidget && (
+          {hasAgendaWidget && isVisible('agenda') && (
             <WidgetErrorBoundary>
               <AgendaWidget />
             </WidgetErrorBoundary>
           )}
           {/* TODO: gate behind a user.widgets flag once the timetable/EDT backend API exists — mock data for now. */}
-          <WidgetErrorBoundary>
-            <TimetableWidget />
-          </WidgetErrorBoundary>
+          {isVisible('timetable') && (
+            <WidgetErrorBoundary>
+              <TimetableWidget />
+            </WidgetErrorBoundary>
+          )}
         </WidgetMasonry>
       </PageLayout.Content>
       <PageLayout.Overlay

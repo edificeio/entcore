@@ -113,7 +113,6 @@ export function MediacentreWidget({
       isLoading={isLoading}
       isError={isError}
       onSeeMore={onSeeMore}
-      externalLink
       filter={filter}
       itemClassName="list-widget-item--highlight"
       emptyState={
