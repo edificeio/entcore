@@ -3,10 +3,11 @@ import {
   ButtonBeta,
   Grid,
   Heading,
+  IconButton,
   useBreakpoint,
   useUser,
 } from '@edifice.io/react';
-import { IconClock } from '@edifice.io/react/icons';
+import { IconAddWidget, IconClock } from '@edifice.io/react/icons';
 import { FavoritesContainer, HomeCard } from '@edifice.io/react/homepage';
 import { useTranslation } from 'react-i18next';
 import { CreateDocumentWidget } from '~/components/CreateDocumentWidget';
@@ -21,19 +22,19 @@ const PROFILE_LABELS: Record<string, string> = {
 };
 
 interface WelcomeWidgetProps {
-  onCreateDocumentSuccess?: (message: string) => void;
   onOpenHistory?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export function WelcomeWidget({
-  onCreateDocumentSuccess,
   onOpenHistory,
+  onOpenSettings,
 }: WelcomeWidgetProps) {
   const { t } = useTranslation('timeline');
   const { user, avatar, userDescription } = useUser();
   const { md } = useBreakpoint();
 
-  const displayName = userDescription?.displayName ?? '';
+  const displayName = user?.firstName ?? '';
   const profile = user?.type ?? '';
 
   return (
@@ -57,7 +58,7 @@ export function WelcomeWidget({
         <div
           className={`d-flex gap-6${md ? '' : ' flex-column align-items-start'}`}
         >
-          <ButtonBeta
+          {/* <ButtonBeta
             color="default"
             variant="ghost"
             leftIcon={<IconClock width={20} height={20} />}
@@ -69,6 +70,31 @@ export function WelcomeWidget({
               'Historique des message flash',
             )}
           </ButtonBeta>
+          <ButtonBeta
+            color="default"
+            variant="ghost"
+            leftIcon={<IconSettings width={20} height={20} />}
+            onClick={onOpenSettings}
+          >
+            {t('homepage.crna.widget.welcome.settings', 'Paramètres')}
+          </ButtonBeta> */}
+          {onOpenSettings && (
+            <IconButton
+              icon={<IconAddWidget />}
+              variant="ghost"
+              color="tertiary"
+              aria-label={t(
+                'homepage.crna.widget.welcome.customize',
+                'Personnaliser mes widgets',
+              )}
+              title={t(
+                'homepage.crna.widget.welcome.customize',
+                'Personnaliser mes widgets',
+              )}
+              onClick={onOpenSettings}
+              data-testid="welcome-customize-widgets-button"
+            />
+          )}
         </div>
       </div>
 
@@ -90,7 +116,7 @@ export function WelcomeWidget({
             xl="6"
             className="d-flex flex-column gap-16"
           >
-            <CreateDocumentWidget onSuccess={onCreateDocumentSuccess} />
+            <CreateDocumentWidget />
           </Grid.Col>
         </Grid>
       </HomeCard.Content>

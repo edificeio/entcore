@@ -7,14 +7,12 @@ import { ButtonBeta } from '@edifice.io/react';
 export interface CreateDocumentModalProps {
   isOpen: boolean;
   docTypeId: DocTypeId;
-  nextcloudAddress: string | undefined;
   onClose: () => void;
 }
 
 export function CreateDocumentModal({
   isOpen,
   docTypeId,
-  nextcloudAddress,
   onClose,
 }: CreateDocumentModalProps) {
   const { t } = useTranslation('timeline');
@@ -33,16 +31,16 @@ export function CreateDocumentModal({
 
   const handleCreate = () => {
     const trimmed = filename.trim();
-    if (!trimmed || !nextcloudAddress) return;
-
-    const redirectUrlMarkerIndex = nextcloudAddress.indexOf('redirectUrl=');
-    if (redirectUrlMarkerIndex === -1) return;
-
-    const redirectUrl = `/index.php/apps/edifice_documents/create?type=${selectedDocTypeId}&name=${encodeURIComponent(trimmed)}`;
-    const addressPrefix = nextcloudAddress.slice(0, redirectUrlMarkerIndex);
-    const oidcUrl = `${addressPrefix}redirectUrl=${encodeURIComponent(redirectUrl)}`;
-
-    window.open(oidcUrl, '_blank', 'noopener,noreferrer');
+    const extension = DOC_TYPES.find(
+      (dt) => dt.id === selectedDocTypeId,
+    )?.extension;
+    if (!trimmed || !extension) return;
+    const params = new URLSearchParams({
+      type: extension,
+      name: trimmed.replace(/[/\\<>|]/g, ''),
+      protected: 'false',
+    });
+    window.open(`/lool/document?${params.toString()}`, '_blank');
     onClose();
   };
 
@@ -107,7 +105,7 @@ export function CreateDocumentModal({
         </ButtonBeta>
         <ButtonBeta
           color="default"
-          disabled={!filename.trim() || !nextcloudAddress}
+          disabled={!filename.trim()}
           onClick={handleCreate}
           data-testid="create-document-modal-create-button"
         >

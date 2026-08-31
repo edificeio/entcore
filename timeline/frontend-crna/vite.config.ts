@@ -1,11 +1,15 @@
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
+import { loadEnv } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 import { createDevProxyConfig } from './vite/plugins/devProxy';
 import { serveLocalI18nPlugin } from './vite/plugins/serveLocalI18n';
+import { themeConfOverridePlugin } from './vite/plugins/themeConfOverride';
+import { widgetMocksPlugin } from './vite/plugins/widgetMocks';
 
 export default ({ mode }: { mode: string }) => {
+  const env = loadEnv(mode, process.cwd());
   const { headers, proxy } = createDevProxyConfig({
     mode,
     routes: [
@@ -21,6 +25,10 @@ export default ({ mode }: { mode: string }) => {
       '/bookmark',
       '/themes',
       '/languages',
+      '/community',
+      '/communities',
+      '/edt',
+      '/viescolaire',
     ],
   });
 
@@ -36,13 +44,29 @@ export default ({ mode }: { mode: string }) => {
           'node_modules/@edifice.io/bootstrap/dist/images',
         ),
       },
+      dedupe: [
+        'react',
+        'react-dom',
+        '@tanstack/react-query',
+        'react-i18next',
+        'react-hook-form',
+        '@react-spring/web',
+      ],
     },
 
     server: {
       port: 4200,
       host: 'localhost',
-      headers,
+      // devProxy sends `max-age=300` on every response, which makes the
+      // browser run stale modules (and mix two React copies) after a restart.
+      headers: { ...headers, 'Cache-Control': 'no-cache' },
       proxy,
+      fs: {
+        allow: [
+          '.',
+          resolve(__dirname, '../../../edifice-frontend-framework/packages'),
+        ],
+      },
     },
 
     preview: {
@@ -52,6 +76,11 @@ export default ({ mode }: { mode: string }) => {
     },
 
     plugins: [
+      themeConfOverridePlugin({
+        target: env.VITE_RECETTE,
+        overrides: env.VITE_UI_OVERRIDES,
+      }),
+      widgetMocksPlugin({ enabled: env.VITE_MOCK_WIDGETS === 'true' }),
       serveLocalI18nPlugin({
         routes: [
           {

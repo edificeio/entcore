@@ -53,9 +53,9 @@ describe('MediacentreWidget — orientation section', () => {
     const { getSignetsRequestCount } = mockMediacentre();
     render(<MediacentreWidget />);
 
-    const orientationTab = await screen.findByRole('button', {
-      name: 'Orientation',
-    });
+    const orientationTab = await screen.findByTestId(
+      'segmented-option-orientation',
+    );
     expect(getSignetsRequestCount()).toBe(0);
 
     await userEvent.click(orientationTab);
@@ -80,7 +80,7 @@ describe('MediacentreWidget — orientation section', () => {
     render(<MediacentreWidget />);
 
     await userEvent.click(
-      await screen.findByRole('button', { name: 'Orientation' }),
+      await screen.findByTestId('segmented-option-orientation'),
     );
 
     expect(

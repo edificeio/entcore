@@ -1,9 +1,14 @@
 import DOMPurify from 'dompurify';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { NEOCONNECT_WELCOME_HTML } from '~/config/welcome/neoconnect';
 import type { WelcomeResponse, WelcomeState } from '~/models/welcome';
 
 const TIMEOUT_MS = 5000;
+const SANITIZE_OPTIONS = {
+  ADD_TAGS: ['iframe'],
+  ADD_ATTR: ['allowfullscreen', 'frameborder', 'src', 'width', 'height', 'target'],
+};
 
 // DOMPurify strips the `target` attribute by default, which made editorial
 // links configured to open in a new tab open in the current one (ENABLING-895).
@@ -24,11 +29,22 @@ function pickContent(response: WelcomeResponse, lang: string): string | null {
   return null;
 }
 
-export function useWelcomeMessage(): WelcomeState {
+export function useWelcomeMessage(childTheme?: string): WelcomeState {
   const { i18n } = useTranslation();
   const [state, setState] = useState<WelcomeState>({ status: 'loading' });
 
   useEffect(() => {
+    // Wait until the theme is resolved before deciding whether to fetch.
+    if (!childTheme) return;
+
+    if (childTheme === 'neoconnect') {
+      setState({
+        status: 'ready',
+        html: DOMPurify.sanitize(NEOCONNECT_WELCOME_HTML, SANITIZE_OPTIONS),
+      });
+      return;
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -54,17 +70,7 @@ export function useWelcomeMessage(): WelcomeState {
 
         setState({
           status: 'ready',
-          html: DOMPurify.sanitize(content, {
-            ADD_TAGS: ['iframe'],
-            ADD_ATTR: [
-              'allowfullscreen',
-              'frameborder',
-              'src',
-              'width',
-              'height',
-              'target',
-            ],
-          }),
+          html: DOMPurify.sanitize(content, SANITIZE_OPTIONS),
         });
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
@@ -80,7 +86,7 @@ export function useWelcomeMessage(): WelcomeState {
       controller.abort();
       clearTimeout(timeoutId);
     };
-  }, [i18n.language]);
+  }, [i18n.language, childTheme]);
 
   return state;
 }

@@ -26,6 +26,7 @@ import {
   varConfig,
   vcaConfig,
   vosgesConfig,
+  neoconnectConfig
 } from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
@@ -64,6 +65,7 @@ export const wayfConfig: WayfConfig = {
     'moncollege-ent.var.fr': varConfig,
     'ent.vienne-condrieu-agglomeration.fr': vcaConfig,
     'panda.vosges.fr': vosgesConfig,
-    'localhost': DEFAULT_WAYF_CONFIG,
+    'demo-ao.edifice.io': neoconnectConfig,
+    'localhost': neoconnectConfig,
   },
 };

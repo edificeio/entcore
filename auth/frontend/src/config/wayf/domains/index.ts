@@ -17,6 +17,7 @@ export { normandieConfig } from './normandie';
 export { portovecchioConfig } from './portovecchio';
 export { primotConfig } from './primot';
 export { reimsConfig } from './reims';
+export { neoconnectConfig } from './neoconnect';
 export { reunionConfig } from './reunion';
 export { semConfig } from './sem';
 export { toulonConfig } from './toulon';

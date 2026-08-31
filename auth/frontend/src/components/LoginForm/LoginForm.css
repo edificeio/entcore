@@ -1,0 +1,38 @@
+.wayf-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-16);
+  width: 100%;
+}
+
+.wayf-login-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-16);
+  width: 100%;
+}
+
+.wayf-login-form__submit {
+  align-self: center;
+}
+
+.wayf-login-form__forgot-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--primitive-spacer-4);
+}
+
+.wayf-login-form__forgot-link {
+  font-size: var(--primitive-font-size-default);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-blue-900);
+  text-decoration: none;
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-24);
+  border-radius: var(--primitive-border-radius-pill);
+  transition: background 0.15s ease;
+}
+
+.wayf-login-form__forgot-link:hover {
+  background: rgba(28, 28, 115, 0.06);
+}

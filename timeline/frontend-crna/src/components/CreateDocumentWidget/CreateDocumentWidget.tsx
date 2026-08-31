@@ -1,7 +1,11 @@
-import { Flex, IconButton, useHasWorkflow, useUser } from '@edifice.io/react';
-import { HomeCard } from '@edifice.io/react/homepage';
+import { Flex, IconButton, useHasWorkflow } from '@edifice.io/react';
 import {
-  IconExternalLink,
+  CaptationAudio,
+  CaptationVideo,
+  HomeCard,
+} from '@edifice.io/react/homepage';
+import {
+  IconArrowRight,
   IconMic,
   IconRecordVideo,
 } from '@edifice.io/react/icons';
@@ -9,7 +13,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DocTypeId } from '~/models/createDocument';
 import { CreateDocumentModal } from './CreateDocumentModal';
-import { MediaRecordModal } from './MediaRecordModal';
 import './CreateDocumentWidget.css';
 
 const DOC_TYPE_ACTIONS = [
@@ -62,45 +65,38 @@ const APP_ACTIONS = [
   },
 ] as const;
 
-interface CreateDocumentWidgetProps {
-  onSuccess?: (message: string) => void;
-}
+type MediaType = (typeof APP_ACTIONS)[number]['mediaType'];
 
-export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
+export function CreateDocumentWidget() {
   const { t } = useTranslation('timeline');
-  const { user } = useUser();
+  const hasLoolRight = useHasWorkflow(
+    'fr.openent.lool.controller.LoolController|createDocumentFromTemplate',
+  );
   const hasVideoRight = useHasWorkflow(
     'com.opendigitaleducation.video.controllers.VideoController|capture',
   );
   const [selectedDocTypeId, setSelectedDocTypeId] = useState<DocTypeId | null>(
     null,
   );
-  const [mediaRecordType, setMediaRecordType] = useState<
-    'video' | 'audio' | null
-  >(null);
-
-  const displayMediaButtons = false; // TODO: Enable when video/audio recording is implemented
-
-  const nextcloudConnector = user?.apps.find(
-    (app) => app.name === 'nextcloud-files-connector',
+  const [mediaRecordType, setMediaRecordType] = useState<MediaType | null>(
+    null,
   );
+
+  const closeMediaRecord = () => setMediaRecordType(null);
 
   return (
     <HomeCard variant="secondary">
       <HomeCard.Header
         title={t('homepage.crna.widget.create.title', 'Créer un document')}
         actionLabel={t('homepage.crna.widget.see.all', 'Voir tout')}
-        onActionClick={() =>
-          nextcloudConnector &&
-          window.open(nextcloudConnector.address, '_blank')
-        }
-        actionRightIcon={<IconExternalLink />}
+        onActionClick={() => window.open('/workspace', '_self')}
+        actionRightIcon={<IconArrowRight />}
         actionProps={{ 'data-testid': 'create-document-see-all-button' }}
       />
       <HomeCard.Content>
         <div className="create-document-apps-card">
           <Flex gap="8" align="center">
-            {!!nextcloudConnector &&
+            {hasLoolRight === true &&
               DOC_TYPE_ACTIONS.map(
                 ({ labelKey, label, icon, colorVar, docTypeId }) => (
                   <IconButton
@@ -123,38 +119,30 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
                 ),
               )}
 
-            {displayMediaButtons &&
-              APP_ACTIONS.map(
-                ({
-                  labelKey,
-                  label,
-                  icon,
-                  colorVar,
-                  mediaType,
-                  workflowKey,
-                }) => {
-                  if (workflowKey && hasVideoRight !== true) return null;
-                  return (
-                    <IconButton
-                      key={labelKey}
-                      onClick={() => setMediaRecordType(mediaType)}
-                      title={t(labelKey, label)}
-                      className="create-document-btn"
-                      aria-label={t(labelKey, label)}
-                      data-testid={`create-document-${mediaType}-button`}
-                      style={
-                        {
-                          'background': `var(--edifice-${colorVar}-200)`,
-                          'color': `var(--edifice-${colorVar}-800)`,
-                          '--edifice-btn-border-color': `var(--edifice-${colorVar}-800)`,
-                          '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-800)`,
-                        } as React.CSSProperties
-                      }
-                      icon={icon}
-                    />
-                  );
-                },
-              )}
+            {APP_ACTIONS.map(
+              ({ labelKey, label, icon, colorVar, mediaType, workflowKey }) => {
+                if (workflowKey && hasVideoRight !== true) return null;
+                return (
+                  <IconButton
+                    key={labelKey}
+                    onClick={() => setMediaRecordType(mediaType)}
+                    title={t(labelKey, label)}
+                    className="create-document-btn"
+                    aria-label={t(labelKey, label)}
+                    data-testid={`create-document-${mediaType}-button`}
+                    style={
+                      {
+                        'background': `var(--edifice-${colorVar}-200)`,
+                        'color': `var(--edifice-${colorVar}-800)`,
+                        '--edifice-btn-border-color': `var(--edifice-${colorVar}-800)`,
+                        '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-800)`,
+                      } as React.CSSProperties
+                    }
+                    icon={icon}
+                  />
+                );
+              },
+            )}
           </Flex>
         </div>
 
@@ -162,31 +150,20 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
           <CreateDocumentModal
             isOpen={true}
             docTypeId={selectedDocTypeId}
-            nextcloudAddress={nextcloudConnector?.address}
             onClose={() => setSelectedDocTypeId(null)}
           />
         )}
 
-        {displayMediaButtons && mediaRecordType && (
-          <MediaRecordModal
-            type={mediaRecordType}
+        {/* Mounted only while open: the recorders request camera/mic access on mount. */}
+        {mediaRecordType === 'video' && (
+          <CaptationVideo
             isOpen={true}
-            onClose={() => setMediaRecordType(null)}
-            onSuccess={() => {
-              const msg =
-                mediaRecordType === 'video'
-                  ? t(
-                      'homepage.crna.widget.create.video.success',
-                      'Votre vidéo a été enregistrée avec succès.',
-                    )
-                  : t(
-                      'homepage.crna.widget.create.audio.success',
-                      'Votre audio a été enregistré avec succès.',
-                    );
-              onSuccess?.(msg);
-              setMediaRecordType(null);
-            }}
+            onClose={closeMediaRecord}
+            appCode="workspace"
           />
+        )}
+        {mediaRecordType === 'audio' && (
+          <CaptationAudio isOpen={true} onClose={closeMediaRecord} />
         )}
       </HomeCard.Content>
     </HomeCard>
