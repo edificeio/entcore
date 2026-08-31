@@ -19,7 +19,9 @@ export default ({ mode }: { mode: string }) => {
       '/mediacentre',
       '/actualites', 
       '/themes',
-      '/languages'
+      '/languages',
+      '/community',
+      '/communities'
     ],
   });
 

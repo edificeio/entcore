@@ -53,7 +53,7 @@ export function MediacentreWidget({
 
   const filter = (
     <div className="d-flex flex-column gap-4">
-      <div className="d-flex align-items-center gap-8 flex-wrap mb-8">
+      {/* <div className="d-flex align-items-center gap-8 flex-wrap mb-8">
         <ButtonBeta
           color={view === 'favorites' ? 'destructive' : 'default'}
           variant={view === 'favorites' ? 'filled' : 'ghost'}
@@ -68,7 +68,7 @@ export function MediacentreWidget({
         >
           {t('homepage.crna.widget.mediacentre.pins', 'Ressources épinglées')}
         </ButtonBeta>
-      </div>
+      </div> */}
       {view === 'pins' && schools.length > 1 && (
         <div className="d-flex justify-content-end">
           <Dropdown>

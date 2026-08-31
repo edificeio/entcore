@@ -81,7 +81,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
     'video' | 'audio' | null
   >(null);
 
-  const displayMediaButtons = false; // TODO: Enable when video/audio recording is implemented
+  const displayMediaButtons = true; // TODO: Enable when video/audio recording is implemented
 
   const nextcloudConnector = user?.apps.find(
     (app) => app.name === 'nextcloud-files-connector',

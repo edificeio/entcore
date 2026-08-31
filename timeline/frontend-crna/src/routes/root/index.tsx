@@ -4,9 +4,11 @@ import {
   PageLayout,
   useBreakpoint,
   useEdificeClient,
+  useHasWorkflow,
   useOverlay,
 } from '@edifice.io/react';
 import {
+  CommunitiesContainer,
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
@@ -16,6 +18,7 @@ import { useEffect, useState } from 'react';
 import backgroundImage from '~/assets/background.png';
 import styles from './Root.module.css';
 import { MediacentreWidget, WidgetMasonry } from '~/components';
+import { AgendaWidget } from '~/components/AgendaWidget';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
 import { PersonnalisationPanel } from '~/components/ui/PersonnalisationPanel';
@@ -34,9 +37,12 @@ export const Root = () => {
   const { init, user } = useEdificeClient();
   const hasMediacentreWidget = user?.widgets?.some(
     (w) => (w.name as string) === 'mediacentre-widget',
-  );
+  ) || useHasWorkflow('fr.openent.mediacentre.controller.MediacentreController|render');
   const hasCarnetDeBord = user?.widgets?.some(
     (w) => w.name === 'carnet-de-bord',
+  );
+  const hasAgendaWidget = user?.widgets?.some(
+    (w) => (w.name as string) === 'agenda-widget',
   );
   const { isOverlayOpen, updateOverlayOpen } = useOverlay();
   const [activePanel, setActivePanel] = useState<OverlayPanel>(null);
@@ -69,6 +75,10 @@ export const Root = () => {
   };
   const toggleNotifications = () =>
     isNotificationsOpen ? closeNotifications() : openNotifications();
+
+  const openCommunity = (communityId: string | number) =>
+    window.open(`/community#/view/${communityId}`, '_self');
+  const openCommunities = () => window.open('/community', '_self');
 
   useEffect(() => {
     if (isOverlayOpen) return;
@@ -152,6 +162,13 @@ export const Root = () => {
           </>
         )}
 
+        <WidgetErrorBoundary>
+          <CommunitiesContainer
+            onCommunityClick={(community) => openCommunity(community.id)}
+            onHeaderActionClick={openCommunities}
+          />
+        </WidgetErrorBoundary>
+
         <WidgetMasonry>
           {hasMediacentreWidget && <MediacentreWidget />}
           <WidgetErrorBoundary>
@@ -160,6 +177,11 @@ export const Root = () => {
           {hasCarnetDeBord && (
             <WidgetErrorBoundary>
               <CarnetDeBordWidget onError={handleWidgetError} />
+            </WidgetErrorBoundary>
+          )}
+          {hasAgendaWidget && (
+            <WidgetErrorBoundary>
+              <AgendaWidget />
             </WidgetErrorBoundary>
           )}
         </WidgetMasonry>

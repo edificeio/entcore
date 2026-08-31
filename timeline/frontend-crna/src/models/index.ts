@@ -1,3 +1,4 @@
+export * from './agenda';
 export * from './carnetDeBord';
 export * from './createDocument';
 export * from './listWidget';

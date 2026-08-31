@@ -35,7 +35,7 @@ export function WelcomeWidget({
   const { user, avatar, userDescription } = useUser();
   const { md } = useBreakpoint();
 
-  const displayName = userDescription?.displayName ?? '';
+  const displayName = user?.firstName ?? '';
   const profile = user?.type ?? '';
 
   return (
@@ -59,7 +59,7 @@ export function WelcomeWidget({
         <div
           className={`d-flex gap-6${md ? '' : ' flex-column align-items-start'}`}
         >
-          <ButtonBeta
+          {/* <ButtonBeta
             color="default"
             variant="ghost"
             leftIcon={<IconClock width={20} height={20} />}
@@ -69,7 +69,7 @@ export function WelcomeWidget({
               'homepage.crna.widget.welcome.history',
               'Historique des message flash',
             )}
-          </ButtonBeta>
+          </ButtonBeta> */}
           <ButtonBeta
             color="default"
             variant="ghost"

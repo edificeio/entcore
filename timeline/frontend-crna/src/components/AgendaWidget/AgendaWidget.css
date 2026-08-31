@@ -1,0 +1,83 @@
+.agenda-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-8);
+  width: 100%;
+}
+
+.agenda-day-group {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-4);
+  background-color: var(--primitive-yellow-100);
+  border: 1px solid var(--primitive-yellow-300);
+  border-radius: var(--primitive-border-radius-xl);
+  padding: var(--primitive-spacer-12);
+  width: 100%;
+}
+
+.agenda-day-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 var(--primitive-spacer-4);
+  font-family: var(--font-family-title);
+  font-weight: var(--primitive-font-weight-bold);
+  color: var(--primitive-grey-900);
+  white-space: nowrap;
+}
+
+.agenda-day-badge-weekday,
+.agenda-day-badge-month {
+  font-size: var(--primitive-font-size-default);
+  line-height: var(--primitive-font-lineheight-s);
+}
+
+.agenda-day-badge-num {
+  font-size: var(--primitive-font-size-l);
+  line-height: var(--primitive-font-lineheight-l);
+}
+
+.agenda-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-8);
+  flex: 1;
+  min-width: 0;
+}
+
+.agenda-event-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-4);
+  background-color: var(--primitive-white);
+  border: 1px solid var(--primitive-yellow-300);
+  border-radius: var(--primitive-border-radius-lg);
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-12);
+  width: 100%;
+}
+
+.agenda-event-item-time {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-8);
+  font-family: var(--font-family-body);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-900);
+}
+
+.agenda-event-item-title {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-weight: 400;
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
