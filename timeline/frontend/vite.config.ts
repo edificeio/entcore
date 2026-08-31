@@ -45,7 +45,14 @@ export default ({ mode }: { mode: string }) => {
       alias: {
         '@images': bootstrapImagesPath,
       },
-      dedupe: ['react', 'react-dom'],
+      dedupe: [
+        'react',
+        'react-dom',
+        '@tanstack/react-query',
+        'react-i18next',
+        'react-hook-form',
+        '@react-spring/web',
+      ],
     },
 
     server: {
@@ -55,7 +62,12 @@ export default ({ mode }: { mode: string }) => {
       proxy,
       fs: {
         // Allow serving image files
-        allow: ['.', bootstrapImagesPath, linkedBootstrapImagesPath],
+        allow: [
+          '.',
+          bootstrapImagesPath,
+          linkedBootstrapImagesPath,
+          resolve(__dirname, '../../../edifice-frontend-framework/packages'),
+        ],
       },
     },
 

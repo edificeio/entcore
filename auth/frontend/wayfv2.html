@@ -11,12 +11,15 @@
     <link rel="icon" id="favicon" href="" />
     <script type="text/json" id="saml-wayf">
       {
-        "childTheme": "{{childTheme}}",
-        "mobile": "{{mobile}}"
+        "childTheme": "neoconnect",
+        "mobile": "neoconnect"
       }
     </script>
   </head>
-  <body>
+  <!-- FYI data-product below is required for @edifice.io/bootstrap's
+       design tokens (e.g. btn-beta colors) to resolve; normally injected by
+       the backend based on the actual theme/skin. -->
+  <body data-product="edifice2d">
     <div id="root"></div>
     <div id="portal"></div>
     <div id="beta-switch"></div>

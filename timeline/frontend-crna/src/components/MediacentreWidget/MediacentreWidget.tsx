@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import {
-  ButtonBeta,
   Dropdown,
   Flex,
   IconButton,
   LinkPill,
+  SegmentedControl,
   useEdificeClient,
 } from '@edifice.io/react';
 import type { IconButtonProps } from '@edifice.io/react';
@@ -89,32 +89,38 @@ export function MediacentreWidget({
 
   const filter = (
     <div className="d-flex flex-column gap-4">
-      <div className="d-flex align-items-center gap-8 flex-wrap mb-8">
-        <ButtonBeta
-          color={view === 'favorites' ? 'destructive' : 'default'}
-          variant={view === 'favorites' ? 'filled' : 'ghost'}
-          onClick={() => setView('favorites')}
-          data-testid="mediacentre-favorites-tab-button"
-        >
-          {t('homepage.crna.widget.mediacentre.favorites', 'Mes favoris')}
-        </ButtonBeta>
-        <ButtonBeta
-          color={view === 'pins' ? 'destructive' : 'default'}
-          variant={view === 'pins' ? 'filled' : 'ghost'}
-          onClick={() => setView('pins')}
-          data-testid="mediacentre-pins-tab-button"
-        >
-          {t('homepage.crna.widget.mediacentre.pins', 'Ressources épinglées')}
-        </ButtonBeta>
-        <ButtonBeta
-          color={view === 'orientation' ? 'destructive' : 'default'}
-          variant={view === 'orientation' ? 'filled' : 'ghost'}
-          onClick={() => setView('orientation')}
-          data-testid="mediacentre-orientation-tab-button"
-        >
-          {t('homepage.crna.widget.mediacentre.orientation', 'Orientation')}
-        </ButtonBeta>
-      </div>
+      <SegmentedControl
+        aria-label={t(
+          'homepage.crna.widget.mediacentre.views',
+          'Ressources du Médiacentre',
+        )}
+        options={[
+          {
+            label: t(
+              'homepage.crna.widget.mediacentre.favorites',
+              'Mes favoris',
+            ),
+            value: 'favorites',
+          },
+          {
+            label: t(
+              'homepage.crna.widget.mediacentre.pins',
+              'Ressources épinglées',
+            ),
+            value: 'pins',
+          },
+          {
+            label: t(
+              'homepage.crna.widget.mediacentre.orientation',
+              'Orientation',
+            ),
+            value: 'orientation',
+          },
+        ]}
+        value={view}
+        onChange={(value) => setView(value as MediacentreView)}
+        className="mediacentre-widget__views"
+      />
       {view === 'pins' && schools.length > 1 && (
         <div className="d-flex justify-content-end">
           <Dropdown>

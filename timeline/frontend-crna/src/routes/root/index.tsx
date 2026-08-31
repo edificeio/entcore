@@ -1,5 +1,4 @@
 import {
-  Alert,
   LoadingScreen,
   PageLayout,
   useBreakpoint,
@@ -7,10 +6,21 @@ import {
   useOverlay,
 } from '@edifice.io/react';
 import {
+  AgendaContainer,
+  AlloRegion,
+  BriefMeContainer,
+  CantineContainer,
+  CommunitiesContainer,
+  EdumalinContainer,
+  GenerationHdfContainer,
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
+  QwantContainer,
+  RssContainer,
   SchoolSpaceContainer,
+  ScreenTimeContainer,
+  UniversalisContainer,
   UsefulLinksContainer,
 } from '@edifice.io/react/homepage';
 import { useEffect, useState } from 'react';
@@ -19,10 +29,22 @@ import { MediacentreWidget, WidgetMasonry } from '~/components';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
 import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
+import { TimetableWidget } from '~/components/TimetableWidget';
 import { FlashMessageHistoryPanel } from '~/components/WelcomeWidget/FlashMessageHistoryPanel';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
+import { WidgetsSettingsPanel } from '~/components/WidgetsSettingsPanel';
+import { useAvailableWidgets } from '~/hooks/useAvailableWidgets';
+import { useWidgetPreferences } from '~/hooks/useWidgetPreferences';
+import type { WidgetId } from '~/models/widgetPreferences';
 
-type OverlayPanel = 'flash-history' | 'notifications' | null;
+/** Rendered without AlloRegionContainer, which hides the card without the alloregion right. */
+const ALLO_REGION_ADDRESS = '/alloregion';
+
+type OverlayPanel =
+  | 'flash-history'
+  | 'notifications'
+  | 'widgets-settings'
+  | null;
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -30,16 +52,11 @@ export const loader = async () => {
 };
 
 export const Root = () => {
-  const { init, user } = useEdificeClient();
-  const hasMediacentreWidget = user?.widgets?.some(
-    (w) => (w.name as string) === 'mediacentre-widget',
-  );
-  const hasCarnetDeBord = user?.widgets?.some(
-    (w) => w.name === 'carnet-de-bord',
-  );
-  const hasUsefulLinks = user?.widgets?.some(
-    (w) => w.name === 'bookmark-widget',
-  );
+  const { init } = useEdificeClient();
+  const available = useAvailableWidgets();
+  const { isVisible } = useWidgetPreferences();
+  /** A widget is shown when the user can access it and hasn't hidden it. */
+  const show = (id: WidgetId) => available[id] && isVisible(id);
   const { isOverlayOpen, updateOverlayOpen } = useOverlay();
   const [activePanel, setActivePanel] = useState<OverlayPanel>(null);
   const { md, lg } = useBreakpoint();
@@ -57,6 +74,14 @@ export const Root = () => {
     setActivePanel('flash-history');
     updateOverlayOpen(true);
   };
+  const openWidgetsSettings = () => {
+    setActivePanel('widgets-settings');
+    updateOverlayOpen(true);
+  };
+  const closeWidgetsSettings = () => {
+    setActivePanel(null);
+    updateOverlayOpen(false);
+  };
   const openNotifications = () => {
     setActivePanel('notifications');
     updateOverlayOpen(!lg);
@@ -67,6 +92,10 @@ export const Root = () => {
   };
   const toggleNotifications = () =>
     isNotificationsOpen ? closeNotifications() : openNotifications();
+
+  const openCommunity = (communityId: string | number) =>
+    window.open(`/community#/view/${communityId}`, '_self');
+  const openCommunities = () => window.open('/community', '_self');
 
   useEffect(() => {
     if (isOverlayOpen) return;
@@ -84,7 +113,6 @@ export const Root = () => {
   }, [lg, activePanel, updateOverlayOpen]);
 
   const [pageErrors, setPageErrors] = useState<string[]>([]);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleWidgetError = (message: string) => {
     setPageErrors((prev) =>
@@ -112,24 +140,12 @@ export const Root = () => {
         </PageLayout.SidebarLeft>
       )}
       <PageLayout.Content className="d-grid align-content-start py-16 gap-16">
-        {successMessage && (
-          <Alert
-            type="success"
-            isToast
-            position="top-right"
-            isDismissible
-            autoClose
-            onClose={() => setSuccessMessage(null)}
-          >
-            {successMessage}
-          </Alert>
-        )}
         <MessageFlashListContainer />
 
         <WidgetErrorBoundary>
           <WelcomeWidget
-            onCreateDocumentSuccess={setSuccessMessage}
             onOpenHistory={openHistory}
+            onOpenSettings={openWidgetsSettings}
           />
         </WidgetErrorBoundary>
 
@@ -143,19 +159,93 @@ export const Root = () => {
           </>
         )}
 
-        <WidgetMasonry>
-          {hasMediacentreWidget && <MediacentreWidget />}
+        {show('communities') && (
           <WidgetErrorBoundary>
-            <AvantagesWidget />
+            <CommunitiesContainer
+              onCommunityClick={(community) => openCommunity(community.id)}
+              onHeaderActionClick={openCommunities}
+            />
           </WidgetErrorBoundary>
-          {hasCarnetDeBord && (
+        )}
+
+        <WidgetMasonry>
+          {show('mediacentre') && <MediacentreWidget />}
+          {show('avantages') && (
+            <WidgetErrorBoundary>
+              <AvantagesWidget />
+            </WidgetErrorBoundary>
+          )}
+          {show('carnet-de-bord') && (
             <WidgetErrorBoundary>
               <CarnetDeBordWidget onError={handleWidgetError} />
             </WidgetErrorBoundary>
           )}
-          {hasUsefulLinks && (
+          {show('useful-links') && (
             <WidgetErrorBoundary>
               <UsefulLinksContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('agenda') && (
+            <WidgetErrorBoundary>
+              <AgendaContainer />
+            </WidgetErrorBoundary>
+          )}
+          {/* TODO: gate behind a user.widgets flag once the timetable/EDT backend API exists — mock data for now. */}
+          {show('timetable') && (
+            <WidgetErrorBoundary>
+              <TimetableWidget />
+            </WidgetErrorBoundary>
+          )}
+          {show('cantine') && (
+            <WidgetErrorBoundary>
+              <CantineContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('screen-time') && (
+            <WidgetErrorBoundary>
+              <ScreenTimeContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('edumalin') && (
+            <WidgetErrorBoundary>
+              <EdumalinContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('briefme') && (
+            <WidgetErrorBoundary>
+              <BriefMeContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('rss') && (
+            <WidgetErrorBoundary>
+              <RssContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('universalis') && (
+            <WidgetErrorBoundary>
+              <UniversalisContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('qwant') && (
+            <WidgetErrorBoundary>
+              <QwantContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('generation-hdf') && (
+            <WidgetErrorBoundary>
+              <GenerationHdfContainer />
+            </WidgetErrorBoundary>
+          )}
+          {show('allo-region') && (
+            <WidgetErrorBoundary>
+              <AlloRegion
+                onRequestsClick={() =>
+                  window.open(ALLO_REGION_ADDRESS, '_self')
+                }
+                onNewRequestClick={() =>
+                  window.open(`${ALLO_REGION_ADDRESS}/new`, '_self')
+                }
+              />
             </WidgetErrorBoundary>
           )}
         </WidgetMasonry>
@@ -166,6 +256,9 @@ export const Root = () => {
         onClose={isNotificationsOpen ? closeNotifications : undefined}
       >
         {activePanel === 'flash-history' && <FlashMessageHistoryPanel />}
+        {activePanel === 'widgets-settings' && (
+          <WidgetsSettingsPanel onClose={closeWidgetsSettings} />
+        )}
         {isNotificationsOpen && !isSidebarOpen && (
           <NotificationListContainer
             onCloseNotifications={closeNotifications}

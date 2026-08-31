@@ -1,4 +1,5 @@
-import { FormControl, SearchButton } from '@edifice.io/react';
+import { ButtonBeta, FormControl, Input } from '@edifice.io/react';
+import { IconSearch } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import universalisLogo from './assets/universalis.png';
 
@@ -11,6 +12,10 @@ interface UniversalisSearchProps {
   uai?: string;
 }
 
+/**
+ * Same search bar as the lib's Universalis/Qwant widgets: it reuses their
+ * markup and their `universalis__search*` classes (lib _universalis.scss).
+ */
 export function UniversalisSearch({ uai }: UniversalisSearchProps) {
   const { t } = useTranslation('timeline');
   const disabled = !uai;
@@ -40,29 +45,32 @@ export function UniversalisSearch({ uai }: UniversalisSearchProps) {
         action={UNIVERSALIS_SEARCH_URL}
         target="_blank"
         autoComplete="off"
-        className="flex-grow-1"
+        className="universalis__search"
       >
-        {/* Required by Universalis' search endpoint, alongside the visible "q" input. */}
-        <input type="hidden" name="r" value="www" />
-        <input type="hidden" name="uai" value={uai ?? ''} />
         <FormControl
           id="mediacentre-universalis-search-input"
-          className="input-group"
+          className="universalis__search-field"
         >
-          <FormControl.Input
-            type="text"
+          <FormControl.Label className="visually-hidden">
+            {placeholder}
+          </FormControl.Label>
+          <Input
             name="q"
-            size="md"
-            noValidationIcon
-            className="border-end-0"
             placeholder={placeholder}
-            aria-label={placeholder}
-            disabled={disabled}
+            size="md"
+            type="text"
             maxLength={255}
+            disabled={disabled}
           />
-          <SearchButton
+          {/* Required by Universalis' search endpoint, alongside the visible "q" input. */}
+          <input type="hidden" name="r" value="www" />
+          <input type="hidden" name="uai" value={uai ?? ''} />
+          <ButtonBeta
+            leftIcon={<IconSearch />}
             type="submit"
-            className="border-start-0"
+            aria-label={placeholder}
+            variant="filled"
+            color="default"
             disabled={disabled}
             data-testid="mediacentre-universalis-search-button"
           />

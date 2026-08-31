@@ -46,7 +46,7 @@ describe('useWelcomeMessage', () => {
       ),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     expect(result.current.status).toBe('loading');
 
     await waitFor(() => expect(result.current.status).toBe('ready'));
@@ -65,7 +65,7 @@ describe('useWelcomeMessage', () => {
       ),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     await waitFor(() => expect(result.current.status).toBe('ready'));
     const { html } = result.current as { status: 'ready'; html: string };
     expect(html).not.toContain('<script>');
@@ -82,7 +82,7 @@ describe('useWelcomeMessage', () => {
       ),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     await waitFor(() => expect(result.current.status).toBe('ready'));
     const { html } = result.current as { status: 'ready'; html: string };
     expect(html).toContain('target="_blank"');
@@ -96,7 +96,7 @@ describe('useWelcomeMessage', () => {
       ),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     await waitFor(() => expect(result.current.status).toBe('hidden'));
   });
 
@@ -107,7 +107,7 @@ describe('useWelcomeMessage', () => {
       ),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     await waitFor(() => expect(result.current.status).toBe('hidden'));
   });
 
@@ -116,7 +116,7 @@ describe('useWelcomeMessage', () => {
       http.get(WELCOME_URL, () => new HttpResponse(null, { status: 404 })),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     await waitFor(() => expect(result.current.status).toBe('hidden'));
   });
 
@@ -125,7 +125,7 @@ describe('useWelcomeMessage', () => {
       http.get(WELCOME_URL, () => new HttpResponse(null, { status: 500 })),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     await waitFor(() => expect(result.current.status).toBe('hidden'));
   });
 
@@ -134,7 +134,37 @@ describe('useWelcomeMessage', () => {
       http.get(WELCOME_URL, () => HttpResponse.error()),
     );
 
-    const { result } = renderHook(() => useWelcomeMessage());
+    const { result } = renderHook(() => useWelcomeMessage('hdf'));
     await waitFor(() => expect(result.current.status).toBe('hidden'));
+  });
+
+  it('stays loading until the theme is resolved, without fetching', async () => {
+    let called = false;
+    server.use(
+      http.get(WELCOME_URL, () => {
+        called = true;
+        return HttpResponse.json({ enabled: true, fr: 'Bonjour' });
+      }),
+    );
+
+    const { result } = renderHook(() => useWelcomeMessage());
+    expect(result.current.status).toBe('loading');
+    expect(called).toBe(false);
+  });
+
+  it('returns the hardcoded neoconnect welcome message without fetching', async () => {
+    let called = false;
+    server.use(
+      http.get(WELCOME_URL, () => {
+        called = true;
+        return HttpResponse.json({ enabled: true, fr: 'Bonjour' });
+      }),
+    );
+
+    const { result } = renderHook(() => useWelcomeMessage('neoconnect'));
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    const { html } = result.current as { status: 'ready'; html: string };
+    expect(html).toContain('Bienvenue sur Édifice');
+    expect(called).toBe(false);
   });
 });
