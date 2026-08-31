@@ -1,0 +1,177 @@
+.timetable-child-tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-4);
+  margin-bottom: var(--primitive-spacer-8);
+}
+
+.timetable-child-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-8);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--primitive-border-radius-xl);
+  padding: var(--primitive-spacer-4) var(--primitive-spacer-8);
+  cursor: pointer;
+}
+
+.timetable-child-tab--active {
+  background-color: var(--color-primary-pale);
+  border-color: var(--color-primary-light);
+}
+
+.timetable-child-tab-avatar {
+  border: 2px solid var(--color-primary-default);
+}
+
+.timetable-child-tab-label {
+  font-family: var(--font-family-body);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-small);
+  color: var(--primitive-grey-900);
+  white-space: nowrap;
+}
+
+.timetable-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--primitive-spacer-12);
+  overflow-x: auto;
+  width: 100%;
+}
+
+.timetable-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--primitive-spacer-4);
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--primitive-grey-300);
+  padding: 0 var(--primitive-spacer-12) var(--primitive-spacer-4);
+  font-family: var(--font-family-body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.timetable-tab-weekday {
+  font-weight: 400;
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-800);
+}
+
+.timetable-tab-date {
+  font-weight: 400;
+  font-size: var(--primitive-font-size-caption);
+  color: var(--primitive-grey-800);
+}
+
+.timetable-tab--active {
+  border-bottom-color: #c31632;
+}
+
+.timetable-tab--active .timetable-tab-weekday {
+  font-weight: var(--primitive-font-weight-bold);
+  color: #c31632;
+}
+
+.timetable-tab--active .timetable-tab-date {
+  color: #c31632;
+}
+
+.timetable-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-4);
+  margin-top: var(--primitive-spacer-12);
+  width: 100%;
+}
+
+.timetable-entry {
+  display: flex;
+  align-items: stretch;
+  min-height: 70px;
+  border-radius: var(--primitive-border-radius-lg);
+  overflow: hidden;
+  background-color: var(--edifice-gray-200);
+}
+
+.timetable-entry[data-color='yellow'] {
+  background-color: var(--edifice-yellow-200);
+}
+
+.timetable-entry[data-color='green'] {
+  background-color: var(--edifice-green-200);
+}
+
+.timetable-entry[data-color='blue'] {
+  background-color: var(--edifice-blue-200);
+}
+
+.timetable-entry[data-color='orange'] {
+  background-color: var(--edifice-orange-200);
+}
+
+.timetable-entry[data-color='pink'] {
+  background-color: var(--edifice-pink-200);
+}
+
+.timetable-entry--current {
+  background-color: var(--edifice-blue-200);
+  border: 1px solid var(--edifice-blue);
+}
+
+.timetable-entry-accent {
+  width: 15px;
+  flex-shrink: 0;
+  background-color: var(--edifice-blue);
+}
+
+.timetable-entry-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: var(--primitive-spacer-16);
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-16);
+}
+
+.timetable-entry-time {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  font-family: var(--font-family-body);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-default);
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-grey-900);
+  white-space: nowrap;
+}
+
+.timetable-entry-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-4);
+  min-width: 0;
+}
+
+.timetable-entry-subject {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-weight: 400;
+  font-size: var(--primitive-font-size-default);
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-grey-900);
+}
+
+.timetable-entry-room {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-weight: 400;
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-800);
+}

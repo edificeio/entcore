@@ -23,6 +23,7 @@ import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
 import { PersonnalisationPanel } from '~/components/ui/PersonnalisationPanel';
 import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
+import { TimetableWidget } from '~/components/TimetableWidget';
 import { FlashMessageHistoryPanel } from '~/components/WelcomeWidget/FlashMessageHistoryPanel';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
 
@@ -35,9 +36,11 @@ export const loader = async () => {
 
 export const Root = () => {
   const { init, user } = useEdificeClient();
-  const hasMediacentreWidget = user?.widgets?.some(
-    (w) => (w.name as string) === 'mediacentre-widget',
-  ) || useHasWorkflow('fr.openent.mediacentre.controller.MediacentreController|render');
+  const hasMediacentreWidget =
+    user?.widgets?.some((w) => (w.name as string) === 'mediacentre-widget') ||
+    useHasWorkflow(
+      'fr.openent.mediacentre.controller.MediacentreController|render',
+    );
   const hasCarnetDeBord = user?.widgets?.some(
     (w) => w.name === 'carnet-de-bord',
   );
@@ -184,6 +187,10 @@ export const Root = () => {
               <AgendaWidget />
             </WidgetErrorBoundary>
           )}
+          {/* TODO: gate behind a user.widgets flag once the timetable/EDT backend API exists — mock data for now. */}
+          <WidgetErrorBoundary>
+            <TimetableWidget />
+          </WidgetErrorBoundary>
         </WidgetMasonry>
       </PageLayout.Content>
       <PageLayout.Overlay

@@ -5,6 +5,7 @@ export * from './ui/WidgetMasonry';
 export * from './ui/WidgetEmptyState';
 export * from './AgendaWidget';
 export * from './CreateDocumentWidget';
+export * from './TimetableWidget';
 export * from './WelcomeWidget';
 export * from './AvantagesWidget/AvantagesWidget';
 export * from './MediacentreWidget';

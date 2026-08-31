@@ -21,7 +21,9 @@ export default ({ mode }: { mode: string }) => {
       '/themes',
       '/languages',
       '/community',
-      '/communities'
+      '/communities',
+      '/edt',
+      '/viescolaire'
     ],
   });
 
