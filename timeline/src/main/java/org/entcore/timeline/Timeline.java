@@ -19,38 +19,6 @@
 
 package org.entcore.timeline;
 
-import java.net.URI;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.entcore.broker.api.utils.BrokerProxyUtils;
-import org.entcore.common.http.BaseServer;
-import org.entcore.common.notification.ws.OssFcm;
-import org.entcore.common.user.DefaultPreferenceHelper;
-import org.entcore.common.user.PreferenceHelper;
-import org.entcore.common.utils.MapFactory;
-import org.entcore.timeline.controllers.CustomizeController;
-import org.entcore.timeline.controllers.FlashMsgController;
-import org.entcore.timeline.controllers.TaskController;
-import org.entcore.timeline.controllers.TimelineController;
-import org.entcore.timeline.controllers.helper.NotificationHelper;
-import org.entcore.timeline.cron.OptimizedDailyMailingCronTask;
-import org.entcore.timeline.cron.OptimizedWeeklyMailingCronTask;
-import org.entcore.timeline.cron.PurgeMessageCronTask;
-import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
-import org.entcore.timeline.services.FlashMsgService;
-import org.entcore.timeline.services.TimelineConfigService;
-import org.entcore.timeline.services.TimelinePushNotifService;
-import org.entcore.timeline.services.impl.DefaultPushNotifService;
-import org.entcore.timeline.services.impl.DefaultTimelineConfigService;
-import org.entcore.timeline.services.impl.DefaultTimelineMailerService;
-import org.entcore.timeline.services.impl.FlashMsgRepositoryEventsSql;
-import org.entcore.timeline.services.impl.FlashMsgServiceSqlImpl;
-import org.entcore.timeline.services.impl.PeriodicTimelineMailerService;
-
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
@@ -59,6 +27,32 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.AsyncMap;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
+import org.entcore.common.http.BaseServer;
+import org.entcore.common.notification.ws.OssFcm;
+import org.entcore.common.user.DefaultPreferenceHelper;
+import org.entcore.common.user.PreferenceHelper;
+import org.entcore.common.utils.MapFactory;
+import org.entcore.timeline.controllers.TaskController;
+import org.entcore.timeline.controllers.CustomizeController;
+import org.entcore.timeline.controllers.FlashMsgController;
+import org.entcore.timeline.controllers.TimelineController;
+import org.entcore.timeline.controllers.helper.NotificationHelper;
+import org.entcore.timeline.cron.PurgeMessageCronTask;
+import org.entcore.timeline.cron.OptimizedDailyMailingCronTask;
+import org.entcore.timeline.cron.OptimizedWeeklyMailingCronTask;
+import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
+import org.entcore.timeline.services.FlashMsgService;
+import org.entcore.timeline.services.TimelineConfigService;
+import org.entcore.timeline.services.TimelinePushNotifService;
+import org.entcore.timeline.services.impl.*;
+
+import java.net.URI;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Timeline extends BaseServer {
 
@@ -105,7 +99,7 @@ public class Timeline extends BaseServer {
 		timelineController.setLazyEventsI18n(lazyEventsI18n);
 
 		final List<TimelinePushNotifService> pushNotifServices = startPushNotifServices(
-				eventsI18n, lazyEventsI18n, configService,
+				eventsI18n,configService,
 				config.getBoolean("log-push-notifs", false),
 				config.getBoolean("remove-push-notifs-404-tokens", false));
 		notificationHelper.setPushNotifServices(pushNotifServices);
@@ -186,7 +180,6 @@ public class Timeline extends BaseServer {
 	 */
 	protected List<TimelinePushNotifService> startPushNotifServices(
 			final Map<String,String> eventsI18n,
-			final Map<String,JsonObject> lazyEventsI18n,
 			final TimelineConfigService configService,
 			final boolean logPushNotifs,
 			final boolean removeTokenIf404
@@ -199,7 +192,7 @@ public class Timeline extends BaseServer {
 					if( o!=null && JsonObject.class.isAssignableFrom(o.getClass()) ) {
 						final JsonObject pushNotif = (JsonObject) o;
 						final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(
-								pushNotif, eventsI18n, lazyEventsI18n, configService, logPushNotifs, removeTokenIf404);
+								pushNotif, eventsI18n, logPushNotifs, removeTokenIf404);
 						if( pushNotifService != null ) {
 							list.add( pushNotifService );
 						}
@@ -215,7 +208,7 @@ public class Timeline extends BaseServer {
 			JsonObject pushNotif = config.getJsonObject("push-notif");
 			if(pushNotif != null){
 				final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(
-						pushNotif, eventsI18n, lazyEventsI18n, configService, logPushNotifs, removeTokenIf404);
+						pushNotif, eventsI18n, logPushNotifs, removeTokenIf404);
 				if( pushNotifService != null ) {
 					list.add( pushNotifService );
 				}
@@ -246,8 +239,6 @@ public class Timeline extends BaseServer {
 	protected TimelinePushNotifService pushNotifServiceFactory(
 			final JsonObject pushNotif,
 			final Map<String,String> eventsI18n,
-			final Map<String,JsonObject> lazyEventsI18n,
-			final TimelineConfigService configService,
 			final boolean logPushNotifs,
 			final boolean removeTokenIf404
 		) {
@@ -262,8 +253,6 @@ public class Timeline extends BaseServer {
 
 			final DefaultPushNotifService pushNotifService = new DefaultPushNotifService(vertx, config, oss);
 			pushNotifService.setEventsI18n(eventsI18n);
-			pushNotifService.setLazyEventsI18n(lazyEventsI18n);
-			pushNotifService.setConfigService(configService);
 
 			log.info("[timeline] will push-notif to "+ pushNotif.getString("url"));
 			return pushNotifService;
