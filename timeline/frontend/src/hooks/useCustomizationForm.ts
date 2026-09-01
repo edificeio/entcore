@@ -1,15 +1,22 @@
 import { useEdificeClient, useEdificeTheme } from '@edifice.io/react';
 import { useCallback, useEffect, useState } from 'react';
-import { useFonts, useLanguages } from '~/services/queries/customize';
+import { useCustomization } from '~/services/queries/customize';
 
 export function useCustomizationForm() {
-  const languagesQuery = useLanguages();
-  const fontsQuery = useFonts();
+  const {
+    languages,
+    backgrounds,
+    fonts,
+    isError: isLoadError,
+    saveMutation,
+  } = useCustomization();
   const { currentLanguage } = useEdificeClient();
   const { theme } = useEdificeTheme();
+  const background = 'TODO';
 
-  const [selectedFont, setSelectedFont] = useState(theme?.skinName);
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage!);
+  const [selectedBackground, setSelectedBackground] = useState(background);
+  const [selectedFont, setSelectedFont] = useState(theme?.skinName);
 
   useEffect(() => {
     if (!theme) return;
@@ -23,17 +30,22 @@ export function useCustomizationForm() {
 
   const saveChanges = useCallback(() => {
     if (selectedFont && selectedLanguage) {
-      alert('todo : query');
+      alert('todo : saveMutation ' + saveMutation.isIdle);
     }
   }, [selectedFont, selectedLanguage]);
 
   return {
-    fonts: fontsQuery.data,
-    selectedFont,
-    handleFontChange: (font: string) => setSelectedFont(font),
-    languages: languagesQuery.data,
+    isLoadError,
+    languages,
     selectedLanguage,
     handleLanguageChange: (language: string) => setSelectedLanguage(language),
+    backgrounds,
+    selectedBackground,
+    handleBackgroundChange: (background: string) =>
+      setSelectedBackground(background),
+    fonts,
+    selectedFont,
+    handleFontChange: (font: string) => setSelectedFont(font),
     resetChanges,
     saveChanges,
   };

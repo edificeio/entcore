@@ -1,5 +1,5 @@
 import { Flex } from '@edifice.io/react';
-import { useCustomizationForm } from '~/hooks/useCustomizeForm';
+import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
 import { ChoiceButton } from './ChoiceButton';
 import { ChoiceSkeleton } from './ChoiceSkeleton';
@@ -27,6 +27,9 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
     fonts,
     selectedFont,
     handleFontChange,
+    backgrounds,
+    selectedBackground,
+    handleBackgroundChange,
     languages,
     selectedLanguage,
     handleLanguageChange,
@@ -54,11 +57,23 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         </Flex>
       </Flex>
 
-      {/*
       <Flex direction="column" gap="16" className="w-100">
         <h3>{t('homepage.customize.form.themes')}</h3>
+        <Flex gap="12" wrap="wrap">
+          {backgrounds ? (
+            backgrounds.map((background) => (
+              <ChoiceButton
+                key={background}
+                className="customize-background-choice"
+                isSelected={background === selectedBackground}
+                onClick={() => handleBackgroundChange(background)}
+              ></ChoiceButton>
+            ))
+          ) : (
+            <ChoiceSkeleton />
+          )}
+        </Flex>
       </Flex>
-      */}
 
       <Flex direction="column" gap="16" className="w-100">
         <h3>{t('homepage.customize.form.languages')}</h3>

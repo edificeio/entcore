@@ -3,6 +3,8 @@ import { IThemeDesc, odeServices } from '@edifice.io/client';
 export const customizeService = {
   listLanguages: () => odeServices.http().get<string[]>('/languages'),
 
+  listBackgrounds: () => odeServices.http().get<string[]>('/backgrounds'),
+
   listFonts: () => odeServices.http().get<IThemeDesc[]>('/themes'),
 
   saveLanguagePreference: (lang: string) =>
