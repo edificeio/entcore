@@ -1,7 +1,4 @@
-import { useToast } from '@edifice.io/react';
-import { queryOptions, useMutation, useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
-import { useI18n } from '~/hooks/useI18n';
+import { queryOptions } from '@tanstack/react-query';
 import { customizeService } from '../api/customizeService';
 
 /**
@@ -48,51 +45,4 @@ export const customizeQueryOptions = {
       staleTime: Infinity,
     });
   },
-};
-
-export const useCustomization = () => {
-  const { t } = useI18n();
-  const toast = useToast();
-
-  const { data: languages, isError: isLanguagesError } = useQuery(
-    customizeQueryOptions.getLanguages(),
-  );
-  const { data: fonts, isError: isFontsError } = useQuery(
-    customizeQueryOptions.getFonts(),
-  );
-  const { data: backgrounds, isError: isBackgroundsError } = useQuery(
-    customizeQueryOptions.getBackgrounds(),
-  );
-
-  const saveMutation = useMutation({
-    mutationFn: async ({ lang }: { lang: string; font: string }) =>
-      await Promise.all([customizeService.saveLanguagePreference(lang)]),
-    onSuccess: () => {
-      toast.success(t('homepage.customize.form.save.success'));
-    },
-    onError: () => {
-      toast.error(t('homepage.customize.form.save.error'));
-    },
-  });
-
-  useEffect(() => {
-    if (isLanguagesError)
-      toast.error(
-        t('homepage.customize.form.load.error', { code: 'languages' }),
-      );
-    if (isFontsError)
-      toast.error(t('homepage.customize.form.load.error', { code: 'fonts' }));
-    if (isBackgroundsError)
-      toast.error(
-        t('homepage.customize.form.load.error', { code: 'backgrounds' }),
-      );
-  }, [isLanguagesError, isFontsError, isBackgroundsError]);
-
-  return {
-    languages,
-    fonts,
-    backgrounds,
-    isError: isLanguagesError || isFontsError || isBackgroundsError,
-    saveMutation,
-  };
 };
