@@ -1,6 +1,6 @@
-import { useEdificeClient, useEdificeTheme } from '@edifice.io/react';
+import { useEdificeClient } from '@edifice.io/react';
 import { useCallback, useEffect, useState } from 'react';
-import { useCustomization } from '~/services/queries/customize';
+import { useCustomization } from './useCustomization';
 
 export function useCustomizationForm() {
   const {
@@ -9,9 +9,9 @@ export function useCustomizationForm() {
     fonts,
     isError: isLoadError,
     saveMutation,
+    theme,
   } = useCustomization();
   const { currentLanguage } = useEdificeClient();
-  const { theme } = useEdificeTheme();
   const background = 'TODO';
 
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage!);
@@ -29,10 +29,14 @@ export function useCustomizationForm() {
   }, [theme, currentLanguage]);
 
   const saveChanges = useCallback(() => {
-    if (selectedFont && selectedLanguage) {
-      alert('todo : saveMutation ' + saveMutation.isIdle);
+    if (selectedFont && selectedLanguage && selectedBackground) {
+      saveMutation.mutate({
+        language: selectedLanguage,
+        font: selectedFont,
+        background: selectedBackground,
+      });
     }
-  }, [selectedFont, selectedLanguage]);
+  }, [saveMutation, selectedBackground, selectedFont, selectedLanguage]);
 
   return {
     isLoadError,
@@ -48,5 +52,6 @@ export function useCustomizationForm() {
     handleFontChange: (font: string) => setSelectedFont(font),
     resetChanges,
     saveChanges,
+    isPending: saveMutation.isPending,
   };
 }

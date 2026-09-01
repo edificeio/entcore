@@ -2,17 +2,26 @@ import { ButtonBeta, ButtonBetaProps } from '@edifice.io/react';
 import clsx from 'clsx';
 import './ChoiceButton.css';
 
-export type ChoiceButtonProps = ButtonBetaProps & { isSelected: boolean };
+export type ChoiceButtonProps = Omit<ButtonBetaProps, 'variant'> & {
+  isSelected: boolean;
+  variant: 'font' | 'background' | 'language';
+};
 
 export const ChoiceButton = ({
   children,
   className: baseClassName,
   isSelected,
+  variant,
   ...buttonBetaProps
 }: ChoiceButtonProps) => {
-  const className = clsx('choice-button', baseClassName, {
-    isSelected: isSelected,
-  });
+  const className = clsx(
+    'choice-button',
+    `customize-${variant}-choice`,
+    baseClassName,
+    {
+      isSelected: isSelected,
+    },
+  );
   return (
     <ButtonBeta
       variant={isSelected ? 'filled' : 'outline'}
