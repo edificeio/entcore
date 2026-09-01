@@ -2,7 +2,7 @@
    Layout principal — Grid deux colonnes
    ═══════════════════════════════════════════ */
 .wayf-layout {
-  --wayf-editorial-fallback: linear-gradient(111deg, #b9e3f8 0%, #2a9cc8 100%);
+  --wayf-editorial-fallback: #3030d1;
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-template-areas: 'editorial selection';

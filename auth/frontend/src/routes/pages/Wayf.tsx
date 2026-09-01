@@ -3,6 +3,7 @@ import { animated, useTransition } from '@react-spring/web';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import edificeLogoUrl from '~/assets/edifice-logo.svg';
+import { LoginForm } from '~/components/LoginForm';
 import { PartnerLogos } from '~/components/PartnerLogos';
 import { ProviderList } from '~/components/ProviderList';
 import { WelcomeMessage } from '~/components/WelcomeMessage';
@@ -18,14 +19,19 @@ import './Wayf.css';
 const DEFAULT_HELP_URL =
   'https://help.edifice.io/hc/fr/articles/18163736376604-Connexion-%C3%A0-votre-ENT';
 
+// Providers targeting the legacy local-account login page open the WAYF v2
+// login form in place instead of navigating away.
+const LOCAL_LOGIN_ACS = '/auth/login';
+
 export const WayfPage = () => {
   const { t } = useTranslation('auth');
   const [childTheme, setChildTheme] = useState<string | undefined>();
   const [breadcrumb, setBreadcrumb] = useState<WayfParentProvider[]>([]);
+  const [loginFormOpen, setLoginFormOpen] = useState(false);
   const dirRef = useRef<1 | -1>(1);
 
   const { providers, partners } = useWayfConfig();
-  const welcomeState = useWelcomeMessage();
+  const welcomeState = useWelcomeMessage(childTheme);
 
   useMobileLinkRedirect();
 
@@ -38,11 +44,13 @@ export const WayfPage = () => {
     } catch {
       // Malformed JSON — keep theme empty and fall back below.
     }
+
+    console.log('Detected theme:', theme);
     // In dev the backend isn't there, so the Mustache placeholder is left as-is.
     if (theme && !theme.includes('{{')) {
       setChildTheme(theme);
     } else if (import.meta.env.DEV) {
-      setChildTheme('theme-open-ent');
+      setChildTheme('neoconnect');
     }
   }, []);
 
@@ -50,6 +58,9 @@ export const WayfPage = () => {
     if (provider.children) {
       dirRef.current = 1;
       setBreadcrumb((prev) => [...prev, provider]);
+    } else if (provider.acs === LOCAL_LOGIN_ACS) {
+      dirRef.current = 1;
+      setLoginFormOpen(true);
     } else {
       window.location.href = provider.acs;
     }
@@ -57,15 +68,22 @@ export const WayfPage = () => {
 
   const handleBack = () => {
     dirRef.current = -1;
-    setBreadcrumb((prev) => prev.slice(0, -1));
+    if (loginFormOpen) {
+      setLoginFormOpen(false);
+    } else {
+      setBreadcrumb((prev) => prev.slice(0, -1));
+    }
   };
 
   const currentParent = breadcrumb[breadcrumb.length - 1];
-  const transitionItem = {
-    depth: breadcrumb.length,
-    providers: currentParent ? currentParent.children : providers,
-    parentIconKey: currentParent?.icon,
-  };
+  const transitionItem = loginFormOpen
+    ? { depth: breadcrumb.length + 1, view: 'login' as const }
+    : {
+        depth: breadcrumb.length,
+        view: 'list' as const,
+        providers: currentParent ? currentParent.children : providers,
+        parentIconKey: currentParent?.icon,
+      };
 
   const transitions = useTransition(transitionItem, {
     keys: (item) => item.depth,
@@ -110,16 +128,22 @@ export const WayfPage = () => {
 
         {/* Espace authentification */}
         <div className="wayf-selection__auth">
-          <h1 className="wayf-title" data-testid="wayf-label-choice">{t('wayf.choice')}</h1>
+          <h1 className="wayf-title" data-testid="wayf-label-choice">
+            {t(loginFormOpen ? 'wayf.login.title' : 'wayf.choice')}
+          </h1>
           <div className="wayf-view-container">
             {transitions((style, item) => (
               <animated.div style={style} className="wayf-view-slide">
-                <ProviderList
-                  providers={item.providers}
-                  onProviderClick={handleProviderClick}
-                  parentIconKey={item.parentIconKey}
-                  onBack={item.depth > 0 ? handleBack : undefined}
-                />
+                {item.view === 'login' ? (
+                  <LoginForm onBack={handleBack} />
+                ) : (
+                  <ProviderList
+                    providers={item.providers}
+                    onProviderClick={handleProviderClick}
+                    parentIconKey={item.parentIconKey}
+                    onBack={item.depth > 0 ? handleBack : undefined}
+                  />
+                )}
               </animated.div>
             ))}
           </div>

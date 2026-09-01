@@ -1,6 +1,5 @@
 import type { WayfConfig } from '~/models/wayf';
-import { DEFAULT_WAYF_CONFIG } from './default';
-import { hdfConfig, natiConfig } from './domains';
+import { hdfConfig, natiConfig, neoconnectConfig } from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
 
@@ -15,6 +14,6 @@ export const wayfConfig: WayfConfig = {
   'wayf-v2': {
     'enthdf.fr': hdfConfig,
     'nati.pf': natiConfig,
-    'localhost': DEFAULT_WAYF_CONFIG,
+    'localhost': neoconnectConfig,
   },
 };
