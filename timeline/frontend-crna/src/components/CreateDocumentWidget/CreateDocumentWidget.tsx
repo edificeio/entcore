@@ -1,7 +1,7 @@
-import { Flex, IconButton, useHasWorkflow, useUser } from '@edifice.io/react';
+import { Flex, IconButton, useHasWorkflow } from '@edifice.io/react';
 import { HomeCard } from '@edifice.io/react/homepage';
 import {
-  IconExternalLink,
+  IconArrowRight,
   IconMic,
   IconRecordVideo,
 } from '@edifice.io/react/icons';
@@ -68,7 +68,6 @@ interface CreateDocumentWidgetProps {
 
 export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
   const { t } = useTranslation('timeline');
-  const { user } = useUser();
   const hasLoolRight = useHasWorkflow(
     'fr.openent.lool.controller.LoolController|createDocumentFromTemplate',
   );
@@ -83,20 +82,13 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
 
   const displayMediaButtons = true; // TODO: Enable when video/audio recording is implemented
 
-  const nextcloudConnector = user?.apps.find(
-    (app) => app.name === 'nextcloud-files-connector',
-  );
-
   return (
     <HomeCard variant="secondary">
       <HomeCard.Header
         title={t('homepage.crna.widget.create.title', 'Créer un document')}
         actionLabel={t('homepage.crna.widget.see.all', 'Voir tout')}
-        onActionClick={() =>
-          nextcloudConnector &&
-          window.open(nextcloudConnector.address, '_blank')
-        }
-        actionRightIcon={<IconExternalLink />}
+        onActionClick={() => window.open('/workspace/workspace', '_self')}
+        actionRightIcon={<IconArrowRight />}
       />
       <HomeCard.Content>
         <div className="create-document-apps-card">
@@ -153,7 +145,6 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
           <LoolCreateModal
             isOpen={true}
             docTypeId={selectedDocTypeId}
-            nextcloudAddress={nextcloudConnector?.address}
             onClose={() => setSelectedDocTypeId(null)}
           />
         )}

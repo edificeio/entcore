@@ -5,17 +5,21 @@ import type { LoolDocTypeId } from '~/models/createDocument';
 import { useLoolProviders } from '~/hooks/useLoolProviders';
 import { ButtonBeta } from '@edifice.io/react';
 
+const DOC_TYPE_TO_EXT: Record<LoolDocTypeId, 'docx' | 'pptx' | 'xlsx'> = {
+  word: 'docx',
+  powerpoint: 'pptx',
+  excel: 'xlsx',
+};
+
 export interface LoolCreateModalProps {
   isOpen: boolean;
   docTypeId: LoolDocTypeId;
-  nextcloudAddress: string | undefined;
   onClose: () => void;
 }
 
 export function LoolCreateModal({
   isOpen,
   docTypeId,
-  nextcloudAddress,
   onClose,
 }: LoolCreateModalProps) {
   const { t } = useTranslation('timeline');
@@ -35,16 +39,13 @@ export function LoolCreateModal({
 
   const handleCreate = () => {
     const trimmed = filename.trim();
-    if (!trimmed || !nextcloudAddress) return;
-
-    const redirectUrlMarkerIndex = nextcloudAddress.indexOf('redirectUrl=');
-    if (redirectUrlMarkerIndex === -1) return;
-
-    const redirectUrl = `/index.php/apps/edifice_documents/create?type=${selectedDocTypeId}&name=${encodeURIComponent(trimmed)}`;
-    const addressPrefix = nextcloudAddress.slice(0, redirectUrlMarkerIndex);
-    const oidcUrl = `${addressPrefix}redirectUrl=${encodeURIComponent(redirectUrl)}`;
-
-    window.open(oidcUrl, '_blank', 'noopener,noreferrer');
+    if (!trimmed) return;
+    const params = new URLSearchParams({
+      type: DOC_TYPE_TO_EXT[selectedDocTypeId],
+      name: trimmed.replace(/[/\\<>|]/g, ''),
+      protected: 'false',
+    });
+    window.open(`/lool/document?${params.toString()}`, '_blank');
     onClose();
   };
 
@@ -110,7 +111,7 @@ export function LoolCreateModal({
         </ButtonBeta>
         <ButtonBeta
           color="default"
-          disabled={!filename.trim() || !nextcloudAddress}
+          disabled={!filename.trim()}
           onClick={handleCreate}
         >
           {t('homepage.crna.widget.create.modal.create', 'Créer')}
