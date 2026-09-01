@@ -59,7 +59,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     private static final String TIMELINE_QUIET_HOUR_RECAP_BODY = "timeline.notification.quiet-hour.body";
     private static final String TIMELINE_QUIET_HOUR_RECAP_BODIES = "timeline.notification.quiet-hour.bodies";
     private static final String TIMELINE_QUIET_HOUR_RECAP_TITLE = "timeline.notification.quiet-hour.title";
-    private static final int MAX_BODY_LENGTH = 90;
+    private static final int MAX_BODY_LENGTH = 95;
     /** Stands for the number of notifications a recap covers, in the recap body translations. */
     private static final String COUNT_PLACEHOLDER = "[[count]]";
 
@@ -183,7 +183,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     /** Recap body as it is stored, with {@link #COUNT_PLACEHOLDER} left for the count to render against. */
     private String recapBody(String i18nKey, String language) {
         String body = I18n.getInstance().translate(i18nKey, I18n.getLocale(language));
-        return body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH) + "...";
+        return body.length() < MAX_BODY_LENGTH + COUNT_PLACEHOLDER.length() ? body : body.substring(0, MAX_BODY_LENGTH + COUNT_PLACEHOLDER.length()) + "...";
     }
 
     public void processQuietHourMessage(final JsonObject notification, String language, final Handler<JsonObject> handler){
