@@ -67,14 +67,9 @@ export const neoconnectConfig: WayfDomainConfig = {
       icon: 'teacher',
       children: [
         {
-          i18n: 'wayf.teacher.lille',
+          i18n: 'wayf.teacher.academie',
           color: 'teacher',
           acs: 'https://eduline.ac-lille.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
-        },
-        {
-          i18n: 'wayf.teacher.amiens',
-          color: 'teacher',
-          acs: 'https://portail.ac-amiens.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
         },
         {
           i18n: 'wayf.teacher.agri',
@@ -99,22 +94,17 @@ export const neoconnectConfig: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.lille',
+          i18n: 'wayf.perseducnat.academie',
           color: 'perseducnat',
           acs: 'https://eduline.ac-lille.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
         },
         {
-          i18n: 'wayf.perseducnat.amiens',
-          color: 'perseducnat',
-          acs: 'https://portail.ac-amiens.fr/mdp/redirectionhub/redirect.jsp?applicationname=ode_ent',
-        },
-        {
-          i18n: 'wayf.perseducnat.agri',
+          i18n: 'wayf.perseducnat.collectivite',
           color: 'perseducnat',
           acs: '/auth/login',
         },
         {
-          i18n: 'wayf.perseducnat.collectivite',
+          i18n: 'wayf.perseducnat.agri',
           color: 'perseducnat',
           acs: '/auth/login',
         },
@@ -148,11 +138,6 @@ export const neoconnectConfig: WayfDomainConfig = {
     { logo: '/img/partners/e-primo logo.png' },
     { logo: '/img/partners/educnormandie x6.png' },
     { logo: '/img/partners/espace collegien de provence by neo@2x.png' },
-    { logo: '/img/partners/image (1).png' },
-    { logo: '/img/partners/leai by neo 1700x580.png' },
-    { logo: '/img/partners/logo medelin.png' },
-    { logo: '/img/partners/monCollegeByNEO-horizontal.png' },
-    { logo: '/img/partners/nati tahi rua.png' },
-    { logo: '/img/partners/syn by neo@2x.png' },
+    { logo: '/img/partners/image (1).png' }
   ],
 };

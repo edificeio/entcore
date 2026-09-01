@@ -255,6 +255,7 @@
   "wayf.perseducnat.arena": "Personnel de l'éducation (ARENA)",
   "wayf.perseducnat.collectivite": "Personnel de la collectivité",
   "wayf.perseducnat.lille": "Académie de Lille",
+  "wayf.perseducnat.academie": "Personnel de l'académie",
   "wayf.perseducnat.local": "Personnel de l'éducation (compte local ENT)",
   "wayf.relative": "Responsable légal",
   "wayf.relative.agri": "Établissement agricole",
@@ -272,6 +273,7 @@
   "wayf.teacher.agri": "Établissement agricole",
   "wayf.teacher.amiens": "Académie d'Amiens",
   "wayf.teacher.lille": "Académie de Lille",
+  "wayf.teacher.academie": "Académie",
   "wayf.teacher.special": "Établissement spécialisé",
   "weak": "Faible"
 }

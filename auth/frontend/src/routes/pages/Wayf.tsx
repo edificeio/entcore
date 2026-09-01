@@ -101,7 +101,7 @@ export const WayfPage = () => {
 
   const backgroundStyle = childTheme
     ? {
-        backgroundImage: `url(/assets/themes/${childTheme}/img/background.png), var(--wayf-editorial-fallback)`,
+        backgroundImage: `url(/assets/themes/${childTheme}/img/background.png)`,
       }
     : undefined;
 

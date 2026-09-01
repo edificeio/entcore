@@ -14,6 +14,7 @@ export const wayfConfig: WayfConfig = {
   'wayf-v2': {
     'enthdf.fr': hdfConfig,
     'nati.pf': natiConfig,
+    'demo-ao.edifice.io': neoconnectConfig,
     'localhost': neoconnectConfig,
   },
 };
