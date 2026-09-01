@@ -11,7 +11,7 @@ import { IconArrowLeft } from '@edifice.io/react/icons';
 
 import { useNavigate } from 'react-router-dom';
 import { CustomizationForm } from '~/components/CustomizationForm';
-import { useCustomizationForm } from '~/hooks/useCustomizeForm';
+import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
 import './customize.css';
 
