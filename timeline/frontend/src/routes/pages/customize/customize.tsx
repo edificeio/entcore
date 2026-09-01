@@ -26,7 +26,8 @@ export const Component = () => {
   const navigate = useNavigate();
   const { common_t } = useI18n();
 
-  const { resetChanges, saveChanges, ...form } = useCustomizationForm();
+  const { resetChanges, saveChanges, isPending, ...form } =
+    useCustomizationForm();
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -72,7 +73,11 @@ export const Component = () => {
             <Button variant="ghost" onClick={resetChanges}>
               {common_t('cancel')}
             </Button>
-            <Button variant="filled" onClick={handleSaveClick}>
+            <Button
+              variant="filled"
+              onClick={handleSaveClick}
+              disabled={isPending}
+            >
               {common_t('save')}
             </Button>
           </Flex>

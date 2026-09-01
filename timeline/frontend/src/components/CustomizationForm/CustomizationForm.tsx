@@ -7,7 +7,7 @@ import { ChoiceSkeleton } from './ChoiceSkeleton';
 type CustomizationFormProps = {
   form: Omit<
     ReturnType<typeof useCustomizationForm>,
-    'resetChanges' | 'saveChanges'
+    'resetChanges' | 'saveChanges' | 'isPending'
   >;
 };
 
@@ -44,7 +44,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
             fonts.map(({ _id, displayName }) => (
               <ChoiceButton
                 key={_id}
-                className="customize-font-choice"
+                variant="font"
                 isSelected={_id === selectedFont}
                 onClick={() => handleFontChange(_id)}
               >
@@ -64,10 +64,12 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
             backgrounds.map((background) => (
               <ChoiceButton
                 key={background}
-                className="customize-background-choice"
+                variant="background"
                 isSelected={background === selectedBackground}
                 onClick={() => handleBackgroundChange(background)}
-              ></ChoiceButton>
+              >
+                {common_t(background)}
+              </ChoiceButton>
             ))
           ) : (
             <ChoiceSkeleton />
@@ -84,7 +86,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
               return (
                 <ChoiceButton
                   key={lang}
-                  className="customize-language-choice"
+                  variant="language"
                   isSelected={lang === selectedLanguage}
                   onClick={() => handleLanguageChange(lang)}
                 >
