@@ -1,4 +1,5 @@
 import { IThemeDesc, odeServices } from '@edifice.io/client';
+import { preferenceService } from './preferenceService';
 
 export const customizeService = {
   listLanguages: () => odeServices.http().get<string[]>('/languages'),
@@ -25,5 +26,5 @@ export const customizeService = {
       ),
 
   saveBackgroundPreference: (background: string) =>
-    odeServices.conf().savePreference('background', background),
+    preferenceService.saveBackground(background),
 };
