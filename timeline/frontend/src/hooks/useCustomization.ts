@@ -32,11 +32,12 @@ export const useCustomization = () => {
     }) => {
       if (!theme) throw 'Theme is undefined';
 
-      return await Promise.all([
-        customizeService.saveLanguagePreference(language),
-        customizeService.saveFontPreference(theme.themeName, font),
-        customizeService.saveBackgroundPreference(background),
-      ]);
+      return customizeService.save({
+        language,
+        themeName: theme.themeName,
+        font,
+        background,
+      });
     },
     onSuccess: () => {
       toast.success(t('homepage.customize.form.save.success'));
