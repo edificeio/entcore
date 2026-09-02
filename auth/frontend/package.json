@@ -32,9 +32,9 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/bootstrap": "%packageVersion%",
-    "@edifice.io/client": "%packageVersion%",
-    "@edifice.io/react": "%packageVersion%",
+    "@edifice.io/bootstrap": "develop-integration-demo",
+    "@edifice.io/client": "develop-integration-demo",
+    "@edifice.io/react": "develop-integration-demo",
     "@react-spring/web": "9.7.5",
     "@tanstack/react-query": "5.90.21",
     "@uidotdev/usehooks": "2.4.1",
