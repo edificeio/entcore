@@ -7,6 +7,8 @@
     "workspace-url": "localhost",
     "workspace-port":8011,
     "workspace-prefix" : "/workspace",
+    "sql": true,
+    "db-schema": "directory",
     "host" : "http://localhost:8003",
     "user-book-data":{
 		"default-theme" : "default",
