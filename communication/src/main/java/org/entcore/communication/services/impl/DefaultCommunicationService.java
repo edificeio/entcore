@@ -555,6 +555,8 @@ public class DefaultCommunicationService implements CommunicationService {
 					groupLabelSB.append(" OR g:HTGroup");
 				} else if ("Direction".equals(s[1])) {
 					groupLabelSB.append(" OR g:DirectionGroup");
+				} else if ("Functional".equals(s[1])) {
+					groupLabelSB.append(" OR g:FunctionalGroup");
 				}
 				structures.add(s[1]);
 			}
