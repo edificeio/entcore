@@ -972,24 +972,11 @@ public class WorkspaceController extends BaseController {
 					} else {
 						useAnyThumbnail = false;
 					}
-					String file;
-					if (!createThumbnails && thumbSize != null && !thumbSize.trim().isEmpty()) {
-						file = DocumentHelper.getThumbnails(jo).getString(thumbSize,
-								jo.getString("file"));
-						if(StringUtils.isEmpty(file)) {
-							file = jo.getString("file");
-						}
-						// If we looked for a specific thumbnail but couldn't find one "file" has
-						// the value of jo.get("file"), so we use that as a marker that we will instead
-						// return any thumbnail that is present
-						useAnyThumbnail = file != null && file.equals(jo.getString("file"));
-					} else {
-						file = jo.getString("file");
-					}
-					if(useAnyThumbnail) {
-						file = getAnyThumbnail(jo);
-					}
-					if (!StringUtils.isEmpty(file)) {
+					final String file = getFileOrThumbnail(useAnyThumbnail, jo, createThumbnails, thumbSize);
+                    if (!StringUtils.isEmpty(file)) {
+                        final String now = MongoDb.formatDate(new Date());
+                        final JsonObject update = new MongoUpdateBuilder().set("accessed", now).build();
+
 						boolean inline = "true".equalsIgnoreCase(request.params().get("inline"))
 										 || inlineDocumentResponse(jo, request.params().get("application"));
 						if (inline && ETag.check(request, file)) {
@@ -998,26 +985,29 @@ public class WorkspaceController extends BaseController {
 							JsonObject metadata = DocumentHelper.getMetadata(jo);
 							if (!StringUtils.isEmpty(thumbSize) &&
 									DocumentHelper.getContentType(jo).startsWith("video")) {
-								String thumbDownloadName = jo.getString("name");
-								String[] nameSplit = jo.getString("name").split("\\.");
-
-								if (nameSplit != null && nameSplit.length > 1) {
-									thumbDownloadName = nameSplit[0] + ".png";
-								}
-
+                                final String name = jo.getString("name");
+                                final String[] nameSplit = name.split("\\.");
+								final String thumbDownloadName = nameSplit.length > 1 ?
+                                    nameSplit[0] + ".png" :
+                                    name;
 								JsonObject thumbMetadata = new JsonObject()
 										.put("content-type", "image/png")
 										.put("filename", thumbDownloadName)
 										.put("size", metadata.getLong("size"));
 
-								storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata);
+                                dao.update(fileId, update, _updateResult ->
+								    storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata)
+                                );
 							} else {
 								if(useAnyThumbnail) {
 									// Deactivate the cache because we know that the image that we are
 									// sending back is not the version that was asked
 									metadata.put("ETag", String.valueOf(System.currentTimeMillis()));
 								}
-								storage.sendFile(file, jo.getString("name"), request, inline, metadata);
+                                dao.update(fileId, update, _updateResult ->
+                                    storage.sendFile(file, jo.getString("name"), request, inline, metadata)
+                                );
+
 							}
 						}
 						// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
@@ -1040,11 +1030,37 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
-	private String getAnyThumbnail(final JsonObject file) {
-		final JsonObject thumbnails = DocumentHelper.getThumbnails(file);
-		final Optional<String> thumbnail = thumbnails.stream().findAny().map(th -> (String)th.getValue());
-		return thumbnail.orElseGet(() -> file.getString("file"));
-	}
+    private String getFileOrThumbnail(
+        Boolean useAnyThumbnail,
+        JsonObject readResult,
+        Boolean createThumbnails,
+        String thumbSize
+    ) {
+        String file;
+        if (!createThumbnails && thumbSize != null && !thumbSize.trim().isEmpty()) {
+            file = DocumentHelper.getThumbnails(readResult).getString(thumbSize,
+                readResult.getString("file"));
+            if(StringUtils.isEmpty(file)) {
+                file = readResult.getString("file");
+            }
+            // If we looked for a specific thumbnail but couldn't find one "file" has
+            // the value of jo.get("file"), so we use that as a marker that we will instead
+            // return any thumbnail that is present
+            useAnyThumbnail = file != null && file.equals(readResult.getString("file"));
+        } else {
+            file = readResult.getString("file");
+        }
+        if(useAnyThumbnail) {
+            file = getAnyThumbnail(readResult);
+        }
+        return file;
+    }
+
+    private String getAnyThumbnail(final JsonObject file) {
+        final JsonObject thumbnails = DocumentHelper.getThumbnails(file);
+        final Optional<String> thumbnail = thumbnails.stream().findAny().map(th -> (String)th.getValue());
+        return thumbnail.orElseGet(() -> file.getString("file"));
+    }
 
 	@Get("/pub/document/:id")
 	public void getPublicDocument(HttpServerRequest request) {
