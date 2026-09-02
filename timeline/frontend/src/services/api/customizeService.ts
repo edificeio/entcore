@@ -12,19 +12,23 @@ export const customizeService = {
   getThemeAndSkin: () =>
     odeServices.http().get<{ themeName: string; skinName: string }>('/theme'),
 
-  saveLanguagePreference: (lang: string) =>
-    odeServices.conf().savePreference('language', {
-      'default-domain': lang,
-    }),
-
-  // Needs a legacy theme to be applied.
-  saveFontPreference: (themeName: string, font: string) =>
-    odeServices
-      .http()
-      .get(
-        `/userbook/api/edit-userbook-info?prop=theme-${themeName}&value=${font}`,
-      ),
-
-  saveBackgroundPreference: (background: string) =>
-    preferenceService.saveBackground(background),
+  save: ({
+    language,
+    themeName,
+    font,
+    background,
+  }: {
+    language: string;
+    themeName: string;
+    font: string;
+    background: string;
+  }) =>
+    Promise.all([
+      preferenceService.saveCustomization(language, background),
+      odeServices
+        .http()
+        .get(
+          `/userbook/api/edit-userbook-info?prop=theme-${themeName}&value=${font}`,
+        ),
+    ]),
 };

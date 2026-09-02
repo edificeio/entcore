@@ -12,8 +12,9 @@ export const preferenceService = {
     });
   },
 
-  saveBackground: (background: string) => {
-    return odeServices.http().put<UserPrefs>('/userbook/api/preferences', {
+  saveCustomization: (language: string, background: string) => {
+    return odeServices.http().put('/userbook/api/preferences', {
+      language: { 'default-domain': language },
       background,
     });
   },
