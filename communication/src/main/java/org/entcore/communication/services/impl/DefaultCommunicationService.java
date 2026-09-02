@@ -555,11 +555,17 @@ public class DefaultCommunicationService implements CommunicationService {
 					groupLabelSB.append(" OR g:HTGroup");
 				} else if ("Direction".equals(s[1])) {
 					groupLabelSB.append(" OR g:DirectionGroup");
+				} else if ("Functional".equals(s[1])) {
+					groupLabelSB.append(" OR g:FunctionalGroup");
 				}
 				structures.add(s[1]);
 			}
 		}
 		final String groupLabel = groupLabelSB.toString();
+		// FunctionalGroup can only be filtered on their label
+		final String structureGroups = groupLabel.contains("g:FunctionalGroup")
+				? "(g.name =~ {%s} OR g:FunctionalGroup)"
+				: "g.name =~ {%s}";
 		JsonObject params = new JsonObject()
 				.put("structures", structureIds)
 				.put("profile", "^.*?" + a[1] + "$");
@@ -582,7 +588,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				query2 +=
 						"WITH DISTINCT s, cg " +
 								"MATCH s<-[:DEPENDS]-(g) " +
-								"WHERE (" + groupLabel + ") AND g.name =~ {structureProfile} " +
+								"WHERE (" + groupLabel + ") AND " + String.format(structureGroups, "structureProfile") + " " +
 								"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			}
 			JsonObject p = params.copy();
@@ -592,15 +598,16 @@ public class DefaultCommunicationService implements CommunicationService {
 			newGroups.add(query2, p);
 		}
 		if (!structures.isEmpty() && "Structure".equals(a[0])) {
+			final String groupsFilter = String.format(structureGroups, "otherProfile");
 			String query =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
 					"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
-					"AND  (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
+					"AND  (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND " + groupsFilter + " " +
 					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> g.id) + g.id ";
 			String query2 =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
 							"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
-							"AND (" + groupLabel + ") AND g.name =~ {otherProfile} " +
+							"AND (" + groupLabel + ") AND " + groupsFilter + " " +
 							"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			params.put("otherProfile", "^.*?(" + Joiner.on("|").join(structures) + ")$");
 			existingGroups.add(query, params);
