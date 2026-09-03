@@ -34,6 +34,7 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -42,6 +43,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.communication.dto.bus.CommunicationBusDTO;
 import org.entcore.communication.dto.rest.DiscoverModifyGroupUsersDTO;
@@ -431,7 +433,7 @@ public class CommunicationController extends BaseController {
 	public void visibleUsers(final Message<JsonObject> message) {
 		SearchVisibleBusDTO searchQuery = new SearchVisibleBusDTO(message.body());
 		String userId = searchQuery.getUserId();
-		if (userId == null || userId.trim().isEmpty()) {
+		if (!"visiblesIdentities".equals(searchQuery.getAction()) && (userId == null || userId.trim().isEmpty())) {
 			message.reply(new JsonArray());
 			return;
 		}
@@ -454,6 +456,31 @@ public class CommunicationController extends BaseController {
 				future = communicationService.visibleUsersForShare(userId, searchQuery.getSearch(),
 						new JsonArray(searchQuery.getUserIds()))
 						.map(arr -> serializeForBus(arr, BusUserDtoMapper::map));
+				break;
+			case "visiblesIdentities":
+				final VisibleIdentityRequest request;
+				try {
+					request = message.body().getJsonObject("request", new JsonObject())
+							.mapTo(VisibleIdentityRequest.class);
+				} catch (RuntimeException e) {
+					log.error("communication.visiblesIdentities : invalid request payload", e);
+					message.fail(400, "invalid.request");
+					return;
+				}
+				if (StringUtils.isEmpty(request.getUserId())) {
+					log.error("communication.visiblesIdentities : missing userId in request payload");
+					message.fail(400, "invalid.userId");
+					return;
+				}
+				Promise<JsonArray> identitiesPromise = Promise.promise();
+				communicationService.visiblesIdentities(request, res -> {
+					if (res.isRight()) {
+						identitiesPromise.complete(res.right().getValue());
+					} else {
+						identitiesPromise.fail(res.left().getValue());
+					}
+				});
+				future = identitiesPromise.future();
 				break;
 			case "usersCanSeeMe":
 				future = communicationService.usersCanSeeMe(userId)
