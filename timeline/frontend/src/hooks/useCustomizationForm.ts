@@ -10,9 +10,9 @@ export function useCustomizationForm() {
     isError: isLoadError,
     saveMutation,
     theme,
+    background,
   } = useCustomization();
   const { currentLanguage } = useEdificeClient();
-  const background = 'TODO';
 
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage!);
   const [selectedBackground, setSelectedBackground] = useState(background);
@@ -23,14 +23,19 @@ export function useCustomizationForm() {
     setSelectedFont(theme.skinName);
   }, [theme]);
 
+  useEffect(() => {
+    setSelectedBackground(background);
+  }, [background]);
+
   const resetChanges = useCallback(() => {
     if (theme) setSelectedFont(theme.skinName);
     if (currentLanguage) setSelectedLanguage(currentLanguage);
-  }, [theme, currentLanguage]);
+    if (background) setSelectedBackground(background);
+  }, [theme, currentLanguage, background]);
 
   const saveChanges = useCallback(() => {
     if (selectedFont && selectedLanguage && selectedBackground) {
-      saveMutation.mutate({
+      saveMutation.mutateAsync({
         language: selectedLanguage,
         font: selectedFont,
         background: selectedBackground,

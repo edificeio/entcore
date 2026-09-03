@@ -1,4 +1,8 @@
-import { useEdificeTheme, useToast } from '@edifice.io/react';
+import {
+  useEdificeTheme,
+  useToast,
+  useUserPreferences,
+} from '@edifice.io/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { customizeService } from '~/services/api/customizeService';
@@ -9,6 +13,7 @@ export const useCustomization = () => {
   const { t } = useI18n();
   const toast = useToast();
   const { theme } = useEdificeTheme();
+  const { preferences, isError: isPreferencesError } = useUserPreferences();
 
   const { data: languages, isError: isLanguagesError } = useQuery(
     customizeQueryOptions.getLanguages(),
@@ -59,13 +64,18 @@ export const useCustomization = () => {
       toast.error(
         t('homepage.customize.form.load.error', { code: 'backgrounds' }),
       );
-  }, [isLanguagesError, isFontsError, isBackgroundsError]);
+    if (isPreferencesError)
+      toast.error(
+        t('homepage.customize.form.load.error', { code: 'preferences' }),
+      );
+  }, [isLanguagesError, isFontsError, isBackgroundsError, isPreferencesError]);
 
   return {
     languages,
     fonts,
     backgrounds,
     theme,
+    background: preferences?.background ?? 'default',
     isError: isLanguagesError || isFontsError || isBackgroundsError,
     saveMutation,
   };
