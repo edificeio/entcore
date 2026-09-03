@@ -1,4 +1,7 @@
-import { DYSLEXIC_FONT_ID } from '~/models/customization';
+import {
+  DYSLEXIC_FONT_ID,
+  getCustomizationPreviewTexts,
+} from '~/models/customization';
 import './CustomizationPreview.css';
 
 /** Number of pictograms outlined on the right of the navigation bar. */
@@ -7,8 +10,8 @@ const NAVBAR_ICONS_COUNT = 4;
 export type CustomizationPreviewProps = {
   /** `_id` of the font selected in the form (see GET /themes). */
   selecterFontName?: string;
-  greetingText: string;
-  lastInfosText: string;
+  /** `_id` of the language selected in the form (see GET /languages). */
+  selectedLanguage: string;
 };
 
 /**
@@ -29,11 +32,12 @@ const PreviewBlock = ({ className }: { className: string }) => (
  */
 export const CustomizationPreview = ({
   selecterFontName,
-  greetingText,
-  lastInfosText,
+  selectedLanguage,
 }: CustomizationPreviewProps) => {
   const fontClassName =
     selecterFontName === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
+  const { greetingText, lastInfosText } =
+    getCustomizationPreviewTexts(selectedLanguage);
 
   return (
     <div className={`customization-preview ${fontClassName}`}>
