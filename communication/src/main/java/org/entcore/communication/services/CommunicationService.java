@@ -74,11 +74,11 @@ public interface CommunicationService {
 	 *
 	 * @param userId the id of the user doing the query
 	 * @param itself include itself in result
-	 * @param hidden include hidden community group
+	 * @param includeHiddenCommunityGroups include hidden community group
 	 * @param params may contain a list of id to reduce the scope
 	 * @param responseHandler
 	 */
-	void visiblesIdentities(String userId, boolean itself, boolean hidden, JsonObject params, Handler<Either<String, JsonArray>> responseHandler);
+	void visiblesIdentities(String userId, boolean itself, boolean includeHiddenCommunityGroups, JsonObject params, Handler<Either<String, JsonArray>> responseHandler);
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 

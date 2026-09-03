@@ -155,7 +155,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void visiblesIdentities(String userId, boolean itself, boolean includeHidden, JsonObject params, Handler<Either<String, JsonArray>> responseHandler) {
+	public void visiblesIdentities(String userId, boolean itself, boolean includeHiddenCommunityGroups, JsonObject params, Handler<Either<String, JsonArray>> responseHandler) {
 		String expectIdUserFilter = "";
 		String expectIdVisiblesFilter = "";
 		if (params.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
@@ -205,7 +205,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				" UNWIND [g2, g3] AS visibles \n" +
 				" WITH DISTINCT visibles \n" +
 				" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
-				(includeHidden ? " " : " AND NOT visibles:Hidden ") +
+				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
 				expectIdVisiblesFilter +
 				" return DISTINCT visibles.id as `id`, false as isUser \n" +
 				// u->u2 => direct communication
@@ -229,7 +229,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
 				"    AND visibles.nbUsers > 0 \n" +
 				expectIdVisiblesFilter +
-				(includeHidden ? " " : " AND NOT visibles:Hidden " ) +
+				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
 				"return DISTINCT visibles.id as id, false as isUser";
 		neo4j.execute(query, new JsonObject().put("userId", userId)
 											.put(EXPECTED_IDS_USERS_GROUPS, params.getJsonArray(EXPECTED_IDS_USERS_GROUPS)),
