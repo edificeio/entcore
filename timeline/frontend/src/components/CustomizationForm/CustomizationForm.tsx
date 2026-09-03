@@ -79,11 +79,11 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                 isSelected={background === selectedBackground}
                 onClick={() => handleBackgroundChange(background)}
               >
-                <img
-                  className="choice-button__img"
-                  src={getBackgroundImgSrc(background)}
-                  width="82"
-                  height="42"
+                <span
+                  className="choice-button--background__img"
+                  style={{
+                    backgroundImage: `url(${getBackgroundImgSrc(background)})`,
+                  }}
                 />
               </ChoiceButton>
             ))
@@ -108,13 +108,14 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                 >
                   <Flex direction="column" align="center" gap="8">
                     <img
-                      width={56}
-                      height={36}
+                      className="choice-button--language__img"
+                      width={60}
+                      height={40}
                       src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
                       alt={label}
                       loading="lazy"
                     />
-                    <span className="customize-language-label">{label}</span>
+                    <span>{label}</span>
                   </Flex>
                 </ChoiceButton>
               );
