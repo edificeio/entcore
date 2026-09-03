@@ -22,14 +22,27 @@
   }
 }
 
-.choice-button--background {
+.choice-button--background[aria-pressed] {
   padding: var(--primitive-spacer-2);
+  background-color: transparent;
 
   &[aria-pressed='false'] {
     filter: none;
   }
 }
 
-.choice-button__img {
+.choice-button--background__img {
+  display: block;
+  width: 82px;
+  height: 42px;
+  border-radius: 12px;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-size: cover;
+}
+
+.choice-button--language__img {
+  object-fit: cover;
+  border: 2px solid var(--primitive-white);
   border-radius: 12px;
 }
