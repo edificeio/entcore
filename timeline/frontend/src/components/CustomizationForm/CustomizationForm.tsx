@@ -80,9 +80,10 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                 onClick={() => handleBackgroundChange(background)}
               >
                 <img
+                  className="choice-button__img"
                   src={getBackgroundImgSrc(background)}
-                  width="80"
-                  height="50"
+                  width="82"
+                  height="42"
                 />
               </ChoiceButton>
             ))
