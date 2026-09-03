@@ -15,6 +15,11 @@
   border-radius: var(--primitive-border-radius-2xl);
   /* Selected theme background, hardcoded for now. */
   background-color: var(--primitive-blue-200);
+  font-family: var(--primitive-font-family-title);
+}
+
+.customization-preview.ff-dyslexic {
+  font-family: var(--bs-font-dyslexic, OpenDyslexic, sans-serif);
 }
 
 /* Navigation bar */
@@ -119,7 +124,6 @@
 .customization-preview-greeting {
   margin: 0;
   color: var(--primitive-grey-900);
-  font-family: var(--primitive-font-family-title);
   font-weight: var(--primitive-font-weight-bold);
 }
 

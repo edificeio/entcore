@@ -1,7 +1,13 @@
+import { DYSLEXIC_FONT_ID } from '~/models/customization';
 import './CustomizationPreview.css';
 
 /** Number of pictograms outlined on the right of the navigation bar. */
 const NAVBAR_ICONS_COUNT = 4;
+
+export type CustomizationPreviewProps = {
+  /** `_id` of the font selected in the form (see GET /themes). */
+  selecterFontName?: string;
+};
 
 /**
  * Grey block outlining a homepage content. Purely decorative.
@@ -15,13 +21,18 @@ const PreviewBlock = ({ className }: { className: string }) => (
  * customization form (hidden on small screens, see `customize.tsx`).
  *
  * This is a silhouette: only "Bonjour" and "Dernières actualités" are actual
- * text, everything else is decorative and marked `aria-hidden`. Texts, font
- * and background color are intentionally hardcoded here — they will be
- * extracted into props in a second step.
+ * text, everything else is decorative and marked `aria-hidden`. Texts and
+ * background color are intentionally hardcoded here — they will be extracted
+ * into props in a later step.
  */
-export const CustomizationPreview = () => {
+export const CustomizationPreview = ({
+  selecterFontName,
+}: CustomizationPreviewProps) => {
+  const fontClassName =
+    selecterFontName === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
+
   return (
-    <div className="customization-preview">
+    <div className={`customization-preview ${fontClassName}`}>
       <div className="customization-preview-navbar" aria-hidden="true">
         <div className="customization-preview-navbar-logo" />
         <div className="customization-preview-navbar-icons">
