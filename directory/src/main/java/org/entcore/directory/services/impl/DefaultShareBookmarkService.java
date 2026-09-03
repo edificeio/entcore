@@ -130,7 +130,8 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 			UserUtils.filterFewOrGetAllVisibles(
 				eb, 
 				userId,
-				new JsonArray( membersMapIds.stream().collect(Collectors.toList()) )
+				new JsonArray( membersMapIds.stream().collect(Collectors.toList()) ),
+				false
 			)
 			.onSuccess( visibleInfos -> {
 				List<String> visibleIds = visibleInfos.stream()

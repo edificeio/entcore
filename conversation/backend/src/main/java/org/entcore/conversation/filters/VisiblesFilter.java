@@ -19,8 +19,18 @@
 
 package org.entcore.conversation.filters;
 
-import static org.entcore.common.user.UserUtils.filterFewOrGetAllVisibles;
-import static org.entcore.common.user.UserUtils.findVisibles;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.filter.ResourcesProvider;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
+import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,22 +38,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import io.vertx.core.AsyncResult;
-import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
-import org.entcore.common.user.UserInfos;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.http.Binding;
-import fr.wseduc.webutils.request.RequestUtils;
-
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.user.UserUtils.filterFewOrGetAllVisibles;
 
 public class VisiblesFilter implements ResourcesProvider{
 
@@ -107,8 +103,6 @@ public class VisiblesFilter implements ResourcesProvider{
 
 		final String parentMessageId = request.params().get("In-Reply-To");
 		final Set<String> ids = new HashSet<>();
-		//FIXME should be optimized by removing unecessary optionals
-		final String customReturn = "RETURN DISTINCT visibles.id";
 		final JsonObject params = new JsonObject();
 
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
@@ -120,12 +114,12 @@ public class VisiblesFilter implements ResourcesProvider{
 				final Handler<Void> checkHandler = new Handler<Void>() {
 					public void handle(Void v) {
 						params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-						filterFewOrGetAllVisibles(neo.getEventBus(), user.getUserId(), new JsonArray(new ArrayList<>(ids)), true, null, customReturn, false)
+						filterFewOrGetAllVisibles(neo.getEventBus(), user.getUserId(), new JsonArray(new ArrayList<>(ids)), true)
 								.onComplete( visible -> {
 										int countVisible = ids.size();
 										ids.retainAll((Collection<?>) visible.result().getList()
 																	  .stream()
-																	  .map(vi -> ((JsonObject)vi).getString("visibles.id"))
+																	  .map(vi -> ((JsonObject)vi).getString("id"))
 																		.collect(Collectors.toList()));
 										handler.handle(countVisible == ids.size());
 								});
