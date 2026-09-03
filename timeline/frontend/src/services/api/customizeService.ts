@@ -4,7 +4,15 @@ import { preferenceService } from './preferenceService';
 export const customizeService = {
   listLanguages: () => odeServices.http().get<string[]>('/languages'),
 
-  listBackgrounds: () => odeServices.http().get<string[]>('/backgrounds'),
+  listBackgrounds: () =>
+    Promise.resolve([
+      'default',
+      'pink-200',
+      'yellow-200',
+      'orange-200',
+      'blue-200',
+      'green-200',
+    ]),
 
   listFonts: () => odeServices.http().get<IThemeDesc[]>('/themes'),
 
