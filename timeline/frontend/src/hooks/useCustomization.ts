@@ -5,7 +5,7 @@ import {
 } from '@edifice.io/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { customizeService } from '~/services/api/customizeService';
+import { Background, customizeService } from '~/services/api/customizeService';
 import { customizeQueryOptions } from '~/services/queries/customize';
 import { useI18n } from './useI18n';
 
@@ -33,7 +33,7 @@ export const useCustomization = () => {
     }: {
       language: string;
       font: string;
-      background: string;
+      background: Background;
     }) => {
       if (!theme) throw 'Theme is undefined';
 
@@ -75,8 +75,12 @@ export const useCustomization = () => {
     fonts,
     backgrounds,
     theme,
-    background: preferences?.background ?? 'default',
-    isError: isLanguagesError || isFontsError || isBackgroundsError,
+    background: (preferences?.background as Background) ?? 'default',
+    isError:
+      isLanguagesError ||
+      isFontsError ||
+      isBackgroundsError ||
+      isPreferencesError,
     saveMutation,
   };
 };
