@@ -34,6 +34,7 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -454,6 +455,20 @@ public class CommunicationController extends BaseController {
 				future = communicationService.visibleUsersForShare(userId, searchQuery.getSearch(),
 						new JsonArray(searchQuery.getUserIds()))
 						.map(arr -> serializeForBus(arr, BusUserDtoMapper::map));
+				break;
+			case "visiblesIdentities":
+				boolean itself = message.body().getBoolean("itself", false);
+				JsonObject params = message.body().getJsonObject("params");
+				boolean hidden = message.body().getBoolean("hidden", false);
+				Promise<JsonArray> identitiesPromise = Promise.promise();
+				communicationService.visiblesIdentities(userId, itself, hidden, params, res -> {
+					if (res.isRight()) {
+						identitiesPromise.complete(res.right().getValue());
+					} else {
+						identitiesPromise.fail(res.left().getValue());
+					}
+				});
+				future = identitiesPromise.future();
 				break;
 			case "usersCanSeeMe":
 				future = communicationService.usersCanSeeMe(userId)
