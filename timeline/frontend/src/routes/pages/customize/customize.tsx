@@ -66,10 +66,11 @@ export const Component = () => {
             <CustomizationForm form={form} />
 
             <Flex
-              direction="column"
-              gap="16"
-              align="start"
-              className="customization-main"
+              direction="row"
+              gap="8"
+              justify="end"
+              align="center"
+              className="w-100"
             >
               <Button variant="ghost" onClick={resetChanges}>
                 {common_t('cancel')}
