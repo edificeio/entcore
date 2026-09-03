@@ -84,7 +84,7 @@ export const Component = () => {
               </Button>
             </Flex>
           </Flex>
-          {md && <CustomizationPreview />}
+          {md && <CustomizationPreview selecterFontName={form.selectedFont} />}
         </Flex>
       </PageLayout.Content>
     </PageLayout>
