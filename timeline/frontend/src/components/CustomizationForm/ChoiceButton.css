@@ -16,7 +16,20 @@
   color: var(--primitive-grey-900);
   background-color: transparent;
   filter: grayscale(100%);
+
+  &:hover {
+    background-color: var(--primitive-yellow-200, #fcf3cf);
+  }
 }
-.choice-button[aria-pressed='false']:hover {
-  background-color: var(--primitive-yellow-200, #fcf3cf);
+
+.choice-button--background {
+  padding: var(--primitive-spacer-2);
+
+  &[aria-pressed='false'] {
+    filter: none;
+  }
+}
+
+.choice-button__img {
+  border-radius: 12px;
 }
