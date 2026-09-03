@@ -10,6 +10,7 @@ export default ({ mode }: { mode: string }) => {
     mode,
     routes: [
       '/conf/public',
+      '^/(?=zendeskGuide)',
       '^/(?=applications-list)',
       '^/(?=assets)',
       '^/(?=theme|locale|i18n|skin|languages|themes)',

@@ -3,6 +3,7 @@ import {
   PageLayout,
   useBreakpoint,
   useEdificeClient,
+  useZendeskGuide,
 } from '@edifice.io/react';
 import {
   FavoritesContainer,
@@ -25,6 +26,8 @@ export const Root = () => {
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
     useNotificationsLayout();
   const { md } = useBreakpoint();
+
+  useZendeskGuide();
 
   if (!init) return <LoadingScreen position={false} />;
 
