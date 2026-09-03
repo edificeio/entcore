@@ -1,11 +1,6 @@
 .customize-content {
   margin: var(--primitive-spacer-16) var(--primitive-spacer-16)
     var(--primitive-spacer-16) var(--primitive-spacer-16);
-
-  .customization-main {
-    flex-grow: 1;
-    min-width: 0;
-  }
 }
 
 .customize-back-button {
