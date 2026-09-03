@@ -185,6 +185,15 @@ public interface UserService {
 	void getUsersStructures(JsonArray userIds, JsonArray fields, Handler<Either<String, JsonArray>> handler);
 
 	/**
+	 * List the relatives of a batch of users, following the RELATED relationship (child -> relative).
+	 * The relatives themselves are not filtered on any visibility rule : the caller is expected to have
+	 * checked the visibility of the users it passes.
+	 * @param userIds IDs of the users whose relatives are looked up
+	 * @return an array of JsonObjects, such as { id: "ID of the relative" }
+	 */
+	void listRelatives(JsonArray userIds, Handler<Either<String, JsonArray>> handler);
+
+	/**
 	 * Get, for a batch of users, the structures they are attached to and the id of their preferred structure.
 	 * <p>
 	 * Unlike {@link #getUsersStructures(JsonArray, JsonArray, Handler)}, this also resolves the preferred
