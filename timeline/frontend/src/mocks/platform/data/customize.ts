@@ -7,7 +7,6 @@ export const mockLanguages = ['fr', 'en', 'es'];
 
 export const mockThemes = [
   { _id: 'default', displayName: 'Défaut', path: '/assets/themes/default' },
-  { _id: 'ocean', displayName: 'Océan', path: '/assets/themes/ocean' },
   {
     _id: DYSLEXIC_FONT_ID,
     displayName: 'Dyslexique',
