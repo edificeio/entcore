@@ -1,6 +1,7 @@
 import { Flex } from '@edifice.io/react';
 import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
+import { Background } from '~/services';
 import { ChoiceButton } from './ChoiceButton';
 import { ChoiceSkeleton } from './ChoiceSkeleton';
 
@@ -18,6 +19,16 @@ function getCountryCode(lang: string) {
       return 'gb';
   }
   return lang;
+}
+
+const backgroundImages = import.meta.glob('../../assets/*.png', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+});
+
+function getBackgroundImgSrc(background: Background) {
+  return backgroundImages[`../../assets/${background}.png`] as string;
 }
 
 export const CustomizationForm = ({ form }: CustomizationFormProps) => {
@@ -68,7 +79,11 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                 isSelected={background === selectedBackground}
                 onClick={() => handleBackgroundChange(background)}
               >
-                {common_t(background)}
+                <img
+                  src={getBackgroundImgSrc(background)}
+                  width="80"
+                  height="50"
+                />
               </ChoiceButton>
             ))
           ) : (

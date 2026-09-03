@@ -1,5 +1,6 @@
 import { useEdificeClient } from '@edifice.io/react';
 import { useCallback, useEffect, useState } from 'react';
+import { Background } from '~/services';
 import { useCustomization } from './useCustomization';
 
 export function useCustomizationForm() {
@@ -50,7 +51,7 @@ export function useCustomizationForm() {
     handleLanguageChange: (language: string) => setSelectedLanguage(language),
     backgrounds,
     selectedBackground,
-    handleBackgroundChange: (background: string) =>
+    handleBackgroundChange: (background: Background) =>
       setSelectedBackground(background),
     fonts,
     selectedFont,

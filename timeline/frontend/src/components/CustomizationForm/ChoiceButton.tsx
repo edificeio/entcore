@@ -16,10 +16,10 @@ export const ChoiceButton = ({
 }: ChoiceButtonProps) => {
   const className = clsx(
     'choice-button',
-    `customize-${variant}-choice`,
+    `choice-button--${variant}`,
     baseClassName,
     {
-      isSelected: isSelected,
+      isSelected,
     },
   );
   return (
