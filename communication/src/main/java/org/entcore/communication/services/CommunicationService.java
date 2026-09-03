@@ -69,6 +69,17 @@ public interface CommunicationService {
 	 */
 	void setDirectCommunication(String startUser, String endUser, Direction directionEnum, Handler<Either<String, JsonObject>> eitherHandler);
 
+	/**
+	 * Return visible identities (ie: id + isUser), of the user, params can precise a list of group and users on which filter to reduce the scope of the query
+	 *
+	 * @param userId the id of the user doing the query
+	 * @param itself include itself in result
+	 * @param includeHiddenCommunityGroups include hidden community group
+	 * @param params may contain a list of id to reduce the scope
+	 * @param responseHandler
+	 */
+	void visiblesIdentities(String userId, boolean itself, boolean includeHiddenCommunityGroups, JsonObject params, Handler<Either<String, JsonArray>> responseHandler);
+
 	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 
 		INCOMING 	(0x01),

@@ -155,6 +155,88 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
+	public void visiblesIdentities(String userId, boolean itself, boolean includeHiddenCommunityGroups, JsonObject params, Handler<Either<String, JsonArray>> responseHandler) {
+		String expectIdUserFilter = "";
+		String expectIdVisiblesFilter = "";
+		if (params.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
+			expectIdUserFilter = " AND m.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
+			expectIdVisiblesFilter = " AND visibles.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
+		}
+
+		String query =
+				// u->G1->G2->visible + u->G1->visible
+				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
+				"WHERE\n" +
+				"    g.nbUsers > 0\n" +
+				"    AND g.users IN ['BOTH', 'INCOMING']\n" +
+				"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+				"        DISTINCT CASE\n" +
+				"            WHEN g.users = 'BOTH' THEN g.id\n" +
+				"        END\n" +
+				"    )) as comGroups \n" +
+				"UNWIND comGroups as gid \n" +
+				"WITH DISTINCT gid \n" +
+				"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
+				"WHERE\n" +
+				// discover group are in BOTH but doesn't allow communication between member by default
+				"     NOT g:CommunityGroup AND (\n" +
+				"        NOT(HAS(m.blocked))\n" +
+				"        OR m.blocked = false\n" +
+				"    )\n" +
+				"    AND g.users IN ['BOTH', 'OUTGOING'] " +
+				expectIdUserFilter +
+				(itself ? " " : " AND m.id <> {userId} ") +
+				"return DISTINCT m.id as id, true as isUser \n" +
+				// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
+				"UNION \n" +
+				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
+				"WHERE \n" +
+				"    g.nbUsers > 0 \n" +
+				"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
+				"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+				"        DISTINCT CASE\n" +
+				"            WHEN g.users = 'BOTH' THEN g.id\n" +
+				"        END\n" +
+				" )) as com \n" +
+				" UNWIND com AS gid \n" +
+				" WITH DISTINCT gid \n" +
+				" MATCH (g2:Group { id: gid }) \n" +
+				" OPTIONAL MATCH (g2)<-[:DEPENDS]-(g3:Group) \n" +
+				" UNWIND [g2, g3] AS visibles \n" +
+				" WITH DISTINCT visibles \n" +
+				" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
+				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
+				expectIdVisiblesFilter +
+				" return DISTINCT visibles.id as `id`, false as isUser \n" +
+				// u->u2 => direct communication
+				"UNION \n" +
+				"MATCH (n:User)-[:COMMUNIQUE_DIRECT]->m \n" +
+				"WHERE \n" +
+				"    n.id = {userId}\n" +
+				"    AND (\n" +
+				"        NOT(HAS(m.blocked))\n" +
+				"        OR m.blocked = false\n" +
+				"    ) " +
+				expectIdUserFilter +
+				(itself ? " " : " AND m.id <> {userId} ") +
+				"WITH DISTINCT m as visibles " +
+				"RETURN DISTINCT visibles.id as id, true as isUser \n" +
+				"UNION \n" +
+				// u->G<-[DEPENDS]-G2 group include into another group list G2
+				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
+				"WHERE \n" +
+				"    g.nbUsers > 0 \n" +
+				"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
+				"    AND visibles.nbUsers > 0 \n" +
+				expectIdVisiblesFilter +
+				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
+				"return DISTINCT visibles.id as id, false as isUser";
+		neo4j.execute(query, new JsonObject().put("userId", userId)
+											.put(EXPECTED_IDS_USERS_GROUPS, params.getJsonArray(EXPECTED_IDS_USERS_GROUPS)),
+					  validResultHandler(responseHandler));
+	}
+
+	@Override
 	public void visibleUsersForShare(String userId, String search, JsonArray userIds, Handler<Either<String, JsonArray>> responseHandler) {
 		String searchFilter = (StringUtils.isEmpty(search) ? "" : " AND m.displayNameSearchField CONTAINS {search} ");
 		String query = "MATCH (n :User { id: {userId} })-[:COMMUNIQUE] ->(g :Group) \n" +
@@ -2237,7 +2319,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					true);
 			if(!result.relativeAddedToTheList.isEmpty()) {
 				//recheck added users
-				UserUtils.filterFewOrGetAllVisibles(eventBus, user.getUserId(), result.relativeAddedToTheList)
+				UserUtils.filterFewOrGetAllVisibles(eventBus, user.getUserId(), result.relativeAddedToTheList, false)
 						.onSuccess(relatives -> {
 							List<String> idsToRemove = Lists.newLinkedList();
 							List<String> relativesIds = relatives.stream().map( o -> ((JsonObject)o).getString("id")).collect(Collectors.toList());
