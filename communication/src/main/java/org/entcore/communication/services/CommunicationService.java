@@ -31,6 +31,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.communication.dto.rest.DiscoverModifyGroupUsersDTO;
 import org.entcore.communication.dto.rest.DiscoverVisibleGroupBodyDTO;
 import org.entcore.communication.dto.rest.DiscoverVisibleFilterDTO;
@@ -72,6 +73,14 @@ public interface CommunicationService {
 	 * @param eitherHandler
 	 */
 	void setDirectCommunication(String startUser, String endUser, Direction directionEnum, Handler<Either<String, JsonObject>> eitherHandler);
+
+	/**
+	 * Return visible identities (ie: id + isUser), of the user, params can precise a list of group and users on which filter to reduce the scope of the query
+	 *
+	 * @param visibleIdentityRequest contains parameters for query visibles identities
+	 * @param responseHandler
+	 */
+	void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler);
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 

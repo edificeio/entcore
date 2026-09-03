@@ -237,7 +237,7 @@ public class UserBookController extends BaseController {
 				if (userId == null || userId.equals(user.getUserId())) {
 					userBookService.getCurrentUserInfos(user, forceReload, defaultResponseHandler(request));
 				} else {
-					Future<JsonArray> visible = UserUtils.filterFewOrGetAllVisibles(eb, user.getUserId(), new JsonArray(Lists.newArrayList(userId)));
+					Future<JsonArray> visible = UserUtils.filterFewOrGetAllVisibles(eb, user.getUserId(), new JsonArray(Lists.newArrayList(userId)), false);
 					visible.onSuccess( arr -> {
 						boolean filter = arr.stream().noneMatch(o -> ((JsonObject)o).getString("id").equals(userId));
 						userBookService.getPersonInfos(userId, filter, defaultResponseHandler(request));
@@ -317,23 +317,37 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.visible.users.group", type = ActionType.AUTHENTICATED)
 	public void visibleUsersGroup(final HttpServerRequest request) {
 		String groupId = request.params().get("groupId");
-		if (groupId == null || groupId.trim().isEmpty()) {
-			badRequest(request, "invalid.groupId");
-			return;
-		}
-		String customReturn =
-				"MATCH (s:Group { id : {groupId}})<-[:IN]-(visibles) " +
-				"RETURN DISTINCT HEAD(visibles.profiles) as type, visibles.id as id, " +
-				"visibles.displayName as displayName, visibles.login as login " +
-				"ORDER BY type DESC, displayName ";
-		final JsonObject params = new JsonObject().put("groupId", groupId);
-		UserUtils.findVisibleUsers(eb, request, true, false, customReturn, params, new Handler<JsonArray>() {
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.onSuccess( ui -> {
+					// The group is a set : its visible members, whatever the path they are visible through
+					UserUtils.findVisibleMembersOfGroups(eb, ui.getUserId(), Lists.newArrayList(groupId), true)
+							.onSuccess( members -> {
+								List<JsonObject> users = members.stream()
+										.map(JsonObject.class::cast)
+										.collect(Collectors.toList());
+								users.forEach(member -> {
+									final JsonArray profiles = member.getJsonArray("profiles", new JsonArray());
+									member.put("profile", profiles.isEmpty() ? null : profiles.getString(0));
+								});
+								toCommunityUsers(users);
+								renderJson(request, new JsonArray(users));
+							}).onFailure(t -> {
+								log.error("error while retrieving visible ", t );
+								renderError(request, new JsonObject().put("error", t.getMessage()));});
+				})
+				.onFailure(t -> {log.error("error while retrieving userInfo " + t.getMessage()); unauthorized(request);});
+	}
 
-			@Override
-			public void handle(final JsonArray users) {
-				renderJson(request, users);
-			}
+	private static void toCommunityUsers(List<JsonObject> users) {
+		users.forEach( user -> {
+			user.put("type", user.getString("profile"));
+			keepOnly(user, USER_FIELD_LIST);
 		});
+		users.sort(BY_TYPE_AND_NAME);
+	}
+
+	private static void keepOnly(JsonObject visible, List<String> fields) {
+		visible.getMap().entrySet().removeIf(entry -> !fields.contains(entry.getKey()));
 	}
 
 	@Get("/api/class")

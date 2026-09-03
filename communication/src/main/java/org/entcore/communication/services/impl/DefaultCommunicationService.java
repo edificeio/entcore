@@ -38,6 +38,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.dto.rest.DiscoverVisibleGroupBodyDTO;
@@ -159,6 +160,242 @@ public class DefaultCommunicationService implements CommunicationService {
 		builder.add(query, params);
 
 		neo4j.executeTransaction(builder.build(), null, true, validUniqueResultHandler(eitherHandler) );
+	}
+
+	private void visiblesIdentitiesBothFilter(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
+		String expectIdUserFilter = "";
+		String expectIdVisiblesFilter = "";
+		List<String> expectedVisiblesIds = visibleIdentityRequest.getExpectedVisiblesIds();
+		List<String> includeVisibleIds = visibleIdentityRequest.getIncludedVisibleIds();
+		boolean itself = visibleIdentityRequest.isItSelf();
+		boolean includeHiddenCommunityGroups = visibleIdentityRequest.isIncludeHiddenCommunity();
+		String userId = visibleIdentityRequest.getUserId();
+		boolean restrictToExpectedIds = expectedVisiblesIds != null && !expectedVisiblesIds.isEmpty();
+		if (restrictToExpectedIds) {
+			expectIdUserFilter = " AND m.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
+			expectIdVisiblesFilter = " AND visibles.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
+		}
+		String searchQuery = visibleIdentityRequest.getSearch() != null ? " AND m.displayNameSearchField CONTAINS {search} " : " ";
+		String extraField = visibleIdentityRequest.isPublicDetails() ?
+				" , visibles.name as name, " +
+				" visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName," +
+				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile, visibles.lastName as lastName "
+				: "";
+		// Group details are only read in the group branches : reading labels on every visible user would cost about one db hit
+		// per label and per user. groupType is the most specific group label (ProfileGroup, ManualGroup...).
+		final String groupExtraField = visibleIdentityRequest.isPublicDetails() ?
+				" , HEAD(FILTER(l IN labels(visibles) WHERE l <> 'Group' AND l ENDS WITH 'Group')) as groupType, " +
+				" visibles.subType as subType, visibles.nbUsers as nbUsers "
+				: "";
+		final String userExtraField = visibleIdentityRequest.isPublicDetails() ?
+				" , null as groupType, null as subType, null as nbUsers "
+				: "";
+		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
+				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
+				: "" ;
+		// A profile restriction does not read the same way on a user, on a profile group and on any other group.
+		final String profileFilter = visibleIdentityRequest.getProfileFilter();
+		final boolean filterOnProfile = profileFilter != null && !profileFilter.trim().isEmpty();
+		final String userProfileFilter = filterOnProfile ? " AND {profileFilter} IN m.profiles " : "";
+		final String groupProfileFilter = filterOnProfile ?
+				" AND ((visibles:ProfileGroup AND visibles.filter = {profileFilter}) " +
+				"      OR (NOT(visibles:ProfileGroup) AND visibles.users IN ['BOTH', 'OUTGOING'] " +
+				"          AND (visibles)<-[:IN]-(:User {profiles: {profileFilterAsList}}))) "
+				: "";
+
+		String query =
+				// u->G1->G2->visible + u->G1->visible
+				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
+						"WHERE\n" +
+						"    g.users IN ['BOTH', 'INCOMING']\n" +
+						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+						"        DISTINCT CASE\n" +
+						"            WHEN g.users = 'BOTH' THEN g.id\n" +
+						"        END\n" +
+						"    )) as comGroups \n" +
+						// With expected ids, start from them : filtering the members of every group with "m.id IN {list}"
+						// reads m.id once per list item and row, which times out for a user seeing a whole structure.
+						(restrictToExpectedIds ?
+								"UNWIND {" + EXPECTED_IDS_USERS_GROUPS + "} AS eid \n" +
+								"MATCH (m:User { id: eid })-[:IN]-(g:Group) \n" +
+								"WITH m, g, g.id AS gid, comGroups \n" +
+								"WHERE gid IN comGroups AND\n"
+								:
+								"UNWIND comGroups as gid \n" +
+								"WITH DISTINCT gid \n" +
+								"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
+								"WHERE\n") +
+						// discover group are in BOTH but doesn't allow communication between member by default
+						"     NOT g:CommunityGroup AND (\n" +
+						"        NOT(HAS(m.blocked))\n" +
+						"        OR m.blocked = false\n" +
+						"    )\n" +
+						"    AND g.users IN ['BOTH', 'OUTGOING'] " +
+						searchQuery +
+						(itself ? " " : " AND m.id <> {userId} ") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
+						userProfileFilter +
+						" WITH DISTINCT m as visibles " +
+						actionFilter +
+						"return DISTINCT visibles.id as id, true as isUser \n" + extraField + userExtraField;
+		// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
+		final String communicatingGroupsBranch =
+						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
+						"WHERE \n" +
+						"   g.users IN ['BOTH', 'INCOMING'] \n" +
+						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+						"        DISTINCT CASE\n" +
+						"            WHEN g.users = 'BOTH' THEN g.id\n" +
+						"        END\n" +
+						" )) as com \n" +
+						" UNWIND com AS gid \n" +
+						" WITH DISTINCT gid \n" +
+						" MATCH (g2:Group { id: gid }) \n" +
+						" OPTIONAL MATCH (g2)<-[:DEPENDS]-(g3:Group) \n" +
+						" UNWIND [g2, g3] AS visibles \n" +
+						" WITH DISTINCT visibles \n" +
+						" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
+						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
+						expectIdVisiblesFilter +
+						groupProfileFilter +
+						" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField + groupExtraField;
+		// u->u2 => direct communication
+		final String directBranch =
+						"MATCH (n:User)-[:COMMUNIQUE_DIRECT]->m \n" +
+						"WHERE \n" +
+						"    n.id = {userId}\n" +
+						"    AND (\n" +
+						"        NOT(HAS(m.blocked))\n" +
+						"        OR m.blocked = false\n" +
+						"    ) " +
+						searchQuery +
+						expectIdUserFilter +
+						(itself ? " " : " AND m.id <> {userId} ") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
+						userProfileFilter +
+						"WITH DISTINCT m as visibles " +
+						actionFilter +
+						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField + userExtraField;
+		// u->G<-[DEPENDS]-G2 group include into another group list G2
+		final String includedGroupsBranch =
+						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
+						"WHERE \n" +
+						"    g.users IN ['BOTH', 'INCOMING'] \n" +
+						"    AND (NOT(HAS(visibles.nbUsers)) OR visibles.nbUsers > 0) \n" +
+						expectIdVisiblesFilter +
+						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
+						groupProfileFilter +
+						"return DISTINCT visibles.id as id, false as isUser " + extraField + groupExtraField;
+		String query = groupsOnly
+				? communicatingGroupsBranch + "UNION \n" + includedGroupsBranch
+				: usersOfGroupsBranch + "UNION \n" + communicatingGroupsBranch + "UNION \n" +
+				directBranch + "UNION \n" + includedGroupsBranch;
+		JsonObject queryParams = new JsonObject()
+				.put("userId", userId)
+				.put("search", visibleIdentityRequest.getSearch());
+		if (includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
+			// Identities forced into the response (already shared, already recipients...) : no search, no visibility
+			// filter, users and groups alike, except that GROUPS only keeps the groups
+			query += " UNION " +
+					"  MATCH (visibles) WHERE visibles.id IN {includeVisibleIds} " +
+					(groupsOnly ? "AND visibles:Group " : "AND (visibles:User OR visibles:Group) ") +
+					"  RETURN DISTINCT visibles.id as id, visibles:User as isUser \n" + extraField + groupExtraField;
+			queryParams.put("includeVisibleIds", visibleIdentityRequest.getIncludedVisibleIds());
+		}
+		if (restrictToExpectedIds) {
+			queryParams.put(EXPECTED_IDS_USERS_GROUPS, new JsonArray(expectedVisiblesIds));
+		}
+		if (visibleIdentityRequest.getWorkflowRightFilter() != null) {
+			queryParams.put("action", visibleIdentityRequest.getWorkflowRightFilter());
+		}
+		if (filterOnProfile) {
+			queryParams.put("profileFilter", profileFilter)
+					.put("profileFilterAsList", new JsonArray().add(profileFilter));
+		}
+		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
+	}
+
+	/**
+	 *  Restrict visible with a group filtering implying remove communique_direct relationship and groups
+	 * @param visibleIdentityRequest
+	 * @param responseHandler
+	 */
+	private void visiblesIdentitiesGroupFilter(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
+		String expectIdUserFilter = "";
+		List<String> expectedVisiblesIds = visibleIdentityRequest.getExpectedVisiblesIds();
+		List<String> includeVisibleIds = visibleIdentityRequest.getIncludedVisibleIds();
+		boolean itself = visibleIdentityRequest.isItSelf();
+		String userId = visibleIdentityRequest.getUserId();
+		boolean restrictToExpectedIds = expectedVisiblesIds != null && !expectedVisiblesIds.isEmpty();
+		if (restrictToExpectedIds) {
+			expectIdUserFilter = " AND g.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
+		}
+		String searchQuery = visibleIdentityRequest.getSearch() != null ? " AND m.displayNameSearchField CONTAINS {search} " : " ";
+		String extraField = visibleIdentityRequest.isPublicDetails() ?
+				" , visibles.name as name, " +
+				" visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName," +
+				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile, visibles.lastName as lastName "
+				: "";
+
+		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
+				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
+				: "" ;
+
+		String query =
+				// u->G1->G2->visible + u->G1->visible
+				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
+						"WHERE\n" +
+						"   g.users IN ['BOTH', 'INCOMING']\n" +
+						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+						"        DISTINCT CASE\n" +
+						"            WHEN g.users = 'BOTH' THEN g.id\n" +
+						"        END\n" +
+						"    )) as comGroups \n" +
+						"UNWIND comGroups as gid \n" +
+						"WITH DISTINCT gid \n" +
+						"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
+						"WHERE\n" +
+						// discover group are in BOTH but doesn't allow communication between member by default
+						"     NOT g:CommunityGroup AND (\n" +
+						"        NOT(HAS(m.blocked))\n" +
+						"        OR m.blocked = false\n" +
+						"    )\n" +
+						"    AND g.users IN ['BOTH', 'OUTGOING'] " +
+						searchQuery +
+						expectIdUserFilter +
+						(itself ? " " : " AND m.id <> {userId} ") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
+						" WITH DISTINCT m as visibles " +
+						actionFilter +
+						"return DISTINCT visibles.id as id, true as isUser \n" + extraField;
+
+		JsonObject queryParams = new JsonObject()
+				.put("userId", userId)
+				.put("search", visibleIdentityRequest.getSearch());
+		if (includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
+			// Users forced into the response (already shared, already recipients...) : no search, no visibility filter
+			query += " UNION " +
+					"  MATCH(visibles:User) WHERE visibles.id IN {includeVisibleIds} " +
+					"  RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField;
+			queryParams.put("includeVisibleIds", visibleIdentityRequest.getIncludedVisibleIds());
+		}
+		if (restrictToExpectedIds) {
+			queryParams.put(EXPECTED_IDS_USERS_GROUPS, new JsonArray(expectedVisiblesIds));
+		}
+		if (visibleIdentityRequest.getWorkflowRightFilter() != null) {
+			queryParams.put("action", visibleIdentityRequest.getWorkflowRightFilter());
+		}
+		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
+	}
+
+
+	@Override
+	public void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
+		if(visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.BOTH) {
+			visiblesIdentitiesBothFilter(visibleIdentityRequest, responseHandler);
+		} else {
+			visiblesIdentitiesGroupFilter(visibleIdentityRequest, responseHandler);
+		}
 	}
 
 	@Override
@@ -2392,7 +2629,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					true);
 			if(!result.relativeAddedToTheList.isEmpty()) {
 				//recheck added users
-				UserUtils.filterFewOrGetAllVisibles(eventBus, user.getUserId(), result.relativeAddedToTheList)
+				UserUtils.filterFewOrGetAllVisibles(eventBus, user.getUserId(), result.relativeAddedToTheList, false)
 						.onSuccess(relatives -> {
 							List<String> idsToRemove = Lists.newLinkedList();
 							List<String> relativesIds = relatives.stream().map( o -> ((JsonObject)o).getString("id")).collect(Collectors.toList());
