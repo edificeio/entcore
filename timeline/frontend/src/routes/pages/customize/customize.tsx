@@ -84,14 +84,10 @@ export const Component = () => {
               </Button>
             </Flex>
           </Flex>
-          {/* TODO #IMPULS-6022
-              greetingText/lastInfosText are hardcoded until the form provides
-              them already translated in the selected (not yet saved) language. */}
           {md && (
             <CustomizationPreview
               selecterFontName={form.selectedFont}
-              greetingText="Bonjour"
-              lastInfosText="Dernières actualités"
+              selectedLanguage={form.selectedLanguage}
             />
           )}
         </Flex>

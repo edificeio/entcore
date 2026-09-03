@@ -3,27 +3,31 @@ import { render, screen } from '~/mocks/setup';
 import { CustomizationPreview } from './CustomizationPreview';
 
 const requiredProps = {
-  greetingText: 'Bonjour',
-  lastInfosText: 'Dernières actualités',
+  selectedLanguage: 'fr',
 };
 
 describe('CustomizationPreview', () => {
-  it('renders the greeting and last infos texts from props', () => {
+  it('renders the French texts for selectedLanguage="fr"', () => {
     render(<CustomizationPreview {...requiredProps} />);
 
     expect(screen.getByText('Bonjour')).toBeInTheDocument();
     expect(screen.getByText('Dernières actualités')).toBeInTheDocument();
   });
 
-  it('renders the greetingText and lastInfosText props as given', () => {
-    render(
-      <CustomizationPreview greetingText="Hello" lastInfosText="Latest news" />,
-    );
+  it('renders the translated texts for another selectedLanguage', () => {
+    render(<CustomizationPreview selectedLanguage="en" />);
 
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(screen.getByText('Latest news')).toBeInTheDocument();
     expect(screen.queryByText('Bonjour')).not.toBeInTheDocument();
     expect(screen.queryByText('Dernières actualités')).not.toBeInTheDocument();
+  });
+
+  it('falls back to French for an unknown selectedLanguage', () => {
+    render(<CustomizationPreview selectedLanguage="unknown" />);
+
+    expect(screen.getByText('Bonjour')).toBeInTheDocument();
+    expect(screen.getByText('Dernières actualités')).toBeInTheDocument();
   });
 
   it('has no focusable element (purely decorative preview)', () => {
