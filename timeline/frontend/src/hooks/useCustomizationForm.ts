@@ -24,6 +24,10 @@ export function useCustomizationForm() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    if (currentLanguage) setSelectedLanguage(currentLanguage);
+  }, [currentLanguage]);
+
+  useEffect(() => {
     if (!theme) return;
     setSelectedFont(theme.skinName);
   }, [theme]);
