@@ -59,10 +59,32 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Importer {
 
 	private static final Logger log = LoggerFactory.getLogger(Importer.class);
+
+	public static final JsonArray DEFAULT_EXCLUDED_STRUCTURE_NAME_PREFIXES = new JsonArray().add("CMS-");
+	private static final List<String> EXCLUDED_STRUCTURE_SOURCES = Arrays.asList("AAF", "AAF1D");
+	private static final String EXCLUDED_STRUCTURE_REASON = "excluded.structure.name.prefix";
+	private static List<String> excludedStructureNamePrefixes = toPrefixList(DEFAULT_EXCLUDED_STRUCTURE_NAME_PREFIXES);
+
+	public static void initExcludedStructureNamePolicy(JsonArray prefixes) {
+		excludedStructureNamePrefixes = toPrefixList(prefixes != null ? prefixes : DEFAULT_EXCLUDED_STRUCTURE_NAME_PREFIXES);
+		log.info("Excluded structure name prefixes (AAF sources only) : " + excludedStructureNamePrefixes);
+	}
+
+	private static List<String> toPrefixList(JsonArray prefixes) {
+		final List<String> l = new ArrayList<>();
+		for (Object o : prefixes) {
+			if (o instanceof String && !((String) o).trim().isEmpty()) {
+				l.add(((String) o).trim().toLowerCase());
+			}
+		}
+		return l;
+	}
+
 	private ConcurrentMap<String, ImporterStructure> structures;
 	private ConcurrentMap<String, Profile> profiles;
 	private Set<String> userImportedExternalId = new HashSet<>();
 	private Set<String> structuresImportedExternalId = new HashSet<>();
+	private Set<String> excludedStructuresExternalId = new HashSet<>();
 	private TransactionHelper transactionHelper;
 	private final Validator structureValidator;
 	private final Validator profileValidator;
@@ -309,6 +331,7 @@ public class Importer {
 		profiles.clear();
 		userImportedExternalId.clear();
 		structuresImportedExternalId.clear();
+		excludedStructuresExternalId.clear();
 		groupClasses.clear();
 		report = null;
 		transactionHelper = null;
@@ -349,6 +372,32 @@ public class Importer {
 			persEducNat.setTransactionHelper(transactionHelper);
 	}
 
+	private boolean isExcludedStructureName(String name) {
+		if (name == null || excludedStructureNamePrefixes.isEmpty()
+				|| !EXCLUDED_STRUCTURE_SOURCES.contains(currentSource)) {
+			return false;
+		}
+		final String lowerCaseName = name.toLowerCase();
+		for (String prefix : excludedStructureNamePrefixes) {
+			if (lowerCaseName.startsWith(prefix)) return true;
+		}
+		return false;
+	}
+
+	private boolean filterExcludedStructures(JsonObject object) {
+		if (excludedStructuresExternalId.isEmpty()) return true;
+		final JsonArray structuresExternalId = object.getJsonArray("structures");
+		if (structuresExternalId == null || structuresExternalId.isEmpty()) return true;
+		final JsonArray kept = new JsonArray();
+		for (Object o : structuresExternalId) {
+			if (o instanceof String && excludedStructuresExternalId.contains(o)) continue;
+			kept.add(o);
+		}
+		if (kept.isEmpty()) return false;
+		if (kept.size() < structuresExternalId.size()) object.put("structures", kept);
+		return true;
+	}
+
 	public ImporterStructure createOrUpdateStructure(JsonObject struct) {
 		JsonArray groups = null;
 		if (struct != null) {
@@ -357,6 +406,15 @@ public class Importer {
 		String name = struct.getString("name");
 		if(name != null)
 			struct.put("feederName", name); // This is used to reset manual names
+		if (isExcludedStructureName(name)) {
+			final String excludedExternalId = struct.getString("externalId");
+			if (isNotEmpty(excludedExternalId)) {
+				excludedStructuresExternalId.add(excludedExternalId);
+			}
+			report.addIgnored("Structure", EXCLUDED_STRUCTURE_REASON, struct);
+			log.info("Ignored structure with excluded name prefix : " + name);
+			return null;
+		}
 		final String error = structureValidator.validate(struct);
 		ImporterStructure s = null;
 		if (error != null) {
@@ -648,6 +706,10 @@ public class Importer {
 
 	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, JsonArray structuresByFunctions,
 			String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
+		if (!filterExcludedStructures(object)) {
+			report.addIgnored("Personnel", EXCLUDED_STRUCTURE_REASON, object);
+			return;
+		}
 		persEducNat.createOrUpdatePersonnel(object, profileExternalId, structuresByFunctions,
 				linkClasses, linkGroups, nodeQueries, relationshipQueries);
 	}
@@ -655,6 +717,10 @@ public class Importer {
 	public void createOrUpdateStudent(JsonObject object, String profileExternalId, String module, JsonArray fieldOfStudy,
 			String[][] linkClasses, String[][] linkGroups, JsonArray relative, boolean nodeQueries,
 			boolean relationshipQueries) {
+		if (!filterExcludedStructures(object)) {
+			report.addIgnored("Student", EXCLUDED_STRUCTURE_REASON, object);
+			return;
+		}
 		final String error = studentValidator.validate(object);
 		if (error != null) {
 			report.addIgnored("Student", error, object);

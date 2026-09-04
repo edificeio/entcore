@@ -148,6 +148,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		EventStoreFactory.getFactory().setVertx(vertx);
 		Structure.initHeadTeacherGroupPolicy(config.getJsonArray("no-head-teacher-group-sources",
 				Structure.DEFAULT_NO_HEAD_TEACHER_GROUP_SOURCES));
+		Importer.initExcludedStructureNamePolicy(config.getJsonArray("excluded-structure-name-prefixes",
+				Importer.DEFAULT_EXCLUDED_STRUCTURE_NAME_PREFIXES));
 		defaultFeed = config.getString("feeder", "AAF");
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
