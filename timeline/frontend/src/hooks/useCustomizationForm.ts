@@ -1,7 +1,8 @@
-import { useEdificeClient } from '@edifice.io/react';
+import { useEdificeClient, useEdificeTheme, useToast } from '@edifice.io/react';
 import { useCallback, useEffect, useState } from 'react';
-import { Background } from '~/services';
+import { Background, customizeService } from '~/services';
 import { useCustomization } from './useCustomization';
+import { useI18n } from './useI18n';
 
 export function useCustomizationForm() {
   const {
@@ -9,15 +10,18 @@ export function useCustomizationForm() {
     backgrounds,
     fonts,
     isError: isLoadError,
-    saveMutation,
-    theme,
+    savePreferences,
     background,
   } = useCustomization();
   const { currentLanguage } = useEdificeClient();
+  const { theme } = useEdificeTheme();
+  const { t } = useI18n();
+  const toast = useToast();
 
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage!);
   const [selectedBackground, setSelectedBackground] = useState(background);
   const [selectedFont, setSelectedFont] = useState(theme?.skinName);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!theme) return;
@@ -35,14 +39,25 @@ export function useCustomizationForm() {
   }, [theme, currentLanguage, background]);
 
   const saveChanges = useCallback(() => {
-    if (selectedFont && selectedLanguage && selectedBackground) {
-      saveMutation.mutateAsync({
-        language: selectedLanguage,
-        font: selectedFont,
-        background: selectedBackground,
-      });
+    async function saveAllPrefs() {
+      if (selectedFont && selectedLanguage && selectedBackground && theme) {
+        setIsSaving(true);
+        try {
+          await savePreferences({
+            language: { 'default-domain': selectedLanguage },
+            background: selectedBackground,
+          });
+          await customizeService.saveSkin(theme.themeName, selectedFont);
+          toast.success(t('homepage.customize.form.save.success'));
+        } catch {
+          toast.error(t('homepage.customize.form.save.error'));
+        } finally {
+          setIsSaving(false);
+        }
+      }
     }
-  }, [saveMutation, selectedBackground, selectedFont, selectedLanguage]);
+    saveAllPrefs();
+  }, [savePreferences, selectedBackground, selectedFont, selectedLanguage]);
 
   return {
     isLoadError,
@@ -58,6 +73,6 @@ export function useCustomizationForm() {
     handleFontChange: (font: string) => setSelectedFont(font),
     resetChanges,
     saveChanges,
-    isPending: saveMutation.isPending,
+    isSaving,
   };
 }
