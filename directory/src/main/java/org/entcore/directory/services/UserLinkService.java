@@ -4,34 +4,23 @@ import io.vertx.core.Future;
 import org.entcore.directory.dto.LinkDTO;
 
 import java.util.List;
+import java.util.UUID;
 
 
 public interface UserLinkService {
 
-    class LinkOperationError {
-        private int code;
-        private String errorCode;
+    /** Outcome of a link creation. */
+    enum CreateLinkResult {
+        CREATED,
+        /** The user has no free slot left : his links quota is reached */
+        LIMIT_REACHED
+    }
 
-        public LinkOperationError(int code, String errorCode) {
-            this.code = code;
-            this.errorCode = errorCode;
-        }
-
-        public int getCode() {
-            return code;
-        }
-
-        public void setCode(int code) {
-            this.code = code;
-        }
-
-        public String getErrorCode() {
-            return errorCode;
-        }
-
-        public void setErrorCode(String errorCode) {
-            this.errorCode = errorCode;
-        }
+    /** Outcome of a link deletion. */
+    enum DeleteLinkResult {
+        DELETED,
+        /** No such link for this user : unknown id, or link owned by somebody else */
+        NOT_FOUND
     }
 
     /**
@@ -40,7 +29,7 @@ public interface UserLinkService {
      * @param userId the user
      * @return the result of the operation
      */
-    Future<LinkOperationError> createLink(LinkDTO link, String userId);
+    Future<CreateLinkResult> createLink(LinkDTO link, String userId);
 
     /**
      * Get links for widget link utils attach to the user
@@ -51,11 +40,11 @@ public interface UserLinkService {
 
     /**
      * Delete a link for widget link utils attach to the user
-     * @param link The link to delete
+     * @param linkId id of the link to delete
      * @param userId the user
      * @return the result of the operation
      */
-    Future<LinkOperationError> deleteLink(LinkDTO link, String userId);
+    Future<DeleteLinkResult> deleteLink(UUID linkId, String userId);
 
     /**
      * Delete every link belonging to the given users, when their accounts are removed

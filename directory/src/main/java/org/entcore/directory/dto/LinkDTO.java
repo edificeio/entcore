@@ -13,10 +13,6 @@ public class LinkDTO {
 
     public LinkDTO() {}
 
-    public LinkDTO(String id) {
-        this.id = UUID.fromString(id);
-    }
-
     public UUID getId() {
         return id;
     }

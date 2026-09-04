@@ -12,6 +12,8 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.dto.LinkDTO;
 import org.entcore.directory.services.UserLinkService;
+import org.entcore.directory.services.UserLinkService.CreateLinkResult;
+import org.entcore.directory.services.UserLinkService.DeleteLinkResult;
 import org.entcore.directory.util.UserLinkValidator;
 
 import java.util.UUID;
@@ -19,6 +21,12 @@ import java.util.UUID;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToClass;
 
 public class UserLinkController extends BaseController {
+
+    /** Cle d'erreur renvoyee quand l'utilisateur a atteint son quota de liens. */
+    private static final String LINK_LIMIT_REACHED = "directory.user.link.limit.reached";
+
+    /** Cle d'erreur renvoyee quand le lien a supprimer est inconnu ou appartient a un autre utilisateur. */
+    private static final String LINK_NOT_FOUND = "directory.user.link.not.found";
 
     private UserLinkService userLinkService;
     private EventBus eb;
@@ -49,11 +57,11 @@ public class UserLinkController extends BaseController {
                     }
                     userLinkService.createLink(link, user.getUserId())
                             .onSuccess(result -> {
-                                if (result.getCode() > 300) {
+                                if (result == CreateLinkResult.LIMIT_REACHED) {
                                     renderError(request,
-                                            new JsonObject().put("error", result.getErrorCode()),
-                                            result.getCode(),
-                                            result.getErrorCode());
+                                            new JsonObject().put("error", LINK_LIMIT_REACHED),
+                                            409,
+                                            LINK_LIMIT_REACHED);
                                 } else {
                                     ok(request);
                                 }
@@ -87,8 +95,9 @@ public class UserLinkController extends BaseController {
     @Delete("/user-links/:id")
     @SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
     public void deleteUserLink(HttpServerRequest request) {
+        final UUID linkId;
         try {
-            UUID.fromString(request.params().get("id"));
+            linkId = UUID.fromString(request.params().get("id"));
         } catch( Exception e) {
             badRequest(request, "path params should be an UUID");
             return;
@@ -98,13 +107,13 @@ public class UserLinkController extends BaseController {
                 unauthorized(request);
                 return;
             }
-            userLinkService.deleteLink(new LinkDTO(request.params().get("id")), user.getUserId())
+            userLinkService.deleteLink(linkId, user.getUserId())
                     .onSuccess( result -> {
-                        if (result.getCode() > 300) {
+                        if (result == DeleteLinkResult.NOT_FOUND) {
                             renderError(request,
-                                    new JsonObject().put("error", result.getErrorCode()),
-                                    result.getCode(),
-                                    result.getErrorCode());
+                                    new JsonObject().put("error", LINK_NOT_FOUND),
+                                    400,
+                                    LINK_NOT_FOUND);
                         } else {
                             ok(request);
                         }

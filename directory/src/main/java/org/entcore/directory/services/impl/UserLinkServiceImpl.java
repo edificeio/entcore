@@ -25,8 +25,8 @@ public class UserLinkServiceImpl implements UserLinkService {
     private Sql sql = Sql.getInstance();
 
     @Override
-    public Future<LinkOperationError> createLink(LinkDTO link, String userId) {
-        Promise<LinkOperationError> promise = Promise.promise();
+    public Future<CreateLinkResult> createLink(LinkDTO link, String userId) {
+        Promise<CreateLinkResult> promise = Promise.promise();
         JsonArray params = new JsonArray();
         params.add(UUID.randomUUID().toString())
               .add(userId)
@@ -48,9 +48,9 @@ public class UserLinkServiceImpl implements UserLinkService {
             } else if (validatedResult.right().getValue().getLong("rows", 0L) == 0L) {
                 // Aucune ligne insérée : plus aucun emplacement libre (limite atteinte), ou
                 // emplacement pris entre-temps par une requête concurrente (ON CONFLICT DO NOTHING).
-                promise.complete(new LinkOperationError(409, "directory.user.link.limit.reached"));
+                promise.complete(CreateLinkResult.LIMIT_REACHED);
             } else {
-                promise.complete(new LinkOperationError(200, null));
+                promise.complete(CreateLinkResult.CREATED);
             }
         });
         return promise.future();
@@ -59,7 +59,7 @@ public class UserLinkServiceImpl implements UserLinkService {
     @Override
     public Future<List<LinkDTO>> getLinks(String userId) {
         Promise<List<LinkDTO>> promise = Promise.promise();
-        sql.prepared("SELECT id, user_id, name, url FROM directory.user_link WHERE user_id = ? ORDER BY lower(name) ASC NULLS LAST, id",
+        sql.prepared("SELECT id, name, url FROM directory.user_link WHERE user_id = ? ORDER BY lower(name) ASC NULLS LAST, id",
                 new JsonArray().add(userId),
                 message -> {
                 Either<String, JsonArray> validatedResult = SqlResult.validResult(message);
@@ -78,18 +78,18 @@ public class UserLinkServiceImpl implements UserLinkService {
     }
 
     @Override
-    public Future<LinkOperationError> deleteLink(LinkDTO link, String userId) {
-        Promise<LinkOperationError> promise = Promise.promise();
+    public Future<DeleteLinkResult> deleteLink(UUID linkId, String userId) {
+        Promise<DeleteLinkResult> promise = Promise.promise();
         sql.prepared("DELETE FROM directory.user_link WHERE user_id = ? AND id = ?::UUID ",
-                new JsonArray().add(userId).add(link.getId().toString()),
+                new JsonArray().add(userId).add(linkId.toString()),
                 message -> {
                     Either<String, JsonObject> validatedResult = SqlResult.validRowsResult(message);
                     if (validatedResult.isLeft()) {
                         promise.fail(validatedResult.left().getValue());
                     }  else if (validatedResult.right().getValue().getLong("rows", 0L) == 0L) {
-                        promise.complete(new LinkOperationError(400, "Bad request"));
+                        promise.complete(DeleteLinkResult.NOT_FOUND);
                     }  else {
-                        promise.complete(new LinkOperationError(200, null));
+                        promise.complete(DeleteLinkResult.DELETED);
                     }
                 });
         return promise.future();
