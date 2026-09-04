@@ -61,7 +61,15 @@ export function useCustomizationForm() {
       }
     }
     saveAllPrefs();
-  }, [savePreferences, selectedBackground, selectedFont, selectedLanguage]);
+  }, [
+    savePreferences,
+    selectedBackground,
+    selectedFont,
+    selectedLanguage,
+    theme,
+    toast,
+    t,
+  ]);
 
   return {
     isLoadError,
