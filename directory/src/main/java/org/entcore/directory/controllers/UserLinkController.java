@@ -39,11 +39,8 @@ public class UserLinkController extends BaseController {
     @Post("/user-links")
     @SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
     public void addLink(final HttpServerRequest request) {
-        UserUtils.getUserInfos(eb, request, user -> {
-            if (user == null) {
-                unauthorized(request);
-                return;
-            }
+        UserUtils.getAuthenticatedUserInfos(eb, request)
+                .onSuccess(  user -> {
             bodyToClass(request, LinkDTO.class)
                 .onSuccess(link -> {
                     if (link == null) {
@@ -72,7 +69,7 @@ public class UserLinkController extends BaseController {
                             });
                 })
                 .onFailure(t -> log.error("Error while decoding request body", t));
-        });
+        }).onFailure( t ->  unauthorized(request));
     }
 
     @Get("/user-links")
