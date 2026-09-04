@@ -469,9 +469,10 @@ public class EDTFeeder implements EDTReader
     {
       for(Classe c : t.principalClasses)
       {
-        HeadTeacherGroup htg = c.getHeadTeacherGroup();
-        this.structure.createHeadTeacherGroupIfAbsent(c.externalId, c.name);
+        if(this.structure.createHeadTeacherGroupIfAbsent(c.externalId, c.name) == null)
+          continue;
 
+        HeadTeacherGroup htg = c.getHeadTeacherGroup();
         if(t.groups.containsKey(htg.identity) == false)
           t.groups.put(htg.identity, htg);
       }

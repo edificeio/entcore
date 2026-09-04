@@ -90,6 +90,7 @@ public class ImporterCachedStructure extends ImporterStructure
 	@Override
 	public String createHeadTeacherGroupIfAbsent()
 	{
+		if (!areHeadTeacherGroupsEnabled()) return null;
 		String structureGroupExternalId = this.getHeadTeacherGroupExternalId();
 		if (groups.add(structureGroupExternalId)) {
 			return super.createHeadTeacherGroupIfAbsent();
@@ -100,6 +101,7 @@ public class ImporterCachedStructure extends ImporterStructure
 	@Override
 	public String[] createHeadTeacherGroupIfAbsent(String classExternalId, String name)
 	{
+		if (!areHeadTeacherGroupsEnabled()) return null;
 		String structureGroupExternalId = this.getHeadTeacherGroupExternalId();
 		String classGroupExternalId = this.getClassHeadTeacherGroupExternalId(classExternalId);
 		if (classesGroups.add(classGroupExternalId)) {

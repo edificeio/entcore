@@ -244,6 +244,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 					if (s != null) {
 						String classGroupExternalId = s.getExternalId() + "$" + g[1];
 						String[] structureGroupExternalId = s.createHeadTeacherGroupIfAbsent(classGroupExternalId, g[1]);
+						if (structureGroupExternalId == null) continue;
 						if (linkStructureGroups != null) {
 							final String[] structureGroup = new String[2];
 							structureGroup[0] = s.getExternalId();

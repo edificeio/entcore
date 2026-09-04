@@ -35,7 +35,7 @@
          [ngClass]="{ disabled: spinner.isLoading('portal-content')}">
       </i>
       <span class="headteacher-buttons"
-            *ngIf="!details.isNotTeacherOrHeadTeacher(this.structure.externalId, classe)">
+            *ngIf="supportsHeadTeacher && !details.isNotTeacherOrHeadTeacher(this.structure.externalId, classe)">
                         <button class="noflex"
                                 *ngIf="!details.isHeadTeacherManual(this.structure.externalId, classe)"
                                 (click)="addHeadTeacherManual(this.structure.id, this.structure.externalId, classe)">
@@ -47,7 +47,7 @@
                         </button>
                     </span>
       <span class="headteacher-buttons"
-            *ngIf="details.isTeacherAndHeadTeacherFromAAF(this.structure.externalId, classe)"
+            *ngIf="supportsHeadTeacher && details.isTeacherAndHeadTeacherFromAAF(this.structure.externalId, classe)"
             [tooltip]="'headTeacher.aaf.detail' | translate">
                          <button disabled>
                             <s5l>headTeacherManual.remove</s5l>

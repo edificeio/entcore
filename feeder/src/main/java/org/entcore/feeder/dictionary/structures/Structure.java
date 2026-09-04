@@ -35,6 +35,8 @@ import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,24 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Structure {
 
 	private static final Logger log = LoggerFactory.getLogger(Structure.class);
+
+	public static final JsonArray DEFAULT_NO_HEAD_TEACHER_GROUP_SOURCES = new JsonArray().add("AAF1D");
+
+	private static Set<String> noHeadTeacherGroupSources = toSourceSet(DEFAULT_NO_HEAD_TEACHER_GROUP_SOURCES);
+
+	public static void initHeadTeacherGroupPolicy(JsonArray sources) {
+		noHeadTeacherGroupSources = toSourceSet(sources != null ? sources : DEFAULT_NO_HEAD_TEACHER_GROUP_SOURCES);
+		log.info("Head teacher groups disabled for structure sources : " + noHeadTeacherGroupSources);
+	}
+
+	private static Set<String> toSourceSet(JsonArray sources) {
+		final Set<String> s = new HashSet<>();
+		for (Object o : sources) {
+			if (o instanceof String) s.add((String) o);
+		}
+		return s;
+	}
+
 	protected final String id;
 	protected final String externalId;
 	protected TransactionHelper transactionHelper = null;
@@ -275,8 +295,13 @@ public class Structure {
 		return classExternalId + "-ht";
 	}
 
+	public boolean areHeadTeacherGroupsEnabled() {
+		return !noHeadTeacherGroupSources.contains(struct.getString("source"));
+	}
+
 	public String createHeadTeacherGroupIfAbsent()
 	{
+		if (!areHeadTeacherGroupsEnabled()) return null;
 		String structureGroupExternalId = this.getHeadTeacherGroupExternalId();
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
@@ -299,6 +324,7 @@ public class Structure {
 	}
 
 	public String[] createHeadTeacherGroupIfAbsent(String classExternalId, String name) {
+		if (!areHeadTeacherGroupsEnabled()) return null;
 		String structureGroupExternalId = this.createHeadTeacherGroupIfAbsent();
 		String classGroupExternalId = this.getClassHeadTeacherGroupExternalId(classExternalId);
 			String query =
