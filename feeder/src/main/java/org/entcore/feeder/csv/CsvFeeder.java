@@ -433,6 +433,7 @@ public class CsvFeeder implements Feed {
 							} else if ("headTeacher".equals(c))
 							{
 								String[] structureGroupExternalId = structure.createHeadTeacherGroupIfAbsent(eId, cc[0]);
+								if (structureGroupExternalId == null) continue;
 
 								final String[] structureGroup = new String[2];
 								structureGroup[0] = structure.getExternalId();
