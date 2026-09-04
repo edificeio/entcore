@@ -7,6 +7,21 @@
   margin-bottom: 10px;
 }
 
+.customize-font-choice {
+  padding-inline: 24px;
+}
+
+.customize-font-choice[aria-pressed='false'] {
+  border: 2px solid var(--primitive-grey-300, #e4e4e4);
+  background-color: var(--primitive-grey-100, #f7f7f7);
+}
+
+.customize-language-choice img {
+  border: transparent 2px solid;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
 @media only screen and (min-width: 768px) {
   .customize-content {
     margin: var(--primitive-spacer-32) var(--primitive-spacer-32)

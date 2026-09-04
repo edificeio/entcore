@@ -71,8 +71,6 @@ public class DefaultPreferenceServiceTest {
                 });
 
     }
-
-
     @Test
     public void testGetPreferences_WithDefaultLanguage_shouldReturnFr(final TestContext testContext) {
         final Async async = testContext.async();
@@ -111,6 +109,24 @@ public class DefaultPreferenceServiceTest {
                 });
 
     }
+
+
+        @Test
+        public void testGetPreferences_WithBackgroundPreference_shouldReturnPink200(final TestContext testContext) {
+            final Async async = testContext.async();
+
+            UserInfos userInfos = new UserInfos();
+            userInfos.setUserId(adml.getId());
+
+            service.getPreferences(userInfos, new JsonObject())
+                    .onFailure(testContext::fail)
+                    .onSuccess(userPreferenceDto -> {
+                        testContext.assertNotNull(userPreferenceDto.getBackground());
+                        testContext.assertEquals(userPreferenceDto.getBackground().getBackground(), "pink-200");
+                        Mockito.verify(cacheService, Mockito.atLeastOnce()).refreshPreferences(userInfos, userPreferenceDto);
+                        async.complete();
+                    });
+        }
 
     @Test
     public void testGetPreferences_WithApplicationPreference_shouldReturnBookmarksAndApplications(final TestContext testContext) {
@@ -183,6 +199,7 @@ public class DefaultPreferenceServiceTest {
             .withPreference(adml, "language", "{\"default-domain\" : \"fr\"}")
             .withPreference(adml, "homePage", "{\"betaEnabled\" : true}")
             .withPreference(adml, "theme", "cg77")
+            .withPreference(adml, "background", "pink-200")
             .withPreference(adml, "apps", "{\"bookmarks\" : [\"form\"], \"applications\":[\"form\", \"news\"]}")
             .withStructureLink("my-structure-02", "my-structure-01")
             .withUser(corruptedPreferenceUser)
