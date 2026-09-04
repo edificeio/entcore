@@ -76,6 +76,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
               <ChoiceButton
                 key={background}
                 variant="background"
+                aria-label={background}
                 isSelected={background === selectedBackground}
                 onClick={() => handleBackgroundChange(background)}
               >
