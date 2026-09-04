@@ -1,19 +1,23 @@
-import {
-  useEdificeTheme,
-  useToast,
-  useUserPreferences,
-} from '@edifice.io/react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useToast, useUserPreferences } from '@edifice.io/react';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { Background, customizeService } from '~/services/api/customizeService';
+import { Background } from '~/services/api/customizeService';
 import { customizeQueryOptions } from '~/services/queries/customize';
 import { useI18n } from './useI18n';
+
+export type CustomizationPreferences = {
+  background: Background;
+  language: { 'default-domain': string };
+};
 
 export const useCustomization = () => {
   const { t } = useI18n();
   const toast = useToast();
-  const { theme } = useEdificeTheme();
-  const { preferences, isError: isPreferencesError } = useUserPreferences();
+  const {
+    preferences,
+    isError: isPreferencesError,
+    savePreferences,
+  } = useUserPreferences<CustomizationPreferences>();
 
   const { data: languages, isError: isLanguagesError } = useQuery(
     customizeQueryOptions.getLanguages(),
@@ -24,33 +28,6 @@ export const useCustomization = () => {
   const { data: backgrounds, isError: isBackgroundsError } = useQuery(
     customizeQueryOptions.getBackgrounds(),
   );
-
-  const saveMutation = useMutation({
-    mutationFn: async ({
-      language,
-      font,
-      background,
-    }: {
-      language: string;
-      font: string;
-      background: Background;
-    }) => {
-      if (!theme) throw 'Theme is undefined';
-
-      return customizeService.save({
-        language,
-        themeName: theme.themeName,
-        font,
-        background,
-      });
-    },
-    onSuccess: () => {
-      toast.success(t('homepage.customize.form.save.success'));
-    },
-    onError: () => {
-      toast.error(t('homepage.customize.form.save.error'));
-    },
-  });
 
   /** Display error toasts. */
   useEffect(() => {
@@ -74,13 +51,12 @@ export const useCustomization = () => {
     languages,
     fonts,
     backgrounds,
-    theme,
     background: (preferences?.background as Background) ?? 'default',
     isError:
       isLanguagesError ||
       isFontsError ||
       isBackgroundsError ||
       isPreferencesError,
-    saveMutation,
+    savePreferences,
   };
 };

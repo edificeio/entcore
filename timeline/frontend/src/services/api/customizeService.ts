@@ -1,5 +1,4 @@
 import { IThemeDesc, odeServices } from '@edifice.io/client';
-import { preferenceService } from './preferenceService';
 
 export type Background =
   | 'default'
@@ -28,23 +27,10 @@ export const customizeService = {
   getThemeAndSkin: () =>
     odeServices.http().get<{ themeName: string; skinName: string }>('/theme'),
 
-  save: ({
-    language,
-    themeName,
-    font,
-    background,
-  }: {
-    language: string;
-    themeName: string;
-    font: string;
-    background: string;
-  }) =>
-    Promise.all([
-      preferenceService.saveCustomization(language, background),
-      odeServices
-        .http()
-        .get(
-          `/userbook/api/edit-userbook-info?prop=theme-${themeName}&value=${font}`,
-        ),
-    ]),
+  saveSkin: (themeName: string, font: string) =>
+    odeServices
+      .http()
+      .get(
+        `/userbook/api/edit-userbook-info?prop=theme-${themeName}&value=${font}`,
+      ),
 };

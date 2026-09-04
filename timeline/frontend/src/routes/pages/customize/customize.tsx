@@ -26,7 +26,7 @@ export const Component = () => {
   const navigate = useNavigate();
   const { common_t } = useI18n();
 
-  const { resetChanges, saveChanges, isPending, ...form } =
+  const { resetChanges, saveChanges, isSaving, ...form } =
     useCustomizationForm();
 
   if (!init) return <LoadingScreen position={false} />;
@@ -76,7 +76,7 @@ export const Component = () => {
             <Button
               variant="filled"
               onClick={handleSaveClick}
-              disabled={isPending}
+              disabled={isSaving}
             >
               {common_t('save')}
             </Button>

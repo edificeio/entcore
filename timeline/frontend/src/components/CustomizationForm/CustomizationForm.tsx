@@ -8,7 +8,7 @@ import { ChoiceSkeleton } from './ChoiceSkeleton';
 type CustomizationFormProps = {
   form: Omit<
     ReturnType<typeof useCustomizationForm>,
-    'resetChanges' | 'saveChanges' | 'isPending'
+    'resetChanges' | 'saveChanges' | 'isSaving'
   >;
 };
 
