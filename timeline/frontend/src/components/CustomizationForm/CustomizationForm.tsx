@@ -111,9 +111,9 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                       className="choice-button--language__img"
                       width={60}
                       height={40}
-                      src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
-                      alt={label}
-                      loading="lazy"
+src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
+alt=""
+loading="lazy"
                     />
                     <span>{label}</span>
                   </Flex>
