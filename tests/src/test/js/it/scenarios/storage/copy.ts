@@ -5,15 +5,15 @@ import crypto from "k6/crypto";
 import {
   authenticateWeb,
   uploadFile,
+  downloadFile,
+  createFolderOrFail,
+  copyDocument,
+  copyDocuments,
+  copiedIds,
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 import {
   StorageInitData,
   initStorageFixture,
-  createFolderOrFail,
-  copyDocument,
-  copyDocuments,
-  downloadDocumentBinary,
-  copiedIds,
 } from './_utils.ts';
 
 /**
@@ -51,7 +51,7 @@ export const options = {
   }
 };
 
-const dataRootPath = __ENV.DATA_ROOT_PATH;
+const dataRootPath = __ENV.DATA_ROOT_PATH || "../../../../resources/data";
 
 let fileToUpload: ArrayBuffer;
 try {
@@ -88,8 +88,8 @@ export function testCopyDocument(data: StorageInitData) {
 
     // The point of the scenario: the copy is readable, and holds the very same bytes. A CopyObject that
     // silently failed, or copied the wrong key, shows up here and nowhere else.
-    const originalBytes = downloadDocumentBinary(original._id);
-    const copyBytes = downloadDocumentBinary(copyId);
+    const originalBytes = downloadFile(original._id, "", "binary");
+    const copyBytes = downloadFile(copyId, "", "binary");
     ok = check({ originalBytes, copyBytes }, {
       "original should still download": (r) => r.originalBytes.status === 200,
       "copy should download": (r) => r.copyBytes.status === 200,
@@ -126,7 +126,7 @@ export function testCopyDocumentsInBulk(data: StorageInitData) {
     // Each copy triggers its own CopyObject: one signature per file, so a header set after the signature
     // fails on all of them rather than on the first only.
     for (const copyId of copiedIds(copyRes)) {
-      const res = downloadDocumentBinary(copyId);
+      const res = downloadFile(copyId, "", "binary");
       check(res, {
         "each copy should download": (r) => r.status === 200,
         "each copy should have content": (r) => (r.body as ArrayBuffer).byteLength > 0,

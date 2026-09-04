@@ -6,12 +6,12 @@ import encoding from "k6/encoding";
 import {
   authenticateWeb,
   uploadFile,
+  downloadFile,
+  getDocumentBase64,
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 import {
   StorageInitData,
   initStorageFixture,
-  getDocumentBase64,
-  downloadDocumentBinary,
 } from './_utils.ts';
 
 /**
@@ -49,7 +49,7 @@ export const options = {
   }
 };
 
-const dataRootPath = __ENV.DATA_ROOT_PATH;
+const dataRootPath = __ENV.DATA_ROOT_PATH || "../../../../resources/data";
 
 let fileToUpload: ArrayBuffer;
 try {
@@ -94,7 +94,7 @@ export function testReadFile(data: StorageInitData) {
     });
 
     // And the streaming path returns the same thing, so readFile and sendFile cannot drift apart.
-    const streamed = downloadDocumentBinary(uploaded._id);
+    const streamed = downloadFile(uploaded._id, "", "binary");
     check(streamed, {
       "the streamed content should match the buffered one": (r) =>
           r.status === 200 &&

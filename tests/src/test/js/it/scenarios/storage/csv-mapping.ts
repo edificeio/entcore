@@ -42,7 +42,7 @@ export const options = {
   }
 };
 
-const dataRootPath = __ENV.DATA_ROOT_PATH;
+const dataRootPath = __ENV.DATA_ROOT_PATH || "../../../../resources/data";
 
 let teachersCsv: ArrayBuffer;
 try {

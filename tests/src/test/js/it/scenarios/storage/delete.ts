@@ -5,12 +5,12 @@ import {
   authenticateWeb,
   uploadFile,
   downloadFile,
+  deleteDocument,
+  deleteDocuments,
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 import {
   StorageInitData,
   initStorageFixture,
-  deleteDocument,
-  deleteDocuments,
 } from './_utils.ts';
 
 /**
@@ -47,7 +47,7 @@ export const options = {
   }
 };
 
-const dataRootPath = __ENV.DATA_ROOT_PATH;
+const dataRootPath = __ENV.DATA_ROOT_PATH || "../../../../resources/data";
 
 let fileToUpload: ArrayBuffer;
 try {

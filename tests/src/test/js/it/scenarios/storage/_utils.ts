@@ -1,7 +1,6 @@
 import { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import http from "k6/http";
 import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
-import { fail } from "k6";
 
 import {
   BASE_URL,
@@ -18,12 +17,14 @@ import {
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 
 /**
- * Shared fixture and thin route wrappers for the storage scenarios.
+ * Shared fixture and the route wrappers that stay local to the storage scenarios.
  *
  * These scenarios exercise org.entcore.common.storage.impl.S3Storage through the only surface k6 can reach:
- * the workspace and archive routes that call it. edifice-k6-commons covers upload, download and the archive
- * flows; the copy, delete and read-back routes have no helper there, so they are wrapped here rather than
- * inlined in every scenario.
+ * the workspace, directory and archive routes that call it. The workspace and archive wrappers now live in
+ * edifice-k6-commons — createFolderOrFail, copyDocument, copyDocuments, copiedIds, deleteDocument,
+ * deleteDocuments, getDocumentBase64, the responseType argument of downloadFile and the timeout argument of
+ * verifyExportFiles. What is left here is the fixture and the two directory routes, which have no helper
+ * there.
  */
 
 export type StorageInitData = {
@@ -59,64 +60,6 @@ export function initStorageFixture(schoolName: string): StorageInitData {
   return { head: structure, user };
 }
 
-/** POST /workspace/folder — multipart form, 201 with the created folder. */
-export function createFolderOrFail(name: string, parentFolderId?: string): string {
-  const body: Record<string, string> = { name };
-  if (parentFolderId) {
-    body.parentFolderId = parentFolderId;
-  }
-  const res = http.post(`${BASE_URL}/workspace/folder`, body, { headers: getHeaders() });
-  if (res.status !== 201) {
-    fail(`could not create folder ${name}: ${res.status} - ${res.body}`);
-  }
-  return (res.json() as any)._id;
-}
-
-/** POST /workspace/document/copy/:id/:folder — reaches Storage.copyFile through StorageHelper. */
-export function copyDocument(id: string, folderId: string) {
-  return http.post(`${BASE_URL}/workspace/document/copy/${id}/${folderId}`, null, { headers: getHeaders() });
-}
-
-/** POST /workspace/documents/copy/:folder — same, in bulk. */
-export function copyDocuments(ids: string[], folderId: string) {
-  return http.post(`${BASE_URL}/workspace/documents/copy/${folderId}`, JSON.stringify({ ids }),
-      { headers: getHeaders("application/json") });
-}
-
-/** DELETE /workspace/document/:id — reaches Storage.removeFile. */
-export function deleteDocument(id: string) {
-  return http.del(`${BASE_URL}/workspace/document/${id}`, null, { headers: getHeaders() });
-}
-
-/** DELETE /workspace/documents — reaches Storage.removeFiles with the whole batch. */
-export function deleteDocuments(ids: string[]) {
-  return http.del(`${BASE_URL}/workspace/documents`, JSON.stringify({ ids }),
-      { headers: getHeaders("application/json") });
-}
-
-/** GET /workspace/document/base64/:id — reaches Storage.readFile, which buffers the whole object. */
-export function getDocumentBase64(id: string) {
-  return http.get(`${BASE_URL}/workspace/document/base64/${id}`, { headers: getHeaders() });
-}
-
-/**
- * GET /workspace/document/:id as raw bytes. downloadFile from the commons returns a text body, which is
- * lossy on binary content — a byte for byte comparison needs the binary response type.
- */
-export function downloadDocumentBinary(id: string) {
-  return http.get(`${BASE_URL}/workspace/document/${id}`,
-      { headers: getHeaders(), responseType: "binary" });
-}
-
-/** The document ids of a copy response, which returns the created documents as an array. */
-export function copiedIds(res: any): string[] {
-  const body = res.json();
-  if (!Array.isArray(body)) {
-    return [];
-  }
-  return body.filter((d: any) => !!d && !!d._id).map((d: any) => d._id);
-}
-
 /** PUT /directory/avatar/:userId — every call goes through cleanAvatarCache, hence findByFilenameEndingWith. */
 export function updateAvatar(userId: string, documentId: string) {
   return http.put(`${BASE_URL}/directory/avatar/${userId}`,
@@ -147,16 +90,4 @@ export function postMassMessagingColumnMapping(structureId: string, structureNam
   const headers = getHeaders();
   headers["Content-Type"] = "multipart/form-data; boundary=" + form.boundary;
   return http.post(`${BASE_URL}/directory/massmessaging/column/mapping`, form.body(), { headers });
-}
-
-/**
- * GET /archive/export/verify/:exportId with an explicit, short timeout.
- *
- * The commons helper leaves k6 to its 60s default, which turns a stalled export into a poll every 61
- * seconds — silent, and long. An export that is merely not ready answers immediately; one that died
- * answers not at all, and that is worth finding out in seconds rather than in minutes.
- */
-export function verifyExport(exportId: string, timeout = "10s") {
-  return http.get(`${BASE_URL}/archive/export/verify/${exportId}`,
-      { headers: getHeaders(), timeout });
 }

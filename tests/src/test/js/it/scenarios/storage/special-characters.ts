@@ -6,19 +6,18 @@ import {
   authenticateWeb,
   uploadFile,
   downloadFile,
+  createFolderOrFail,
+  copyDocument,
+  copiedIds,
   launchExportOrFail,
   downloadExportFile,
+  verifyExportFiles,
   parseZip,
   getZipTree,
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 import {
   StorageInitData,
   initStorageFixture,
-  createFolderOrFail,
-  copyDocument,
-  copiedIds,
-  downloadDocumentBinary,
-  verifyExport,
 } from './_utils.ts';
 
 /**
@@ -68,7 +67,7 @@ export const options = {
   }
 };
 
-const dataRootPath = __ENV.DATA_ROOT_PATH;
+const dataRootPath = __ENV.DATA_ROOT_PATH || "../../../../resources/data";
 
 let fileToUpload: ArrayBuffer;
 try {
@@ -169,7 +168,7 @@ export function testSpecialCharacterNames(data: StorageInitData) {
 
       // The reference for the copy is the stored object, read back, not the local file: an uploaded image
       // is re-encoded by the resizer on the way in, so the local bytes are not what sits in the bucket.
-      const originalBytes = downloadDocumentBinary(uploaded._id);
+      const originalBytes = downloadFile(uploaded._id, "", "binary");
       const expectedDigest = originalBytes.status === 200
           ? crypto.sha256(originalBytes.body as ArrayBuffer, "hex")
           : null;
@@ -183,7 +182,7 @@ export function testSpecialCharacterNames(data: StorageInitData) {
         console.error(`Copy of "${name}" failed: ${copyRes.status} - ${copyRes.body}`);
         continue;
       }
-      const copyBytes = downloadDocumentBinary(copiedIds(copyRes)[0]);
+      const copyBytes = downloadFile(copiedIds(copyRes)[0], "", "binary");
       check(copyBytes, {
         [`the copy of "${name}" should hold the same bytes`]: (r) =>
             r.status === 200 && expectedDigest != null &&
@@ -213,7 +212,9 @@ export function testSpecialCharacterNamesSurviveExport(data: StorageInitData) {
     let lastStatus = 0;
     while (!exportReady && (Date.now() - startTime) < EXPORT_TIMEOUT) {
       attempts++;
-      const verifyRes = verifyExport(exportId);
+      // An explicit, short per-request timeout: the k6 default is 60s, so a stalled export would be
+      // polled once a minute in silence. An export that is merely not ready answers immediately.
+      const verifyRes = verifyExportFiles(exportId, "10s");
       lastStatus = verifyRes.status;
       if (verifyRes.status === 200) {
         exportReady = true;
