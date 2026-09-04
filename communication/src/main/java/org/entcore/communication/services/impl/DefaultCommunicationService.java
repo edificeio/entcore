@@ -159,14 +159,20 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
 		String expectIdUserFilter = "";
 		String expectIdVisiblesFilter = "";
-		JsonObject params = visibleIdentityRequest.getParams();
+		List<String> expectedVisiblesIds = visibleIdentityRequest.getExpectedVisiblesIds();
 		boolean itself = visibleIdentityRequest.isItSelf();
 		boolean includeHiddenCommunityGroups = visibleIdentityRequest.isIncludeHiddenCommunity();
 		String userId = visibleIdentityRequest.getUserId();
-		if (params.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
+		boolean restrictToExpectedIds = expectedVisiblesIds != null && !expectedVisiblesIds.isEmpty();
+		if (restrictToExpectedIds) {
 			expectIdUserFilter = " AND m.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
 			expectIdVisiblesFilter = " AND visibles.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
 		}
+		String extraField = visibleIdentityRequest.isPublicDetails() ?
+				" , visibles.name as name, " +
+				" visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName," +
+				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile "
+				: "";
 
 		String query =
 				// u->G1->G2->visible + u->G1->visible
@@ -191,7 +197,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				"    AND g.users IN ['BOTH', 'OUTGOING'] " +
 				expectIdUserFilter +
 				(itself ? " " : " AND m.id <> {userId} ") +
-				"return DISTINCT m.id as id, true as isUser \n" +
+				" WITH DISTINCT m as visibles " +
+				"return DISTINCT visibles.id as id, true as isUser \n" + extraField +
 				// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
 				"UNION \n" +
 				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
@@ -212,7 +219,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
 				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
 				expectIdVisiblesFilter +
-				" return DISTINCT visibles.id as `id`, false as isUser \n" +
+				" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField +
 				// u->u2 => direct communication
 				"UNION \n" +
 				"MATCH (n:User)-[:COMMUNIQUE_DIRECT]->m \n" +
@@ -225,7 +232,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				expectIdUserFilter +
 				(itself ? " " : " AND m.id <> {userId} ") +
 				"WITH DISTINCT m as visibles " +
-				"RETURN DISTINCT visibles.id as id, true as isUser \n" +
+				"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField +
 				"UNION \n" +
 				// u->G<-[DEPENDS]-G2 group include into another group list G2
 				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
@@ -235,10 +242,12 @@ public class DefaultCommunicationService implements CommunicationService {
 				"    AND visibles.nbUsers > 0 \n" +
 				expectIdVisiblesFilter +
 				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
-				"return DISTINCT visibles.id as id, false as isUser";
-		neo4j.execute(query, new JsonObject().put("userId", userId)
-											.put(EXPECTED_IDS_USERS_GROUPS, params.getJsonArray(EXPECTED_IDS_USERS_GROUPS)),
-					  validResultHandler(responseHandler));
+				"return DISTINCT visibles.id as id, false as isUser " + extraField;
+		JsonObject queryParams = new JsonObject().put("userId", userId);
+		if (restrictToExpectedIds) {
+			queryParams.put(EXPECTED_IDS_USERS_GROUPS, new JsonArray(expectedVisiblesIds));
+		}
+		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
 	}
 
 	@Override

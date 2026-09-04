@@ -384,7 +384,20 @@ public class CommunicationController extends BaseController {
 			communicationService.visibleUsersForShare(userId, search, userIds, responseHandler);
 			break;
 		case "visiblesIdentities":
-			VisibleIdentityRequest request = message.body().getJsonObject("request", new JsonObject()).mapTo(VisibleIdentityRequest.class);
+			final VisibleIdentityRequest request;
+			try {
+				request = message.body().getJsonObject("request", new JsonObject())
+						.mapTo(VisibleIdentityRequest.class);
+			} catch (RuntimeException e) {
+				log.error("communication.visiblesIdentities : invalid request payload", e);
+				message.fail(400, "invalid.request");
+				return;
+			}
+			if (StringUtils.isEmpty(request.getUserId())) {
+				log.error("communication.visiblesIdentities : missing userId in request payload");
+				message.fail(400, "invalid.userId");
+				return;
+			}
 			communicationService.visiblesIdentities(request, responseHandler);
 			break;
 		case "usersCanSeeMe":
