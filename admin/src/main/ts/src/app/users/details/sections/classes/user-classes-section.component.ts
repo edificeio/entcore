@@ -4,6 +4,7 @@ import {AbstractSection} from '../abstract.section';
 import { SpinnerService } from 'ngx-ode-ui';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { Classe } from 'src/app/core/store/models/user.model';
+import { PlatformInfoService } from 'src/app/core/services/platform-info.service';
 
 @Component({
     selector: 'ode-user-classes-section',
@@ -16,6 +17,7 @@ export class UserClassesSectionComponent extends AbstractSection implements OnIn
     public showClassesLightbox = false;
     public inputFilter = '';
     public filteredClasses: Classe[] = [];
+    public supportsHeadTeacher = true;
 
     constructor(
         public spinner: SpinnerService,
@@ -27,11 +29,21 @@ export class UserClassesSectionComponent extends AbstractSection implements OnIn
     ngOnInit() {
         this.updateLightboxClasses();
         this.filterManageableGroups();
+        this.updateHeadTeacherSupport();
     }
 
     ngOnChanges() {
         this.updateLightboxClasses();
         this.filterManageableGroups();
+        this.updateHeadTeacherSupport();
+    }
+
+    private updateHeadTeacherSupport() {
+        PlatformInfoService.getNoHeadTeacherSources().then(sources => {
+            const source = this.structure && this.structure.source;
+            this.supportsHeadTeacher = !source || sources.indexOf(source) === -1;
+            this.cdRef.markForCheck();
+        });
     }
 
     private filterManageableGroups() {

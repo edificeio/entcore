@@ -1264,7 +1264,12 @@ public class ManualFeeder extends BusModBase {
 				@Override
 				public void handle(Structure struct)
 				{
-						struct.createHeadTeacherGroupIfAbsent(classExternalId);
+						if (struct.createHeadTeacherGroupIfAbsent(classExternalId) == null) {
+							// null in case we use an unauthorized source, as AAF1D
+							tx.rollback();
+							sendError(message, "head.teacher.unsupported.source");
+							return;
+						}
 						User.addHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
 
 						tx.commit(new Handler<Message<JsonObject>>()
@@ -1297,7 +1302,12 @@ public class ManualFeeder extends BusModBase {
 				@Override
 				public void handle(Structure struct)
 				{
-						struct.createHeadTeacherGroupIfAbsent(classExternalId);
+						if (struct.createHeadTeacherGroupIfAbsent(classExternalId) == null) {
+							// null in case we use an unauthorized source, as AAF1D
+							tx.rollback();
+							sendError(message, "head.teacher.unsupported.source");
+							return;
+						}
 						User.updateHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
 
 						tx.commit(new Handler<Message<JsonObject>>()

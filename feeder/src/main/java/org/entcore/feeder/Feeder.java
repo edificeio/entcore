@@ -54,6 +54,7 @@ import org.entcore.feeder.dictionary.structures.Group;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.ImporterTask;
 import org.entcore.feeder.dictionary.structures.PostImport;
+import org.entcore.feeder.dictionary.structures.Structure;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.structures.User;
 import org.entcore.feeder.export.Exporter;
@@ -145,6 +146,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		MongoDb.getInstance().init(vertx.eventBus(), node + "wse.mongodb.persistor");
 		TransactionManager.getInstance().setNeo4j(neo4j);
 		EventStoreFactory.getFactory().setVertx(vertx);
+		Structure.initHeadTeacherGroupPolicy(config.getJsonArray("no-head-teacher-group-sources",
+				Structure.DEFAULT_NO_HEAD_TEACHER_GROUP_SOURCES));
 		defaultFeed = config.getString("feeder", "AAF");
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
