@@ -37,6 +37,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
@@ -155,9 +156,13 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void visiblesIdentities(String userId, boolean itself, boolean includeHiddenCommunityGroups, JsonObject params, Handler<Either<String, JsonArray>> responseHandler) {
+	public void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
 		String expectIdUserFilter = "";
 		String expectIdVisiblesFilter = "";
+		JsonObject params = visibleIdentityRequest.getParams();
+		boolean itself = visibleIdentityRequest.isItSelf();
+		boolean includeHiddenCommunityGroups = visibleIdentityRequest.isIncludeHiddenCommunity();
+		String userId = visibleIdentityRequest.getUserId();
 		if (params.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
 			expectIdUserFilter = " AND m.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
 			expectIdVisiblesFilter = " AND visibles.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";

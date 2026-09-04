@@ -41,6 +41,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
@@ -346,69 +347,63 @@ public class CommunicationController extends BaseController {
 	@BusAddress("wse.communication.users")
 	public void visibleUsers(final Message<JsonObject> message) {
 		String userId = message.body().getString("userId");
-		if (userId != null && !userId.trim().isEmpty()) {
-			String action = message.body().getString("action", "");
-			String schoolId = message.body().getString("schoolId");
-			JsonArray expectedTypes = message.body().getJsonArray("expectedTypes");
-			Handler<Either<String, JsonArray>> responseHandler = new Handler<Either<String, JsonArray>>() {
+		String action = message.body().getString("action", "");
+		String schoolId = message.body().getString("schoolId");
+		JsonArray expectedTypes = message.body().getJsonArray("expectedTypes");
+		Handler<Either<String, JsonArray>> responseHandler = new Handler<Either<String, JsonArray>>() {
 
-				@Override
-				public void handle(Either<String, JsonArray> res) {
-					JsonArray j;
-					if (res.isRight()) {
-						j = res.right().getValue();
-					} else {
-						log.warn(res.left().getValue());
-						j = new JsonArray();
-					}
-					message.reply(j);
+			@Override
+			public void handle(Either<String, JsonArray> res) {
+				JsonArray j;
+				if (res.isRight()) {
+					j = res.right().getValue();
+				} else {
+					log.warn(res.left().getValue());
+					j = new JsonArray();
 				}
-			};
-			switch (action) {
-			case "visibleUsers":
-				String preFilter = message.body().getString("preFilter");
-				String customReturn = message.body().getString("customReturn");
-				JsonObject ap = message.body().getJsonObject("additionnalParams");
-				boolean itSelf = message.body().getBoolean("itself", false);
-				boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
-						message.body().getBoolean("mygroup", false);
-				boolean profile = message.body().getBoolean("profile", true);
-				String userProfile = message.body().getString("userProfile", null);
-				boolean reverseUnion = message.body().getBoolean("reverseUnion", false);
-				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
-						profile, preFilter, customReturn, ap, userProfile, reverseUnion, responseHandler);
-				break;
-			case "visibleUsersForShare":
-				String search = message.body().getString("search");
-				JsonArray userIds =  message.body().getJsonArray("userIds");
-				communicationService.visibleUsersForShare(userId, search, userIds, responseHandler);
-				break;
-			case "visiblesIdentities":
-				boolean itself = message.body().getBoolean("itself", false);
-				JsonObject params = message.body().getJsonObject("params");
-				boolean hidden = message.body().getBoolean("hidden", false);
-				communicationService.visiblesIdentities(userId, itself, hidden, params, responseHandler);
-				break;
-			case "usersCanSeeMe":
-				communicationService.usersCanSeeMe(userId, responseHandler);
-				break;
-			case "visibleProfilsGroups":
-				String pF = message.body().getString("preFilter");
-				String c = message.body().getString("customReturn");
-				JsonObject p = message.body().getJsonObject("additionnalParams");
-				communicationService.visibleProfilsGroups(userId, c, p, pF, responseHandler);
-				break;
-			case "visibleManualGroups":
-				String cr = message.body().getString("customReturn");
-				JsonObject pa = message.body().getJsonObject("additionnalParams");
-				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
-				break;
-			default:
-				message.reply(new JsonArray());
-				break;
+				message.reply(j);
 			}
-		} else {
+		};
+		switch (action) {
+		case "visibleUsers":
+			String preFilter = message.body().getString("preFilter");
+			String customReturn = message.body().getString("customReturn");
+			JsonObject ap = message.body().getJsonObject("additionnalParams");
+			boolean itSelf = message.body().getBoolean("itself", false);
+			boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
+					message.body().getBoolean("mygroup", false);
+			boolean profile = message.body().getBoolean("profile", true);
+			String userProfile = message.body().getString("userProfile", null);
+			boolean reverseUnion = message.body().getBoolean("reverseUnion", false);
+			communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
+					profile, preFilter, customReturn, ap, userProfile, reverseUnion, responseHandler);
+			break;
+		case "visibleUsersForShare":
+			String search = message.body().getString("search");
+			JsonArray userIds =  message.body().getJsonArray("userIds");
+			communicationService.visibleUsersForShare(userId, search, userIds, responseHandler);
+			break;
+		case "visiblesIdentities":
+			VisibleIdentityRequest request = message.body().getJsonObject("request", new JsonObject()).mapTo(VisibleIdentityRequest.class);
+			communicationService.visiblesIdentities(request, responseHandler);
+			break;
+		case "usersCanSeeMe":
+			communicationService.usersCanSeeMe(userId, responseHandler);
+			break;
+		case "visibleProfilsGroups":
+			String pF = message.body().getString("preFilter");
+			String c = message.body().getString("customReturn");
+			JsonObject p = message.body().getJsonObject("additionnalParams");
+			communicationService.visibleProfilsGroups(userId, c, p, pF, responseHandler);
+			break;
+		case "visibleManualGroups":
+			String cr = message.body().getString("customReturn");
+			JsonObject pa = message.body().getJsonObject("additionnalParams");
+			communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
+			break;
+		default:
 			message.reply(new JsonArray());
+			break;
 		}
 	}
 

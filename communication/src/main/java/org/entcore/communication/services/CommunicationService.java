@@ -31,6 +31,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 
 public interface CommunicationService {
 	String IMPOSSIBLE_TO_CHANGE_DIRECTION = "impossible to change direction";
@@ -72,13 +73,10 @@ public interface CommunicationService {
 	/**
 	 * Return visible identities (ie: id + isUser), of the user, params can precise a list of group and users on which filter to reduce the scope of the query
 	 *
-	 * @param userId the id of the user doing the query
-	 * @param itself include itself in result
-	 * @param includeHiddenCommunityGroups include hidden community group
-	 * @param params may contain a list of id to reduce the scope
+	 * @param visibleIdentityRequest contains parameters for query visibles identities
 	 * @param responseHandler
 	 */
-	void visiblesIdentities(String userId, boolean itself, boolean includeHiddenCommunityGroups, JsonObject params, Handler<Either<String, JsonArray>> responseHandler);
+	void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler);
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 
