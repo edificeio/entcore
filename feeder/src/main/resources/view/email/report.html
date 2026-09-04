@@ -18,6 +18,11 @@
 	- {{.}}<br  />
 {{/loadedFiles}}
 <br />
+{{#i18n}}report.Structure.ignored{{/i18n}} : <br />
+{{#ignored.Structure}}
+	- {{reason}} : {{object.externalId}}, {{object.name}}.<br />
+{{/ignored.Structure}}
+<br />
 {{#i18n}}report.Teacher.ignored{{/i18n}} : <br />
 {{#ignored.Teacher}}
 	- {{reason}} : {{object.externalId}}, {{object.lastName}}, {{object.firstName}}.<br />
