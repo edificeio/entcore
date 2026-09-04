@@ -46,21 +46,6 @@ export const options = {
     checks: ["rate == 1.00"],
   },
   scenarios: {
-    /*testClassEndpoints: {
-      executor: "per-vu-iterations",
-      exec: "testClassEndpoints",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testStructureEndpoints: {
-      executor: "per-vu-iterations",
-      exec: "testStructureEndpoints",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    */
     testUserEndpoints: {
       executor: "per-vu-iterations",
       exec: "testUserEndpoints",

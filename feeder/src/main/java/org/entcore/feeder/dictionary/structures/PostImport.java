@@ -293,23 +293,7 @@ public class PostImport {
 					if ("ok".equals(message.body().getString("status")) && ids != null &&
 							ids.size() == 1) {
 						logger.info(e-> "SUCCEED get ids for applyComRules " + ids.getJsonObject(0).getJsonArray("ids"));
-						JsonObject j = new JsonObject()
-								.put("action", "initAndApplyDefaultCommunicationRules")
-								.put("schoolIds", (ids.getJsonObject(0))
-										.getJsonArray("ids", new JsonArray()));
-						logger.info(e-> "START apply applyComRules");
-						eb.request("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
-								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> event) {
-								if (!"ok".equals(event.body().getString("status"))) {
-									logger.error(e-> "FAILED to apply Communication rules"+ event.body().getString("message"));
-								} else {
-									logger.info(e-> "SUCCEED to apply Communication rules", true);
-								}
-								handler.handle(null);
-							}
-						}));
+						applyComRulesByPack(ids.getJsonObject(0).getJsonArray("ids", new JsonArray()), 0, handler);
 					} else {
 						logger.error(e-> "FAILED get ids for applyComRules: "+message.body().getString("message"));
 						handler.handle(null);
@@ -320,6 +304,39 @@ public class PostImport {
 			logger.info(e-> "SKIP applyComRules");
 			handler.handle(null);
 		}
+	}
+
+	private void applyComRulesByPack(final JsonArray schoolIds, final int fromIndex, final Handler<Void> handler) {
+		if (schoolIds == null || fromIndex >= schoolIds.size()) {
+			logger.info(e-> "SUCCEED to apply Communication rules", true);
+			handler.handle(null);
+			return;
+		}
+		// Process the structures by pack : sending every schoolId in a single request makes the
+		// communication module compute all user/group links at once, which is too much pressure.
+		final int packSize = config.getInteger("apply-communication-rules-pack-size", 25);
+		final int toIndex = Math.min(fromIndex + packSize, schoolIds.size());
+		final JsonArray pack = new JsonArray();
+		for (int i = fromIndex; i < toIndex; i++) {
+			pack.add(schoolIds.getValue(i));
+		}
+		final JsonObject j = new JsonObject()
+				.put("action", "initAndApplyDefaultCommunicationRules")
+				.put("schoolIds", pack);
+		logger.info(e-> "START apply applyComRules pack [" + fromIndex + "-" + toIndex + "/" + schoolIds.size() + "]");
+		eb.request("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
+				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if (!"ok".equals(event.body().getString("status"))) {
+					logger.error(e-> "FAILED to apply Communication rules pack [" + fromIndex + "-" + toIndex + "], pack " + pack + " : " + event.body().getString("message"));
+				} else {
+					logger.info(e-> "SUCCEED apply applyComRules pack [" + fromIndex + "-" + toIndex + "/" + schoolIds.size() + "]");
+				}
+				// continue with the next pack (best effort : keep going even if a pack failed)
+				applyComRulesByPack(schoolIds, toIndex, handler);
+			}
+		}));
 	}
 
 	private void fixIncorrectStorages()

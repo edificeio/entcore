@@ -28,6 +28,9 @@ import io.vertx.core.json.JsonObject;
 
 public class CleanImportProcessingGlobal extends BaseImportProcessing {
 
+	// Default number of structures whose empty-class cleanup is committed together.
+	// Overridable via the "remove-empty-classes-batch-size" config key.
+	private static final int DEFAULT_REMOVE_EMPTY_CLASSES_BATCH_SIZE = 25;
 
 	protected CleanImportProcessingGlobal(String path, Vertx vertx) {
 		super(path, vertx);
@@ -73,14 +76,20 @@ public class CleanImportProcessingGlobal extends BaseImportProcessing {
 	}
 
 	@Override
-	protected void preCommit() {
-		log.info(e-> "preCommit clean import process global", true);
+	protected Future<Void> postCommit() {
+		log.info(e-> "postCommit clean import process global", true);
 		final JsonArray importPrefixList = importer.getPrefixToImportList();
 
 		if (importPrefixList == null || importPrefixList.isEmpty()) {
 			log.info(e-> "tx removeEmptyClasses", true);
-			importer.removeEmptyClasses();
+			final int batchSize = vertx.getOrCreateContext().config()
+					.getInteger("remove-empty-classes-batch-size", DEFAULT_REMOVE_EMPTY_CLASSES_BATCH_SIZE);
+			return importer.removeEmptyClasses(batchSize)
+					.onSuccess(r -> log.info(e-> "SUCCEED tx removeEmptyClasses", true))
+					.onFailure(err -> log.error(e-> "FAILED tx removeEmptyClasses", err))
+					.mapEmpty();
 		}
+		return Future.succeededFuture();
 	}
 
 	@Override

@@ -320,8 +320,14 @@ public class Importer {
 	}
 
 	public void persist(final Handler<Message<JsonObject>> handler) {
-		if (transactionHelper != null) {
-			transactionHelper.commit(new Handler<Message<JsonObject>>() {
+		// Capture and clear the helper BEFORE committing : commit() can complete
+		// synchronously (when the transaction is empty), in which case reinitTransaction()
+		// installs a fresh helper right away. Nulling the field after the commit would then
+		// clobber that fresh helper, leaving the next processing step with no transaction.
+		final TransactionHelper th = transactionHelper;
+		transactionHelper = null;
+		if (th != null) {
+			th.commit(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					reinitTransaction();
@@ -331,7 +337,6 @@ public class Importer {
 				}
 			});
 		}
-		transactionHelper = null;
 	}
 
 	public void flush(Handler<Message<JsonObject>> handler) {
@@ -961,27 +966,43 @@ public class Importer {
 		transactionHelper.add(query3, null);
 	}
 
-	public void removeEmptyClasses() {
-		// transactionHelper.add("MATCH (c:Class) set c.notEmptyClass = false;", null);
-		// transactionHelper.add("MATCH (c:Class)<-[:DEPENDS]-(:Group)<-[:IN]-(:User) with distinct c set c.notEmptyClass = true;", null);
-		// transactionHelper.add("MATCH (c:Class {notEmptyClass : false})<-[r1:DEPENDS]-(g:Group) DETACH DELETE c, g, r1", null);
-
-		transactionHelper.add("MATCH (c:Class)<-[:DEPENDS]-(g:Group) with distinct c, sum(COALESCE(g.nbUsers, 4200)) as cNbUsers set c.cNbUsers = cNbUsers;", null);
-		transactionHelper.add("MATCH (c:Class {cNbUsers:0})<-[r1:DEPENDS]-(g:Group) DETACH DELETE c, g, r1", null);
-
-		// prevent difference between relationships and properties
-		String query2 =
-				"MATCH (u:User) " +
-				"WHERE NOT(HAS(u.deleteDate)) AND has(u.classes) AND LENGTH(u.classes) > 0 " +
-				"AND NOT(u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Class)) " +
-				"SET u.classes = [];";
-		transactionHelper.add(query2, null);
-		String query3 =
-				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-				"WHERE has(u.classes) " +
-				"WITH u, collect(c.externalId) as classes " +
-				"SET u.classes = classes";
-		transactionHelper.add(query3, null);
+	// batchSize : number of structures whose empty-class cleanup is committed together. Bounds
+	// the transaction size : AAF can be incremental, so these queries must be scoped to the
+	// structures imported in this run instead of sweeping the whole DB (neo4j OOM).
+	public Future<JsonArray> removeEmptyClasses(int batchSize) {
+		final List<String> structures = new ArrayList<>(structuresImportedExternalId);
+		Future<JsonArray> chain = Future.succeededFuture(new JsonArray());
+		for (int i = 0; i < structures.size(); i += batchSize) {
+			final List<String> batch = structures.subList(i, Math.min(i + batchSize, structures.size()));
+			chain = chain.compose(r -> {
+				for (String structureExternalId : batch) {
+					final JsonObject params = new JsonObject().put("structureExternalId", structureExternalId);
+					// recompute per-class user counts, then delete the empty classes of this structure
+					transactionHelper.add(
+							"MATCH (:Structure {externalId:{structureExternalId}})<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g:Group) " +
+							"WITH distinct c, sum(COALESCE(g.nbUsers, 4200)) as cNbUsers SET c.cNbUsers = cNbUsers;", params);
+					transactionHelper.add(
+							"MATCH (:Structure {externalId:{structureExternalId}})<-[:BELONGS]-(c:Class {cNbUsers:0})<-[r1:DEPENDS]-(g:Group) " +
+							"DETACH DELETE c, g, r1", params);
+					// prevent difference between relationships and properties (denormalized u.classes)
+					// for users of this structure : reset those left without any class membership...
+					transactionHelper.add(
+							"MATCH (:Structure {externalId:{structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+							"WHERE NOT(HAS(u.deleteDate)) AND has(u.classes) AND LENGTH(u.classes) > 0 " +
+							"AND NOT(u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Class)) " +
+							"WITH DISTINCT u SET u.classes = [];", params);
+					// ...and recompute the full class list for those still in classes.
+					transactionHelper.add(
+							"MATCH (:Structure {externalId:{structureExternalId}})<-[:BELONGS]-(:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+							"WHERE has(u.classes) WITH DISTINCT u " +
+							"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+							"WITH u, collect(c.externalId) as classes " +
+							"SET u.classes = classes", params);
+				}
+				return transactionHelper.commit();
+			});
+		}
+		return chain;
 	}
 
 	protected static FeederLogger logger(final String method, final String prefix){
