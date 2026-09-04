@@ -19,6 +19,7 @@
 
 package org.entcore.conversation.service.impl;
 
+import com.google.common.collect.Lists;
 import fr.wseduc.transformer.IContentTransformerClient;
 import fr.wseduc.transformer.to.ContentTransformerFormat;
 import fr.wseduc.transformer.to.ContentTransformerRequest;
@@ -43,6 +44,7 @@ import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.utils.Config;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
@@ -53,12 +55,12 @@ import org.entcore.conversation.util.MessageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.user.UserUtils.findVisibleIdentity;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 public class SqlConversationService implements ConversationService{
@@ -146,7 +148,7 @@ public class SqlConversationService implements ConversationService{
 		eb.consumer("conversation.legacy.search.visible", message -> {
 			final JsonObject payload = (JsonObject) message.body();
 			final LegacySearchVisibleRequest request = payload.mapTo(LegacySearchVisibleRequest.class);
-			this.doFindVisibleRecipients(request.getParentMessageId(), request.getUserId(),
+			this.doFindVisibleRecipients(request.getUserId(),
 				request.getLanguage(), request.getSearch())
 				.onSuccess(message::reply)
 				.onFailure(th -> {
@@ -1192,101 +1194,66 @@ public class SqlConversationService implements ConversationService{
 
 
 	@Override
-	public void findVisibleRecipients(final String parentMessageId, final UserInfos user,
+	public void findVisibleRecipients(final UserInfos user,
 			final String acceptLanguage, final String search, final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) {
 			return;
 		}
-		doFindVisibleRecipients(parentMessageId, user.getUserId(), acceptLanguage, search)
+		doFindVisibleRecipients(user.getUserId(), acceptLanguage, search)
 			.onSuccess(data -> result.handle(new Either.Right<>(data)))
 			.onFailure(th -> result.handle(new Either.Left<>(th.getMessage())));
 	}
 
-	private Future<JsonObject> doFindVisibleRecipients(final String parentMessageId, final String userId,
+	private Future<JsonObject> doFindVisibleRecipients(final String userId,
 																						  final String acceptLanguage, final String search) {
 		final Promise<JsonObject> promise = Promise.promise();
-		final JsonObject visible = new JsonObject();
-
-		final JsonObject params = new JsonObject();
-
-		final String preFilter;
+		String sanitizedSearch = null;
 		if (isNotEmpty(search)) {
-			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
-			params.put("search", StringValidation.sanitize(search));
-		} else {
-			preFilter = null;
+			sanitizedSearch = StringValidation.sanitize(search);
 		}
-
-		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
-			//FIXME This query has a bug => it always fail ! Dead code ?
-			String getMessageQuery = "SELECT m.* FROM " + messageTable +
-				" WHERE id = ?";
-			sql.prepared(getMessageQuery, new fr.wseduc.webutils.collections.JsonArray().add(parentMessageId),
-				SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-				public void handle(Either<String, JsonObject> event) {
-					if(event.isLeft()){
-						promise.fail(event.left().getValue());
-						return;
-					}
-
-					final JsonArray to = event.right().getValue().getJsonArray("to");
-					final JsonArray cc = event.right().getValue().getJsonArray("cc");
-
-					params.put("to", to)
-						.put("cc", cc);
-
-					String customReturn =
-							"MATCH (v:Visible) " +
-							"WHERE (v.id = visibles.id OR v.id IN {to} OR v.id IN {cc}) " +
-							"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
-							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-							"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile ";
-					callFindVisibles(userId, acceptLanguage, visible, params, preFilter, customReturn).onComplete(promise);
-				}
-			}));
-		} else {
-			String customReturn =
-					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
-					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-					"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile";
-			callFindVisibles(userId, acceptLanguage, visible, params, preFilter, customReturn).onComplete(promise);
-		}
+		callFindVisibles(userId, sanitizedSearch, acceptLanguage).onComplete(promise);
 		return promise.future();
 	}
 
-	private Future<JsonObject> callFindVisibles(final String userId, final String acceptLanguage,
-			final JsonObject visible, JsonObject params, String preFilter, String customReturn) {
+	private Future<JsonObject> callFindVisibles(final String userId, String search, String acceptLanguage) {
 		final Promise<JsonObject> promise = Promise.promise();
-		findVisibles(eb, userId, customReturn, params, true, true, false, acceptLanguage, preFilter, visibles -> {
-      JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
-      JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
-      visible.put("groups", groups).put("users", users);
+		VisibleIdentityRequest request = new VisibleIdentityRequest()
+												.setItSelf(true)
+												.setUserId(userId)
+												.setIncludeHiddenCommunity(false)
+												.setPublicDetails(true)
+												.setSearch(search);
+		findVisibleIdentity(eb, request).onSuccess(visibles -> {
+		  	JsonObject visible = new JsonObject();
+			JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
+		  	JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+		  	visible.put("groups", groups).put("users", users);
 
-      log.info("callFindVisibles Count = " + visibles.size());
+			  log.info("callFindVisibles Count = " + visibles.size());
 
-      for (Object o: visibles) {
-        if (!(o instanceof JsonObject)) continue;
-        JsonObject j = (JsonObject) o;
-        // NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group".
-        // TODO It should be defined more clearly. See #39835
+			  for (Object o: visibles) {
+				if (!(o instanceof JsonObject)) continue;
+				JsonObject j = (JsonObject) o;
+				// NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group".
+				// TODO It should be defined more clearly. See #39835
 
-        if (j.getString("name") != null) {
-          if( j.getString("groupProfile") == null ) {
-            // This is a Manual group, without a clearly defined "profile" (neither Student nor Teacher nor...) => Set it as "Manual"
-            j.put("groupProfile", "Manual");
-          }
-          j.remove("displayName");
-          UserUtils.groupDisplayName(j, acceptLanguage);
-          j.put("profile", j.remove("groupProfile"));	// JCBE: set the *profile* field for this Group.
-          groups.add(j);
-        } else {
-          j.remove("name");
-          j.remove("groupProfile");	// JCBE: remove this unused and empty data for a User.
-          users.add(j);
-        }
-      }
-      promise.complete(visible);
-    });
+				if (j.getString("name") != null) {
+				  if( j.getString("groupProfile") == null ) {
+					// This is a Manual group, without a clearly defined "profile" (neither Student nor Teacher nor...) => Set it as "Manual"
+					j.put("groupProfile", "Manual");
+				  }
+				  j.remove("displayName");
+				  UserUtils.groupDisplayName(j, acceptLanguage);
+				  j.put("profile", j.remove("groupProfile"));	// JCBE: set the *profile* field for this Group.
+				  groups.add(j);
+				} else {
+				  j.remove("name");
+				  j.remove("groupProfile");	// JCBE: remove this unused and empty data for a User.
+				  users.add(j);
+				}
+			  }
+			  promise.complete(visible);
+			});
 		return promise.future();
 	}
 
