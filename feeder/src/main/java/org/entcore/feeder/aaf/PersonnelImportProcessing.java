@@ -42,9 +42,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		"DIRECTION",
 		"DIRECTION CHEF D'ETABLISSEMENT",
 		"DIRECTION CHEF D&apos;ETABLISSEMENT",
-		"DIRECTION ADJOINT AU CHEF ETABLISSEMENT",
-		"CHEF D'ETABLISSEMENT ADJOINT",
-		"CHEF D&apos;ETABLISSEMENT ADJOINT"
+		"DIRECTION ADJOINT AU CHEF ETABLISSEMENT"
 	);
 
 	protected PersonnelImportProcessing(String path, Vertx vertx) {
