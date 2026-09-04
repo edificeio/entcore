@@ -45,7 +45,14 @@ export const useCustomization = () => {
       toast.error(
         t('homepage.customize.form.load.error', { code: 'preferences' }),
       );
-  }, [isLanguagesError, isFontsError, isBackgroundsError, isPreferencesError]);
+  }, [
+    isLanguagesError,
+    isFontsError,
+    isBackgroundsError,
+    isPreferencesError,
+    toast,
+    t,
+  ]);
 
   return {
     languages,
