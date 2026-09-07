@@ -57,6 +57,30 @@ public class UserLinkServiceImpl implements UserLinkService {
     }
 
     @Override
+    public Future<UpdateLinkResult> updateLink(LinkDTO link, String userId) {
+        Promise<UpdateLinkResult> promise = Promise.promise();
+        JsonArray params = new JsonArray();
+        params.add(link.getName())
+                .add(link.getUrl())
+                .add(link.getId().toString())
+                .add(userId);
+        sql.prepared(" UPDATE directory.user_link SET name = ?, url = ? " +
+                        " WHERE id = ?::UUID and user_id = ?  ",
+                params, message -> {
+                    Either<String, JsonObject> validatedResult = SqlResult.validRowsResult(message);
+                    if (validatedResult.isLeft()) {
+                        promise.fail(validatedResult.left().getValue());
+                    } else if (validatedResult.right().getValue().getLong("rows", 0L) == 0L) {
+                        // Aucune ligne update, les données sont erronnée
+                        promise.complete(UpdateLinkResult.NOT_FOUND);
+                    } else {
+                        promise.complete(UpdateLinkResult.UPDATED);
+                    }
+                });
+        return promise.future();
+    }
+
+    @Override
     public Future<List<LinkDTO>> getLinks(String userId) {
         Promise<List<LinkDTO>> promise = Promise.promise();
         sql.prepared("SELECT id, name, url FROM directory.user_link WHERE user_id = ? ORDER BY lower(name) ASC NULLS LAST, id",

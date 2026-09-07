@@ -3,6 +3,7 @@ package org.entcore.directory.controllers;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
@@ -120,6 +121,47 @@ public class UserLinkController extends BaseController {
                         renderError(request);
                     });
         });
+    }
+
+    @Put("/user-links/:id")
+    @SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
+    public void updateLink(final HttpServerRequest request) {
+        UserUtils.getAuthenticatedUserInfos(eb, request)
+                .onSuccess(  user -> {
+                    bodyToClass(request, LinkDTO.class)
+                            .onSuccess(link -> {
+                                if (link == null) {
+                                    badRequest(request, "Request body can't be null");
+                                    return;
+                                }
+                                final UUID linkId;
+                                try {
+                                    linkId = UUID.fromString(request.params().get("id"));
+                                } catch( Exception e) {
+                                    badRequest(request, "path params should be an UUID");
+                                    return;
+                                }
+                                link.setId(linkId);
+                                final String validationError = UserLinkValidator.validatePayload(link);
+                                if (validationError != null) {
+                                    badRequest(request, validationError);
+                                    return;
+                                }
+                                userLinkService.updateLink(link, user.getUserId())
+                                        .onSuccess(result -> {
+                                            if (result == UserLinkService.UpdateLinkResult.NOT_FOUND) {
+                                                notFound(request);
+                                            } else {
+                                                ok(request);
+                                            }
+                                        })
+                                        .onFailure(t -> {
+                                            log.error("An error occured during update user link", t);
+                                            renderError(request);
+                                        });
+                            })
+                            .onFailure(t -> log.error("Error while decoding request body", t));
+                }).onFailure( t ->  unauthorized(request));
     }
 
 }

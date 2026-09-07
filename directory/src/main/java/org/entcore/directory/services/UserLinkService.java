@@ -23,6 +23,14 @@ public interface UserLinkService {
         NOT_FOUND
     }
 
+    /** Outcome of a link deletion. */
+    enum UpdateLinkResult {
+        UPDATED,
+        /** No such link for this user : unknown id, or link owned by somebody else */
+        NOT_FOUND
+    }
+
+
     /**
      * Create a new link for widget link utils attach to the user
      * @param link The link to create
@@ -30,6 +38,8 @@ public interface UserLinkService {
      * @return the result of the operation
      */
     Future<CreateLinkResult> createLink(LinkDTO link, String userId);
+
+    Future<UpdateLinkResult> updateLink(LinkDTO link, String userId);
 
     /**
      * Get links for widget link utils attach to the user
