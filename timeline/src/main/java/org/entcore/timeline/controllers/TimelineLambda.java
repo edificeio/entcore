@@ -100,17 +100,26 @@ public final class TimelineLambda {
 
 	private static JsonObject computeTimeLineI18n(String language, Map<String, String> eventsI18n, Map<String, JsonObject> lazyEventsI18n) {
 		String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-		String i18n = eventI18n != null ? eventI18n : "}";
 		JsonObject timelineI18n;
-		try {
-			timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-			lazyEventsI18n.put(language, timelineI18n);
-			if(eventI18n != null) {
-				i18nEventsHash.put(language, eventI18n.hashCode());
-			}
-		} catch (DecodeException de) {
+		if (eventI18n == null) {
 			timelineI18n = new JsonObject();
-			log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
+		} else {
+			try {
+				// current format: a valid standalone JSON object
+				timelineI18n = new JsonObject(eventI18n);
+			} catch (DecodeException de) {
+				try {
+					// legacy format: a headless fragment with a trailing comma, missing braces
+					timelineI18n = new JsonObject("{" + eventI18n.substring(0, eventI18n.length() - 1) + "}");
+				} catch (DecodeException de2) {
+					timelineI18n = new JsonObject();
+					log.error("Bad json : " + eventI18n, de2);
+				}
+			}
+		}
+		lazyEventsI18n.put(language, timelineI18n);
+		if (eventI18n != null) {
+			i18nEventsHash.put(language, eventI18n.hashCode());
 		}
 		return timelineI18n;
 	}
