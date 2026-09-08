@@ -15,7 +15,7 @@
   border-radius: var(--primitive-border-radius-2xl);
   /* Selected theme background, hardcoded for now. */
   background-color: var(--primitive-blue-200);
-  font-family: var(--primitive-font-family-title);
+  font-family: var(--font-family-title);
 }
 
 .customization-preview.ff-dyslexic {
