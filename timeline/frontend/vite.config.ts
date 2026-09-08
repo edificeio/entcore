@@ -6,18 +6,25 @@ import { createDevProxyConfig } from './vite/plugins/devProxy';
 import { serveLocalI18nPlugin } from './vite/plugins/serveLocalI18n';
 
 export default ({ mode }: { mode: string }) => {
+  // In mock mode there is no recette/backend to fall back to: proxying
+  // anything MSW doesn't intercept just produces ECONNREFUSED noise, so the
+  // proxy is disabled entirely and MSW/serveLocalI18nPlugin cover everything.
+  const isMock = process.env.VITE_MOCK === 'true';
+
   const { headers, proxy } = createDevProxyConfig({
     mode,
-    routes: [
-      '/conf/public',
-      '^/(?=applications-list)',
-      '^/(?=assets)',
-      '^/(?=theme|locale|i18n|skin|languages|themes)',
-      '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
-      '^/calendar/(?!public/)',
-      '^/actualites/api/',
-      '^/communities/',
-    ],
+    routes: isMock
+      ? []
+      : [
+          '/conf/public',
+          '^/(?=applications-list)',
+          '^/(?=assets)',
+          '^/(?=theme|locale|i18n|skin|languages|themes)',
+          '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
+          '^/calendar/(?!public/)',
+          '^/actualites/api/',
+          '^/communities/',
+        ],
   });
 
   return defineConfig({
