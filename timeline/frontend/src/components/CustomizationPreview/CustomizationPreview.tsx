@@ -2,6 +2,8 @@ import {
   DYSLEXIC_FONT_ID,
   getCustomizationPreviewTexts,
 } from '~/models/customization';
+import { Background } from '~/services';
+import { getBackgroundImgSrc } from '../CustomizationForm/CustomizationForm';
 import './CustomizationPreview.css';
 
 /** Number of pictograms outlined on the right of the navigation bar. */
@@ -12,6 +14,8 @@ export type CustomizationPreviewProps = {
   selecterFontName?: string;
   /** `_id` of the language selected in the form (see GET /languages). */
   selectedLanguage: string;
+  /** Background selected in the form. */
+  selectedBackground: Background;
 };
 
 /**
@@ -33,6 +37,7 @@ const PreviewBlock = ({ className }: { className: string }) => (
 export const CustomizationPreview = ({
   selecterFontName,
   selectedLanguage,
+  selectedBackground,
 }: CustomizationPreviewProps) => {
   const fontClassName =
     selecterFontName === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
@@ -58,7 +63,15 @@ export const CustomizationPreview = ({
           <PreviewBlock className="customization-preview-block-sidebar-item" />
         </div>
 
-        <div className="customization-preview-content">
+        <div
+          className="customization-preview-content"
+          style={{
+            backgroundImage: `url(${getBackgroundImgSrc(selectedBackground)})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'right',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
           <div className="customization-preview-card">
             <div className="customization-preview-greeting-header">
               <div

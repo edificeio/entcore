@@ -29,6 +29,7 @@ export const Component = () => {
 
   const { resetChanges, saveChanges, isSaving, ...form } =
     useCustomizationForm();
+  const { selectedBackground, selectedFont, selectedLanguage } = form;
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -86,8 +87,9 @@ export const Component = () => {
           </Flex>
           {md && (
             <CustomizationPreview
-              selecterFontName={form.selectedFont}
-              selectedLanguage={form.selectedLanguage}
+              selecterFontName={selectedFont}
+              selectedLanguage={selectedLanguage}
+              selectedBackground={selectedBackground}
             />
           )}
         </Flex>
