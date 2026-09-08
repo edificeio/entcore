@@ -11,9 +11,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
     /* Customization page */
     {
       path: '/customize',
-      async lazy() {
-        return await import('~/routes/customize/customize');
-      },
+      lazy: async () => await import('~/routes/pages/customize'),
       errorElement: <PageError />,
     },
     /* Main route */

@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
+import { queryOptions } from '@tanstack/react-query';
 import { customizeService } from '../api/customizeService';
 
 /**
@@ -8,6 +8,7 @@ export const customizeQueryKeys = {
   all: () => ['customize'],
   languages: () => [...customizeQueryKeys.all(), 'languages'],
   fonts: () => [...customizeQueryKeys.all(), 'fonts'],
+  backgrounds: () => [...customizeQueryKeys.all(), 'backgrounds'],
 };
 
 /**
@@ -34,8 +35,14 @@ export const customizeQueryOptions = {
       staleTime: Infinity,
     });
   },
+  /**
+   * @returns Query options for fetching the list of available backgrounds. The query is cached indefinitely since it is not expected to change.
+   */
+  getBackgrounds() {
+    return queryOptions({
+      queryKey: customizeQueryKeys.backgrounds(),
+      queryFn: () => customizeService.listBackgrounds(),
+      staleTime: Infinity,
+    });
+  },
 };
-
-export const useLanguages = () =>
-  useQuery(customizeQueryOptions.getLanguages());
-export const useFonts = () => useQuery(customizeQueryOptions.getFonts());
