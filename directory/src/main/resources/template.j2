@@ -26,6 +26,8 @@
       "org.entcore.common.http.health.MongoProbe",
       "org.entcore.common.http.health.RedisProbe"
     ],
+    "sql": true,
+    "db-schema": "directory",
     "activation-welcome-message": {{ activationWelcomeMessage | default('true') }},
     "createdUserEmail": {{ directoryCreatedUserEmail | default('false') }},
     "classDefaultRoles": {{ directoryClassDefaultRoles | default('false') }},
