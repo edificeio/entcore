@@ -27,8 +27,4 @@
     margin: var(--primitive-spacer-32) var(--primitive-spacer-32)
       var(--primitive-spacer-32) var(--primitive-spacer-64);
   }
-  .customize-right {
-    margin: var(--primitive-spacer-32) var(--primitive-spacer-64)
-      var(--primitive-spacer-32) var(--primitive-spacer-0);
-  }
 }
