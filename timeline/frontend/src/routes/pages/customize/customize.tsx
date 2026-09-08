@@ -9,8 +9,9 @@ import {
 
 import { IconArrowLeft } from '@edifice.io/react/icons';
 
-import { CustomizeForm } from '~/components/CustomizeForm/CustomizeForm';
-import { useCustomizeForm } from '~/hooks/useCustomizeForm';
+import { useNavigate } from 'react-router-dom';
+import { CustomizationForm } from '~/components/CustomizationForm';
+import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
 import './customize.css';
 
@@ -22,14 +23,20 @@ export const loader = async () => {
 export const Component = () => {
   const { init } = useEdificeClient();
   const { md } = useBreakpoint();
+  const navigate = useNavigate();
   const { common_t } = useI18n();
 
-  const { resetChanges, saveChanges, ...form } = useCustomizeForm();
+  const { resetChanges, saveChanges, isSaving, ...form } =
+    useCustomizationForm();
 
   if (!init) return <LoadingScreen position={false} />;
 
   const handleSaveClick = () => {
     saveChanges();
+  };
+
+  const handleBackClick = () => {
+    navigate(-1);
   };
 
   return (
@@ -47,13 +54,14 @@ export const Component = () => {
               className="customize-back-button"
               leftIcon={<IconArrowLeft />}
               variant="ghost"
+              onClick={handleBackClick}
             >
               {common_t('back')}
             </Button>
             <h1>{common_t('navbar.customize')}</h1>
           </div>
 
-          <CustomizeForm form={form} />
+          <CustomizationForm form={form} />
 
           <Flex
             direction="row"
@@ -65,7 +73,11 @@ export const Component = () => {
             <Button variant="ghost" onClick={resetChanges}>
               {common_t('cancel')}
             </Button>
-            <Button variant="filled" onClick={handleSaveClick}>
+            <Button
+              variant="filled"
+              onClick={handleSaveClick}
+              disabled={isSaving}
+            >
               {common_t('save')}
             </Button>
           </Flex>
