@@ -10,6 +10,7 @@ import {
   MessageFlashListContainer,
   NotificationListContainer,
   SchoolSpaceContainer,
+  UsefulLinksContainer,
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
@@ -52,6 +53,7 @@ export const Root = () => {
           <UserSpaceContainer>
             <FavoritesContainer />
           </UserSpaceContainer>
+          <UsefulLinksContainer />
         </div>
       </PageLayout.Content>
 
