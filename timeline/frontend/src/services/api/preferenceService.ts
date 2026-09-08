@@ -1,6 +1,8 @@
 import { odeServices } from '@edifice.io/client';
 
-type UserPrefs = { homePage: { betaEnabled: boolean } | null };
+type UserPrefs = {
+  homePage: { betaEnabled: boolean } | null;
+};
 
 export const preferenceService = {
   deactivateHomepage: () => {

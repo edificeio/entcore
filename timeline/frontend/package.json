@@ -9,6 +9,7 @@
     "clean": "rm -rf dist node_modules pnpm-lock.yaml",
     "build": "vite build",
     "dev": "vite",
+    "dev:mock": "VITE_MOCK=true vite",
     "format": "prettier --write .",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
@@ -76,6 +77,11 @@
   "packageManager": "pnpm@9.12.2",
   "engines": {
     "node": ">= 20"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   },
   "nx": {}
 }
