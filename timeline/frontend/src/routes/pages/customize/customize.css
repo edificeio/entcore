@@ -12,8 +12,8 @@
 }
 
 .customize-font-choice[aria-pressed='false'] {
-  border: 2px solid var(--primitive-grey-300, #e4e4e4);
-  background-color: var(--primitive-grey-100, #f7f7f7);
+  border: 2px solid var(--primitive-grey-300);
+  background-color: var(--primitive-grey-100);
 }
 
 .customize-language-choice img {

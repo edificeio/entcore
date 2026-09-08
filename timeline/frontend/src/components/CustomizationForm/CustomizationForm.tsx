@@ -21,14 +21,24 @@ function getCountryCode(lang: string) {
   return lang;
 }
 
-const backgroundImages = import.meta.glob('../../assets/*.png', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-});
+// Background images are shipped by @edifice.io/bootstrap (aliased as @images).
+const backgroundImages = Object.entries(
+  import.meta.glob('@images/backgrounds/*.png', {
+    eager: true,
+    import: 'default',
+    query: '?url',
+  }),
+).reduce<Record<string, string>>((acc, [path, url]) => {
+  const name = path
+    .split('/')
+    .pop()!
+    .replace(/\.png$/, '');
+  acc[name] = url as string;
+  return acc;
+}, {});
 
 function getBackgroundImgSrc(background: Background) {
-  return backgroundImages[`../../assets/${background}.png`] as string;
+  return backgroundImages[background];
 }
 
 export const CustomizationForm = ({ form }: CustomizationFormProps) => {
@@ -55,12 +65,14 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
             fonts.map(({ _id, displayName }) => (
               <ChoiceButton
                 key={_id}
-                variant="font"
+                choice={{
+                  variant: 'font',
+                  _id,
+                  label: common_t(displayName),
+                  onClick: handleFontChange,
+                }}
                 isSelected={_id === selectedFont}
-                onClick={() => handleFontChange(_id)}
-              >
-                {common_t(displayName)}
-              </ChoiceButton>
+              />
             ))
           ) : (
             <ChoiceSkeleton />
@@ -75,18 +87,15 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
             backgrounds.map((background) => (
               <ChoiceButton
                 key={background}
-                variant="background"
-                aria-label={background}
                 isSelected={background === selectedBackground}
-                onClick={() => handleBackgroundChange(background)}
-              >
-                <span
-                  className="choice-button--background__img"
-                  style={{
-                    backgroundImage: `url(${getBackgroundImgSrc(background)})`,
-                  }}
-                />
-              </ChoiceButton>
+                choice={{
+                  variant: 'background',
+                  background,
+                  label: background,
+                  imgSrc: getBackgroundImgSrc(background),
+                  onClick: handleBackgroundChange,
+                }}
+              />
             ))
           ) : (
             <ChoiceSkeleton />
@@ -98,29 +107,19 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         <h3>{t('homepage.customize.form.languages')}</h3>
         <Flex gap="12" wrap="wrap">
           {languages ? (
-            languages.map((lang) => {
-              const label = t(`language.${lang}`);
-              return (
-                <ChoiceButton
-                  key={lang}
-                  variant="language"
-                  isSelected={lang === selectedLanguage}
-                  onClick={() => handleLanguageChange(lang)}
-                >
-                  <Flex direction="column" align="center" gap="8">
-                    <img
-                      className="choice-button--language__img"
-                      width={60}
-                      height={40}
-src={`https://flagcdn.com/w80/${getCountryCode(lang)}.png`}
-alt=""
-loading="lazy"
-                    />
-                    <span>{label}</span>
-                  </Flex>
-                </ChoiceButton>
-              );
-            })
+            languages.map((lang) => (
+              <ChoiceButton
+                key={lang}
+                isSelected={lang === selectedLanguage}
+                choice={{
+                  variant: 'language',
+                  lang,
+                  label: t(`language.${lang}`),
+                  imgSrc: `https://flagcdn.com/w80/${getCountryCode(lang)}.png`,
+                  onClick: handleLanguageChange,
+                }}
+              />
+            ))
           ) : (
             <ChoiceSkeleton />
           )}

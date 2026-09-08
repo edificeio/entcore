@@ -8,8 +8,8 @@
 }
 
 .choice-button[aria-pressed='true'] {
-  background-color: var(--primitive-yellow-200, #fcf3cf);
-  border: 2px solid var(--primitive-yellow-500, #ffc403);
+  background-color: var(--primitive-yellow-200);
+  border: 2px solid var(--primitive-yellow-500);
 }
 
 .choice-button[aria-pressed='false'] {
@@ -18,7 +18,7 @@
   filter: grayscale(100%);
 
   &:hover {
-    background-color: var(--primitive-yellow-200, #fcf3cf);
+    background-color: var(--primitive-yellow-200);
   }
 }
 
@@ -31,18 +31,22 @@
   }
 }
 
-.choice-button--background__img {
-  display: block;
-  width: 82px;
-  height: 42px;
-  border-radius: 12px;
-  background-repeat: no-repeat;
-  background-position: right bottom;
-  background-size: cover;
+.choice-button--background {
+  .choice-button__img {
+    display: block;
+    width: 82px;
+    height: 42px;
+    border-radius: 12px;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: cover;
+  }
 }
 
-.choice-button--language__img {
-  object-fit: cover;
-  border: 2px solid var(--primitive-white);
-  border-radius: 12px;
+.choice-button--language {
+  .choice-button__img {
+    object-fit: cover;
+    border: 2px solid var(--primitive-white);
+    border-radius: 12px;
+  }
 }
