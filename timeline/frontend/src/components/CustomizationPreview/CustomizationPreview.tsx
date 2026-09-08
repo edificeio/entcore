@@ -11,7 +11,7 @@ const NAVBAR_ICONS_COUNT = 4;
 
 export type CustomizationPreviewProps = {
   /** `_id` of the font selected in the form (see GET /themes). */
-  selecterFontName?: string;
+  selectedFont?: string;
   /** `_id` of the language selected in the form (see GET /languages). */
   selectedLanguage: string;
   /** Background selected in the form. */
@@ -35,12 +35,11 @@ const PreviewBlock = ({ className }: { className: string }) => (
  * later step.
  */
 export const CustomizationPreview = ({
-  selecterFontName,
+  selectedFont,
   selectedLanguage,
   selectedBackground,
 }: CustomizationPreviewProps) => {
-  const fontClassName =
-    selecterFontName === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
+  const fontClassName = selectedFont === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
   const { greetingText, lastInfosText } =
     getCustomizationPreviewTexts(selectedLanguage);
 

@@ -87,7 +87,7 @@ export const Component = () => {
           </Flex>
           {md && (
             <CustomizationPreview
-              selecterFontName={selectedFont}
+              selectedFont={selectedFont}
               selectedLanguage={selectedLanguage}
               selectedBackground={selectedBackground}
             />

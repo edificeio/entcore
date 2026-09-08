@@ -1,9 +1,10 @@
-import { DYSLEXIC_FONT_ID } from '~/models/customization';
 import { render, screen } from '~/mocks/setup';
+import { DYSLEXIC_FONT_ID } from '~/models/customization';
 import { CustomizationPreview } from './CustomizationPreview';
 
 const requiredProps = {
   selectedLanguage: 'fr',
+  selectedBackground: 'default' as const,
 };
 
 describe('CustomizationPreview', () => {
@@ -15,7 +16,7 @@ describe('CustomizationPreview', () => {
   });
 
   it('renders the translated texts for another selectedLanguage', () => {
-    render(<CustomizationPreview selectedLanguage="en" />);
+    render(<CustomizationPreview {...requiredProps} selectedLanguage="en" />);
 
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(screen.getByText('Latest news')).toBeInTheDocument();
@@ -24,7 +25,9 @@ describe('CustomizationPreview', () => {
   });
 
   it('falls back to French for an unknown selectedLanguage', () => {
-    render(<CustomizationPreview selectedLanguage="unknown" />);
+    render(
+      <CustomizationPreview {...requiredProps} selectedLanguage="unknown" />,
+    );
 
     expect(screen.getByText('Bonjour')).toBeInTheDocument();
     expect(screen.getByText('Dernières actualités')).toBeInTheDocument();
@@ -45,11 +48,11 @@ describe('CustomizationPreview', () => {
     );
   });
 
-  it('applies the ff-dyslexic class when selecterFontName is the dyslexic font', () => {
+  it('applies the ff-dyslexic class when selectedFont is the dyslexic font', () => {
     const { container } = render(
       <CustomizationPreview
         {...requiredProps}
-        selecterFontName={DYSLEXIC_FONT_ID}
+        selectedFont={DYSLEXIC_FONT_ID}
       />,
     );
 
@@ -58,9 +61,9 @@ describe('CustomizationPreview', () => {
     );
   });
 
-  it('does not apply the dyslexic font class for another selecterFontName', () => {
+  it('does not apply the dyslexic font class for another selectedFont', () => {
     const { container } = render(
-      <CustomizationPreview {...requiredProps} selecterFontName="default" />,
+      <CustomizationPreview {...requiredProps} selectedFont="default" />,
     );
 
     expect(container.querySelector('.customization-preview')).not.toHaveClass(
