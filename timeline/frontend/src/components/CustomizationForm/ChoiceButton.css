@@ -45,7 +45,8 @@
 
 .choice-button--language {
   .choice-button__img {
-    object-fit: cover;
+    width: 60px;
+    height: 40px;
     border: 2px solid var(--primitive-white);
     border-radius: 12px;
   }
