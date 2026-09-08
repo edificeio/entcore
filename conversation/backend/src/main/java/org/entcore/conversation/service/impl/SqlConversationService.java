@@ -19,7 +19,6 @@
 
 package org.entcore.conversation.service.impl;
 
-import com.google.common.collect.Lists;
 import fr.wseduc.transformer.IContentTransformerClient;
 import fr.wseduc.transformer.to.ContentTransformerFormat;
 import fr.wseduc.transformer.to.ContentTransformerRequest;
@@ -60,8 +59,7 @@ import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static org.entcore.common.user.UserUtils.findVisibleIdentity;
-import static org.entcore.common.user.UserUtils.findVisibles;
+import static org.entcore.common.user.UserUtils.findVisibleIdentities;
 
 public class SqlConversationService implements ConversationService{
 	public static final int DEFAULT_SENDTIMEOUT = 15 * 60 * 1000;
@@ -1223,7 +1221,7 @@ public class SqlConversationService implements ConversationService{
 												.setIncludeHiddenCommunity(false)
 												.setPublicDetails(true)
 												.setSearch(search);
-		findVisibleIdentity(eb, request).onSuccess(visibles -> {
+		findVisibleIdentities(eb, request).onSuccess(visibles -> {
 		  	JsonObject visible = new JsonObject();
 			JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
 		  	JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
