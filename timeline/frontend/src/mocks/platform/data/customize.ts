@@ -1,0 +1,9 @@
+/**
+ * Fixtures for GET /languages and GET /themes (page /customize).
+ */
+export const mockLanguages = ['fr', 'en', 'es'];
+
+export const mockThemes = [
+  { _id: 'default', displayName: 'Défaut', path: '/assets/themes/default' },
+  { _id: 'ocean', displayName: 'Océan', path: '/assets/themes/ocean' },
+];
