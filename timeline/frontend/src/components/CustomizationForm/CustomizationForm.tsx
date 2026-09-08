@@ -37,7 +37,7 @@ const backgroundImages = Object.entries(
   return acc;
 }, {});
 
-function getBackgroundImgSrc(background: Background) {
+export function getBackgroundImgSrc(background: Background) {
   return backgroundImages[background];
 }
 
