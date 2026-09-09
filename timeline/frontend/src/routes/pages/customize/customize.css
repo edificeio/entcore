@@ -1,6 +1,14 @@
 .customize-content {
-  margin: var(--primitive-spacer-16) var(--primitive-spacer-16)
-    var(--primitive-spacer-16) var(--primitive-spacer-16);
+  background-color: var(--primitive-white);
+}
+
+.customize-content-wrap {
+  display: flex;
+  margin: var(--primitive-spacer-32) var(--primitive-spacer-64);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacer-16, 16px);
+  align-self: stretch;
 }
 
 .customize-back-button {
@@ -20,6 +28,14 @@
   border: transparent 2px solid;
   box-sizing: border-box;
   border-radius: 8px;
+}
+
+.customization-form {
+  width: 100%;
+  background-color: var(--primitive-white);
+}
+.customization-form-section {
+  width: 100%;
 }
 
 @media only screen and (min-width: 768px) {

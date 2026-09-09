@@ -14,6 +14,7 @@ import {
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
+import { useBackgroundImage } from '~/hooks/useBackgroundImage';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
 
 /** Check old format URL and redirect if needed */
@@ -26,6 +27,7 @@ export const Root = () => {
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
     useNotificationsLayout();
   const { md } = useBreakpoint();
+  const { backgroundImgStyle } = useBackgroundImage();
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -36,6 +38,7 @@ export const Root = () => {
       noPadding={{
         sidebarRight: true,
       }}
+      style={backgroundImgStyle}
     >
       <PageLayout.Header onNotificationsClick={toggleNotifications} />
       <PageLayout.SidebarLeft className="bg-white">
