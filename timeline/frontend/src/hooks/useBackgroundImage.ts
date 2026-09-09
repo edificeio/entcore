@@ -1,4 +1,5 @@
-import { useUserPreferences } from '@edifice.io/react';
+import { useUiOverride, useUserPreferences } from '@edifice.io/react';
+import { useCallback } from 'react';
 import { Background } from '~/services';
 import { CustomizationPreferences } from './useCustomization';
 
@@ -18,13 +19,19 @@ const backgroundImages = Object.entries(
   return acc;
 }, {});
 
-function getBackgroundImgUrl(background: Background) {
-  return backgroundImages[background];
-}
-
 export function useBackgroundImage() {
+  const customBackgroundUrl = useUiOverride('layout.defaultBackgroundUrl');
   const { preferences } = useUserPreferences<CustomizationPreferences>();
   const background = (preferences?.background as Background) ?? 'default';
+
+  const getBackgroundImgUrl = useCallback(
+    (background: Background) => {
+      if (customBackgroundUrl && background === 'default')
+        return customBackgroundUrl.variant;
+      return backgroundImages[background];
+    },
+    [customBackgroundUrl],
+  );
 
   return {
     background,
