@@ -28,7 +28,7 @@ export const Component = () => {
   const { md, lg } = useBreakpoint();
   const { common_t } = useI18n();
 
-  const { backgroundImgStyle } = useBackgroundImage();
+  const { backgroundImgStyle, getBackgroundImgUrl } = useBackgroundImage();
   const { resetChanges, saveChanges, isSaving, ...form } =
     useCustomizationForm();
   const { selectedBackground, selectedFont, selectedLanguage } = form;
@@ -93,7 +93,7 @@ export const Component = () => {
               <CustomizationPreview
                 selectedFont={selectedFont}
                 selectedLanguage={selectedLanguage}
-                selectedBackground={selectedBackground}
+                selectedBackgroundUrl={getBackgroundImgUrl(selectedBackground)}
               />
             )}
           </Flex>

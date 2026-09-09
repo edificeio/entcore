@@ -1,9 +1,7 @@
-import { useBackgroundImage } from '~/hooks/useBackgroundImage';
 import {
   DYSLEXIC_FONT_ID,
   getCustomizationPreviewTexts,
 } from '~/models/customization';
-import { Background } from '~/services';
 import './CustomizationPreview.css';
 
 /** Number of pictograms outlined on the right of the navigation bar. */
@@ -14,8 +12,8 @@ export type CustomizationPreviewProps = {
   selectedFont?: string;
   /** `_id` of the language selected in the form (see GET /languages). */
   selectedLanguage: string;
-  /** Background selected in the form. */
-  selectedBackground: Background;
+  /** URL of the background image to display. */
+  selectedBackgroundUrl: string;
 };
 
 /**
@@ -37,9 +35,8 @@ const PreviewBlock = ({ className }: { className: string }) => (
 export const CustomizationPreview = ({
   selectedFont,
   selectedLanguage,
-  selectedBackground,
+  selectedBackgroundUrl,
 }: CustomizationPreviewProps) => {
-  const { getBackgroundImgUrl } = useBackgroundImage();
   const fontClassName = selectedFont === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
   const { greetingText, lastInfosText } =
     getCustomizationPreviewTexts(selectedLanguage);
@@ -66,7 +63,7 @@ export const CustomizationPreview = ({
         <div
           className="customization-preview-content"
           style={{
-            backgroundImage: `url(${getBackgroundImgUrl(selectedBackground)})`,
+            backgroundImage: `url(${selectedBackgroundUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'right',
             backgroundRepeat: 'no-repeat',

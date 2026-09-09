@@ -4,7 +4,7 @@ import { CustomizationPreview } from './CustomizationPreview';
 
 const requiredProps = {
   selectedLanguage: 'fr',
-  selectedBackground: 'default' as const,
+  selectedBackgroundUrl: 'https://example.test/background.png',
 };
 
 describe('CustomizationPreview', () => {
