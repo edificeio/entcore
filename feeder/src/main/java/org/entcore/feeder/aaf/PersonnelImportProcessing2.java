@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.aaf;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -34,8 +35,9 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 	}
 
 	@Override
-	protected void preCommit() {
+	protected Future<Void> preCommit() {
 		importer.getPersEducNat().createAndLinkSubjects();
+		return Future.succeededFuture();
 	}
 
 	@Override
