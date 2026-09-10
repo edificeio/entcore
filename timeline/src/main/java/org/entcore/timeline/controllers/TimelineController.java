@@ -1127,6 +1127,10 @@ public class TimelineController extends BaseController {
 							params.put("username", username);
 							params.put("uri", "/userbook/annuaire#" + senderId + "#");
 						}
+						final String resourceUri = json.getString("resourceUri", "");
+						if (resourceUri != null && !resourceUri.isEmpty()) {
+							params.put("resourceUri", resourceUri);
+						}
 						final String subject = json.getString("subject", "");
 						if(subject != null && !subject.isEmpty()) {
 							params.put("subject", subject);
