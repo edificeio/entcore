@@ -91,7 +91,9 @@ public class MergeUsersINETest {
     /**
      * <h2>Goal</h2>
      * <p>Test that when we merge 2 users with the same INE and only one user book linked to the user to be removed,
-     * we don't end up with a user linked to a userbook whose userid is not his/her.</p>
+     * we don't end up with a user linked to a userbook whose userid is not his/her own (post-merge) id. Since
+     * COCO-4598, the surviving user keeps the old (removed) user's id, and the transferred userbook's userid is set
+     * to that same old id, so the two must match.</p>
      */
     @Test
     public void testMergeSameINEWithOnlyOneUserBook(final TestContext testContext) {
@@ -107,7 +109,8 @@ public class MergeUsersINETest {
                                 final JsonArray users = result.body().getJsonArray("result");
                                 testContext.assertEquals(1, users.size(), "There should be only one user left");
                                 final JsonObject principalUser = users.getJsonObject(0);
-                                testContext.assertEquals("userToKeep1Userbook", principalUser.getString("ub_user_id"), "The connected userbook's userid is not the one that we should have. Has anything changed regarding the userbook policy ?");
+                                testContext.assertEquals("userToRemove1Userbook", principalUser.getString("id"), "The remaining user is not the expected one. Have source priorities changed ?");
+                                testContext.assertEquals(principalUser.getString("id"), principalUser.getString("ub_user_id"), "The connected userbook's userid is not the one that we should have. Has anything changed regarding the userbook policy ?");
                                 async.complete();
                             } else {
                                 testContext.fail("Could not fetch users with the same ine");
