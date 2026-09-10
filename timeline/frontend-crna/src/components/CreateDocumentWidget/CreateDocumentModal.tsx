@@ -1,28 +1,26 @@
 import { FormControl, Input, Label, Modal, RadioCard } from '@edifice.io/react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LoolDocTypeId } from '~/models/createDocument';
-import { useLoolProviders } from '~/hooks/useLoolProviders';
+import { DOC_TYPES, type DocTypeId } from '~/models/createDocument';
 import { ButtonBeta } from '@edifice.io/react';
 
-export interface LoolCreateModalProps {
+export interface CreateDocumentModalProps {
   isOpen: boolean;
-  docTypeId: LoolDocTypeId;
+  docTypeId: DocTypeId;
   nextcloudAddress: string | undefined;
   onClose: () => void;
 }
 
-export function LoolCreateModal({
+export function CreateDocumentModal({
   isOpen,
   docTypeId,
   nextcloudAddress,
   onClose,
-}: LoolCreateModalProps) {
+}: CreateDocumentModalProps) {
   const { t } = useTranslation('timeline');
-  const { data: docTypes = [], isLoading } = useLoolProviders();
 
   const [selectedDocTypeId, setSelectedDocTypeId] =
-    useState<LoolDocTypeId>(docTypeId);
+    useState<DocTypeId>(docTypeId);
   const [filename, setFilename] = useState('');
 
   // Sync pre-selection when modal opens with a new docTypeId
@@ -52,7 +50,7 @@ export function LoolCreateModal({
 
   return (
     <Modal
-      id="lool-create-modal"
+      id="create-document-modal"
       isOpen={isOpen}
       onModalClose={onClose}
       size="md"
@@ -63,26 +61,20 @@ export function LoolCreateModal({
 
       <Modal.Body>
         <div className="d-flex flex-column gap-24">
-          {isLoading ? (
-            <p>
-              {t('homepage.crna.widget.create.modal.loading', 'Chargement…')}
-            </p>
-          ) : (
-            <div className="d-flex gap-12">
-              {docTypes.map((dt) => (
-                <RadioCard
-                  key={dt.id}
-                  groupName="lool-doc-type"
-                  value={dt.id}
-                  label={dt.label}
-                  selectedValue={selectedDocTypeId}
-                  onChange={() => setSelectedDocTypeId(dt.id)}
-                />
-              ))}
-            </div>
-          )}
+          <div className="d-flex gap-12">
+            {DOC_TYPES.map((dt) => (
+              <RadioCard
+                key={dt.id}
+                groupName="create-document-doc-type"
+                value={dt.id}
+                label={dt.label}
+                selectedValue={selectedDocTypeId}
+                onChange={() => setSelectedDocTypeId(dt.id)}
+              />
+            ))}
+          </div>
 
-          <FormControl id="lool-filename">
+          <FormControl id="create-document-filename">
             <Label>
               {t(
                 'homepage.crna.widget.create.modal.filename',
