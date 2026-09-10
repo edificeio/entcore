@@ -13,6 +13,7 @@ import {
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import http from "k6/http";
 import {check, group, sleep} from "k6";
+import { AAFGeneratorBuilder } from "./_aaf-generator.ts";
 
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
@@ -161,7 +162,7 @@ function generateAAFStructure(parameters: AAFStructureGenerationParameters[]): S
     throw new Error(`Structure ${schoolName} not found after ${MAX_WAIT_STRUCTURE_IMPORTED} seconds`);
   }
   while(Date.now() < endWait) {
-    const expectedNbUsers = parameters[0].nbStudents + parameters[0].nbTeachers + parameters[0].nbStudents * 2;
+    const expectedNbUsers = parameters[0].nbStudents + parameters[0].nbTeachers + parameters[0].nbStudents * parameters[0].nbRelatives;
     const users = getUsersOfSchool(structure);
     if(users.length >= expectedNbUsers) {
       console.log(`All users found after ${MAX_WAIT_STRUCTURE_IMPORTED - Math.floor((endWait - Date.now()) / 1000)} seconds`);
@@ -187,86 +188,36 @@ function triggerAAFImport(): RefinedResponse<any> {
 }
 
 function generateAAFStructureRequest(parameters: AAFStructureGenerationParameters[]): Record<string, string> {
-  let eleves = "";
-  let teachers = "";
-  let relatives = "";
-  const structures = parameters.map((param, index) => {
-    const structureId = `STRUCTURE_${index + indexStart}`;
-    const structParam = {
-      ID: structureId,
-      UAI: "",
-      NAME: param.structureName,
+  const builder = new AAFGeneratorBuilder()
+    .withIndexStart(indexStart)
+    .withNbStructures(parameters.length);
+
+  let studentOffset = 0;
+  let teacherOffset = 0;
+  parameters.forEach((param, index) => {
+    // one class per structure: every student/teacher of that structure lands in it, like the
+    // previous hand-rolled template did with its single fixed "1TES 2" class.
+    builder
+      .withStructureNameForStructure(index, param.structureName)
+      .withNbClassesForStructure(index, 1)
+      .withNbStudentsForClass(index, param.nbStudents)
+      .withNbTeachersForStructure(index, param.nbTeachers);
+    for (let s = 0; s < param.nbStudents; s++) {
+      builder.withNbRelativesForStudent(studentOffset + s, param.nbRelatives);
     }
-    let structureXml = replaceParams(structureTemplate, structParam);
-    for(let i = 0; i < param.nbStudents; i++) {
-      // Generate 2 parents for each student
-      let parentIdx = 0;
-      let fatherIdx = 0;
-      let motherIdx = 0;
-      for(let j = 0; j < 2; j++) {
-        parentIdx = indexStart + (index * parameters.length) + (i * param.nbStudents) + (j + 1);
-        const father = j%2 === 0;
-        if(father) {
-          fatherIdx = parentIdx;
-        } else {
-          motherIdx = parentIdx;
-        }
-        const relativeParam = {
-          ID: parentIdx.toString(),
-          LASTNAME: `Last Name Rel ${i}_${j}`,
-          FIRSTNAME: `First Name Rel ${i}_${j}`,
-          TITLE: j%2 === 0 ? "M" : "F",
-          BIRTHDATE: "01/01/1980",
-        }
-        relatives += replaceParams(persRelEleveTemplate, relativeParam);
-      }
-      const studentParam = {
-        ID: String(indexStart + index * parameters.length + i * param.nbStudents),
-        STRUCTURE_ID: structureId,
-        LASTNAME: `Last Name Stud ${i}`,
-        FIRSTNAME: `First Name Stud ${i}`,
-        TITLE: i%2 === 0 ? "M" : "F",
-        PARENTS_ID: parentIdx.toString(),
-        FATHER_ID: fatherIdx.toString(),
-        MOTHER_ID: motherIdx.toString(),
-        PARENTAL_AUTHORITY_ID: Math.random() < 0.5 ? fatherIdx.toString() : motherIdx.toString(),
-        BIRTHDATE: "01/01/2020",
-      }
-      eleves += replaceParams(persEleveTemplate, studentParam);
-    }
+    // Teacher names must match the "First/Last Name Teach {i}" pattern the CSV-side duplicate
+    // users are seeded with in setup() (see nbDuplicateUsers), so cross-structure duplicate
+    // detection keeps finding the same overlap it always did.
     for (let i = 0; i < param.nbTeachers; i++) {
-      const teacherParam = {
-        ID: String(indexStart + index * parameters.length + (param.nbStudents * 3) + i),
-        STRUCTURE_ID: structureId,
-        LASTNAME: `Last Name Teach ${i}`,
-        FIRSTNAME: `First Name Teach ${i}`,
-        TITLE: i%2 === 0 ? "M" : "F",
-        BIRTHDATE: "01/01/1970",
-      }
-      teachers += replaceParams(persEducNatTemplate, teacherParam);
+      builder
+        .withFirstNameForTeacher(teacherOffset + i, `First Name Teach ${i}`)
+        .withLastNameForTeacher(teacherOffset + i, `Last Name Teach ${i}`);
     }
-    return structureXml;
-  }).join("\n");
-  return {
-    "ENT_IT_Complet_EtabEducNat_0001.xml": insertValuesIntoAAfTemplate(structures),
-    "ENT_IT_Complet_Eleve_0001.xml": insertValuesIntoAAfTemplate(eleves),
-    "ENT_IT_Complet_PersEducNat_0001.xml": insertValuesIntoAAfTemplate(teachers),
-    "ENT_IT_Complet_PersRelEleve_0001.xml": insertValuesIntoAAfTemplate(relatives),
-    "ficAlimMENESR.dtd": ficAlimMENESRDTD
-  } 
-}
+    studentOffset += param.nbStudents;
+    teacherOffset += param.nbTeachers;
+  });
 
-function insertValuesIntoAAfTemplate(values: string): string {
-  return aafFileTemplate.replace("###DATA###", values);
-}
-
-function replaceParams(template: string, params: Record<string, string>): string {
-  let result = template;
-  for (const [key, value] of Object.entries(params)) {
-    const placeholder = `###${key}###`;
-    result = result.replace(new RegExp(placeholder, "g"), value);
-  }
-  return result;
+  return builder.build().generate().files;
 }
 
 export function importAAFStructure(files: Record<string, string>): RefinedResponse<any> {
@@ -292,138 +243,3 @@ export type AAFFilesUploadRequest = {
   subPath: string;
   files: Record<string, string>;
 }
-
-const structureTemplate = `<addRequest>
-<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
-<identifier><id>###ID###</id></identifier> 
-<attributes> 
-<attr name="ENTStructureJointure"><value>###ID###</value></attr>
-<attr name="ENTStructureUAI"><value>###UAI###</value></attr>
-<attr name="ENTEtablissementUAI"><value>###UAI###</value></attr>
-<attr name="ENTStructureSIREN"><value/></attr>
-<attr name="ENTStructureNomCourant"><value>###NAME###</value></attr>
-<attr name="ENTStructureTypeStruct"><value/></attr>
-<attr name="ENTEtablissementMinistereTutelle"><value>MINISTERE DE L&apos;EDUCATION NATIONALE</value></attr>
-<attr name="ENTEtablissementContrat"><value>PU</value></attr>
-<attr name="postOfficeBox"><value></value></attr>
-<attr name="street"><value></value></attr>
-<attr name="postalCode"><value></value></attr>
-<attr name="l"><value></value></attr>
-<attr name="telephoneNumber"><value></value></attr>
-<attr name="facsimileTelephoneNumber"><value></value></attr>
-<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
-<attr name="ENTEtablissementBassin"><value></value></attr>
-<attr name="ENTServAcAcademie"><value>TEST</value></attr>
-<attr name="ENTStructureClasses"><value></value></attr>
-<attr name="ENTStructureGroupes"><value></value></attr>
-</attributes>
-</addRequest>`;
-
-const persRelEleveTemplate = `<addRequest>
-<operationalAttributes><attr name="categoriePersonne"><value>PersRelEleve</value></attr></operationalAttributes>
-<identifier><id>###ID###</id></identifier>
-<attributes>
-<attr name="ENTPersonJointure"><value>###ID###</value></attr>
-<attr name="ENTPersonDateNaissance"><value>###BIRTHDATE###</value></attr>
-<attr name="ENTPersonNomPatro"><value>###LASTNAME###</value></attr>
-<attr name="sn"><value>###LASTNAME###</value></attr>
-<attr name="givenName"><value>###FIRSTNAME###</value></attr>
-<attr name="personalTitle"><value>###TITLE###</value></attr>
-<attr name="homePhone"><value/></attr>
-<attr name="telephoneNumber"><value/></attr>
-<attr name="ENTPersonAdresse"><value></value></attr>
-<attr name="ENTPersonCodePostal"><value></value></attr>
-<attr name="ENTPersonVille"><value></value></attr>
-<attr name="ENTPersonPays"><value>FRANCE</value></attr>
-<attr name="ENTPersonAdresseDiffusion"><value>N</value></attr>
-<attr name="mobile"><value></value></attr>
-<attr name="mail"><value/></attr>
-<attr name="ENTPersonMobileSMS"><value/></attr>
-</attributes>
-</addRequest>`;
-const persEducNatTemplate = `<addRequest>
-<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
-<identifier><id>###ID###</id></identifier>
-<attributes>
-<attr name="ENTPersonJointure"><value>###ID###</value></attr>
-<attr name="ENTPersonDateNaissance"><value>###BIRTHDATE###</value></attr>
-<attr name="ENTPersonNomPatro"><value>###LASTNAME###</value></attr>
-<attr name="sn"><value>###LASTNAME###</value></attr>
-<attr name="givenName"><value>###FIRSTNAME###</value></attr>
-<attr name="personalTitle"><value>###TITLE###</value></attr>
-<attr name="mail"><value></value></attr>
-<attr name="ENTPersonStructRattach"><value>###STRUCTURE_ID###</value></attr>
-<attr name="ENTAuxEnsCategoDiscipline"><value></value></attr>
-<attr name="ENTAuxEnsDisciplinesPoste"><value></value></attr>
-<attr name="ENTAuxEnsMEF"><value/></attr>
-<attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
-<attr name="ENTAuxEnsClasses"><value/></attr>
-<attr name="ENTAuxEnsGroupes"><value/></attr>
-<attr name="ENTAuxEnsClassesMatieres"><value>###STRUCTURE_ID###$1TES 2</value></attr>
-<attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
-<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
-<attr name="ENTPersonFonctions"><value>###STRUCTURE_ID###$ENS$ENSEIGNEMENT$P0210$LETTRES HISTOIRE GEOGRAPHIE</value></attr>
-<attr name="PersEducNatPresenceDevantEleves"><value>O</value></attr>
-</attributes>
-</addRequest>`;
-const persEleveTemplate = `<addRequest>
-<operationalAttributes><attr name="categoriePersonne"><value>Eleve</value></attr></operationalAttributes>
-<identifier><id>###ID###</id></identifier>
-<attributes>
-<attr name="ENTPersonJointure"><value>###ID###</value></attr>
-<attr name="ENTEleveStructRattachId"><value>###STRUCTURE_ID###</value></attr>
-<attr name="ENTPersonDateNaissance"><value>###BIRTHDATE###</value></attr>
-<attr name="ENTPersonNomPatro"><value>###LASTNAME###</value></attr>
-<attr name="sn"><value>###LASTNAME###</value></attr>
-<attr name="givenName"><value>###FIRSTNAME###</value></attr>
-<attr name="ENTPersonAutresPrenoms"><value>###FIRSTNAME###</value></attr>
-<attr name="personalTitle"><value>###TITLE###</value></attr>
-<attr name="ENTEleveParents"><value>###PARENTS_ID###</value></attr>
-<attr name="ENTElevePere"><value>###FATHER_ID###</value></attr>
-<attr name="ENTEleveMere"><value>###MOTHER_ID###</value></attr>
-<attr name="ENTEleveAutoriteParentale"><value>###PARENTAL_AUTHORITY_ID###</value></attr>
-<attr name="ENTElevePersRelEleve1"><value/></attr>
-<attr name="ENTEleveQualitePersRelEleve1"><value></value></attr>
-<attr name="ENTElevePersRelEleve2"><value/></attr>
-<attr name="ENTEleveQualitePersRelEleve2"><value/></attr>
-<attr name="ENTElevePersRelEleve"><value>###FATHER_ID###$1$0$1$0$0</value><value>###MOTHER_ID###$1$0$1$0$0</value></attr>
-<attr name="ENTEleveBoursier"><value>N</value></attr>
-<attr name="ENTEleveRegime"><value>EXTERNE LIBRE</value></attr>
-<attr name="ENTEleveTransport"><value>N</value></attr>
-<attr name="ENTEleveStatutEleve"><value>SCOLAIRE</value></attr>
-<attr name="ENTEleveMEF"><value></value></attr>
-<attr name="ENTEleveLibelleMEF"><value>PREMIERE ECONOMIQUE ET SOCIALE</value></attr>
-<attr name="ENTEleveNivFormation"><value>PREMIERE GENERALE &amp; TECHNO YC BT</value></attr>
-<attr name="ENTEleveFiliere"><value>1ERE  GENERALE</value></attr>
-<attr name="ENTEleveEnseignements"><value>ACCOMPAGNEMENT PERSONNALISE</value><value>ANGLAIS LV1</value><value>EDUCATION PHYSIQUE ET SPORTIVE</value><value>ESPAGNOL LV2</value><value>FRANCAIS</value><value>MATHEMATIQUES</value><value>SCIENCES</value><value>SCIENCES ECONOMIQUES ET SOCIALES</value><value>TRAVAUX PERSONNELS ENCADRES</value><value>VIE DE CLASSE</value><value>HISTOIRE-GEOGRAPHIE</value><value>ENSEIGNEMENT MORAL ET CIVIQUE</value></attr>
-<attr name="ENTEleveCodeEnseignements"><value></value></attr>
-<attr name="ENTPersonStructRattach"><value>###STRUCTURE_ID###</value></attr>
-<attr name="ENTEleveClasses"><value>###STRUCTURE_ID###$1TES 2</value></attr>
-<attr name="ENTEleveGroupes"><value/></attr>
-</attributes>
-</addRequest>
-`;
-
-const aafFileTemplate = `<?xml version="1.0" encoding="ISO-8859-15"?>
-<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
-<ficAlimMENESR>
-###DATA###
-</ficAlimMENESR>`;
-
-
-const ficAlimMENESRDTD = `<!ELEMENT ficAlimMENESR (addRequest|modifyRequest|deleteRequest)*>
-<!ELEMENT addRequest (operationalAttributes, identifier, attributes)>
-<!ELEMENT modifyRequest (operationalAttributes, identifier, modifications)>
-<!ELEMENT deleteRequest (operationalAttributes, identifier)>
-<!ELEMENT operationalAttributes (attr)> <!-- Pas de controle : l'attribut "name" de l'element "attr" doit etre egal a "categoriePersonne" ou "categorieStructure" -->
-<!ELEMENT identifier (id)>
-<!ELEMENT attributes (attr+)>
-<!ELEMENT attr (value+)>
-<!ELEMENT modifications (modification+)>
-<!ELEMENT modification (value+)>
-<!ELEMENT value (#PCDATA)>
-<!ELEMENT id (#PCDATA)>
-<!ATTLIST attr name CDATA #REQUIRED>
-<!ATTLIST modification
-	name CDATA #REQUIRED
-	operation (replace) #REQUIRED>`;
