@@ -7,32 +7,32 @@ import {
 } from '@edifice.io/react/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { LoolDocTypeId } from '~/models/createDocument';
-import { LoolCreateModal } from './LoolCreateModal';
+import type { DocTypeId } from '~/models/createDocument';
+import { CreateDocumentModal } from './CreateDocumentModal';
 import { MediaRecordModal } from './MediaRecordModal';
 import './CreateDocumentWidget.css';
 
-const LOOL_ACTIONS = [
+const DOC_TYPE_ACTIONS = [
   {
     labelKey: 'tiptap.toolbar.text',
     label: 'Document Texte',
     icon: 'W',
     colorVar: 'blue',
-    docTypeId: 'word' as LoolDocTypeId,
+    docTypeId: 'word' as DocTypeId,
   },
   {
     labelKey: 'tiptap.toolbar.presentation',
     label: 'Présentation',
     icon: 'P',
     colorVar: 'orange',
-    docTypeId: 'powerpoint' as LoolDocTypeId,
+    docTypeId: 'powerpoint' as DocTypeId,
   },
   {
     labelKey: 'tiptap.toolbar.spreadsheet',
     label: 'Classeur',
     icon: 'X',
     colorVar: 'green',
-    docTypeId: 'excel' as LoolDocTypeId,
+    docTypeId: 'excel' as DocTypeId,
   },
 ] as const;
 
@@ -69,14 +69,11 @@ interface CreateDocumentWidgetProps {
 export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
   const { t } = useTranslation('timeline');
   const { user } = useUser();
-  const hasLoolRight = useHasWorkflow(
-    'fr.openent.lool.controller.LoolController|createDocumentFromTemplate',
-  );
   const hasVideoRight = useHasWorkflow(
     'com.opendigitaleducation.video.controllers.VideoController|capture',
   );
   const [selectedDocTypeId, setSelectedDocTypeId] =
-    useState<LoolDocTypeId | null>(null);
+    useState<DocTypeId | null>(null);
   const [mediaRecordType, setMediaRecordType] = useState<
     'video' | 'audio' | null
   >(null);
@@ -101,8 +98,8 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
       <HomeCard.Content>
         <div className="create-document-apps-card">
           <Flex gap="8" align="center">
-            {hasLoolRight === true &&
-              LOOL_ACTIONS.map(
+            {!!nextcloudConnector &&
+              DOC_TYPE_ACTIONS.map(
                 ({ labelKey, label, icon, colorVar, docTypeId }) => (
                   <IconButton
                     key={labelKey}
@@ -150,7 +147,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
         </div>
 
         {selectedDocTypeId && (
-          <LoolCreateModal
+          <CreateDocumentModal
             isOpen={true}
             docTypeId={selectedDocTypeId}
             nextcloudAddress={nextcloudConnector?.address}
