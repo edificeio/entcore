@@ -1075,12 +1075,20 @@ public class DuplicateUsers {
 						"DELETE r"; // We only delete the relationship between the old user and the userbook if it was transfered to the new user
 									// So we will be able to delete unlinked UserBook nodes with query4
 		tx.add(query1, params);
+		// Transfer old UserAppConf only if the principal user doesn't already have one, to avoid duplicate PREFERS relations
 		final String query2 =
 				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
+						"WHERE NOT (u)-[:PREFERS]->(:UserAppConf) " +
 						"SET ub.theme = null " +
-						"CREATE UNIQUE u-[:PREFERS]->ub " +
+						"CREATE UNIQUE (u)-[:PREFERS]->(ub) " +
 						"DELETE r";
 		tx.add(query2, params);
+		// Otherwise the principal's UserAppConf is kept and the old one is discarded entirely (no orphan node left)
+		final String query2b =
+				"MATCH (old:User {id: {oldId}})-[:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
+						"WHERE (u)-[:PREFERS]->(:UserAppConf) " +
+						"DETACH DELETE ub";
+		tx.add(query2b, params);
 		if (!relative) {
 			final String query3 =
 					"MATCH (old:User {id: {oldId}})-[r:RELATED]->(ub:User), (u:User {id: {id}}) " +
