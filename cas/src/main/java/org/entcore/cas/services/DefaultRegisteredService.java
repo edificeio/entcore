@@ -21,7 +21,6 @@ package org.entcore.cas.services;
 
 import java.util.*;
 import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
 
 import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.webutils.I18n;
@@ -44,7 +43,6 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 
 public class DefaultRegisteredService implements RegisteredService {
 	protected final MappingService mappingService = MappingService.getInstance();
@@ -130,14 +128,21 @@ public class DefaultRegisteredService implements RegisteredService {
 		if (profiles != null && profiles.size() > 0) {
 			user.setType(profiles.getString(0));
 		}
-		JsonArray structureNodes = res.getJsonArray("structureNodes");
-		if (structureNodes != null && structureNodes.size() > 0) {
-			user.setStructures(structureNodes.stream().map(s -> ((JsonObject)s)
-					.getString("id")).collect(Collectors.toList()));
-		}
+		user.setStructures(new ArrayList<>(authCas.getStructureIds()));
+
 		final JsonObject event = new JsonObject().put("service", service).put("connector-type", "Cas");
 		event.put("cas-type", mapping.map(e->e.getType()).orElse("unknown"));
-		eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, user, event);
+
+		final JsonObject requestAttributes = new JsonObject();
+		requestAttributes.put("ua", authCas.getUserUa());
+		requestAttributes.put("deviceName", authCas.getUserDeviceName());
+		requestAttributes.put("deviceType", authCas.getUserDeviceType());
+		requestAttributes.put("osName", authCas.getUserOsName());
+		requestAttributes.put("osVersion", authCas.getUserOsVersion());
+		requestAttributes.put("ip", authCas.getUserIp());
+		requestAttributes.put("sessionId", authCas.getUserSessionId());
+
+		eventStore.createConnectorEvent(user, event, requestAttributes);
 	}
 
 	@Override
