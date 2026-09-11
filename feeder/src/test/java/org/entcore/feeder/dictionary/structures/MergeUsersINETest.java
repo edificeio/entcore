@@ -191,6 +191,215 @@ public class MergeUsersINETest {
             }));
         }));
     }
+ 
+    /**
+     * <h2>Goal</h2>
+    * <p>Test that when the principal user already has duplicate UserAppConf nodes, the merge keeps the node carrying
+    * language/timeline and recovers one quietHours value from the discarded duplicates.</p>
+     */
+    @Test
+    public void testMergeSameINEMergesAlreadyDuplicatedPreferences(final TestContext testContext) {
+        final String ine = "my-duplicated-ine-5";
+        final Async async = testContext.async(2);
+        prepareSameINEUsersWithAlreadyDuplicatedPreferences(ine).onComplete(testContext.asyncAssertSuccess(h -> {
+            duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
+                neo4j.execute(
+                    "MATCH (u:User{ine:{ine}, tag: 'unitTest5'})-[r:PREFERS]->(uac:UserAppConf) return u.id as id, uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                    new JsonObject().put("ine", ine),
+                    result -> {
+                        if ("ok".equals(result.body().getString("status"))) {
+                            final JsonArray users = result.body().getJsonArray("result");
+                            testContext.assertEquals(1, users.size(), "There should be only one user left, linked to exactly one merged UserAppConf");
+                            final JsonObject principalUser = users.getJsonObject(0);
+                            testContext.assertEquals("userToKeep5A", principalUser.getString("owner"), "The principal's own oldest UserAppConf should be kept as canonical");
+                            testContext.assertEquals("fr", principalUser.getString("language"), "The canonical's own property should be preserved");
+                            testContext.assertEquals("timeline-config", principalUser.getString("timeline"), "The canonical's own timeline should be preserved");
+                            testContext.assertEquals("quiet-hours-principal-duplicate", principalUser.getString("quietHours"), "One quietHours value from the duplicates should be recovered");
+                            async.countDown();
+                        } else {
+                            testContext.fail("Could not fetch users with the same ine");
+                        }
+                    });
+                neo4j.execute(
+                        "MATCH (uac:UserAppConf) WHERE uac.tag STARTS WITH 'unitTest5' return uac",
+                        new JsonObject(),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                final JsonArray userAppConfs = result.body().getJsonArray("result");
+                                testContext.assertEquals(1, userAppConfs.size(), "All duplicate UserAppConf nodes must be merged, with no orphan left");
+                                async.complete();
+                            } else {
+                                testContext.fail("Could not fetch UserAppConf nodes");
+                            }
+                        });
+            }));
+        }));
+    }
+
+    /**
+     * <h2>Goal</h2>
+     * <p>Test that when only the principal user has one UserAppConf, it is preserved whatever its language, timeline
+     * and quietHours fields are.</p>
+     */
+    @Test
+    public void testMergeSameINEKeepsSinglePrincipalUserAppConf(final TestContext testContext) {
+        final String inePrefix = "my-duplicated-ine-6";
+        final Async async = testContext.async();
+        prepareOldWithoutUserAppConfAndPrincipalWithOneUserAppConf(inePrefix).onComplete(testContext.asyncAssertSuccess(h -> {
+            duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
+                neo4j.execute(
+                        "MATCH (u:User)-[:PREFERS]->(uac:UserAppConf) WHERE u.tag IN ['unitTest6-rich', 'unitTest6-quiet-hours', 'unitTest6-minimal'] " +
+                                "RETURN u.tag as tag, uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours ORDER BY tag",
+                        new JsonObject(),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                final JsonArray users = result.body().getJsonArray("result");
+                                testContext.assertEquals(3, users.size(), "Each merged user should keep exactly one UserAppConf");
+                                testContext.assertEquals("unitTest6-minimal", users.getJsonObject(0).getString("tag"));
+                                testContext.assertEquals("principal-minimal", users.getJsonObject(0).getString("owner"));
+                                testContext.assertNull(users.getJsonObject(0).getString("language"));
+                                testContext.assertNull(users.getJsonObject(0).getString("timeline"));
+                                testContext.assertNull(users.getJsonObject(0).getString("quietHours"));
+                                testContext.assertEquals("unitTest6-quiet-hours", users.getJsonObject(1).getString("tag"));
+                                testContext.assertEquals("quiet-hours-principal", users.getJsonObject(1).getString("quietHours"));
+                                testContext.assertEquals("unitTest6-rich", users.getJsonObject(2).getString("tag"));
+                                testContext.assertEquals("fr", users.getJsonObject(2).getString("language"));
+                                testContext.assertEquals("timeline-principal", users.getJsonObject(2).getString("timeline"));
+                                async.complete();
+                            } else {
+                                testContext.fail("Could not fetch users with principal UserAppConf");
+                            }
+                        });
+            }));
+        }));
+    }
+
+    /**
+     * <h2>Goal</h2>
+     * <p>Test the nominal merge: old user's quietHours is copied into the principal user's language/timeline node.</p>
+     */
+    @Test
+    public void testMergeSameINEMergesOldQuietHoursIntoPrincipalRichUserAppConf(final TestContext testContext) {
+        final String ine = "my-duplicated-ine-7";
+        final Async async = testContext.async(2);
+        prepareOldQuietHoursAndPrincipalRichUserAppConf(ine).onComplete(testContext.asyncAssertSuccess(h -> {
+            duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
+                neo4j.execute(
+                        "MATCH (u:User{ine:{ine}, tag: 'unitTest7'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                        new JsonObject().put("ine", ine),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                final JsonArray users = result.body().getJsonArray("result");
+                                testContext.assertEquals(1, users.size(), "There should be one merged UserAppConf");
+                                final JsonObject userAppConf = users.getJsonObject(0);
+                                testContext.assertEquals("principal-rich", userAppConf.getString("owner"));
+                                testContext.assertEquals("fr", userAppConf.getString("language"));
+                                testContext.assertEquals("timeline-principal", userAppConf.getString("timeline"));
+                                testContext.assertEquals("quiet-hours-old", userAppConf.getString("quietHours"));
+                                async.countDown();
+                            } else {
+                                testContext.fail("Could not fetch merged UserAppConf");
+                            }
+                        });
+                neo4j.execute(
+                        "MATCH (uac:UserAppConf) WHERE uac.tag STARTS WITH 'unitTest7' RETURN uac",
+                        new JsonObject(),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                testContext.assertEquals(1, result.body().getJsonArray("result").size(), "The old UserAppConf should be deleted after merge");
+                                async.complete();
+                            } else {
+                                testContext.fail("Could not fetch UserAppConf nodes");
+                            }
+                        });
+            }));
+        }));
+    }
+
+    /**
+     * <h2>Goal</h2>
+     * <p>Test the nominal cleanup when the old user already has several quietHours-only UserAppConf nodes.</p>
+     */
+    @Test
+    public void testMergeSameINEMergesOneQuietHoursFromSeveralOldUserAppConfs(final TestContext testContext) {
+        final String ine = "my-duplicated-ine-8";
+        final Async async = testContext.async(2);
+        prepareOldSeveralQuietHoursAndPrincipalRichUserAppConf(ine).onComplete(testContext.asyncAssertSuccess(h -> {
+            duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
+                neo4j.execute(
+                        "MATCH (u:User{ine:{ine}, tag: 'unitTest8'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                        new JsonObject().put("ine", ine),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                final JsonArray users = result.body().getJsonArray("result");
+                                testContext.assertEquals(1, users.size(), "There should be one merged UserAppConf");
+                                final JsonObject userAppConf = users.getJsonObject(0);
+                                testContext.assertEquals("principal-rich-multiple", userAppConf.getString("owner"));
+                                testContext.assertEquals("fr", userAppConf.getString("language"));
+                                testContext.assertEquals("timeline-principal-multiple", userAppConf.getString("timeline"));
+                                testContext.assertTrue(userAppConf.getString("quietHours").startsWith("quiet-hours-old-"), "One old quietHours value should be recovered");
+                                async.countDown();
+                            } else {
+                                testContext.fail("Could not fetch merged UserAppConf");
+                            }
+                        });
+                neo4j.execute(
+                        "MATCH (uac:UserAppConf) WHERE uac.tag STARTS WITH 'unitTest8' RETURN uac",
+                        new JsonObject(),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                testContext.assertEquals(1, result.body().getJsonArray("result").size(), "All old duplicate UserAppConf nodes should be deleted after merge");
+                                async.complete();
+                            } else {
+                                testContext.fail("Could not fetch UserAppConf nodes");
+                            }
+                        });
+            }));
+        }));
+    }
+
+    /**
+     * <h2>Goal</h2>
+     * <p>Test the nominal cleanup when the old user has language/timeline and the principal user already has several
+     * quietHours-only UserAppConf nodes.</p>
+     */
+    @Test
+    public void testMergeSameINEMergesOnePrincipalQuietHoursIntoOldRichUserAppConf(final TestContext testContext) {
+        final String ine = "my-duplicated-ine-9";
+        final Async async = testContext.async(2);
+        prepareOldRichAndPrincipalSeveralQuietHoursUserAppConfs(ine).onComplete(testContext.asyncAssertSuccess(h -> {
+            duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
+                neo4j.execute(
+                        "MATCH (u:User{ine:{ine}, tag: 'unitTest9'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                        new JsonObject().put("ine", ine),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                final JsonArray users = result.body().getJsonArray("result");
+                                testContext.assertEquals(1, users.size(), "There should be one merged UserAppConf");
+                                final JsonObject userAppConf = users.getJsonObject(0);
+                                testContext.assertEquals("old-rich-multiple", userAppConf.getString("owner"));
+                                testContext.assertEquals("fr", userAppConf.getString("language"));
+                                testContext.assertEquals("timeline-old-multiple", userAppConf.getString("timeline"));
+                                testContext.assertTrue(userAppConf.getString("quietHours").startsWith("quiet-hours-principal-"), "One principal quietHours value should be recovered");
+                                async.countDown();
+                            } else {
+                                testContext.fail("Could not fetch merged UserAppConf");
+                            }
+                        });
+                neo4j.execute(
+                        "MATCH (uac:UserAppConf) WHERE uac.tag STARTS WITH 'unitTest9' RETURN uac",
+                        new JsonObject(),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                testContext.assertEquals(1, result.body().getJsonArray("result").size(), "All principal duplicate UserAppConf nodes should be deleted after merge");
+                                async.complete();
+                            } else {
+                                testContext.fail("Could not fetch UserAppConf nodes");
+                            }
+                        });
+            }));
+        }));
+    }
 
     /**
      * Creates 2 users as follows :
@@ -299,6 +508,153 @@ public class MergeUsersINETest {
             txl.add("match (u) detach delete u", new JsonObject());
             txl.add("create (u1:User{id: 'userToKeep4', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest4'})", params);
             txl.add("create (u2:User{id: 'userToRemove4', source: 'MANUAL', ine: {ine}, tag: 'unitTest4'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest4', owner: 'userToRemove4'})", params);
+            txl.commit(event -> {
+                if ("ok".equals(event.body().getString("status"))) {
+                    promise.complete();
+                } else {
+                    promise.fail(event.body().encodePrettily());
+                }
+            });
+        } catch (TransactionException e) {
+            promise.fail(e);
+        }
+        return promise.future();
+    }
+
+    /**
+     * Creates 2 users as follows :
+     * <ol>
+     *     <li>(:User{id: 'userToKeep5', source: 'AAF', ine: ine, activationCode: 'toto'}) with two UserAppConf nodes.</li>
+     *     <li>(:User{id: 'userToRemove5', source: 'MANUAL', ine: ine}) with one UserAppConf node.</li>
+     * </ol>
+     * @param ine The ine to use for both users
+     */
+    public static Future<Void> prepareSameINEUsersWithAlreadyDuplicatedPreferences(final String ine) {
+        final JsonObject params = new JsonObject().put("ine", ine);
+        final Promise<Void> promise = Promise.promise();
+        TransactionHelper txl = null;
+        try {
+            txl = TransactionManager.getTransaction();
+            txl.add("match (u) detach delete u", new JsonObject());
+                txl.add("create (u1:User{id: 'userToKeep5', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest5'}) " +
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest5-a', owner: 'userToKeep5A', language: 'fr', timeline: 'timeline-config'}) " +
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest5-b', owner: 'userToKeep5B', quietHours: 'quiet-hours-principal-duplicate'})", params);
+                txl.add("create (u2:User{id: 'userToRemove5', source: 'MANUAL', ine: {ine}, tag: 'unitTest5'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest5-old', owner: 'userToRemove5', quietHours: 'quiet-hours-old-user'})", params);
+            txl.commit(event -> {
+                if ("ok".equals(event.body().getString("status"))) {
+                    promise.complete();
+                } else {
+                    promise.fail(event.body().encodePrettily());
+                }
+            });
+        } catch (TransactionException e) {
+            promise.fail(e);
+        }
+        return promise.future();
+    }
+
+    /**
+     * Creates three merge pairs where only the principal user has one UserAppConf, with different combinations of
+     * language, timeline and quietHours fields.
+     * @param inePrefix The ine prefix to use for the three pairs
+     */
+    public static Future<Void> prepareOldWithoutUserAppConfAndPrincipalWithOneUserAppConf(final String inePrefix) {
+        final JsonObject params = new JsonObject().put("inePrefix", inePrefix);
+        final Promise<Void> promise = Promise.promise();
+        TransactionHelper txl = null;
+        try {
+            txl = TransactionManager.getTransaction();
+            txl.add("match (u) detach delete u", new JsonObject());
+            txl.add("create (u1:User{id: 'userToKeep6A', source: 'AAF', activationCode: 'toto', ine: {inePrefix} + '-a', tag: 'unitTest6-rich'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest6-rich', owner: 'principal-rich', language: 'fr', timeline: 'timeline-principal'})", params);
+            txl.add("create (u2:User{id: 'userToRemove6A', source: 'MANUAL', ine: {inePrefix} + '-a', tag: 'unitTest6-rich'})", params);
+            txl.add("create (u1:User{id: 'userToKeep6B', source: 'AAF', activationCode: 'toto', ine: {inePrefix} + '-b', tag: 'unitTest6-quiet-hours'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest6-quiet-hours', owner: 'principal-quiet-hours', quietHours: 'quiet-hours-principal'})", params);
+            txl.add("create (u2:User{id: 'userToRemove6B', source: 'MANUAL', ine: {inePrefix} + '-b', tag: 'unitTest6-quiet-hours'})", params);
+            txl.add("create (u1:User{id: 'userToKeep6C', source: 'AAF', activationCode: 'toto', ine: {inePrefix} + '-c', tag: 'unitTest6-minimal'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest6-minimal', owner: 'principal-minimal'})", params);
+            txl.add("create (u2:User{id: 'userToRemove6C', source: 'MANUAL', ine: {inePrefix} + '-c', tag: 'unitTest6-minimal'})", params);
+            txl.commit(event -> {
+                if ("ok".equals(event.body().getString("status"))) {
+                    promise.complete();
+                } else {
+                    promise.fail(event.body().encodePrettily());
+                }
+            });
+        } catch (TransactionException e) {
+            promise.fail(e);
+        }
+        return promise.future();
+    }
+
+    /**
+     * Creates one old user with quietHours and one principal user with language/timeline.
+     * @param ine The ine to use for both users
+     */
+    public static Future<Void> prepareOldQuietHoursAndPrincipalRichUserAppConf(final String ine) {
+        final JsonObject params = new JsonObject().put("ine", ine);
+        final Promise<Void> promise = Promise.promise();
+        TransactionHelper txl = null;
+        try {
+            txl = TransactionManager.getTransaction();
+            txl.add("match (u) detach delete u", new JsonObject());
+            txl.add("create (u1:User{id: 'userToKeep7', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest7'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest7-rich', owner: 'principal-rich', language: 'fr', timeline: 'timeline-principal'})", params);
+            txl.add("create (u2:User{id: 'userToRemove7', source: 'MANUAL', ine: {ine}, tag: 'unitTest7'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest7-old', owner: 'old-quiet-hours', quietHours: 'quiet-hours-old'})", params);
+            txl.commit(event -> {
+                if ("ok".equals(event.body().getString("status"))) {
+                    promise.complete();
+                } else {
+                    promise.fail(event.body().encodePrettily());
+                }
+            });
+        } catch (TransactionException e) {
+            promise.fail(e);
+        }
+        return promise.future();
+    }
+
+    /**
+     * Creates one old user with three quietHours UserAppConf nodes and one principal user with language/timeline.
+     * @param ine The ine to use for both users
+     */
+    public static Future<Void> prepareOldSeveralQuietHoursAndPrincipalRichUserAppConf(final String ine) {
+        final JsonObject params = new JsonObject().put("ine", ine);
+        final Promise<Void> promise = Promise.promise();
+        TransactionHelper txl = null;
+        try {
+            txl = TransactionManager.getTransaction();
+            txl.add("match (u) detach delete u", new JsonObject());
+            txl.add("create (u1:User{id: 'userToKeep8', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest8'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-rich', owner: 'principal-rich-multiple', language: 'fr', timeline: 'timeline-principal-multiple'})", params);
+            txl.add("create (u2:User{id: 'userToRemove8', source: 'MANUAL', ine: {ine}, tag: 'unitTest8'}) " +
+                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-a', owner: 'old-quiet-hours-a', quietHours: 'quiet-hours-old-a'}) " +
+                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-b', owner: 'old-quiet-hours-b', quietHours: 'quiet-hours-old-b'}) " +
+                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-c', owner: 'old-quiet-hours-c', quietHours: 'quiet-hours-old-c'})", params);
+            txl.commit(event -> {
+                if ("ok".equals(event.body().getString("status"))) {
+                    promise.complete();
+                } else {
+                    promise.fail(event.body().encodePrettily());
+                }
+            });
+        } catch (TransactionException e) {
+            promise.fail(e);
+        }
+        return promise.future();
+    }
+
+    /**
+     * Creates one old user with language/timeline and one principal user with three quietHours UserAppConf nodes.
+     * @param ine The ine to use for both users
+     */
+    public static Future<Void> prepareOldRichAndPrincipalSeveralQuietHoursUserAppConfs(final String ine) {
+        final JsonObject params = new JsonObject().put("ine", ine);
+        final Promise<Void> promise = Promise.promise();
+        TransactionHelper txl = null;
+        try {
+            txl = TransactionManager.getTransaction();
+            txl.add("match (u) detach delete u", new JsonObject());
+            txl.add("create (u1:User{id: 'userToKeep9', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest9'}) " +
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-a', owner: 'principal-quiet-hours-a', quietHours: 'quiet-hours-principal-a'}) " +
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-b', owner: 'principal-quiet-hours-b', quietHours: 'quiet-hours-principal-b'}) " +
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-c', owner: 'principal-quiet-hours-c', quietHours: 'quiet-hours-principal-c'})", params);
+            txl.add("create (u2:User{id: 'userToRemove9', source: 'MANUAL', ine: {ine}, tag: 'unitTest9'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-rich', owner: 'old-rich-multiple', language: 'fr', timeline: 'timeline-old-multiple'})", params);
             txl.commit(event -> {
                 if ("ok".equals(event.body().getString("status"))) {
                     promise.complete();

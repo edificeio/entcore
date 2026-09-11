@@ -1079,16 +1079,39 @@ public class DuplicateUsers {
 		final String query2a =
 				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
 						"WHERE NOT (u)-[:PREFERS]->(:UserAppConf) " +
-						"SET ub.theme = null " +
+						"SET ub.theme = null, ub.mergeDuplicateIneTransferred = true " +
 						"CREATE UNIQUE (u)-[:PREFERS]->(ub) " +
 						"DELETE r";
 		tx.add(query2a, params);
-		// Otherwise the principal's UserAppConf is kept and the old one is discarded entirely (no orphan node left)
+		// Otherwise the principal's UserAppConf is kept as canonical and old ones are transferred for deduplication.
 		final String query2b =
-				"MATCH (old:User {id: {oldId}})-[:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
+				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
 						"WHERE (u)-[:PREFERS]->(:UserAppConf) " +
-						"DETACH DELETE ub";
+						"SET ub.theme = null, ub.mergeDuplicateIneTransferred = true " +
+						"CREATE UNIQUE (u)-[:PREFERS]->(ub) " +
+						"DELETE r";
 		tx.add(query2b, params);
+		// Deduplicate UserAppConf after transfer, keeping rich prefs and salvaging quietHours.
+		final String query2c =
+				"MATCH (u:User {id: {id}})-[:PREFERS]->(uac:UserAppConf) " +
+						"WITH u, uac ORDER BY CASE WHEN HAS(uac.language) OR HAS(uac.timeline) THEN 0 ELSE 1 END, " +
+						"CASE WHEN HAS(uac.mergeDuplicateIneTransferred) THEN 1 ELSE 0 END, id(uac) " +
+						"WITH u, collect(DISTINCT uac) AS uacs " +
+						"WHERE size(uacs) > 0 " +
+						"WITH u, uacs[0] AS canonical, uacs[1..] AS duplicates " +
+						"WITH u, canonical, duplicates, head([duplicate IN duplicates WHERE HAS(duplicate.quietHours) | duplicate.quietHours]) AS duplicateQuietHours " +
+						"FOREACH (_ IN CASE WHEN canonical.quietHours IS NULL AND duplicateQuietHours IS NOT NULL THEN [1] ELSE [] END | SET canonical.quietHours = duplicateQuietHours) " +
+						"REMOVE canonical.mergeDuplicateIneTransferred " +
+						"WITH u, duplicates " +
+						"UNWIND duplicates AS duplicate " +
+						"MATCH (u)-[r:PREFERS]->(duplicate) " +
+						"DELETE r " +
+						"WITH duplicate " +
+						"OPTIONAL MATCH (:User)-[r:PREFERS]->(duplicate) " +
+						"WITH duplicate, count(r) AS remainingPreferenceLinks " +
+						"WHERE remainingPreferenceLinks = 0 " +
+						"DETACH DELETE duplicate";
+		tx.add(query2c, params);
 		if (!relative) {
 			final String query3 =
 					"MATCH (old:User {id: {oldId}})-[r:RELATED]->(ub:User), (u:User {id: {id}}) " +
