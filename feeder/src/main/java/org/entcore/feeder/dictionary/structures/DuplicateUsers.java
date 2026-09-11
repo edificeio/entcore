@@ -1075,12 +1075,43 @@ public class DuplicateUsers {
 						"DELETE r"; // We only delete the relationship between the old user and the userbook if it was transfered to the new user
 									// So we will be able to delete unlinked UserBook nodes with query4
 		tx.add(query1, params);
-		final String query2 =
+		// Transfer old UserAppConf only if the principal user doesn't already have one, to avoid duplicate PREFERS relations
+		final String query2a =
 				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
-						"SET ub.theme = null " +
-						"CREATE UNIQUE u-[:PREFERS]->ub " +
+						"WHERE NOT (u)-[:PREFERS]->(:UserAppConf) " +
+						"SET ub.theme = null, ub.mergeDuplicateIneTransferred = true " +
+						"CREATE UNIQUE (u)-[:PREFERS]->(ub) " +
 						"DELETE r";
-		tx.add(query2, params);
+		tx.add(query2a, params);
+		// Otherwise the principal's UserAppConf is kept as canonical and old ones are transferred for deduplication.
+		final String query2b =
+				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
+						"WHERE (u)-[:PREFERS]->(:UserAppConf) " +
+						"SET ub.theme = null, ub.mergeDuplicateIneTransferred = true " +
+						"CREATE UNIQUE (u)-[:PREFERS]->(ub) " +
+						"DELETE r";
+		tx.add(query2b, params);
+		// Deduplicate UserAppConf after transfer, keeping rich prefs and salvaging quietHours/timezone.
+		final String query2c =
+				"MATCH (u:User {id: {id}})-[:PREFERS]->(uac:UserAppConf) " +
+						"WITH u, uac ORDER BY CASE WHEN HAS(uac.language) OR HAS(uac.timeline) THEN 0 ELSE 1 END, " +
+						"CASE WHEN HAS(uac.mergeDuplicateIneTransferred) THEN 1 ELSE 0 END, id(uac) " +
+						"WITH u, collect(DISTINCT uac) AS uacs " +
+						"WHERE size(uacs) > 0 " +
+						"WITH u, uacs[0] AS canonical, uacs[1..] AS duplicates " +
+						"WITH u, canonical, duplicates, head([duplicate IN duplicates WHERE HAS(duplicate.quietHours) | duplicate]) AS duplicateQuietHoursSource " +
+						"FOREACH (_ IN CASE WHEN canonical.quietHours IS NULL AND duplicateQuietHoursSource IS NOT NULL THEN [1] ELSE [] END | SET canonical.quietHours = duplicateQuietHoursSource.quietHours, canonical.timezone = duplicateQuietHoursSource.timezone) " +
+						"REMOVE canonical.mergeDuplicateIneTransferred " +
+						"WITH u, duplicates " +
+						"UNWIND duplicates AS duplicate " +
+						"MATCH (u)-[r:PREFERS]->(duplicate) " +
+						"DELETE r " +
+						"WITH duplicate " +
+						"OPTIONAL MATCH (:User)-[r:PREFERS]->(duplicate) " +
+						"WITH duplicate, count(r) AS remainingPreferenceLinks " +
+						"WHERE remainingPreferenceLinks = 0 " +
+						"DETACH DELETE duplicate";
+		tx.add(query2c, params);
 		if (!relative) {
 			final String query3 =
 					"MATCH (old:User {id: {oldId}})-[r:RELATED]->(ub:User), (u:User {id: {id}}) " +
