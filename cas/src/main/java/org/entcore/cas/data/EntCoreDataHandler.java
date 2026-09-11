@@ -34,6 +34,7 @@ import org.entcore.cas.http.WrappedRequest;
 import org.entcore.cas.mapping.Mapping;
 import org.entcore.cas.services.RegisteredService;
 import org.entcore.cas.services.RegisteredServices;
+import org.entcore.common.events.impl.GenericEventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.eventbus.EventBus;
@@ -113,7 +114,15 @@ public class EntCoreDataHandler extends DataHandler {
 				.put("id", 1)
 				.put("serviceTickets", 1)
 				.put("user", 1)
-				.put("structureIds", 1);
+				.put("structureIds", 1)
+				.put("userOsName", 1)
+				.put("userOsVersion", 1)
+				.put("userDeviceType", 1)
+				.put("userDeviceName", 1)
+				.put("userIp", 1)
+				.put("userSessionId", 1)
+				.put("userUa", 1);
+
 		mongoDb.findOne(COLLECTION, query, keys, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -143,6 +152,16 @@ public class EntCoreDataHandler extends DataHandler {
 			public void handle(UserInfos userInfos) {
 				AuthCas authCas = new AuthCas();
 				authCas.setId(UUID.randomUUID().toString());
+
+				final JsonObject eventAttributes = GenericEventStore.generateEventAttributesFromRequest(((WrappedRequest)request).getServerRequest());
+				authCas.setUserDeviceName(eventAttributes.getString("deviceName"));
+				authCas.setUserDeviceType(eventAttributes.getString("deviceType"));
+				authCas.setUserIp(eventAttributes.getString("ip"));
+				authCas.setUserOsName(eventAttributes.getString("osName"));
+				authCas.setUserOsVersion(eventAttributes.getString("osVersion"));
+				authCas.setUserSessionId(eventAttributes.getString("sessionId"));
+				authCas.setUserUa(eventAttributes.getString("ua"));
+
 				if (userInfos != null) {
 					authCas.setUser(userInfos.getUserId());
 					authCas.setStructureIds(new HashSet<>(userInfos.getStructures()));
