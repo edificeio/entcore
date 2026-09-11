@@ -228,7 +228,7 @@ public class MergeUsersINETest {
                             if ("ok".equals(result.body().getString("status"))) {
                                 final JsonArray userAppConfs = result.body().getJsonArray("result");
                                 testContext.assertEquals(1, userAppConfs.size(), "All duplicate UserAppConf nodes must be merged, with no orphan left");
-                                async.complete();
+                                async.countDown();
                             } else {
                                 testContext.fail("Could not fetch UserAppConf nodes");
                             }
@@ -310,7 +310,7 @@ public class MergeUsersINETest {
                         result -> {
                             if ("ok".equals(result.body().getString("status"))) {
                                 testContext.assertEquals(1, result.body().getJsonArray("result").size(), "The old UserAppConf should be deleted after merge");
-                                async.complete();
+                                async.countDown();
                             } else {
                                 testContext.fail("Could not fetch UserAppConf nodes");
                             }
@@ -353,7 +353,7 @@ public class MergeUsersINETest {
                         result -> {
                             if ("ok".equals(result.body().getString("status"))) {
                                 testContext.assertEquals(1, result.body().getJsonArray("result").size(), "All old duplicate UserAppConf nodes should be deleted after merge");
-                                async.complete();
+                                async.countDown();
                             } else {
                                 testContext.fail("Could not fetch UserAppConf nodes");
                             }
@@ -397,7 +397,7 @@ public class MergeUsersINETest {
                         result -> {
                             if ("ok".equals(result.body().getString("status"))) {
                                 testContext.assertEquals(1, result.body().getJsonArray("result").size(), "All principal duplicate UserAppConf nodes should be deleted after merge");
-                                async.complete();
+                                async.countDown();
                             } else {
                                 testContext.fail("Could not fetch UserAppConf nodes");
                             }
