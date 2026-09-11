@@ -204,7 +204,7 @@ public class MergeUsersINETest {
         prepareSameINEUsersWithAlreadyDuplicatedPreferences(ine).onComplete(testContext.asyncAssertSuccess(h -> {
             duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
                 neo4j.execute(
-                    "MATCH (u:User{ine:{ine}, tag: 'unitTest5'})-[r:PREFERS]->(uac:UserAppConf) return u.id as id, uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                    "MATCH (u:User{ine:{ine}, tag: 'unitTest5'})-[r:PREFERS]->(uac:UserAppConf) return u.id as id, uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours, uac.timezone as timezone",
                     new JsonObject().put("ine", ine),
                     result -> {
                         if ("ok".equals(result.body().getString("status"))) {
@@ -215,6 +215,7 @@ public class MergeUsersINETest {
                             testContext.assertEquals("fr", principalUser.getString("language"), "The canonical's own property should be preserved");
                             testContext.assertEquals("timeline-config", principalUser.getString("timeline"), "The canonical's own timeline should be preserved");
                             testContext.assertEquals("quiet-hours-principal-duplicate", principalUser.getString("quietHours"), "One quietHours value from the duplicates should be recovered");
+                            testContext.assertEquals("Europe/Paris", principalUser.getString("timezone"), "Timezone should be recovered from the same duplicate as quietHours");
                             async.countDown();
                         } else {
                             testContext.fail("Could not fetch users with the same ine");
@@ -249,7 +250,7 @@ public class MergeUsersINETest {
             duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
                 neo4j.execute(
                         "MATCH (u:User)-[:PREFERS]->(uac:UserAppConf) WHERE u.tag IN ['unitTest6-rich', 'unitTest6-quiet-hours', 'unitTest6-minimal'] " +
-                                "RETURN u.tag as tag, uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours ORDER BY tag",
+                                "RETURN u.tag as tag, uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours, uac.timezone as timezone ORDER BY tag",
                         new JsonObject(),
                         result -> {
                             if ("ok".equals(result.body().getString("status"))) {
@@ -262,6 +263,7 @@ public class MergeUsersINETest {
                                 testContext.assertNull(users.getJsonObject(0).getString("quietHours"));
                                 testContext.assertEquals("unitTest6-quiet-hours", users.getJsonObject(1).getString("tag"));
                                 testContext.assertEquals("quiet-hours-principal", users.getJsonObject(1).getString("quietHours"));
+                                testContext.assertEquals("Europe/Paris", users.getJsonObject(1).getString("timezone"));
                                 testContext.assertEquals("unitTest6-rich", users.getJsonObject(2).getString("tag"));
                                 testContext.assertEquals("fr", users.getJsonObject(2).getString("language"));
                                 testContext.assertEquals("timeline-principal", users.getJsonObject(2).getString("timeline"));
@@ -285,7 +287,7 @@ public class MergeUsersINETest {
         prepareOldQuietHoursAndPrincipalRichUserAppConf(ine).onComplete(testContext.asyncAssertSuccess(h -> {
             duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
                 neo4j.execute(
-                        "MATCH (u:User{ine:{ine}, tag: 'unitTest7'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                        "MATCH (u:User{ine:{ine}, tag: 'unitTest7'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours, uac.timezone as timezone",
                         new JsonObject().put("ine", ine),
                         result -> {
                             if ("ok".equals(result.body().getString("status"))) {
@@ -296,6 +298,7 @@ public class MergeUsersINETest {
                                 testContext.assertEquals("fr", userAppConf.getString("language"));
                                 testContext.assertEquals("timeline-principal", userAppConf.getString("timeline"));
                                 testContext.assertEquals("quiet-hours-old", userAppConf.getString("quietHours"));
+                                testContext.assertEquals("Europe/Paris", userAppConf.getString("timezone"));
                                 async.countDown();
                             } else {
                                 testContext.fail("Could not fetch merged UserAppConf");
@@ -327,7 +330,7 @@ public class MergeUsersINETest {
         prepareOldSeveralQuietHoursAndPrincipalRichUserAppConf(ine).onComplete(testContext.asyncAssertSuccess(h -> {
             duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
                 neo4j.execute(
-                        "MATCH (u:User{ine:{ine}, tag: 'unitTest8'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                        "MATCH (u:User{ine:{ine}, tag: 'unitTest8'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours, uac.timezone as timezone",
                         new JsonObject().put("ine", ine),
                         result -> {
                             if ("ok".equals(result.body().getString("status"))) {
@@ -338,6 +341,7 @@ public class MergeUsersINETest {
                                 testContext.assertEquals("fr", userAppConf.getString("language"));
                                 testContext.assertEquals("timeline-principal-multiple", userAppConf.getString("timeline"));
                                 testContext.assertTrue(userAppConf.getString("quietHours").startsWith("quiet-hours-old-"), "One old quietHours value should be recovered");
+                                testContext.assertTrue(userAppConf.getString("timezone").startsWith("Europe/"), "Timezone should be recovered from a duplicate quietHours node");
                                 async.countDown();
                             } else {
                                 testContext.fail("Could not fetch merged UserAppConf");
@@ -370,7 +374,7 @@ public class MergeUsersINETest {
         prepareOldRichAndPrincipalSeveralQuietHoursUserAppConfs(ine).onComplete(testContext.asyncAssertSuccess(h -> {
             duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
                 neo4j.execute(
-                        "MATCH (u:User{ine:{ine}, tag: 'unitTest9'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours",
+                        "MATCH (u:User{ine:{ine}, tag: 'unitTest9'})-[r:PREFERS]->(uac:UserAppConf) RETURN uac.owner as owner, uac.language as language, uac.timeline as timeline, uac.quietHours as quietHours, uac.timezone as timezone",
                         new JsonObject().put("ine", ine),
                         result -> {
                             if ("ok".equals(result.body().getString("status"))) {
@@ -381,6 +385,7 @@ public class MergeUsersINETest {
                                 testContext.assertEquals("fr", userAppConf.getString("language"));
                                 testContext.assertEquals("timeline-old-multiple", userAppConf.getString("timeline"));
                                 testContext.assertTrue(userAppConf.getString("quietHours").startsWith("quiet-hours-principal-"), "One principal quietHours value should be recovered");
+                                testContext.assertTrue(userAppConf.getString("timezone").startsWith("Europe/"), "Timezone should be recovered from a duplicate quietHours node");
                                 async.countDown();
                             } else {
                                 testContext.fail("Could not fetch merged UserAppConf");
@@ -538,7 +543,7 @@ public class MergeUsersINETest {
             txl.add("match (u) detach delete u", new JsonObject());
                 txl.add("create (u1:User{id: 'userToKeep5', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest5'}) " +
                     "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest5-a', owner: 'userToKeep5A', language: 'fr', timeline: 'timeline-config'}) " +
-                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest5-b', owner: 'userToKeep5B', quietHours: 'quiet-hours-principal-duplicate'})", params);
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest5-b', owner: 'userToKeep5B', quietHours: 'quiet-hours-principal-duplicate', timezone: 'Europe/Paris'})", params);
                 txl.add("create (u2:User{id: 'userToRemove5', source: 'MANUAL', ine: {ine}, tag: 'unitTest5'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest5-old', owner: 'userToRemove5', quietHours: 'quiet-hours-old-user'})", params);
             txl.commit(event -> {
                 if ("ok".equals(event.body().getString("status"))) {
@@ -567,7 +572,7 @@ public class MergeUsersINETest {
             txl.add("match (u) detach delete u", new JsonObject());
             txl.add("create (u1:User{id: 'userToKeep6A', source: 'AAF', activationCode: 'toto', ine: {inePrefix} + '-a', tag: 'unitTest6-rich'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest6-rich', owner: 'principal-rich', language: 'fr', timeline: 'timeline-principal'})", params);
             txl.add("create (u2:User{id: 'userToRemove6A', source: 'MANUAL', ine: {inePrefix} + '-a', tag: 'unitTest6-rich'})", params);
-            txl.add("create (u1:User{id: 'userToKeep6B', source: 'AAF', activationCode: 'toto', ine: {inePrefix} + '-b', tag: 'unitTest6-quiet-hours'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest6-quiet-hours', owner: 'principal-quiet-hours', quietHours: 'quiet-hours-principal'})", params);
+            txl.add("create (u1:User{id: 'userToKeep6B', source: 'AAF', activationCode: 'toto', ine: {inePrefix} + '-b', tag: 'unitTest6-quiet-hours'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest6-quiet-hours', owner: 'principal-quiet-hours', quietHours: 'quiet-hours-principal', timezone: 'Europe/Paris'})", params);
             txl.add("create (u2:User{id: 'userToRemove6B', source: 'MANUAL', ine: {inePrefix} + '-b', tag: 'unitTest6-quiet-hours'})", params);
             txl.add("create (u1:User{id: 'userToKeep6C', source: 'AAF', activationCode: 'toto', ine: {inePrefix} + '-c', tag: 'unitTest6-minimal'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest6-minimal', owner: 'principal-minimal'})", params);
             txl.add("create (u2:User{id: 'userToRemove6C', source: 'MANUAL', ine: {inePrefix} + '-c', tag: 'unitTest6-minimal'})", params);
@@ -596,7 +601,7 @@ public class MergeUsersINETest {
             txl = TransactionManager.getTransaction();
             txl.add("match (u) detach delete u", new JsonObject());
             txl.add("create (u1:User{id: 'userToKeep7', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest7'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest7-rich', owner: 'principal-rich', language: 'fr', timeline: 'timeline-principal'})", params);
-            txl.add("create (u2:User{id: 'userToRemove7', source: 'MANUAL', ine: {ine}, tag: 'unitTest7'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest7-old', owner: 'old-quiet-hours', quietHours: 'quiet-hours-old'})", params);
+            txl.add("create (u2:User{id: 'userToRemove7', source: 'MANUAL', ine: {ine}, tag: 'unitTest7'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest7-old', owner: 'old-quiet-hours', quietHours: 'quiet-hours-old', timezone: 'Europe/Paris'})", params);
             txl.commit(event -> {
                 if ("ok".equals(event.body().getString("status"))) {
                     promise.complete();
@@ -623,9 +628,9 @@ public class MergeUsersINETest {
             txl.add("match (u) detach delete u", new JsonObject());
             txl.add("create (u1:User{id: 'userToKeep8', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest8'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-rich', owner: 'principal-rich-multiple', language: 'fr', timeline: 'timeline-principal-multiple'})", params);
             txl.add("create (u2:User{id: 'userToRemove8', source: 'MANUAL', ine: {ine}, tag: 'unitTest8'}) " +
-                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-a', owner: 'old-quiet-hours-a', quietHours: 'quiet-hours-old-a'}) " +
-                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-b', owner: 'old-quiet-hours-b', quietHours: 'quiet-hours-old-b'}) " +
-                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-c', owner: 'old-quiet-hours-c', quietHours: 'quiet-hours-old-c'})", params);
+                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-a', owner: 'old-quiet-hours-a', quietHours: 'quiet-hours-old-a', timezone: 'Europe/Paris'}) " +
+                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-b', owner: 'old-quiet-hours-b', quietHours: 'quiet-hours-old-b', timezone: 'Europe/Madrid'}) " +
+                    "create (u2)-[:PREFERS]->(:UserAppConf{tag: 'unitTest8-old-c', owner: 'old-quiet-hours-c', quietHours: 'quiet-hours-old-c', timezone: 'Europe/Rome'})", params);
             txl.commit(event -> {
                 if ("ok".equals(event.body().getString("status"))) {
                     promise.complete();
@@ -651,9 +656,9 @@ public class MergeUsersINETest {
             txl = TransactionManager.getTransaction();
             txl.add("match (u) detach delete u", new JsonObject());
             txl.add("create (u1:User{id: 'userToKeep9', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest9'}) " +
-                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-a', owner: 'principal-quiet-hours-a', quietHours: 'quiet-hours-principal-a'}) " +
-                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-b', owner: 'principal-quiet-hours-b', quietHours: 'quiet-hours-principal-b'}) " +
-                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-c', owner: 'principal-quiet-hours-c', quietHours: 'quiet-hours-principal-c'})", params);
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-a', owner: 'principal-quiet-hours-a', quietHours: 'quiet-hours-principal-a', timezone: 'Europe/Paris'}) " +
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-b', owner: 'principal-quiet-hours-b', quietHours: 'quiet-hours-principal-b', timezone: 'Europe/Madrid'}) " +
+                    "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-c', owner: 'principal-quiet-hours-c', quietHours: 'quiet-hours-principal-c', timezone: 'Europe/Rome'})", params);
             txl.add("create (u2:User{id: 'userToRemove9', source: 'MANUAL', ine: {ine}, tag: 'unitTest9'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-rich', owner: 'old-rich-multiple', language: 'fr', timeline: 'timeline-old-multiple'})", params);
             txl.commit(event -> {
                 if ("ok".equals(event.body().getString("status"))) {

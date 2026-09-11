@@ -1091,7 +1091,7 @@ public class DuplicateUsers {
 						"CREATE UNIQUE (u)-[:PREFERS]->(ub) " +
 						"DELETE r";
 		tx.add(query2b, params);
-		// Deduplicate UserAppConf after transfer, keeping rich prefs and salvaging quietHours.
+		// Deduplicate UserAppConf after transfer, keeping rich prefs and salvaging quietHours/timezone.
 		final String query2c =
 				"MATCH (u:User {id: {id}})-[:PREFERS]->(uac:UserAppConf) " +
 						"WITH u, uac ORDER BY CASE WHEN HAS(uac.language) OR HAS(uac.timeline) THEN 0 ELSE 1 END, " +
@@ -1099,8 +1099,8 @@ public class DuplicateUsers {
 						"WITH u, collect(DISTINCT uac) AS uacs " +
 						"WHERE size(uacs) > 0 " +
 						"WITH u, uacs[0] AS canonical, uacs[1..] AS duplicates " +
-						"WITH u, canonical, duplicates, head([duplicate IN duplicates WHERE HAS(duplicate.quietHours) | duplicate.quietHours]) AS duplicateQuietHours " +
-						"FOREACH (_ IN CASE WHEN canonical.quietHours IS NULL AND duplicateQuietHours IS NOT NULL THEN [1] ELSE [] END | SET canonical.quietHours = duplicateQuietHours) " +
+						"WITH u, canonical, duplicates, head([duplicate IN duplicates WHERE HAS(duplicate.quietHours) | duplicate]) AS duplicateQuietHoursSource " +
+						"FOREACH (_ IN CASE WHEN canonical.quietHours IS NULL AND duplicateQuietHoursSource IS NOT NULL THEN [1] ELSE [] END | SET canonical.quietHours = duplicateQuietHoursSource.quietHours, canonical.timezone = duplicateQuietHoursSource.timezone) " +
 						"REMOVE canonical.mergeDuplicateIneTransferred " +
 						"WITH u, duplicates " +
 						"UNWIND duplicates AS duplicate " +
