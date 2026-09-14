@@ -55,6 +55,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
     <div data-testid="notification-list-container" />
   ),
   SchoolSpaceContainer: () => <div data-testid="school-space-container" />,
+  UsefulLinksContainer: () => <div data-testid="useful-links-container" />,
   UserSpaceContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="user-space-container">{children}</div>
   ),
