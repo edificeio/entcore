@@ -5,11 +5,17 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserUtils;
 import org.opensaml.saml2.core.Assertion;
 
 public class SSOJira extends AbstractSSOProvider {
+    private final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(this.getClass().getSimpleName());
+
     @Override
-    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
+    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, JsonObject eventAttributes,
+                         Handler<Either<String, JsonArray>> handler) {
         JsonObject request = new JsonObject()
                 .put("userId", userId)
                 .put("host", host)
@@ -17,6 +23,13 @@ public class SSOJira extends AbstractSSOProvider {
         eb.request("fr.openent.ssojira", request, reply -> {
             if (reply.succeeded()) {
                 JsonArray response = (JsonArray) reply.result().body();
+                UserUtils.getUserInfos(eb, userId, userInfos -> {
+                    if (userInfos != null) {
+                        JsonObject event = new JsonObject().put("service", host).put("connector-type", "saml")
+                                .put("saml-type", this.getClass().getSimpleName());
+                        eventStore.createConnectorEvent(userInfos, event, eventAttributes);
+                    }
+                });
                 handler.handle(new Either.Right<String, JsonArray>(response));
             } else {
                 handler.handle(new Either.Left<String, JsonArray>(reply.cause().getMessage()));
