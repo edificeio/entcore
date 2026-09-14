@@ -7,6 +7,7 @@ import { Root } from './index';
  */
 const mocks = vi.hoisted(() => ({
   useBreakpoint: vi.fn(),
+  updateOverlayOpen: vi.fn(),
 }));
 
 vi.mock('@edifice.io/react', async () => {
@@ -18,7 +19,15 @@ vi.mock('@edifice.io/react', async () => {
   const PageLayoutMock = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="page-layout">{children}</div>
   );
-  PageLayoutMock.Header = () => <div data-testid="page-header" />;
+  PageLayoutMock.Header = ({
+    onNotificationsClick,
+  }: {
+    onNotificationsClick?: () => void;
+  }) => (
+    <div data-testid="page-header">
+      <button onClick={onNotificationsClick}>Notifications</button>
+    </div>
+  );
   PageLayoutMock.SidebarLeft = ({
     children,
   }: {
@@ -41,8 +50,14 @@ vi.mock('@edifice.io/react', async () => {
     ...actual,
     useBreakpoint: mocks.useBreakpoint,
     useEdificeClient: () => ({ init: true }),
-    useOverlay: () => ({ updateOverlayOpen: vi.fn() }),
+    useOverlay: () => ({ updateOverlayOpen: mocks.updateOverlayOpen }),
     PageLayout: PageLayoutMock,
+    // Root doesn't exercise session bootstrap directly (useEdificeClient is
+    // already mocked above) — stub the provider itself too so mounting it
+    // via `~/providers` doesn't require a real session.
+    EdificeClientProvider: ({ children }: { children: React.ReactNode }) => (
+      <>{children}</>
+    ),
   };
 });
 
@@ -57,14 +72,42 @@ vi.mock('@edifice.io/react/homepage', () => ({
   ),
   SchoolSpaceContainer: () => <div data-testid="school-space-container" />,
   UsefulLinksContainer: () => <div data-testid="useful-links-container" />,
-  UserSpaceContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="user-space-container">{children}</div>
+  UserSpaceContainer: ({
+    children,
+    onCustomizeWidgetsClick,
+  }: {
+    children: React.ReactNode;
+    onCustomizeWidgetsClick?: () => void;
+  }) => (
+    <div data-testid="user-space-container">
+      {onCustomizeWidgetsClick && (
+        <button onClick={onCustomizeWidgetsClick}>
+          Personnaliser mes widgets
+        </button>
+      )}
+      {children}
+    </div>
   ),
 }));
 
 vi.mock('~/components/BetaSwitch/BetaSwitchContainer', () => ({
   BetaSwitchContainer: () => <div data-testid="beta-switch-container" />,
 }));
+
+vi.mock(
+  '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer',
+  () => ({
+    WidgetsPersonalizationPanelContainer: ({
+      onClose,
+    }: {
+      onClose: () => void;
+    }) => (
+      <div data-testid="widgets-personalization-panel">
+        <button onClick={onClose}>Fermer le volet widgets</button>
+      </div>
+    ),
+  }),
+);
 
 describe('Root - MessageFlashListContainer responsive placement', () => {
   afterEach(() => {
@@ -101,5 +144,64 @@ describe('Root - MessageFlashListContainer responsive placement', () => {
     expect(
       within(sidebarLeft).queryByTestId('message-flash-list-container'),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('Root - widgets personalization panel / notifications mutual exclusion', () => {
+  beforeEach(() => {
+    mocks.useBreakpoint.mockReturnValue({ sm: true, md: true });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('opens the widgets panel and hides notifications when the trigger is clicked', () => {
+    render(<Root />);
+
+    screen.getByRole('button', { name: 'Personnaliser mes widgets' }).click();
+
+    const overlay = screen.getByTestId('overlay');
+    expect(
+      within(overlay).getByTestId('widgets-personalization-panel'),
+    ).toBeInTheDocument();
+    expect(
+      within(overlay).queryByTestId('notification-list-container'),
+    ).not.toBeInTheDocument();
+    expect(mocks.updateOverlayOpen).toHaveBeenLastCalledWith(true);
+  });
+
+  it('closes the widgets panel and falls back to notifications when it requests to close', () => {
+    render(<Root />);
+    screen.getByRole('button', { name: 'Personnaliser mes widgets' }).click();
+
+    screen.getByRole('button', { name: 'Fermer le volet widgets' }).click();
+
+    const overlay = screen.getByTestId('overlay');
+    expect(
+      within(overlay).queryByTestId('widgets-personalization-panel'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(overlay).getByTestId('notification-list-container'),
+    ).toBeInTheDocument();
+    expect(mocks.updateOverlayOpen).toHaveBeenLastCalledWith(false);
+  });
+
+  it('closes the widgets panel when notifications are toggled open while it is showing', () => {
+    render(<Root />);
+    screen.getByRole('button', { name: 'Personnaliser mes widgets' }).click();
+    expect(
+      screen.getByTestId('widgets-personalization-panel'),
+    ).toBeInTheDocument();
+
+    screen.getByRole('button', { name: 'Notifications' }).click();
+
+    const overlay = screen.getByTestId('overlay');
+    expect(
+      within(overlay).queryByTestId('widgets-personalization-panel'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(overlay).getByTestId('notification-list-container'),
+    ).toBeInTheDocument();
   });
 });
