@@ -7,16 +7,20 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.user.UserUtils;
 import org.opensaml.saml2.core.Assertion;
 
 
 public class SSOGar extends AbstractSSOProvider {
+    private final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(this.getClass().getSimpleName());
     private static final Logger log = LoggerFactory.getLogger(SSOGar.class);
 
     @Override
-    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
+    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, JsonObject eventAttributes, Handler<Either<String, JsonArray>> handler) {
         String query = "match (s:Structure)-[:DEPENDS]-(:ProfileGroup)-[:IN]-(u:User {id:{userId}}) " +
                 "where has(s.exports) AND s.exports <> [] unwind s.exports as exp with exp where exp starts with 'GAR-' " +
                 "return distinct replace(exp, 'GAR-', '') as entId limit 1 ";
@@ -39,6 +43,14 @@ public class SSOGar extends AbstractSSOProvider {
                             .add(new JsonObject().put("idEnt", entIdJO.getString("entId")));
                     jsonArrayResult
                             .add(new JsonObject().put("GARPersonIdentifiant", userId));
+                    UserUtils.getUserInfos(eb, userId, userInfos -> {
+                        if(userInfos != null) {
+                            JsonObject customAttributes = new JsonObject().put("service", host).put("connector-type", "saml")
+                                    .put("saml-type", this.getClass().getSimpleName());
+                            eventStore.createConnectorEvent(userInfos, customAttributes, eventAttributes);
+                        }
+                    });
+
                     handler.handle(new Either.Right<String, JsonArray>(jsonArrayResult));
                 }));
     }

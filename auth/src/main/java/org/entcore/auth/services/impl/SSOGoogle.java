@@ -8,14 +8,18 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserUtils;
 import org.opensaml.saml2.core.Assertion;
 
 public class SSOGoogle extends AbstractSSOProvider {
+	private final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(this.getClass().getSimpleName());
 	private static final Logger log = LoggerFactory.getLogger(SSOGoogle.class);
 	private static final String EMAIL = "email";
 
 	@Override
-	public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId,
+	public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, JsonObject eventAttributes,
 						 Handler<Either<String, JsonArray>> handler) {
 		final String email = getNameId(userId, host);
 
@@ -27,6 +31,14 @@ public class SSOGoogle extends AbstractSSOProvider {
 		}
 
 		log.info("[Auth@SSOGoogle::email] " + email);
+		UserUtils.getUserInfos(eb, userId, userInfos -> {
+			if(userInfos != null) {
+				JsonObject customAttributes = new JsonObject().put("service", host).put("connector-type", "saml")
+						.put("saml-type", this.getClass().getSimpleName());
+				eventStore.createConnectorEvent(userInfos, customAttributes, eventAttributes);
+			}
+		});
+
 		handler.handle(new Either.Right<>(new JsonArray().add(new JsonObject().put(EMAIL, email))));
 	}
 

@@ -36,6 +36,7 @@ import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.FederationService;
 import org.entcore.auth.services.SafeRedirectionService;
 import org.entcore.auth.services.impl.FederationServiceImpl;
+import org.entcore.common.events.impl.GenericEventStore;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -367,6 +368,8 @@ public class SamlController extends AbstractFederateController {
 			}
 		}
 
+		final JsonObject eventAttributes = GenericEventStore.generateEventAttributesFromRequest(request);
+
 		// Send to the bus to generate the SAMLResponse
 		JsonObject event = new JsonObject()
                 .put("action", "generate-saml-response")
@@ -375,7 +378,8 @@ public class SamlController extends AbstractFederateController {
 				.put("nameId", nameId)
                 .put("host", getHost(request))
                 .put("authNRequestId", authNRequestId)
-				.put("scheme", getScheme(request));
+				.put("scheme", getScheme(request))
+				.put("eventAttributes", eventAttributes);
 
 		if (nameIdFormat != null) {
 			event.put("nameIdFormat", nameIdFormat);

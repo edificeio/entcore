@@ -9,6 +9,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserUtils;
 import org.opensaml.saml2.core.Assertion;
 
 import java.util.ArrayList;
@@ -17,6 +20,7 @@ import java.util.List;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class SSOGLPI extends AbstractSSOProvider {
+    private final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(this.getClass().getSimpleName());
     private static final Logger log = LoggerFactory.getLogger(SSOGLPI.class);
     private static final String ACTION = "action";
     private static final String USERID = "userId";
@@ -37,10 +41,20 @@ public class SSOGLPI extends AbstractSSOProvider {
     protected static final String STRUCTURE_NODES = "structureNodes";
 
     @Override
-    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
+    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, JsonObject eventAttributes,
+                         Handler<Either<String, JsonArray>> handler) {
         getUser(eb, userId)
             .compose(this::fillResult)
-            .onSuccess(result -> handler.handle(new Either.Right<>(result)))
+            .onSuccess(result -> {
+                UserUtils.getUserInfos(eb, userId, userInfos -> {
+                    if(userInfos != null) {
+                        JsonObject customAttributes = new JsonObject().put("service", host).put("connector-type", "saml")
+                                .put("saml-type", this.getClass().getSimpleName());
+                        eventStore.createConnectorEvent(userInfos, customAttributes, eventAttributes);
+                    }
+                });
+                handler.handle(new Either.Right<>(result));
+            })
             .onFailure(err -> {
                 log.error("[Auth@SSOGLPI::generate] Failed to generate response for GLPI : " + err.getMessage());
                 handler.handle(new Either.Left(err.getMessage()));

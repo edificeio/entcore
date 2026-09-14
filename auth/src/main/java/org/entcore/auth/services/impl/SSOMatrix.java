@@ -3,25 +3,21 @@ package org.entcore.auth.services.impl;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
-import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.opensaml.saml2.core.Assertion;
-
-import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
-
 
 public class SSOMatrix extends AbstractSSOProvider {
 
     private final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(this.getClass().getSimpleName());
     @Override
-    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, Handler<Either<String, JsonArray>> handler) {
+    public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, JsonObject eventAttributes,
+                         Handler<Either<String, JsonArray>> handler) {
         String query = "MATCH (u:User {id:{userId}})" +
                 //Check if the user can access to the App
                 "-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(:Action)<-[:PROVIDE]-(a:Application) " +
@@ -44,9 +40,10 @@ public class SSOMatrix extends AbstractSSOProvider {
                 if (userInfos != null) {
                     JsonObject event = new JsonObject().put("service", host).put("connector-type", "saml")
                             .put("saml-type", this.getClass().getSimpleName());
-                    eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, userInfos, event);
+                    eventStore.createConnectorEvent(userInfos, event, eventAttributes);
                 }
             });
+
             handler.handle(new Either.Right<>(result));
         }));
     }

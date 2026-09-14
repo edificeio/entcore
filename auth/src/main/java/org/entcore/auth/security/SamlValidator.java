@@ -212,8 +212,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				String authNRequestId = message.body().getString("authNRequestId");
 				String host = message.body().getString("host");
 				String url = message.body().getString("scheme") + "://" + host;
+				JsonObject eventAttributes = message.body().getJsonObject("eventAttributes");
 				spSSODescriptor = getSSODescriptor(serviceProvider);
-				generateSAMLResponse(serviceProvider, authNRequestId, userId, nameId, nameIdFormat, host, url, message);
+				generateSAMLResponse(serviceProvider, authNRequestId, userId, nameId, nameIdFormat, host, url, eventAttributes, message);
 				break;
 			case "validate-signature":
 				sendOK(message, new JsonObject().put("valid", validateSignature(response)));
@@ -272,7 +273,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 */
 	public void generateSAMLResponse(final String serviceProvider, final String authNRequestId, final String userId,
 									 final String nameId, final String nameIdFormat,
-									 final String host, final String url,
+									 final String host, final String url, final JsonObject eventAttributes,
 									 final Message<JsonObject> message) throws SignatureException,
 			NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, MarshallingException {
 		logger.info("start generating SAMLResponse");
@@ -320,7 +321,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		}
 
 		// --- TAG AttributeStatement ---
-		createVectors(userId, host, url, new Handler<Either<String, JsonArray>>() {
+		createVectors(userId, host, url, eventAttributes, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isRight()) {
@@ -603,7 +604,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @param userId  userId neo4j
 	 * @param handler handler containing results
 	 */
-	private void createVectors(String userId, final String host, final String url,
+	private void createVectors(String userId, final String host, final String url, final JsonObject eventAttributes,
 			final Handler<Either<String, JsonArray>> handler) {
 		debug("create user Vector(s)");
 		// browse supported type vector required by the service provider
@@ -669,7 +670,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				handler.handle(new Either.Left<String, JsonArray>("Service Providor ID is null or empty"));
 			} else {
 				SamlServiceProvider sp = spFactory.serviceProvider(SPid);
-				sp.generate(eb, userId, host, SPid, handler);
+				sp.generate(eb, userId, host, SPid, eventAttributes, handler);
 			}
 		}
 	}
