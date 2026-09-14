@@ -5,13 +5,14 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import {
+  CommunitiesContainer,
   FavoritesContainer,
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
   SchoolSpaceContainer,
+  UsefulLinksContainer,
   UserSpaceContainer,
-  CommunitiesContainer,
 } from '@edifice.io/react/homepage';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
@@ -54,6 +55,7 @@ export const Root = () => {
             <FavoritesContainer />
           </UserSpaceContainer>
           <CommunitiesContainer />
+          <UsefulLinksContainer />
         </div>
       </PageLayout.Content>
 

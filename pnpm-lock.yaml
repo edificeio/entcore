@@ -69,6 +69,9 @@ importers:
       '@types/jasminewd2':
         specifier: ~2.0.2
         version: 2.0.13
+      '@types/jquery':
+        specifier: ^3.2.1
+        version: 3.5.34
       '@types/jquery.noty':
         specifier: 2.4.0
         version: 2.4.0
@@ -172,8 +175,8 @@ importers:
         specifier: dev
         version: 1.4.23-dev.202602171058
       ode-ts-client:
-        specifier: dev
-        version: 1.2.5-dev.202603091504
+        specifier: develop-b2school
+        version: 1.2.7-develop-b2school.202609071422
       rxjs:
         specifier: 5.4.2
         version: 5.4.2
@@ -212,6 +215,7 @@ importers:
         version: 3.2.0
 
 packages:
+
   '@angular/compiler-cli@14.3.0':
     resolution: {integrity: sha512-eoKpKdQ2X6axMgzcPUMZVYl3bIlTMzMeTo5V29No4BzgiUB+QoOTYGNJZkGRyqTNpwD9uSBJvmT2vG9+eC4ghQ==}
     engines: {node: ^14.15.0 || >=16.10.0}
@@ -386,8 +390,8 @@ packages:
   '@types/jquery.noty@2.4.0':
     resolution: {integrity: sha512-TwxS9OKdSz8zX8FBNJq7JVp8ldTcAnhg8XDe2MC1Yv5OisV6e4ROauMlGXHhWZLdwMl+9okEiUcqUVGMqvQLsg==}
 
-  '@types/jquery@4.0.0':
-    resolution: {integrity: sha512-Z+to+A2VkaHq1DfI2oSwsoCdhCHMpTSgjWzNcbNlRGYzksDBpPUgEcAL+RQjOBJRaLoEAOHXxqDGBVP+BblBwg==}
+  '@types/jquery@3.5.34':
+    resolution: {integrity: sha512-3m3939S3erqmTLJANS/uy0B6V7BorKx7RorcGZVjZ62dF5PAGbKEDZK1CuLtKombJkFA2T1jl8LAIIs7IV6gBQ==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -427,6 +431,9 @@ packages:
 
   '@types/serve-static@1.15.10':
     resolution: {integrity: sha512-tRs1dB+g8Itk72rlSI2ZrW6vZg0YrLI81iQSTkMmOqnqCaNr/8Ek4VwWcN5vZgCYWbg/JJSGBlUaYGAOP73qBw==}
+
+  '@types/sizzle@2.3.10':
+    resolution: {integrity: sha512-TC0dmN0K8YcWEAEfiPi5gJP14eJe30TTGjkvek3iM/1NdHHsdCA/Td6GvNndMOo/iSnIsZ4HuuhrYPDAmbxzww==}
 
   '@types/sockjs@0.3.36':
     resolution: {integrity: sha512-MK9V6NzAS1+Ud7JV9lJLFqW85VbC9dq3LmwZCuBe4wBDgKC0Kj/jd8Xl+nSviU+Qc3+m7umHHyHg//2KSa0a0Q==}
@@ -3767,8 +3774,8 @@ packages:
     resolution: {integrity: sha512-hIBRX6k7abAEWPh18OE7UP+mudtMMjXZ2daBnTuvqIDB3+UEj7OLJEI/WFG8wp99/h5y/8DJMfpy3EO5bhqS+g==}
     engines: {node: 16 || 18}
 
-  ode-ts-client@1.2.5-dev.202603091504:
-    resolution: {integrity: sha512-7kUh00Aj1gsi7/bCXHO/rQf/3hNI7Cq07egudbJVfy5oVaFEhMKvxBtHeS5g9SK/x00AsfM8UvzP4eAnP7QdoQ==}
+  ode-ts-client@1.2.7-develop-b2school.202609071422:
+    resolution: {integrity: sha512-BlIK9cV+hQglFLsGs8i5rIQs/fPEVJFn0PiNgiOx/FfVGlN2iMobq2RxvwUrGtcrZhucwh8pSWhfqG+utUuwZQ==}
     engines: {node: 16 || 18}
 
   on-finished@2.3.0:
@@ -5664,6 +5671,7 @@ packages:
     engines: {node: '>=4'}
 
 snapshots:
+
   '@angular/compiler-cli@14.3.0(@angular/compiler@14.3.0)(typescript@4.9.5)':
     dependencies:
       '@angular/compiler': 14.3.0
@@ -5725,7 +5733,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.29.0
       '@babel/helper-validator-option': 7.27.1
-      browserslist: 4.28.1
+      browserslist: 4.28.2
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -5892,9 +5900,11 @@ snapshots:
 
   '@types/jquery.noty@2.4.0':
     dependencies:
-      '@types/jquery': 4.0.0
+      '@types/jquery': 3.5.34
 
-  '@types/jquery@4.0.0': {}
+  '@types/jquery@3.5.34':
+    dependencies:
+      '@types/sizzle': 2.3.10
 
   '@types/json-schema@7.0.15': {}
 
@@ -5934,6 +5944,8 @@ snapshots:
       '@types/http-errors': 2.0.5
       '@types/node': 6.0.118
       '@types/send': 0.17.6
+
+  '@types/sizzle@2.3.10': {}
 
   '@types/sockjs@0.3.36':
     dependencies:
@@ -6684,7 +6696,7 @@ snapshots:
 
   browserslist@4.28.2:
     dependencies:
-      baseline-browser-mapping: 2.10.13
+      baseline-browser-mapping: 2.10.12
       caniuse-lite: 1.0.30001784
       electron-to-chromium: 1.5.330
       node-releases: 2.0.36
@@ -10143,7 +10155,7 @@ snapshots:
       moment: 2.29.1
       ua-parser-js: 0.7.28
 
-  ode-ts-client@1.2.5-dev.202603091504:
+  ode-ts-client@1.2.7-develop-b2school.202609071422:
     dependencies:
       axios: 0.21.1
       core-js: 3.8.3
@@ -12286,7 +12298,7 @@ snapshots:
   which-typed-array@1.1.20:
     dependencies:
       available-typed-arrays: 1.0.7
-      call-bind: 1.0.8
+      call-bind: 1.0.9
       call-bound: 1.0.4
       for-each: 0.3.5
       get-proto: 1.0.1

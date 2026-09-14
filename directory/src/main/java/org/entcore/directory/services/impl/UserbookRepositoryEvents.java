@@ -29,6 +29,7 @@ import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.services.UserBookService;
+import org.entcore.directory.services.UserLinkService;
 
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -41,10 +42,12 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(UserbookRepositoryEvents.class);
 	private final UserBookService userBookService;
+	private final UserLinkService userLinkService;
 
-	public UserbookRepositoryEvents(UserBookService userBookService) {
+	public UserbookRepositoryEvents(UserBookService userBookService, UserLinkService userLinkService) {
 		super();
 		this.userBookService = userBookService;
+		this.userLinkService = userLinkService;
 	}
 
 	@Override
@@ -102,6 +105,8 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 				log.error("Error cleaning avatars for ids : " + StringUtils.join(userIds, " "));
 			}
 		});
+		userLinkService.deleteUserLinks(userIds).onFailure(th ->
+				log.error("Error deleting user links for ids : " + StringUtils.join(userIds, " "), th));
 	}
 
 }
