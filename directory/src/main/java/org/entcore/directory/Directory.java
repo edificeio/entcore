@@ -223,11 +223,15 @@ public class Directory extends BaseServer {
 		UserPositionController userPositionController = new UserPositionController(userPositionService);
 		addController(userPositionController);
 
+		UserLinkService userLinkService = new UserLinkServiceImpl();
+		UserLinkController userLinkController = new UserLinkController(eb, userLinkService);
+		addController(userLinkController);
+
 		// TaskController is used by directory to expose specific tasks from the feeder to be triggered, like pre-delete users, import tasks...
 		addController(new TaskController());
 
         vertx.eventBus().consumer("user.repository",
-                new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb, storageFactory.getStorage()));
+                new RepositoryHandler(new UserbookRepositoryEvents(userBookService, userLinkService), eb, storageFactory.getStorage()));
 
 		MessageConsumer<JsonObject> consumer = eb.consumer(DIRECTORY_ADDRESS);
 		consumer.handler(message -> {
