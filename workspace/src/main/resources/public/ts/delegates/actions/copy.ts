@@ -94,7 +94,9 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             } as FolderPickerSourceFile
         })
         $scope.copyProps.manageSubmit = null;
-        $scope.copyProps.submit = null;
+        $scope.copyProps.submit = function (dest) {
+            $scope.copySubmit(dest);
+        };
         template.open('lightbox', 'copy/index');
         setState("normal")
     };
