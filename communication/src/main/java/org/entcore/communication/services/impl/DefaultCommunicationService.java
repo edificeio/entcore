@@ -155,8 +155,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.executeTransaction(builder.build(), null, true, validUniqueResultHandler(eitherHandler) );
 	}
 
-	@Override
-	public void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
+	private void visiblesIdentitiesBothFilter(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
 		String expectIdUserFilter = "";
 		String expectIdVisiblesFilter = "";
 		List<String> expectedVisiblesIds = visibleIdentityRequest.getExpectedVisiblesIds();
@@ -179,77 +178,77 @@ public class DefaultCommunicationService implements CommunicationService {
 		String query =
 				// u->G1->G2->visible + u->G1->visible
 				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
-				"WHERE\n" +
-				"    g.nbUsers > 0\n" +
-				"    AND g.users IN ['BOTH', 'INCOMING']\n" +
-				"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
-				"        DISTINCT CASE\n" +
-				"            WHEN g.users = 'BOTH' THEN g.id\n" +
-				"        END\n" +
-				"    )) as comGroups \n" +
-				"UNWIND comGroups as gid \n" +
-				"WITH DISTINCT gid \n" +
-				"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
-				"WHERE\n" +
-				// discover group are in BOTH but doesn't allow communication between member by default
-				"     NOT g:CommunityGroup AND (\n" +
-				"        NOT(HAS(m.blocked))\n" +
-				"        OR m.blocked = false\n" +
-				"    )\n" +
-				"    AND g.users IN ['BOTH', 'OUTGOING'] " +
-				searchQuery +
-				expectIdUserFilter +
-				(itself ? " " : " AND m.id <> {userId} ") +
-				" WITH DISTINCT m as visibles " +
-				"return DISTINCT visibles.id as id, true as isUser \n" + extraField +
-				// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
-				"UNION \n" +
-				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
-				"WHERE \n" +
-				"    g.nbUsers > 0 \n" +
-				"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
-				"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
-				"        DISTINCT CASE\n" +
-				"            WHEN g.users = 'BOTH' THEN g.id\n" +
-				"        END\n" +
-				" )) as com \n" +
-				" UNWIND com AS gid \n" +
-				" WITH DISTINCT gid \n" +
-				" MATCH (g2:Group { id: gid }) \n" +
-				" OPTIONAL MATCH (g2)<-[:DEPENDS]-(g3:Group) \n" +
-				" UNWIND [g2, g3] AS visibles \n" +
-				" WITH DISTINCT visibles \n" +
-				" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
-				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
-				expectIdVisiblesFilter +
-				" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField +
-				// u->u2 => direct communication
-				"UNION \n" +
-				"MATCH (n:User)-[:COMMUNIQUE_DIRECT]->m \n" +
-				"WHERE \n" +
-				"    n.id = {userId}\n" +
-				"    AND (\n" +
-				"        NOT(HAS(m.blocked))\n" +
-				"        OR m.blocked = false\n" +
-				"    ) " +
-				searchQuery +
-				expectIdUserFilter +
-				(itself ? " " : " AND m.id <> {userId} ") +
-				"WITH DISTINCT m as visibles " +
-				"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField +
-				"UNION \n" +
-				// u->G<-[DEPENDS]-G2 group include into another group list G2
-				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
-				"WHERE \n" +
-				"    g.nbUsers > 0 \n" +
-				"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
-				"    AND visibles.nbUsers > 0 \n" +
-				expectIdVisiblesFilter +
-				(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
-				"return DISTINCT visibles.id as id, false as isUser " + extraField;
+						"WHERE\n" +
+						"    g.nbUsers > 0\n" +
+						"    AND g.users IN ['BOTH', 'INCOMING']\n" +
+						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+						"        DISTINCT CASE\n" +
+						"            WHEN g.users = 'BOTH' THEN g.id\n" +
+						"        END\n" +
+						"    )) as comGroups \n" +
+						"UNWIND comGroups as gid \n" +
+						"WITH DISTINCT gid \n" +
+						"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
+						"WHERE\n" +
+						// discover group are in BOTH but doesn't allow communication between member by default
+						"     NOT g:CommunityGroup AND (\n" +
+						"        NOT(HAS(m.blocked))\n" +
+						"        OR m.blocked = false\n" +
+						"    )\n" +
+						"    AND g.users IN ['BOTH', 'OUTGOING'] " +
+						searchQuery +
+						expectIdUserFilter +
+						(itself ? " " : " AND m.id <> {userId} ") +
+						" WITH DISTINCT m as visibles " +
+						"return DISTINCT visibles.id as id, true as isUser \n" + extraField +
+						// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
+						"UNION \n" +
+						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
+						"WHERE \n" +
+						"    g.nbUsers > 0 \n" +
+						"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
+						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+						"        DISTINCT CASE\n" +
+						"            WHEN g.users = 'BOTH' THEN g.id\n" +
+						"        END\n" +
+						" )) as com \n" +
+						" UNWIND com AS gid \n" +
+						" WITH DISTINCT gid \n" +
+						" MATCH (g2:Group { id: gid }) \n" +
+						" OPTIONAL MATCH (g2)<-[:DEPENDS]-(g3:Group) \n" +
+						" UNWIND [g2, g3] AS visibles \n" +
+						" WITH DISTINCT visibles \n" +
+						" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
+						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
+						expectIdVisiblesFilter +
+						" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField +
+						// u->u2 => direct communication
+						"UNION \n" +
+						"MATCH (n:User)-[:COMMUNIQUE_DIRECT]->m \n" +
+						"WHERE \n" +
+						"    n.id = {userId}\n" +
+						"    AND (\n" +
+						"        NOT(HAS(m.blocked))\n" +
+						"        OR m.blocked = false\n" +
+						"    ) " +
+						searchQuery +
+						expectIdUserFilter +
+						(itself ? " " : " AND m.id <> {userId} ") +
+						"WITH DISTINCT m as visibles " +
+						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField +
+						"UNION \n" +
+						// u->G<-[DEPENDS]-G2 group include into another group list G2
+						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
+						"WHERE \n" +
+						"    g.nbUsers > 0 \n" +
+						"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
+						"    AND visibles.nbUsers > 0 \n" +
+						expectIdVisiblesFilter +
+						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
+						"return DISTINCT visibles.id as id, false as isUser " + extraField;
 		JsonObject queryParams = new JsonObject()
-										.put("userId", userId)
-										.put("search", visibleIdentityRequest.getSearch());
+				.put("userId", userId)
+				.put("search", visibleIdentityRequest.getSearch());
 		if (includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
 			//adding extended vision when replying to a message for example
 			query += " UNION " +
@@ -262,6 +261,82 @@ public class DefaultCommunicationService implements CommunicationService {
 			queryParams.put(EXPECTED_IDS_USERS_GROUPS, new JsonArray(expectedVisiblesIds));
 		}
 		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
+	}
+
+	/**
+	 *  Restrict visible with a group filtering implying remove communique_direct relationship and groups
+	 * @param visibleIdentityRequest
+	 * @param responseHandler
+	 */
+	private void visiblesIdentitiesGroupFilter(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
+		String expectIdUserFilter = "";
+		List<String> expectedVisiblesIds = visibleIdentityRequest.getExpectedVisiblesIds();
+		List<String> includeVisibleIds = visibleIdentityRequest.getIncludedVisibleIds();
+		boolean itself = visibleIdentityRequest.isItSelf();
+		String userId = visibleIdentityRequest.getUserId();
+		boolean restrictToExpectedIds = expectedVisiblesIds != null && !expectedVisiblesIds.isEmpty();
+		if (restrictToExpectedIds) {
+			expectIdUserFilter = " AND g.id IN {"+ EXPECTED_IDS_USERS_GROUPS +"}";
+		}
+		String searchQuery = visibleIdentityRequest.getSearch() != null ? " AND m.displayNameSearchField CONTAINS {search} " : " ";
+		String extraField = visibleIdentityRequest.isPublicDetails() ?
+				" , visibles.name as name, " +
+				" visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName," +
+				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile "
+				: "";
+
+		String query =
+				// u->G1->G2->visible + u->G1->visible
+				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
+						"WHERE\n" +
+						"    g.nbUsers > 0\n" +
+						"    AND g.users IN ['BOTH', 'INCOMING']\n" +
+						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
+						"        DISTINCT CASE\n" +
+						"            WHEN g.users = 'BOTH' THEN g.id\n" +
+						"        END\n" +
+						"    )) as comGroups \n" +
+						"UNWIND comGroups as gid \n" +
+						"WITH DISTINCT gid \n" +
+						"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
+						"WHERE\n" +
+						// discover group are in BOTH but doesn't allow communication between member by default
+						"     NOT g:CommunityGroup AND (\n" +
+						"        NOT(HAS(m.blocked))\n" +
+						"        OR m.blocked = false\n" +
+						"    )\n" +
+						"    AND g.users IN ['BOTH', 'OUTGOING'] " +
+						searchQuery +
+						expectIdUserFilter +
+						(itself ? " " : " AND m.id <> {userId} ") +
+						" WITH DISTINCT m as visibles " +
+						"return DISTINCT visibles.id as id, true as isUser \n" + extraField;
+
+		JsonObject queryParams = new JsonObject()
+				.put("userId", userId)
+				.put("search", visibleIdentityRequest.getSearch());
+		if (includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
+			//adding extended vision when replying to a message for example
+			query += " UNION " +
+					"  MATCH(visibles:User) WHERE visibles.id IN {includeVisibleIds} " +
+					searchQuery +
+					"  RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField;
+			queryParams.put("includeVisibleIds", visibleIdentityRequest.getIncludedVisibleIds());
+		}
+		if (restrictToExpectedIds) {
+			queryParams.put(EXPECTED_IDS_USERS_GROUPS, new JsonArray(expectedVisiblesIds));
+		}
+		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
+	}
+
+
+	@Override
+	public void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
+		if(visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.BOTH) {
+			visiblesIdentitiesBothFilter(visibleIdentityRequest, responseHandler);
+		} else {
+			visiblesIdentitiesGroupFilter(visibleIdentityRequest, responseHandler);
+		}
 	}
 
 	@Override
