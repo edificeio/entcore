@@ -1,5 +1,4 @@
-import { Flex } from '@edifice.io/react';
-import { useBackgroundImage } from '~/hooks/useBackgroundImage';
+import { Flex, useBackground } from '@edifice.io/react';
 import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
 import { ChoiceButton } from './ChoiceButton';
@@ -24,7 +23,7 @@ function getCountryCode(lang: string) {
 
 export const CustomizationForm = ({ form }: CustomizationFormProps) => {
   const { t, common_t } = useI18n();
-  const { getBackgroundImgUrl } = useBackgroundImage();
+  const { getBackgroundImgUrl } = useBackground();
 
   const {
     fonts,
@@ -74,7 +73,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                   variant: 'background',
                   background,
                   label: background,
-                  imgSrc: getBackgroundImgUrl(background),
+                  imgSrc: getBackgroundImgUrl(),
                   onClick: handleBackgroundChange,
                 }}
               />

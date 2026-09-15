@@ -1,3 +1,4 @@
+import { Background } from '@edifice.io/react';
 import {
   DYSLEXIC_FONT_ID,
   getCustomizationPreviewTexts,
@@ -12,8 +13,8 @@ export type CustomizationPreviewProps = {
   selectedFont?: string;
   /** `_id` of the language selected in the form (see GET /languages). */
   selectedLanguage: string;
-  /** URL of the background image to display. */
-  selectedBackgroundUrl: string;
+  /** Background image to display. */
+  selectedBackground: Background;
 };
 
 /**
@@ -33,13 +34,13 @@ const PreviewBlock = ({ className }: { className: string }) => (
  * later step.
  */
 export const CustomizationPreview = ({
-  selectedFont,
-  selectedLanguage,
-  selectedBackgroundUrl,
+  selectedFont: font,
+  selectedLanguage: language,
+  selectedBackground: background,
 }: CustomizationPreviewProps) => {
-  const fontClassName = selectedFont === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
+  const fontClassName = font === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
   const { greetingText, lastInfosText } =
-    getCustomizationPreviewTexts(selectedLanguage);
+    getCustomizationPreviewTexts(language);
 
   return (
     <div className={`customization-preview ${fontClassName}`}>
@@ -61,13 +62,8 @@ export const CustomizationPreview = ({
         </div>
 
         <div
-          className="customization-preview-content"
-          style={{
-            backgroundImage: `url(${selectedBackgroundUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'right',
-            backgroundRepeat: 'no-repeat',
-          }}
+          data-layout-background={background}
+          className="customization-preview-content "
         >
           <div className="customization-preview-card">
             <div className="customization-preview-greeting-header">

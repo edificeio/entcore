@@ -12,7 +12,6 @@ import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useNavigate } from 'react-router-dom';
 import { CustomizationForm } from '~/components/CustomizationForm';
 import { CustomizationPreview } from '~/components/CustomizationPreview/CustomizationPreview';
-import { useBackgroundImage } from '~/hooks/useBackgroundImage';
 import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
 import './customize.css';
@@ -28,7 +27,6 @@ export const Component = () => {
   const { md, lg } = useBreakpoint();
   const { common_t } = useI18n();
 
-  const { backgroundImgStyle, getBackgroundImgUrl } = useBackgroundImage();
   const { resetChanges, saveChanges, isSaving, ...form } =
     useCustomizationForm();
   const { selectedBackground, selectedFont, selectedLanguage } = form;
@@ -48,7 +46,6 @@ export const Component = () => {
       scrollMode="page"
       variant="fullpage"
       noPadding={{ content: true, sidebarRight: true, sidebarLeft: true }}
-      style={backgroundImgStyle}
     >
       <PageLayout.Header />
       <PageLayout.Content className="customize-content">
@@ -93,7 +90,7 @@ export const Component = () => {
               <CustomizationPreview
                 selectedFont={selectedFont}
                 selectedLanguage={selectedLanguage}
-                selectedBackgroundUrl={getBackgroundImgUrl(selectedBackground)}
+                selectedBackground={selectedBackground}
               />
             )}
           </Flex>
