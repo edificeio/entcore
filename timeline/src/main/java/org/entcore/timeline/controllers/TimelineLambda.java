@@ -100,19 +100,41 @@ public final class TimelineLambda {
 
 	private static JsonObject computeTimeLineI18n(String language, Map<String, String> eventsI18n, Map<String, JsonObject> lazyEventsI18n) {
 		String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-		String i18n = eventI18n != null ? eventI18n : "}";
-		JsonObject timelineI18n;
-		try {
-			timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-			lazyEventsI18n.put(language, timelineI18n);
-			if(eventI18n != null) {
-				i18nEventsHash.put(language, eventI18n.hashCode());
-			}
-		} catch (DecodeException de) {
-			timelineI18n = new JsonObject();
-			log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
+		JsonObject timelineI18n = parseTimelineI18n(eventI18n);
+		lazyEventsI18n.put(language, timelineI18n);
+		if (eventI18n != null) {
+			i18nEventsHash.put(language, eventI18n.hashCode());
 		}
 		return timelineI18n;
+	}
+
+	/**
+	 * Parses the shared map's stored value for one locale. Understands both the current format
+	 * (a valid standalone JSON object, produced by TimelineHelper's merge logic) and the legacy
+	 * format from before that fix shipped (a headless fragment with a trailing comma, missing
+	 * braces). Never wraps a value that already starts with '{' in another layer of braces --
+	 * doing so unconditionally is what produced the "{{...}" corruption seen in production.
+	 */
+	private static JsonObject parseTimelineI18n(String eventI18n) {
+		if (eventI18n == null) {
+			return new JsonObject();
+		}
+		try {
+			// current format: a valid standalone JSON object
+			return new JsonObject(eventI18n);
+		} catch (DecodeException de) {
+			if (eventI18n.startsWith("{")) {
+				log.error("Bad json (already brace-enclosed, not wrapping again) : " + eventI18n, de);
+				return new JsonObject();
+			}
+			try {
+				// legacy format: a headless fragment with a trailing comma, missing braces
+				return new JsonObject("{" + eventI18n.substring(0, eventI18n.length() - 1) + "}");
+			} catch (DecodeException de2) {
+				log.error("Bad json : " + eventI18n, de2);
+				return new JsonObject();
+			}
+		}
 	}
 
 	/**
