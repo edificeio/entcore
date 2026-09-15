@@ -40,7 +40,6 @@
 
 @media only screen and (min-width: 768px) {
   .customize-content {
-    margin: var(--primitive-spacer-32) var(--primitive-spacer-32)
-      var(--primitive-spacer-32) var(--primitive-spacer-64);
+    margin: 0 var(--primitive-spacer-32);
   }
 }

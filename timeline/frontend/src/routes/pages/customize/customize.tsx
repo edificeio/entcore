@@ -3,6 +3,7 @@ import {
   Flex,
   LoadingScreen,
   PageLayout,
+  useBackground,
   useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
@@ -26,6 +27,7 @@ export const Component = () => {
   const navigate = useNavigate();
   const { md, lg } = useBreakpoint();
   const { common_t } = useI18n();
+  const { background } = useBackground();
 
   const { resetChanges, saveChanges, isSaving, ...form } =
     useCustomizationForm();
@@ -43,12 +45,16 @@ export const Component = () => {
 
   return (
     <PageLayout
-      scrollMode="page"
+      scrollMode="columns"
       variant="fullpage"
       noPadding={{ content: true, sidebarRight: true, sidebarLeft: true }}
+      data-background={background}
     >
       <PageLayout.Header />
-      <PageLayout.Content className="customize-content">
+      <PageLayout.Content
+        className="customize-content"
+        data-background={undefined}
+      >
         <div className="customize-content-wrap">
           <Flex direction="row" gap={lg ? '64' : '32'}>
             <Flex direction="column" gap="16" align="start">
