@@ -1,10 +1,11 @@
+import { Background } from '@edifice.io/react';
 import { render, screen } from '~/mocks/setup';
 import { DYSLEXIC_FONT_ID } from '~/models/customization';
 import { CustomizationPreview } from './CustomizationPreview';
 
 const requiredProps = {
   selectedLanguage: 'fr',
-  selectedBackgroundUrl: 'https://example.test/background.png',
+  selectedBackground: 'pink-200' as Background,
 };
 
 describe('CustomizationPreview', () => {
