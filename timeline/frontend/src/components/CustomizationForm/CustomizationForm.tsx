@@ -73,7 +73,6 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                   variant: 'background',
                   background,
                   label: background,
-                  imgSrc: getBackgroundImgUrl(),
                   onClick: handleBackgroundChange,
                 }}
               />

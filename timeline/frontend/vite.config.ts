@@ -5,6 +5,15 @@ import { defineConfig } from 'vitest/config';
 import { createDevProxyConfig } from './vite/plugins/devProxy';
 import { serveLocalI18nPlugin } from './vite/plugins/serveLocalI18n';
 
+const bootstrapImagesPath = resolve(
+  __dirname,
+  'node_modules/@edifice.io/bootstrap/dist/images',
+);
+const linkedBootstrapImagesPath = resolve(
+  __dirname,
+  '../../../edifice-frontend-framework/packages/bootstrap/dist/images',
+);
+
 export default ({ mode }: { mode: string }) => {
   // In mock mode there is no recette/backend to fall back to: proxying
   // anything MSW doesn't intercept just produces ECONNREFUSED noise, so the
@@ -33,10 +42,7 @@ export default ({ mode }: { mode: string }) => {
 
     resolve: {
       alias: {
-        '@images': resolve(
-          __dirname,
-          'node_modules/@edifice.io/bootstrap/dist/images',
-        ),
+        '@images': bootstrapImagesPath,
       },
       dedupe: ['react', 'react-dom'],
     },
@@ -46,6 +52,10 @@ export default ({ mode }: { mode: string }) => {
       host: 'localhost',
       headers,
       proxy,
+      fs: {
+        // Allow serving image files
+        allow: ['.', bootstrapImagesPath, linkedBootstrapImagesPath],
+      },
     },
 
     preview: {

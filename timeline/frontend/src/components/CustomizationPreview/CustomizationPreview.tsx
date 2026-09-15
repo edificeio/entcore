@@ -62,7 +62,7 @@ export const CustomizationPreview = ({
         </div>
 
         <div
-          data-layout-background={background}
+          data-background={background}
           className="customization-preview-content "
         >
           <div className="customization-preview-card">
