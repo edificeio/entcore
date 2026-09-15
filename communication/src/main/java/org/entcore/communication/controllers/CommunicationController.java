@@ -43,6 +43,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.communication.dto.bus.CommunicationBusDTO;
 import org.entcore.communication.dto.rest.DiscoverModifyGroupUsersDTO;
@@ -432,7 +433,7 @@ public class CommunicationController extends BaseController {
 	public void visibleUsers(final Message<JsonObject> message) {
 		SearchVisibleBusDTO searchQuery = new SearchVisibleBusDTO(message.body());
 		String userId = searchQuery.getUserId();
-		if (userId == null || userId.trim().isEmpty()) {
+		if (!"visiblesIdentities".equals(searchQuery.getAction()) && (userId == null || userId.trim().isEmpty())) {
 			message.reply(new JsonArray());
 			return;
 		}
@@ -457,11 +458,22 @@ public class CommunicationController extends BaseController {
 						.map(arr -> serializeForBus(arr, BusUserDtoMapper::map));
 				break;
 			case "visiblesIdentities":
-				boolean itself = message.body().getBoolean("itself", false);
-				JsonObject params = message.body().getJsonObject("params");
-				boolean hidden = message.body().getBoolean("hidden", false);
+				final VisibleIdentityRequest request;
+				try {
+					request = message.body().getJsonObject("request", new JsonObject())
+							.mapTo(VisibleIdentityRequest.class);
+				} catch (RuntimeException e) {
+					log.error("communication.visiblesIdentities : invalid request payload", e);
+					message.fail(400, "invalid.request");
+					return;
+				}
+				if (StringUtils.isEmpty(request.getUserId())) {
+					log.error("communication.visiblesIdentities : missing userId in request payload");
+					message.fail(400, "invalid.userId");
+					return;
+				}
 				Promise<JsonArray> identitiesPromise = Promise.promise();
-				communicationService.visiblesIdentities(userId, itself, hidden, params, res -> {
+				communicationService.visiblesIdentities(request, res -> {
 					if (res.isRight()) {
 						identitiesPromise.complete(res.right().getValue());
 					} else {
