@@ -5,7 +5,7 @@ import {
   UserPositionElementQuery,
 } from "src/app/core/store/models/userPosition.model";
 
-import http from "axios";
+import { http } from 'entcore-toolkit';
 import { Session } from "../store/mappings/session";
 import { SessionModel } from "../store/models/session.model";
 import { Observable } from "rxjs";

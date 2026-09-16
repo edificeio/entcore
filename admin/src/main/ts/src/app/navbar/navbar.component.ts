@@ -1,4 +1,3 @@
-import http from 'axios';
 import { Component, ElementRef, EventEmitter, Injector, Input, Output, ViewChild } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
 import { removeAccents } from 'ngx-ode-ui';

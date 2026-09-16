@@ -1,5 +1,4 @@
-import http from 'axios';
-
+import { http } from 'entcore-toolkit';
 export class ProfilesService {
 
     private static profiles: Array<{name: string, blocked: any}>;
