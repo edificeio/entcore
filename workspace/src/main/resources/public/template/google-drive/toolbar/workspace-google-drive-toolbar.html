@@ -3,8 +3,8 @@
     ng-class="{'hide': !selectedDocuments || selectedDocuments.length === 0}"
 >
     <div class="toggle">
-        <!-- Toolbar when NOT in trashbin -->
-        <div ng-if="!toolbar.treeController.isTrashbinOpen" class="row">
+        <!-- Toolbar when NOT in trashbin nor in the shared-with-me view -->
+        <div ng-if="!toolbar.treeController.isTrashbinOpen && !toolbar.treeController.isSharedViewOpen" class="row">
             <!-- open file -->
             <div
                 id="google-drive-toolbar-open"
@@ -61,6 +61,34 @@
             <!-- Permanently delete document(s) -->
             <button ng-click="toolbar.toggleDeleteView(true)">
                 <i18n>workspace.delete</i18n>
+            </button>
+        </div>
+
+        <!-- Toolbar when IN "Documents partagés" (files shared with me — not owned, read-only actions only) -->
+        <div ng-if="toolbar.treeController.isSharedViewOpen" class="row">
+            <!-- open file -->
+            <div
+                id="google-drive-toolbar-open"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments)"
+            >
+                <button ng-click="toolbar.openDocument()">
+                    <i18n>workspace.open</i18n>
+                </button>
+            </div>
+
+            <!-- edit document (Google native types only) -->
+            <div
+                id="google-drive-toolbar-edit"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments) && toolbar.isSelectedEditable(selectedDocuments)"
+            >
+                <button ng-click="toolbar.editDocument()">
+                    <i18n>workspace.external.open</i18n>
+                </button>
+            </div>
+
+            <!-- download file(s) -->
+            <button ng-click="toolbar.downloadFiles(selectedDocuments)">
+                <i18n>workspace.download</i18n>
             </button>
         </div>
     </div>
