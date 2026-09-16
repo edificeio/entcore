@@ -3,8 +3,7 @@ import { globalStore } from "../store/global.store";
 import { StructureModel } from "../store/models/structure.model";
 import { UserModel } from "../store/models/user.model";
 import { UserDetailsModel } from "../store/models/userdetails.model";
-import http from 'axios';
-
+import { http } from 'entcore-toolkit';
 @Injectable()
 export class UserService {
 

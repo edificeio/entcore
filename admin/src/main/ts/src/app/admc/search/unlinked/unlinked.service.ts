@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { Profile } from 'src/app/services/_shared/services-types';
 import { NotifyService } from '../../../core/services/notify.service';
 import { BackendDirectoryUserResponse } from 'src/app/users/users.service';

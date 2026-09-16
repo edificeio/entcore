@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
 import { SessionModel } from 'src/app/core/store/models/session.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';

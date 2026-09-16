@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { NotifyService } from 'src/app/core/services/notify.service';
 import { RoleActionModel } from 'src/app/core/store/models/role.model';
 

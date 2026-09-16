@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { Context } from '../mappings/context';
 import { Session } from '../mappings/session';
 import { Theme } from '../mappings/theme';
