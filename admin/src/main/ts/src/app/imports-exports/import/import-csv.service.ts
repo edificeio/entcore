@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import * as chardet  from 'chardet';
 
 export class ImportCSVService {

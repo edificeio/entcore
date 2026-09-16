@@ -3,8 +3,7 @@ import { Profile, Structure } from 'src/app/services/_shared/services-types';
 import { StructureModel } from '../store/models/structure.model';
 import { WidgetModel } from '../store/models/widget.model';
 import { NotifyService } from './notify.service';
-import http from 'axios';
-
+import { http } from 'entcore-toolkit';
     // Example {\"Teacher\":[\"Blog\", \"Exercices et évaluations\"]}
 export type DefaultBookmarks = {
     [p in Profile]?: Array<string> /** array of translated app names */
