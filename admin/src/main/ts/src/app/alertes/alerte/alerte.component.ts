@@ -20,13 +20,41 @@ export class AlerteComponent extends OdeComponent implements OnInit {
   @Input()
   set alerte(value: AlerteModel) {
     this._alerte = value;
-    console.log('set alerte', value)
-    this._alerte.created.$date = new Date(this._alerte.created.$date).toLocaleString('fr-FR');
+    const reportDate = this.parseDateWithShortOffset(value.reporters[0]?.date);
+    this._firstReportDate = reportDate
+      ? reportDate.toLocaleString("fr-FR")
+      : new Date(value.created.$date).toLocaleString("fr-FR");
+    // Remove unused seconds
+    if (this._firstReportDate && this._firstReportDate.length > 3)
+      this._firstReportDate = this._firstReportDate.substring(
+        0,
+        this._firstReportDate.length - 3,
+      );
     this.buildReportersString();
+  }
+
+  /**
+   * Parse une date au format "YYYY-MM-DDTHH:mm±HH" (offset sans les minutes,
+   * non conforme ISO 8601 strict) et renvoie un objet Date valide, ou null.
+   */
+  private parseDateWithShortOffset(raw?: string): Date | null {
+    if (!raw) {
+      return null;
+    }
+    const match = raw.match(/^(.*T\d{2}:\d{2}(?::\d{2})?)([+-]\d{1,2})$/);
+    const normalized = match
+      ? `${match[1]}${match[2][0]}${match[2].slice(1).padStart(2, "0")}:00`
+      : raw;
+    const parsed = new Date(normalized);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+  get firstReportDate(): string {
+    return this._firstReportDate;
   }
 
   reporters: ReplaySubject<string> = new ReplaySubject<string>();
   private _alerte: AlerteModel;
+  private _firstReportDate: string;
 
 
   constructor(injector: Injector,
