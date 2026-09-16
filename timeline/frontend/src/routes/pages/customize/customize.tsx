@@ -27,7 +27,7 @@ export const Component = () => {
   const navigate = useNavigate();
   const { md, lg } = useBreakpoint();
   const { common_t } = useI18n();
-  const { background } = useBackground();
+  const { background, productOverride } = useBackground();
 
   const { resetChanges, saveChanges, isSaving, ...form } =
     useCustomizationForm();
@@ -48,6 +48,7 @@ export const Component = () => {
       scrollMode="columns"
       variant="fullpage"
       noPadding={{ content: true, sidebarRight: true, sidebarLeft: true }}
+      data-product={productOverride}
       data-background={background}
     >
       <PageLayout.Header />
