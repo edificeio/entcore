@@ -3,6 +3,7 @@ import { ng, workspace } from "entcore";
 import {
   GoogleDriveDocument,
   IGoogleDriveDocumentResponse,
+  IGoogleDriveSharedFileResponse,
 } from "../models/googleDriveDocument.model";
 import {
   GoogleDriveQuota,
@@ -10,10 +11,46 @@ import {
 } from "../models/googleDriveQuota.model";
 import models = workspace.v2.models;
 
+export type GoogleDriveShareRole = "reader" | "commenter" | "writer";
+
+export interface IGoogleDriveShareEntry {
+  id: string;
+  userId: string | null;
+  role: GoogleDriveShareRole;
+  emailAddress: string;
+}
+
+export interface IGoogleDriveShareResult {
+  userId: string;
+  status: "ok" | "error";
+  id?: string;
+  message?: string;
+}
+
 export interface IGoogleDriveService {
   listDocument(userid: string, parentId?: string): Promise<Array<GoogleDriveDocument>>;
 
   listTrash(userid: string): Promise<Array<GoogleDriveDocument>>;
+
+  listSharedFiles(userid: string): Promise<Array<GoogleDriveDocument>>;
+
+  listSharedUsers(userid: string, fileId: string): Promise<Array<IGoogleDriveShareEntry>>;
+
+  shareDocument(
+    userid: string,
+    fileId: string,
+    targetUserId: string,
+    role?: GoogleDriveShareRole,
+  ): Promise<AxiosResponse>;
+
+  shareDocuments(
+    userid: string,
+    fileId: string,
+    targetUserIds: Array<string>,
+    role?: GoogleDriveShareRole,
+  ): Promise<Array<IGoogleDriveShareResult>>;
+
+  unshareDocument(userid: string, fileId: string, targetUserId: string): Promise<AxiosResponse>;
 
   createFolder(userid: string, name: string, parentId?: string): Promise<AxiosResponse>;
 
@@ -89,6 +126,65 @@ export const googleDriveService: IGoogleDriveService = {
           new GoogleDriveDocument().build(doc),
         ),
       );
+  },
+
+  listSharedFiles: async (userid: string): Promise<Array<GoogleDriveDocument>> => {
+    return http
+      .get(`/googledrive/files/user/${userid}/shared`)
+      .then((res: AxiosResponse) =>
+        res.data.data.map((doc: IGoogleDriveSharedFileResponse) =>
+          new GoogleDriveDocument().buildFromShared(doc),
+        ),
+      )
+      .then((documents: Array<GoogleDriveDocument>) => resolveOwnerDisplayNames(documents));
+  },
+
+  listSharedUsers: async (
+    userid: string,
+    fileId: string,
+  ): Promise<Array<IGoogleDriveShareEntry>> => {
+    return http
+      .get(`/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share`)
+      .then((res: AxiosResponse) => res.data.data);
+  },
+
+  shareDocument: (
+    userid: string,
+    fileId: string,
+    targetUserId: string,
+    role: GoogleDriveShareRole = "reader",
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share`,
+      { userId: targetUserId, role },
+    );
+  },
+
+  shareDocuments: (
+    userid: string,
+    fileId: string,
+    targetUserIds: Array<string>,
+    role: GoogleDriveShareRole = "reader",
+  ): Promise<Array<IGoogleDriveShareResult>> => {
+    // @ts-ignore
+    return http
+      .put(`/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share/multiple`, {
+        userIds: targetUserIds,
+        role,
+      })
+      .then((res: AxiosResponse) => res.data.data as Array<IGoogleDriveShareResult>);
+  },
+
+  unshareDocument: (
+    userid: string,
+    fileId: string,
+    targetUserId: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.delete(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/share/${encodeURIComponent(targetUserId)}`,
+    );
   },
 
   createFolder: async (
@@ -261,6 +357,41 @@ export const googleDriveService: IGoogleDriveService = {
     }
   },
 };
+
+// The owner's Google Workspace "displayName" is not reliable (it can be anything set in
+// Google Admin, e.g. a raw ENT id for test accounts) — resolve the real ENT display name
+// from the sharer's ENT userId instead, deduping lookups across documents by the same owner.
+function resolveOwnerDisplayNames(
+  documents: Array<GoogleDriveDocument>,
+): Promise<Array<GoogleDriveDocument>> {
+  const userIds = Array.from(
+    new Set(
+      documents
+        .map((doc) => doc.sharedOwners?.[0]?.userId)
+        .filter((id): id is string => !!id),
+    ),
+  );
+  if (!userIds.length) return Promise.resolve(documents);
+
+  return Promise.all(
+    userIds.map((id) =>
+      http
+        .get(`/userbook/api/person?id=${id}`)
+        .then((res: AxiosResponse) => [id, res.data?.result?.[0]?.displayName] as const)
+        .catch(() => [id, undefined] as const),
+    ),
+  ).then((resolved) => {
+    const displayNameByUserId = new Map<string, string>(
+      resolved.filter(([, name]) => !!name) as Array<[string, string]>,
+    );
+    documents.forEach((doc) => {
+      const ownerUserId = doc.sharedOwners?.[0]?.userId;
+      const resolvedName = ownerUserId && displayNameByUserId.get(ownerUserId);
+      if (resolvedName) doc.ownerDisplayName = resolvedName;
+    });
+    return documents;
+  });
+}
 
 export const GoogleDriveService = ng.service(
   "GoogleDriveService",

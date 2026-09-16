@@ -47,6 +47,7 @@ export interface IWorkspaceGoogleDriveContent {
   updateTree(): void;
   getGoogleDriveTreeController(): any;
   isTrashMode(): boolean;
+  isSharedMode(): boolean;
   openDocument(document?: GoogleDriveDocument): any;
   closeViewFile(): void;
 }
@@ -76,6 +77,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
 
       $scope.isTrashMode = function (): boolean {
         return $scope.getGoogleDriveTreeController()?.isTrashbinOpen ?? false;
+      };
+
+      $scope.isSharedMode = function (): boolean {
+        return $scope.getGoogleDriveTreeController()?.isSharedViewOpen ?? false;
       };
 
       Promise.all([
@@ -126,7 +131,7 @@ export const workspaceGoogleDriveContentController = ng.controller(
         service: IGoogleDriveService,
         scope: IWorkspaceGoogleDriveContent,
       ): Promise<void> {
-        if ($scope.isTrashMode()) return;
+        if ($scope.isTrashMode() || $scope.isSharedMode()) return;
 
         const selectedFolder: GoogleDriveDocument =
           $scope.getGoogleDriveTreeController()?.["selectedFolder"];

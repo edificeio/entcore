@@ -1,7 +1,94 @@
-<share-panel
-    resources="toolbar.share.sharedElement"
-    auto-close="'true'"
-    on-cancel="toolbar.share.onCancelShareElements()"
-    on-submit="toolbar.share.onSubmitSharedElements($share)"
->
-</share-panel>
+<div class="horizontal-spacing-twice">
+    <h2 style="margin-top: 0;"><i18n>workspace.share</i18n></h2>
+
+    <!-- Existing shares — only meaningful for a single selected document -->
+    <div ng-if="toolbar.share.isSingleDocument" class="row">
+        <h3><i18n>google-drive.shared.current</i18n></h3>
+
+        <p ng-if="toolbar.share.loadingShares" class="centered">
+            <i class="loading"></i>
+        </p>
+
+        <p ng-if="!toolbar.share.loadingShares && !toolbar.share.currentShares.length" class="low-importance">
+            <i18n>google-drive.shared.none</i18n>
+        </p>
+
+        <ul ng-if="!toolbar.share.loadingShares && toolbar.share.currentShares.length" class="current-shares-list">
+            <li ng-repeat="entry in toolbar.share.currentShares" class="row">
+                <span class="cell reduce-block-two">[[entry.displayName || entry.emailAddress]]</span>
+                <em class="low-importance cell">[[translate('google-drive.role.' + entry.role)]]</em>
+                <a
+                    ng-if="entry.userId"
+                    ng-click="toolbar.share.onRemoveShare(entry)"
+                    class="cell right-magnet"
+                >
+                    <i18n>google-drive.unshare</i18n>
+                </a>
+            </li>
+        </ul>
+
+        <hr />
+    </div>
+
+    <!-- Add recipients -->
+    <div class="row">
+        <h3><i18n>google-drive.share.search.title</i18n></h3>
+
+        <search-user
+            class="twelve cell"
+            style="min-height: 60px;"
+            ng-model="toolbar.share.search"
+            clear-list="toolbar.share.clearSearch()"
+            on-send="toolbar.share.findUsers()"
+        >
+        </search-user>
+
+        <div
+            class="found-users-list"
+            style="position: absolute; top: 68px; left: 0; right: 0; z-index: 10; background: #fff;"
+        >
+            <div ng-repeat="item in toolbar.share.found" class="row autocomplete">
+                <em ng-click="toolbar.share.addRecipient(item)" class="row">
+                    <span class="cell reduce-block-two">[[item.displayName]]</span>
+                </em>
+            </div>
+        </div>
+
+        <div class="selected-recipients row" ng-if="toolbar.share.selectedRecipients.length">
+            <span ng-repeat="user in toolbar.share.selectedRecipients" class="tag">
+                [[user.displayName]]
+                <a ng-click="toolbar.share.removeRecipient(user)">&times;</a>
+            </span>
+        </div>
+
+        <div class="row">
+            <label><i18n>google-drive.share.role</i18n></label>
+            <select ng-model="toolbar.share.role">
+                <option value="reader">[[translate('google-drive.role.reader')]]</option>
+                <option value="writer">[[translate('google-drive.role.writer')]]</option>
+            </select>
+        </div>
+    </div>
+
+    <div ng-if="toolbar.share.shareErrors.length" class="row warning">
+        <ul class="share-errors-list">
+            <li ng-repeat="error in toolbar.share.shareErrors">
+                <strong>[[error.recipient]]</strong> : [[error.message]]
+            </li>
+        </ul>
+    </div>
+
+    <div class="lightbox-buttons fluid">
+        <button
+            class="nextcloud-button-confirm right-magnet"
+            ng-disabled="!toolbar.share.hasRecipients() || toolbar.share.sharing"
+            ng-click="toolbar.share.onShare()"
+        >
+            <i18n>workspace.share</i18n>
+        </button>
+
+        <button class="nextcloud-button-cancel right-magnet" ng-click="toolbar.share.close()">
+            <i18n>workspace.warning.cancel</i18n>
+        </button>
+    </div>
+</div>
