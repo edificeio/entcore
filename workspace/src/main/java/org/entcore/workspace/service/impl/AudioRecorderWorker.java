@@ -21,12 +21,11 @@ package org.entcore.workspace.service.impl;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,8 +38,8 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.busmods.BusModBase;
 
-import com.sun.jna.Platform;
-
+import de.maxhenkel.lame4j.Mp3Encoder;
+import de.maxhenkel.lame4j.UnknownPlatformException;
 import fr.wseduc.webutils.collections.PersistantBuffer;
 import fr.wseduc.webutils.data.ZLib;
 import io.vertx.core.AsyncResult;
@@ -49,16 +48,16 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import net.sf.lamejb.BladeCodecFactory;
-import net.sf.lamejb.LamejbCodec;
-import net.sf.lamejb.LamejbCodecFactory;
-import net.sf.lamejb.LamejbConfig;
-import net.sf.lamejb.impl.std.StreamEncoderWAVImpl;
-import net.sf.lamejb.std.LameConfig;
-import net.sf.lamejb.std.StreamEncoder;
 
 
 public class AudioRecorderWorker extends BusModBase implements Handler<Message<JsonObject>> {
+
+	// stereo
+	private static final int DEFAULT_MP3_CHANNELS = 2;
+	// kept from the previous LamejbConfig bitrate
+	private static final int DEFAULT_MP3_BITRATE_KBPS = 64;
+	// LAME quality scale: 1 (best/slowest) to 9 (worst/fastest)
+	private static final int DEFAULT_MP3_QUALITY = 5;
 
 	private Storage storage;
 	private WorkspaceHelper workspaceHelper;
@@ -66,6 +65,9 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	private final Map<String, PersistantBuffer> buffers = new HashMap<>();
 	private final Map<String, MessageConsumer<byte[]>> consumers = new HashMap<>();
 	private final Set<String> disabledCompression = new HashSet<>();
+	private int mp3Channels;
+	private int mp3BitrateKbps;
+	private int mp3Quality;
 
 	@Override
 	public void start() {
@@ -74,6 +76,10 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
             .onSuccess(storageFactory -> this.storage = storageFactory.getStorage())
             .onFailure(ex -> logger.error("Error building storage factory", ex));
 		workspaceHelper = new WorkspaceHelper(vertx.eventBus(), storage);
+		final JsonObject mp3Config = config.getJsonObject("mp3", new JsonObject());
+		mp3Channels = mp3Config.getInteger("channels", DEFAULT_MP3_CHANNELS);
+		mp3BitrateKbps = mp3Config.getInteger("bitrate-kbps", DEFAULT_MP3_BITRATE_KBPS);
+		mp3Quality = mp3Config.getInteger("quality", DEFAULT_MP3_QUALITY);
 		vertx.eventBus().localConsumer(AudioRecorderWorker.class.getSimpleName(), this);
 	}
 
@@ -114,7 +120,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 				public void handle(AsyncResult<Buffer> buf) {
 					try {
 						final Integer sampleRate = sampleRates.getOrDefault(id,44100);
-						storage.writeBuffer(id, toMp3(toWav(buf.result(),sampleRate), sampleRate), "audio/mp3", name, new Handler<JsonObject>() {
+						storage.writeBuffer(id, toMp3(buf.result(), sampleRate), "audio/mp3", name, new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject f) {
 								if ("ok".equals(f.getString("status"))) {
@@ -202,50 +208,21 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	}
 
 
-	private static Buffer toWav(Buffer data, Integer sampleRate) {
-		Buffer wav = Buffer.buffer();
-		wav.appendString("RIFF");
-		wav.appendBytes(intToByteArray(44 + data.length()));
-		wav.appendString("WAVE");
-		wav.appendString("fmt ");
-		wav.appendBytes(intToByteArray(16));
-		wav.appendBytes(shortToByteArray((short) 1));
-		wav.appendBytes(shortToByteArray((short) 2));
-		wav.appendBytes(intToByteArray(sampleRate));
-		wav.appendBytes(intToByteArray(sampleRate * 4));
-		wav.appendBytes(shortToByteArray((short) 4));
-		wav.appendBytes(shortToByteArray((short) 16));
-		wav.appendString("data");
-		wav.appendBytes(intToByteArray(data.length()));
-		wav.appendBuffer(data);
-		return wav;
-	}
-
-	private static byte[] shortToByteArray(short data) {
-		return ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).putShort(data).array();
-	}
-
-	private static byte[] intToByteArray(int i) {
-		return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(i).array();
-	}
-
-
-	private static Buffer toMp3(Buffer wav, Integer sampleRate) {
+	/**
+	 * Encodes raw 16-bit stereo PCM into MP3 via lame4j.
+	 *
+	 * @param pcm raw PCM buffer (no WAV header), little-endian 16-bit stereo samples as sent by the client
+	 * @param sampleRate PCM sample rate of the capture
+	 */
+	private Buffer toMp3(Buffer pcm, Integer sampleRate) throws IOException, UnknownPlatformException {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final ByteArrayInputStream bais = new ByteArrayInputStream(wav.getBytes());
-		final LamejbConfig config = new LamejbConfig(sampleRate, 64, LamejbConfig.MpegMode.STEREO, true);
-		if (Platform.isWindows()) {
-			LamejbCodecFactory codecFactory = new BladeCodecFactory();
-			LamejbCodec codec = codecFactory.createCodec();
-			codec.encodeStream(bais, baos, config);
-		} else {
-			StreamEncoder encoder = new StreamEncoderWAVImpl(new BufferedInputStream(bais));
-			LameConfig conf = encoder.getLameConfig();
-			conf.setInSamplerate(config.getSampleRate());
-			conf.setBrate(config.getBitRate());
-			conf.setBWriteVbrTag(config.isVbrTag());
-			conf.setMode(config.getMpegMode().lameMode());
-			encoder.encode(new BufferedOutputStream(baos));
+		// PCM bytes must be reinterpreted as shorts (Mp3Encoder.write() takes short[], not bytes), same little-endian order as sent by the client
+		final ShortBuffer samples = ByteBuffer.wrap(pcm.getBytes())
+				.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+		final short[] pcmSamples = new short[samples.remaining()];
+		samples.get(pcmSamples);
+		try (Mp3Encoder encoder = new Mp3Encoder(mp3Channels, sampleRate, mp3BitrateKbps, mp3Quality, baos)) {
+			encoder.write(pcmSamples);
 		}
 		return Buffer.buffer(baos.toByteArray());
 	}
