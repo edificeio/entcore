@@ -38,6 +38,7 @@ export interface IGoogleDriveFolderScope {
   removeDragFeedback(): void;
   folderCreation: FolderCreationModel;
   isTrashbinOpen: boolean;
+  isSharedViewOpen: boolean;
   emptyTrashbin: EmptyTrashModel;
   driveQuota: GoogleDriveQuota;
 }
@@ -64,6 +65,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
       $scope.folderCreation = new FolderCreationModel($scope);
       $scope.emptyTrashbin = new EmptyTrashModel($scope);
       $scope.isTrashbinOpen = false;
+      $scope.isSharedViewOpen = false;
       $rootScope.isGDTrashbinOpen = false;
 
       const subscriptions: Subscription = new Subscription();
@@ -80,6 +82,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
 
         const staticFolders: Array<GoogleDriveDocument> = [
           GoogleDriveDocument.createStaticFolder("trashbin"),
+          GoogleDriveDocument.createStaticFolder("shared"),
         ];
         folder.push(...staticFolders);
 
@@ -368,7 +371,15 @@ export const workspaceGoogleDriveFolderController = ng.controller(
         if (contentContext) {
           // GD→GD drag: move GD document(s) to the target GD folder
           const folderScope = findFolderScope(event.target as Element);
-          if (folderScope?.folder instanceof GoogleDriveDocument && folderScope.folder.isFolder) {
+          const isSharedTarget: boolean =
+            folderScope?.folder instanceof GoogleDriveDocument &&
+            folderScope.folder.isStaticFolder &&
+            folderScope.folder.staticFolderType === "shared";
+          if (
+            folderScope?.folder instanceof GoogleDriveDocument &&
+            folderScope.folder.isFolder &&
+            !isSharedTarget
+          ) {
             const targetFolder: GoogleDriveDocument = folderScope.folder;
 
             const contentEl = document.getElementById("google-drive-content");
@@ -472,6 +483,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
           switch (staticType) {
             case "trashbin":
               $scope.isTrashbinOpen = true;
+              $scope.isSharedViewOpen = false;
               $rootScope.isGDTrashbinOpen = true;
               template.close('lightbox');
               safeApply($scope);
@@ -482,6 +494,21 @@ export const workspaceGoogleDriveFolderController = ng.controller(
                   return [];
                 });
               staticDocuments = trashList;
+              break;
+            case "shared":
+              $scope.isTrashbinOpen = false;
+              $scope.isSharedViewOpen = true;
+              $rootScope.isGDTrashbinOpen = true;
+              template.close('lightbox');
+              safeApply($scope);
+              const sharedList = await googleDriveService
+                .listSharedFiles(model.me.userId)
+                .catch((err: Error) => {
+                  console.error("Error fetching shared files: " + err.message);
+                  return [];
+                });
+              staticDocuments = sharedList;
+              break;
           }
 
           $scope.documents = staticDocuments;
@@ -494,6 +521,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
         }
 
         $scope.isTrashbinOpen = false;
+        $scope.isSharedViewOpen = false;
         $rootScope.isGDTrashbinOpen = true;
         template.close('lightbox');
         safeApply($scope);

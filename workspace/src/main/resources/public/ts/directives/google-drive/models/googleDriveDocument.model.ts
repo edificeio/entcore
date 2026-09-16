@@ -14,6 +14,24 @@ export interface IGoogleDriveDocumentResponse {
   mimeType: string;
   size: number;
   modifiedTime: string;
+  shared?: boolean;
+}
+
+export interface IGoogleDriveSharedOwner {
+  userId: string | null;
+  displayName: string;
+  emailAddress: string;
+}
+
+export interface IGoogleDriveSharedFileResponse {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  modifiedTime: string;
+  sharedWithMeTime: string;
+  role: "reader" | "commenter" | "writer";
+  owners: Array<IGoogleDriveSharedOwner>;
 }
 
 export class GoogleDriveDocument {
@@ -34,7 +52,17 @@ export class GoogleDriveDocument {
   selected?: boolean;
   isGoogleDriveParent?: boolean;
   isStaticFolder?: boolean;
-  staticFolderType?: "trashbin";
+  staticFolderType?: "trashbin" | "shared";
+
+  // True when the current user (owner) has shared this document with at least one other user.
+  isShared?: boolean;
+
+  // Set only for documents shared with the current user (fetched via listSharedFiles).
+  // Named "permissionRole" (not "role") because `role` already holds the DocumentRole
+  // icon type (folder/doc/xls/...), unrelated to Drive sharing permission levels.
+  sharedWithMeTime?: string;
+  permissionRole?: "reader" | "commenter" | "writer";
+  sharedOwners?: Array<IGoogleDriveSharedOwner>;
 
   build(data: IGoogleDriveDocumentResponse): GoogleDriveDocument {
     this.id = data.id;
@@ -42,6 +70,7 @@ export class GoogleDriveDocument {
     this.mimeType = data.mimeType || "";
     this.size = data.size;
     this.modifiedTime = data.modifiedTime;
+    this.isShared = !!data.shared;
     this.isFolder = this.mimeType === GOOGLE_FOLDER_MIME;
     this.ownerDisplayName = model.me.login;
     this.type = this.isFolder ? DocumentsType.FOLDER : DocumentsType.FILE;
@@ -78,6 +107,22 @@ export class GoogleDriveDocument {
     return [GOOGLE_DOC_MIME, GOOGLE_SHEET_MIME, GOOGLE_SLIDE_MIME].includes(this.mimeType);
   }
 
+  buildFromShared(data: IGoogleDriveSharedFileResponse): GoogleDriveDocument {
+    this.build({
+      id: data.id,
+      name: data.name,
+      mimeType: data.mimeType,
+      size: data.size,
+      modifiedTime: data.modifiedTime,
+    });
+    this.sharedWithMeTime = data.sharedWithMeTime;
+    this.permissionRole = data.role;
+    this.sharedOwners = data.owners || [];
+    const owner: IGoogleDriveSharedOwner = this.sharedOwners[0];
+    this.ownerDisplayName = owner ? owner.displayName : this.ownerDisplayName;
+    return this;
+  }
+
   initParent(): GoogleDriveDocument {
     const parent = new GoogleDriveDocument();
     parent.id = null;
@@ -99,7 +144,7 @@ export class GoogleDriveDocument {
     return parent;
   }
 
-  static createStaticFolder(type: "trashbin"): GoogleDriveDocument {
+  static createStaticFolder(type: "trashbin" | "shared"): GoogleDriveDocument {
     const folder = new GoogleDriveDocument();
     folder.id = `__static__/${type}`;
     folder.name = lang.translate(`google-drive.static.${type}`);
