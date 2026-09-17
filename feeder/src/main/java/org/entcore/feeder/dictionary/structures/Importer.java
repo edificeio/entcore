@@ -61,7 +61,8 @@ public class Importer {
 	private static final Logger log = LoggerFactory.getLogger(Importer.class);
 
 	public static final JsonArray DEFAULT_EXCLUDED_STRUCTURE_NAME_PREFIXES = new JsonArray().add("CMS-");
-	private static final List<String> EXCLUDED_STRUCTURE_SOURCES = Arrays.asList("AAF", "AAF1D");
+	/** Sources alimentées par l'annuaire fédérateur (AAF 2D et 1D). */
+	private static final List<String> AAF_SOURCES = Arrays.asList("AAF", "AAF1D");
 	private static final String EXCLUDED_STRUCTURE_REASON = "excluded.structure.name.prefix";
 
 	private static final String EXCLUDED_USER_REASON = "excluded.structure.only.attachment";
@@ -376,7 +377,7 @@ public class Importer {
 
 	private boolean isExcludedStructureName(String name) {
 		if (name == null || excludedStructureNamePrefixes.isEmpty()
-				|| !EXCLUDED_STRUCTURE_SOURCES.contains(currentSource)) {
+				|| !AAF_SOURCES.contains(currentSource)) {
 			return false;
 		}
 		final String lowerCaseName = name.toLowerCase();
@@ -467,6 +468,7 @@ public class Importer {
 			}
 			s = structures.get(externalId);
 			if (s != null) {
+				keepAafSource(s, struct);
 				s.update(struct);
 			} else {
 				String UAI = struct.getString("UAI");
@@ -482,6 +484,7 @@ public class Importer {
 							externalIdMapping.putIfAbsent(key.toString(), origExternalId);
 						}
 					}
+					keepAafSource(s, struct);
 					s.update(struct);
 				} else {
 					try {
@@ -498,6 +501,17 @@ public class Importer {
 		if(s != null)
 			structuresImportedExternalId.add(s.getExternalId());
 		return s;
+	}
+
+	/**
+	 * Un import non-AAF (CSV, EDT...) ne doit pas déclasser une structure alimentée par l'AAF :
+	 * la source déjà en base est conservée quand elle vaut AAF ou AAF1D.
+	 */
+	private void keepAafSource(ImporterStructure existing, JsonObject struct) {
+		final String existingSource = existing.getStruct().getString("source");
+		if (AAF_SOURCES.contains(existingSource) && !AAF_SOURCES.contains(currentSource)) {
+			struct.put("source", existingSource);
+		}
 	}
 
 	public void forceStructureSource(ImporterStructure s)
