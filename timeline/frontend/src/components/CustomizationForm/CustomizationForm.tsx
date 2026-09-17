@@ -1,9 +1,10 @@
 import { Flex } from '@edifice.io/react';
 import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
-import { Background } from '~/services';
+import corsica from '../../assets/Corsica.png';
 import { ChoiceButton } from './ChoiceButton';
 import { ChoiceSkeleton } from './ChoiceSkeleton';
+import './CustomizationForm.css';
 
 type CustomizationFormProps = {
   form: Omit<
@@ -21,24 +22,13 @@ function getCountryCode(lang: string) {
   return lang;
 }
 
-// Background images are shipped by @edifice.io/bootstrap (aliased as @images).
-const backgroundImages = Object.entries(
-  import.meta.glob('@images/backgrounds/*.png', {
-    eager: true,
-    import: 'default',
-    query: '?url',
-  }),
-).reduce<Record<string, string>>((acc, [path, url]) => {
-  const name = path
-    .split('/')
-    .pop()!
-    .replace(/\.png$/, '');
-  acc[name] = url as string;
-  return acc;
-}, {});
-
-export function getBackgroundImgSrc(background: Background) {
-  return backgroundImages[background];
+function getFlagUrl(lang: string) {
+  switch (lang.toLowerCase()) {
+    // For Corse language, display a dedicated svg (and not the Colombia flag!)
+    case 'co':
+      return corsica;
+  }
+  return `https://flagcdn.com/w80/${getCountryCode(lang)}.png`;
 }
 
 export const CustomizationForm = ({ form }: CustomizationFormProps) => {
@@ -57,8 +47,8 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
   } = form;
 
   return (
-    <Flex direction="column" gap="32" className="w-100">
-      <Flex direction="column" gap="16" className="w-100">
+    <Flex direction="column" gap="32" className="customization-form">
+      <Flex direction="column" gap="16" className="customization-form-section">
         <h3>{t('homepage.customize.form.fonts')}</h3>
         <Flex gap="8" wrap="wrap">
           {fonts && selectedFont ? (
@@ -80,7 +70,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         </Flex>
       </Flex>
 
-      <Flex direction="column" gap="16" className="w-100">
+      <Flex direction="column" gap="16" className="customization-form-section">
         <h3>{t('homepage.customize.form.themes')}</h3>
         <Flex gap="12" wrap="wrap">
           {backgrounds ? (
@@ -92,7 +82,6 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                   variant: 'background',
                   background,
                   label: background,
-                  imgSrc: getBackgroundImgSrc(background),
                   onClick: handleBackgroundChange,
                 }}
               />
@@ -103,7 +92,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         </Flex>
       </Flex>
 
-      <Flex direction="column" gap="16" className="w-100">
+      <Flex direction="column" gap="16" className="customization-form-section">
         <h3>{t('homepage.customize.form.languages')}</h3>
         <Flex gap="12" wrap="wrap">
           {languages ? (
@@ -115,7 +104,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                   variant: 'language',
                   lang,
                   label: t(`language.${lang}`),
-                  imgSrc: `https://flagcdn.com/w80/${getCountryCode(lang)}.png`,
+                  imgSrc: getFlagUrl(lang),
                   onClick: handleLanguageChange,
                 }}
               />
