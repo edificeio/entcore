@@ -582,7 +582,9 @@ public class ConversationController extends BaseController {
 				.put("subject", subject)
 				.put("messageUri", pathPrefix + "/conversation#/read-mail/" + id);
 		params.put("resourceUri", params.getString("messageUri"));
-		params.put("pushNotif", new JsonObject().put("title", user.getUsername()).put("body", subject + "\n" + sentMessage.getString("body")));
+		String body = sentMessage.getString("body", "");
+		String pushBody = body.isEmpty() ? subject : subject + "\n" + body;
+		params.put("pushNotif", new JsonObject().put("title", user.getUsername()).put("body", pushBody));
 		if (sentMessage.getBoolean("disableAntiFlood", false)) {
 			params.put("disableAntiFlood", true);
 		}
@@ -1996,6 +1998,7 @@ public class ConversationController extends BaseController {
 											JsonObject result = event.right().getValue();
 											JsonObject timelineParams = new JsonObject()
 													.put("subject", result.getString("subject"))
+													.put("body", StringUtils.stripHtmlTag(result.getString("body")))
 													.put("id", result.getString("id"))
 													.put("thread_id", result.getString("thread_id"))
 													.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()))
