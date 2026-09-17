@@ -34,8 +34,8 @@ export class AlerteComponent extends OdeComponent implements OnInit {
   }
 
   /**
-   * Parse une date au format "YYYY-MM-DDTHH:mm±HH" (offset sans les minutes,
-   * non conforme ISO 8601 strict) et renvoie un objet Date valide, ou null.
+   * Parses a date in the format "YYYY-MM-DDTHH:mm±HH" (offset without minutes,
+   * not strictly ISO 8601 compliant) and returns a valid Date object, or null.
    */
   private parseDateWithShortOffset(raw?: string): Date | null {
     if (!raw) {
