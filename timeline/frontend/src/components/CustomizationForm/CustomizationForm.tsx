@@ -1,6 +1,7 @@
 import { Flex } from '@edifice.io/react';
 import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
+import corsica from '../../assets/Corsica.png';
 import { ChoiceButton } from './ChoiceButton';
 import { ChoiceSkeleton } from './ChoiceSkeleton';
 import './CustomizationForm.css';
@@ -19,6 +20,15 @@ function getCountryCode(lang: string) {
       return 'gb';
   }
   return lang;
+}
+
+function getFlagUrl(lang: string) {
+  switch (lang.toLowerCase()) {
+    // For Corse language, display a dedicated svg (and not the Colombia flag!)
+    case 'co':
+      return corsica;
+  }
+  return `https://flagcdn.com/w80/${getCountryCode(lang)}.png`;
 }
 
 export const CustomizationForm = ({ form }: CustomizationFormProps) => {
@@ -94,7 +104,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
                   variant: 'language',
                   lang,
                   label: t(`language.${lang}`),
-                  imgSrc: `https://flagcdn.com/w80/${getCountryCode(lang)}.png`,
+                  imgSrc: getFlagUrl(lang),
                   onClick: handleLanguageChange,
                 }}
               />
