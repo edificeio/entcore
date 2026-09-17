@@ -1,7 +1,13 @@
-import { useEdificeClient, useEdificeTheme, useToast } from '@edifice.io/react';
+import {
+  Background,
+  useBackground,
+  useEdificeClient,
+  useEdificeTheme,
+  useToast,
+} from '@edifice.io/react';
 import { useCallback, useEffect, useState } from 'react';
 import i18n from '~/i18n';
-import { Background, customizeService } from '~/services';
+import { customizeService } from '~/services';
 import { useCustomization } from './useCustomization';
 import { useI18n } from './useI18n';
 
@@ -12,8 +18,8 @@ export function useCustomizationForm() {
     fonts,
     isError: isLoadError,
     savePreferences,
-    background,
   } = useCustomization();
+  const { background } = useBackground();
   const { currentLanguage, sessionQuery } = useEdificeClient();
   const { theme } = useEdificeTheme();
   const { t } = useI18n();
