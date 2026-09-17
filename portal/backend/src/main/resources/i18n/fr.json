@@ -111,7 +111,7 @@
   "bbm.studio.modal.title": "Le Studio",
   "bbm.upload.alert": "L’ordre d’import des médias se fait dans l’ordre choisi. Vous pourrez modifier l’ordre une fois l’import effectué",
   "bbm.upload.sort.alpha": "Par ordre alphabétique",
-  "bbm.upload.sort.date": "Par date de modification",
+  "bbm.upload.sort.date": "Par date de modification (du plus récent au plus ancien)",
   "bbm.upload.sort.title": "Trier les fichiers par",
   "bbm.video": "Caméra",
   "bbm.video.caption": "Souriez, vous êtes filmé(e) ! Vous pouvez enregistrer jusqu’à 3 minutes de vidéo.",
