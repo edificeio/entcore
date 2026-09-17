@@ -1,6 +1,16 @@
 import { queryOptions } from '@tanstack/react-query';
 import { customizeService } from '../api/customizeService';
 
+/** Reorders languages so that 'fr' comes first, then 'es', and 'co' last, without adding any code. */
+function reorderLanguages(languages: string[]): string[] {
+  const priorityFirst = ['fr', 'es'].filter((code) => languages.includes(code));
+  const last = languages.includes('co') ? ['co'] : [];
+  const rest = languages.filter(
+    (code) => !priorityFirst.includes(code) && code !== 'co',
+  );
+  return [...priorityFirst, ...rest, ...last];
+}
+
 /**
  * Customize Query Keys
  */
@@ -21,7 +31,10 @@ export const customizeQueryOptions = {
   getLanguages() {
     return queryOptions({
       queryKey: customizeQueryKeys.languages(),
-      queryFn: () => customizeService.listLanguages(),
+      queryFn: () =>
+        customizeService
+          .listLanguages()
+          .then((languages) => reorderLanguages(languages)),
       staleTime: Infinity,
     });
   },

@@ -3,6 +3,7 @@ import {
   Flex,
   LoadingScreen,
   PageLayout,
+  useBackground,
   useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
@@ -26,6 +27,7 @@ export const Component = () => {
   const navigate = useNavigate();
   const { md, lg } = useBreakpoint();
   const { common_t } = useI18n();
+  const { background, productOverride } = useBackground();
 
   const { resetChanges, saveChanges, isSaving, ...form } =
     useCustomizationForm();
@@ -43,56 +45,64 @@ export const Component = () => {
 
   return (
     <PageLayout
-      scrollMode="page"
-      variant="centered"
+      scrollMode="columns"
+      variant="fullpage"
       noPadding={{ content: true, sidebarRight: true, sidebarLeft: true }}
+      data-product={productOverride}
+      data-background={background}
     >
       <PageLayout.Header />
-      <PageLayout.Content className="customize-content">
-        <Flex direction="row" gap={lg ? '64' : '32'}>
-          <Flex direction="column" gap="16" align="start">
-            <div>
-              <Button
-                data-testid="customize-back-button"
-                className="customize-back-button"
-                leftIcon={<IconArrowLeft />}
-                variant="ghost"
-                onClick={handleBackClick}
-              >
-                {common_t('back')}
-              </Button>
-              <h1>{common_t('navbar.customize')}</h1>
-            </div>
+      <PageLayout.Content
+        className="customize-content"
+        data-background={undefined}
+      >
+        <div className="customize-content-wrap">
+          <Flex direction="row" gap={lg ? '64' : '32'}>
+            <Flex direction="column" gap="16" align="start">
+              <div>
+                <Button
+                  data-testid="customize-back-button"
+                  className="customize-back-button"
+                  leftIcon={<IconArrowLeft />}
+                  variant="ghost"
+                  onClick={handleBackClick}
+                >
+                  {common_t('back')}
+                </Button>
+                <h1>{common_t('navbar.customize')}</h1>
+              </div>
 
-            <CustomizationForm form={form} />
+              <CustomizationForm form={form} />
 
-            <Flex
-              direction="row"
-              gap="8"
-              justify="end"
-              align="center"
-              className="w-100"
-            >
-              <Button variant="ghost" onClick={resetChanges}>
-                {common_t('cancel')}
-              </Button>
-              <Button
-                variant="filled"
-                onClick={handleSaveClick}
-                disabled={isSaving}
+              <Flex
+                direction="row"
+                gap="8"
+                justify="end"
+                align="center"
+                className="w-100"
               >
-                {common_t('save')}
-              </Button>
+                <Button variant="ghost" onClick={resetChanges}>
+                  {common_t('cancel')}
+                </Button>
+                <Button
+                  variant="filled"
+                  onClick={handleSaveClick}
+                  disabled={isSaving}
+                  isLoading={isSaving}
+                >
+                  {common_t('save')}
+                </Button>
+              </Flex>
             </Flex>
+            {md && (
+              <CustomizationPreview
+                selectedFont={selectedFont}
+                selectedLanguage={selectedLanguage}
+                selectedBackground={selectedBackground}
+              />
+            )}
           </Flex>
-          {md && (
-            <CustomizationPreview
-              selectedFont={selectedFont}
-              selectedLanguage={selectedLanguage}
-              selectedBackground={selectedBackground}
-            />
-          )}
-        </Flex>
+        </div>
       </PageLayout.Content>
     </PageLayout>
   );

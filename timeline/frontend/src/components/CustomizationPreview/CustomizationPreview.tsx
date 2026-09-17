@@ -1,9 +1,8 @@
+import { Background } from '@edifice.io/react';
 import {
   DYSLEXIC_FONT_ID,
   getCustomizationPreviewTexts,
 } from '~/models/customization';
-import { Background } from '~/services';
-import { getBackgroundImgSrc } from '../CustomizationForm/CustomizationForm';
 import './CustomizationPreview.css';
 
 /** Number of pictograms outlined on the right of the navigation bar. */
@@ -14,7 +13,7 @@ export type CustomizationPreviewProps = {
   selectedFont?: string;
   /** `_id` of the language selected in the form (see GET /languages). */
   selectedLanguage: string;
-  /** Background selected in the form. */
+  /** Background image to display. */
   selectedBackground: Background;
 };
 
@@ -35,13 +34,13 @@ const PreviewBlock = ({ className }: { className: string }) => (
  * later step.
  */
 export const CustomizationPreview = ({
-  selectedFont,
-  selectedLanguage,
-  selectedBackground,
+  selectedFont: font,
+  selectedLanguage: language,
+  selectedBackground: background,
 }: CustomizationPreviewProps) => {
-  const fontClassName = selectedFont === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
+  const fontClassName = font === DYSLEXIC_FONT_ID ? 'ff-dyslexic' : '';
   const { greetingText, lastInfosText } =
-    getCustomizationPreviewTexts(selectedLanguage);
+    getCustomizationPreviewTexts(language);
 
   return (
     <div className={`customization-preview ${fontClassName}`}>
@@ -63,13 +62,8 @@ export const CustomizationPreview = ({
         </div>
 
         <div
-          className="customization-preview-content"
-          style={{
-            backgroundImage: `url(${getBackgroundImgSrc(selectedBackground)})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'right',
-            backgroundRepeat: 'no-repeat',
-          }}
+          data-background={background}
+          className="customization-preview-content "
         >
           <div className="customization-preview-card">
             <div className="customization-preview-greeting-header">
