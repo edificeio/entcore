@@ -88,6 +88,7 @@ export const Component = () => {
                   variant="filled"
                   onClick={handleSaveClick}
                   disabled={isSaving}
+                  isLoading={isSaving}
                 >
                   {common_t('save')}
                 </Button>
