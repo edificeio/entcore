@@ -1,6 +1,10 @@
-import { ButtonBeta, ButtonBetaProps, Flex } from '@edifice.io/react';
+import {
+  Background,
+  ButtonBeta,
+  ButtonBetaProps,
+  Flex,
+} from '@edifice.io/react';
 import clsx from 'clsx';
-import { Background } from '~/services';
 import './ChoiceButton.css';
 
 type FontChoice = {
@@ -14,7 +18,6 @@ type BackgroundChoice = {
   variant: 'background';
   background: Background;
   label: string;
-  imgSrc: string;
   onClick: (background: Background) => void;
 };
 
@@ -74,8 +77,8 @@ export const ChoiceButton = ({
       {choice.variant === 'font' && choice.label}
       {choice.variant === 'background' && (
         <span
+          data-background={choice.background}
           className="choice-button__img"
-          style={{ backgroundImage: `url(${choice.imgSrc})` }}
         />
       )}
       {choice.variant === 'language' && (

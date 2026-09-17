@@ -1,7 +1,6 @@
-import { useToast, useUserPreferences } from '@edifice.io/react';
+import { Background, useToast, useUserPreferences } from '@edifice.io/react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { Background } from '~/services/api/customizeService';
 import { customizeQueryOptions } from '~/services/queries/customize';
 import { useI18n } from './useI18n';
 
@@ -13,11 +12,8 @@ export type CustomizationPreferences = {
 export const useCustomization = () => {
   const { t } = useI18n();
   const toast = useToast();
-  const {
-    preferences,
-    isError: isPreferencesError,
-    savePreferences,
-  } = useUserPreferences<CustomizationPreferences>();
+  const { isError: isPreferencesError, savePreferences } =
+    useUserPreferences<CustomizationPreferences>();
 
   const { data: languages, isError: isLanguagesError } = useQuery(
     customizeQueryOptions.getLanguages(),
@@ -58,7 +54,6 @@ export const useCustomization = () => {
     languages,
     fonts,
     backgrounds,
-    background: (preferences?.background as Background) ?? 'default',
     isError:
       isLanguagesError ||
       isFontsError ||
