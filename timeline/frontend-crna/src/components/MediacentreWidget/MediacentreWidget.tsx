@@ -81,7 +81,13 @@ export function MediacentreWidget({
                 <IconButton
                   {...triggerProps}
                   type="button"
-                  aria-label={selectedSchool?.name ?? t('homepage.crna.widget.mediacentre.select-school', 'Choisir un établissement')}
+                  aria-label={
+                    selectedSchool?.name ??
+                    t(
+                      'homepage.crna.widget.mediacentre.select-school',
+                      'Choisir un établissement',
+                    )
+                  }
                   color="tertiary"
                   variant="ghost"
                   icon={<IconFilter />}
@@ -123,7 +129,7 @@ export function MediacentreWidget({
             view === 'favorites'
               ? t(
                   'homepage.crna.widget.mediacentre.empty',
-                  'Aucune ressource en favoris',
+                  'Vos ressources favorites seront affichées ici dès que vous les aurez sélectionnées. Allez dans le service Médiacentre (ou cliquez sur « voir plus ») et sélectionnez les ressources que vous souhaitez mettre en favoris.',
                 )
               : t(
                   'homepage.crna.widget.mediacentre.empty-pins',
