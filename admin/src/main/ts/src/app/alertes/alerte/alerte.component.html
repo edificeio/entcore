@@ -24,7 +24,7 @@
         </div>
         <div fxLayoutAlign="start end" style="vertical-align: bottom">
             <div fxFlex="70" class="has-padding-5">
-                <s5l>alert.date</s5l>: {{alerte.created.$date}}
+                <s5l>alert.date</s5l>: {{firstReportDate}}
                 <s5l>alert.by</s5l> {{reporters | async}}
             </div>
             <div *ngIf="!alerte.reportAction || alerte.reportAction && alerte.reportAction.action === 'KEEP'" 
