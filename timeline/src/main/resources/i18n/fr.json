@@ -186,7 +186,7 @@
   "homepage.crna.widget.create.video.title": "Enregistrer une vidéo",
   "homepage.crna.widget.empty": "Aucun élément disponible",
   "homepage.crna.widget.error": "Une erreur est survenue",
-  "homepage.crna.widget.mediacentre.empty": "Aucune ressource en favoris",
+  "homepage.crna.widget.mediacentre.empty": "Vos ressources favorites seront affichées ici dès que vous les aurez sélectionnées. Allez dans le service Médiacentre (ou cliquez sur « voir plus ») et sélectionnez les ressources que vous souhaitez mettre en favoris.",
   "homepage.crna.widget.mediacentre.empty-pins": "Aucune ressource épinglée",
   "homepage.crna.widget.mediacentre.error": "Impossible d'établir une connexion avec Médiacentre. Si le problème persiste, ouvrez une demande d'aide sur le module Assistance ENT.",
   "homepage.crna.widget.mediacentre.favorites": "Mes favoris",
