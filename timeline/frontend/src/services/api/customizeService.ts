@@ -1,12 +1,5 @@
 import { IThemeDesc, odeServices } from '@edifice.io/client';
-
-export type Background =
-  | 'default'
-  | 'pink-200'
-  | 'yellow-200'
-  | 'orange-200'
-  | 'blue-200'
-  | 'green-200';
+import { Background } from '@edifice.io/react';
 
 export const customizeService = {
   listLanguages: () => odeServices.http().get<string[]>('/languages'),

@@ -9,6 +9,15 @@ import {
   queryHashVersion,
 } from './plugins/vite-plugin-edifice';
 
+const bootstrapImagesPath = resolve(
+  __dirname,
+  'node_modules/@edifice.io/bootstrap/dist/images',
+);
+const linkedBootstrapImagesPath = resolve(
+  __dirname,
+  '../../../edifice-frontend-framework/packages/bootstrap/dist/images',
+);
+
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
   // Checking environement files
@@ -69,10 +78,7 @@ export default ({ mode }: { mode: string }) => {
 
     resolve: {
       alias: {
-        '@images': resolve(
-          __dirname,
-          'node_modules/@edifice.io/bootstrap/dist/images',
-        ),
+        '@images': bootstrapImagesPath,
       },
     },
 
@@ -82,7 +88,7 @@ export default ({ mode }: { mode: string }) => {
          * Allow the server to access the node_modules folder (for the images)
          * This is a solution to allow the server to access the images and fonts of the bootstrap package for 1D theme
          */
-        allow: ['../../'],
+        allow: ['.', bootstrapImagesPath, linkedBootstrapImagesPath],
       },
       proxy: proxyConfig,
       port: 4200,

@@ -39,6 +39,7 @@
     border-radius: 12px;
     background-repeat: no-repeat;
     background-position: right bottom;
+    background-attachment: scroll;
     background-size: 180%;
   }
 }
