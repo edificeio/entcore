@@ -35,6 +35,7 @@ vi.mock('@edifice.io/react', async () => {
   PageLayoutMock.Overlay = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="overlay">{children}</div>
   );
+  PageLayoutMock.HelpZone = () => <div data-testid="help-zone" />;
 
   return {
     ...actual,
