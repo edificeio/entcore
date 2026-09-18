@@ -1,5 +1,4 @@
-import http from 'axios';
-
+import { http } from 'entcore-toolkit';
 const SMS_MODULE_KEY = 'smsModule';
 const NO_HEAD_TEACHER_SOURCES_KEY = 'noHeadTeacherSources';
 const DEFAULT_NO_HEAD_TEACHER_SOURCES = ['AAF1D'];

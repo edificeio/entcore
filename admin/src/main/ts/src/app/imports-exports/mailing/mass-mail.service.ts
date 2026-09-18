@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import qs from 'qs';
 import {UserModel} from '../../core/store/models/user.model';
 
