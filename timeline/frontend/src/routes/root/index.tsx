@@ -74,6 +74,7 @@ export const Root = () => {
           <NotificationListContainer />
         </PageLayout.Overlay>
       )}
+      <PageLayout.HelpZone />
     </PageLayout>
   );
 };
