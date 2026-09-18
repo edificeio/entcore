@@ -1099,11 +1099,26 @@ public class DefaultSchoolService implements SchoolService {
 				     .append(String.join(" AND ", filterSubQueries));
 			}
 		}
+		query.append(" RETURN s.source as source, s.feederName as feederName, s.postbox as postbox, " +
+				"s.academy as academy, s.ministry as ministry, s.UAI as UAI, s.city as city, " +
+				"s.zipCode as zipCode, s.type as type, s.externalId as externalId, s.id as id, s.name as name");
 		neo.execute(query.toString(), params, validResultHandler(results -> {
 			if (results.isRight()) {
 				final List<FullStructureDTO> structures = results.right().getValue().stream()
 						.map(o -> (JsonObject) o)
-						.map(record -> new FullStructureDTO(record)
+						.map(record -> new FullStructureDTO(
+								record.getString("source"),
+								record.getString("feederName"),
+								record.getString("postbox"),
+								record.getString("academy"),
+								record.getString("ministry"),
+								record.getString("UAI"),
+								record.getString("city"),
+								record.getString("zipCode"),
+								record.getString("type"),
+								record.getString("externalId"),
+								record.getString("id"),
+								record.getString("name")))
 						.collect(Collectors.toList());
 				promise.complete(structures);
 			} else {
