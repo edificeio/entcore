@@ -30,6 +30,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.dto.directory.SearchStructuresRequestDTO;
+import org.entcore.broker.api.dto.directory.structure.FullStructureDTO;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -43,15 +45,13 @@ import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 import org.entcore.directory.services.SchoolService;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -1061,6 +1061,51 @@ public class DefaultSchoolService implements SchoolService {
 					}
 				}
 				promise.complete(config);
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
+	@Override
+	public Future<List<FullStructureDTO>> search(SearchStructuresRequestDTO filter) {
+		final Promise<List<FullStructureDTO>> promise = Promise.promise();
+		final StringBuilder query = new StringBuilder(
+				"MATCH (s:Structure) ");
+		final JsonObject params = new JsonObject();
+		if(filter != null) {
+			final Set<String> ids;
+			if (filter.getIds() == null) {
+				ids = Collections.emptySet();
+			} else {
+				ids = filter.getIds().stream()
+						.filter(Objects::nonNull)
+						.map(String::trim)
+						.filter(s -> !s.isEmpty())
+						.collect(Collectors.toSet());
+			}
+			final List<String> filterSubQueries = new ArrayList<>();
+			if (ids != null && ids.size() > 0) {
+				filterSubQueries.add(" s.id IN {ids} ");
+				params.put("ids", ids);
+			}
+			if (isNotEmpty(filter.getName())) {
+				filterSubQueries.add(" s.name CONTAINS {name} ");
+				params.put("name", filter.getName());
+			}
+			if(!filterSubQueries.isEmpty()) {
+				query.append(" WHERE ")
+				     .append(String.join(" AND ", filterSubQueries));
+			}
+		}
+		neo.execute(query.toString(), params, validResultHandler(results -> {
+			if (results.isRight()) {
+				final List<FullStructureDTO> structures = results.right().getValue().stream()
+						.map(o -> (JsonObject) o)
+						.map(record -> new FullStructureDTO(record)
+						.collect(Collectors.toList());
+				promise.complete(structures);
 			} else {
 				promise.fail(results.left().getValue());
 			}

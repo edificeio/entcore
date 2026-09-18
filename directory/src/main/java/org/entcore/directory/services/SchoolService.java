@@ -24,6 +24,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.broker.api.dto.directory.SearchStructuresRequestDTO;
+import org.entcore.broker.api.dto.directory.structure.FullStructureDTO;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 
@@ -87,6 +89,7 @@ public interface SchoolService {
 
 	void searchCriteria(List<String> structures, boolean getClassesForMonoEtabOnly, Handler<Either<String, JsonObject>> handler);
 
+
 	void getClasses(String structureId, Handler<Either<String, JsonObject>> handler);
 
 	void massDistributionEducationMobileApp(JsonArray data, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler);
@@ -139,4 +142,7 @@ public interface SchoolService {
 	 * @return
 	 */
 	Future<DefaultAuthModeConfig> getDefaultAuth(String structureId);
+
+
+	Future<List<FullStructureDTO>> search(final SearchStructuresRequestDTO filter);
 }
