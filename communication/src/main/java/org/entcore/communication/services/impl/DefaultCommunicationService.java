@@ -175,7 +175,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile, visibles.lastName as lastName "
 				: "";
 		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
-				"MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action}"
+				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
 				: "" ;
 
 		String query =
@@ -202,7 +202,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						searchQuery +
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
-						(visibleIdentityRequest.isOnlyActivatedUsers() ? " NOT has(m.activationCode) " : "") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
 						" WITH DISTINCT m as visibles " +
 						actionFilter +
 						"return DISTINCT visibles.id as id, true as isUser \n" + extraField +
@@ -239,7 +239,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						searchQuery +
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
-						(visibleIdentityRequest.isOnlyActivatedUsers() ? " NOT has(m.activationCode) " : "") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
 						"WITH DISTINCT m as visibles " +
 						actionFilter +
 						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField +
@@ -296,7 +296,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				: "";
 
 		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
-				"MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
+				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
 				: "" ;
 
 		String query =
@@ -323,7 +323,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						searchQuery +
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
-						(visibleIdentityRequest.isOnlyActivatedUsers() ? " NOT has(m.activationCode) " : "") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
 						" WITH DISTINCT m as visibles " +
 						actionFilter +
 						"return DISTINCT visibles.id as id, true as isUser \n" + extraField;
