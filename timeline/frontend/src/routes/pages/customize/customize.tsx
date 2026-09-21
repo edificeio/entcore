@@ -40,6 +40,10 @@ export const Component = () => {
   };
 
   const handleBackClick = () => {
+    // Reload with changes, after navigating back
+    window.addEventListener('popstate', () => window.location.reload(), {
+      once: true,
+    });
     navigate(-1);
   };
 
