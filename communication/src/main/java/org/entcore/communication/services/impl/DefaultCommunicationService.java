@@ -179,8 +179,11 @@ public class DefaultCommunicationService implements CommunicationService {
 		String extraField = visibleIdentityRequest.isPublicDetails() ?
 				" , visibles.name as name, " +
 				" visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName," +
-				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile "
+				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile, visibles.lastName as lastName "
 				: "";
+		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
+				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
+				: "" ;
 
 		String query =
 				// u->G1->G2->visible + u->G1->visible
@@ -206,7 +209,9 @@ public class DefaultCommunicationService implements CommunicationService {
 						searchQuery +
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
 						" WITH DISTINCT m as visibles " +
+						actionFilter +
 						"return DISTINCT visibles.id as id, true as isUser \n" + extraField +
 						// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
 						"UNION \n" +
@@ -241,7 +246,9 @@ public class DefaultCommunicationService implements CommunicationService {
 						searchQuery +
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
 						"WITH DISTINCT m as visibles " +
+						actionFilter +
 						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField +
 						"UNION \n" +
 						// u->G<-[DEPENDS]-G2 group include into another group list G2
@@ -267,6 +274,9 @@ public class DefaultCommunicationService implements CommunicationService {
 		if (restrictToExpectedIds) {
 			queryParams.put(EXPECTED_IDS_USERS_GROUPS, new JsonArray(expectedVisiblesIds));
 		}
+		if (visibleIdentityRequest.getWorkflowRightFilter() != null) {
+			queryParams.put("action", visibleIdentityRequest.getWorkflowRightFilter());
+		}
 		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
 	}
 
@@ -289,8 +299,12 @@ public class DefaultCommunicationService implements CommunicationService {
 		String extraField = visibleIdentityRequest.isPublicDetails() ?
 				" , visibles.name as name, " +
 				" visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName," +
-				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile "
+				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile, visibles.lastName as lastName "
 				: "";
+
+		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
+				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
+				: "" ;
 
 		String query =
 				// u->G1->G2->visible + u->G1->visible
@@ -316,7 +330,9 @@ public class DefaultCommunicationService implements CommunicationService {
 						searchQuery +
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
+						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
 						" WITH DISTINCT m as visibles " +
+						actionFilter +
 						"return DISTINCT visibles.id as id, true as isUser \n" + extraField;
 
 		JsonObject queryParams = new JsonObject()
@@ -332,6 +348,9 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		if (restrictToExpectedIds) {
 			queryParams.put(EXPECTED_IDS_USERS_GROUPS, new JsonArray(expectedVisiblesIds));
+		}
+		if (visibleIdentityRequest.getWorkflowRightFilter() != null) {
+			queryParams.put("action", visibleIdentityRequest.getWorkflowRightFilter());
 		}
 		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
 	}
