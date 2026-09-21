@@ -4,3 +4,11 @@
 .customization-form-section {
   width: 100%;
 }
+.customization-form-section-title {
+  color: var(--primitive-grey-900);
+  font-family: var(--font-family-body, Arimo);
+  font-size: var(--primitive-font-size-default);
+  font-style: normal;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--primitive-font-lineheight-xs);
+}

@@ -69,7 +69,9 @@ export const Component = () => {
                 >
                   {common_t('back')}
                 </Button>
-                <h1>{common_t('navbar.customize')}</h1>
+                <h3 className="customize-content-wrap-title">
+                  {common_t('navbar.customize')}
+                </h3>
               </div>
 
               <CustomizationForm form={form} />
