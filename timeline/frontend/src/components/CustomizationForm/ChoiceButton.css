@@ -19,6 +19,7 @@
 
   &:hover {
     background-color: var(--primitive-yellow-200);
+    filter: grayscale(0%);
   }
 }
 

@@ -48,8 +48,15 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
 
   return (
     <Flex direction="column" gap="32" className="customization-form">
-      <Flex direction="column" gap="16" className="customization-form-section">
-        <h3>{t('homepage.customize.form.fonts')}</h3>
+      <Flex
+        as="section"
+        direction="column"
+        gap="16"
+        className="customization-form-section"
+      >
+        <h5 className="customization-form-section-title">
+          {t('homepage.customize.form.fonts')}
+        </h5>
         <Flex gap="8" wrap="wrap">
           {fonts && selectedFont ? (
             fonts.map(({ _id, displayName }) => (
@@ -70,8 +77,15 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         </Flex>
       </Flex>
 
-      <Flex direction="column" gap="16" className="customization-form-section">
-        <h3>{t('homepage.customize.form.themes')}</h3>
+      <Flex
+        as="section"
+        direction="column"
+        gap="16"
+        className="customization-form-section"
+      >
+        <h5 className="customization-form-section-title">
+          {t('homepage.customize.form.themes')}
+        </h5>
         <Flex gap="12" wrap="wrap">
           {backgrounds ? (
             backgrounds.map((background) => (
@@ -92,8 +106,15 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         </Flex>
       </Flex>
 
-      <Flex direction="column" gap="16" className="customization-form-section">
-        <h3>{t('homepage.customize.form.languages')}</h3>
+      <Flex
+        as="section"
+        direction="column"
+        gap="16"
+        className="customization-form-section"
+      >
+        <h5 className="customization-form-section-title">
+          {t('homepage.customize.form.languages')}
+        </h5>
         <Flex gap="12" wrap="wrap">
           {languages ? (
             languages.map((lang) => (

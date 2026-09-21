@@ -38,6 +38,15 @@
   width: 100%;
 }
 
+.customize-content-wrap-title {
+  color: var(--primitive-grey-900);
+  font-family: Urbanist;
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 32px;
+}
+
 @media only screen and (min-width: 768px) {
   .customize-content {
     margin: 0 var(--primitive-spacer-32);
