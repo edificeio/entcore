@@ -31,8 +31,8 @@ public interface OpenIdConnectService {
 
 	String getIss();
 
-	void generateIdToken(String userId, String clientId, String nonce, Handler<AsyncResult<String>> handler);
+	void generateIdToken(String userId, String clientId, String nonce, String sessionId, Handler<AsyncResult<String>> handler);
 
-	void generateLogoutToken(String userId, String clientId, Handler<AsyncResult<String>> handler);
+	void generateLogoutToken(String userId, String clientId, String sessionId, Handler<AsyncResult<String>> handler);
 
 }

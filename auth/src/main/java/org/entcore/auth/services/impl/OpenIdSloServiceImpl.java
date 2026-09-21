@@ -78,7 +78,7 @@ public class OpenIdSloServiceImpl {
                     if (auth.getString(LOGOUT_URL) != null) {
                         ((OAuthDataHandler) data).getLogoutToken(auth.getString(
                                 USER_ID),
-                                auth.getString(CLIENT_ID),
+                                auth.getString(CLIENT_ID), auth.getString(SESSION_ID),
                                 response -> {
                                     logoutToken.put("logout_token", response).put(LOGOUT_URL,
                                             auth.getString(LOGOUT_URL));

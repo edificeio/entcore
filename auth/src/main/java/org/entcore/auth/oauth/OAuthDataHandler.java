@@ -491,7 +491,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 									// "2.0".equals(RequestUtils.getAcceptVersion(getRequest().getHeader("Accept"))))
 									// {
 									openIdConnectService.generateIdToken(authInfo.getUserId(), authInfo.getClientId(),
-											authInfo.getNonce(), new io.vertx.core.Handler<AsyncResult<String>>() {
+											authInfo.getNonce(), authInfo.getSessionId(), new io.vertx.core.Handler<AsyncResult<String>>() {
 												@Override
 												public void handle(AsyncResult<String> ar) {
 													if (ar.succeeded()) {
@@ -555,7 +555,6 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
         if ("ok".equals(res.body().getString("status")) && r != null && r.size() > 0) {
           r.put("id", r.getString("_id"));
           r.remove("_id");
-          r.remove("sessionId");
           r.remove("createdAt");
           ObjectMapper mapper = new ObjectMapper();
           try {
@@ -589,7 +588,6 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 						}
 						r.put("id", r.getString("_id"));
 						r.remove("_id");
-						r.remove("sessionId");
 						r.remove("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
@@ -911,9 +909,9 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	}
 
 	@Override
-	public void getLogoutToken(String userId, String clientId, Handler<String> handler) {
+	public void getLogoutToken(String userId, String clientId, String sessionId, Handler<String> handler) {
 		if (userId != null && clientId != null) {
-			openIdConnectService.generateLogoutToken(userId, clientId, event -> {
+			openIdConnectService.generateLogoutToken(userId, clientId, sessionId, event -> {
 				if (event.result() != null && !event.result().trim().isEmpty()) {
 					log.debug("Token generated successfully");
 					handler.handle(event.result());
