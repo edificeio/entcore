@@ -9,7 +9,7 @@ public interface OpenIdDataHandler {
 
        void deleteTokensByAuthId(String authId);
 
-       void getLogoutToken(String userId, String clientId, Handler<String> handler);
+       void getLogoutToken(String userId, String clientId, String sessionId, Handler<String> handler);
 
        void deleteAuthorization(JsonObject auth, Handler<Message<JsonObject>> callback);
 

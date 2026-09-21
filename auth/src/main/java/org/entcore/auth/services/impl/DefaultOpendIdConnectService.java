@@ -55,14 +55,14 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 	}
 
 	@Override
-	public void generateIdToken(String userId, final String clientId, final String nonce, final Handler<AsyncResult<String>> handler) {
+	public void generateIdToken(String userId, final String clientId, final String nonce, final String sessionId, final Handler<AsyncResult<String>> handler) {
 		final  String query = "MATCH (u:User {id: {id}}) return u.externalId as sub, u.id as uid, u.email as  email, u.displayName as name";
 		Neo4j.getInstance().execute(query, new JsonObject().put("id", userId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				final JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
-					generatePayload(res.getJsonObject(0), clientId, nonce, handler);
+					generatePayload(res.getJsonObject(0), clientId, nonce, sessionId, handler);
 				} else {
 					handler.handle(new DefaultAsyncResult<String>(new RuntimeException("invalid.userId")));
 				}
@@ -70,7 +70,7 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 		});
 	}
 
-	private void generatePayload(JsonObject payload, String clientId, String nonce, Handler<AsyncResult<String>> handler) {
+	private void generatePayload(JsonObject payload, String clientId, String nonce, String sessionId, Handler<AsyncResult<String>> handler) {
 		if (payload != null) {
 			final long iat = System.currentTimeMillis() / 1000;
 			payload.put("iss", getIss())
@@ -80,6 +80,10 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 			if (nonce != null) {
 				payload.put("nonce", nonce);
 			}
+			if (sessionId != null) {
+				payload.put("sid", sessionId);
+			}
+
 			try {
 				handler.handle(new DefaultAsyncResult<>(jwt != null ? jwt.encodeAndSign(payload) : payload.toString()));
 			} catch (Exception e) {
@@ -115,14 +119,14 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 	}
 
 	@Override
-	public void generateLogoutToken(String userId, String clientId, Handler<AsyncResult<String>> handler) {
+	public void generateLogoutToken(String userId, String clientId, String sessionId, Handler<AsyncResult<String>> handler) {
 		final String query = "MATCH (u:User {id: {id}}) return u.externalId as sub";
 		Neo4j.getInstance().execute(query, new JsonObject().put("id", userId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				final JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
-					generateLogoutPayload(res.getJsonObject(0), clientId, handler);
+					generateLogoutPayload(res.getJsonObject(0), clientId, sessionId, handler);
 				} else {
 					handler.handle(new DefaultAsyncResult<String>(new RuntimeException("invalid.userId")));
 				}
@@ -135,7 +139,7 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 		return uuid.toString();
 	}
 
-	private void generateLogoutPayload(JsonObject payload, String clientId,
+	private void generateLogoutPayload(JsonObject payload, String clientId, String sessionId,
 			Handler<AsyncResult<String>> handler) {
 		if (payload != null) {
 			final long iat = System.currentTimeMillis() / 1000;
@@ -145,6 +149,11 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 					.put("jti", generateJti())
 					.put("exp", iat + EXPIRATION_TIME)
 					.put("events", new JsonObject().put(EVENTS_SLO, new JsonObject()));
+
+			if (sessionId != null) {
+				payload.put("sid", sessionId);
+			}
+
 			try {
 				handler.handle(new DefaultAsyncResult<>(jwt != null ? jwt.encodeAndSign(payload) : payload.toString()));
 			} catch (Exception e) {
