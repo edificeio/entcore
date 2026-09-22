@@ -68,6 +68,7 @@ public class Structure {
 	protected TransactionHelper transactionHelper = null;
 	protected JsonObject struct;
 	private transient String overrideClass;
+	private transient String importSource;
 
 	public Structure(JsonObject struct) {
 		this(struct.getString("externalId"), struct);
@@ -207,7 +208,7 @@ public class Structure {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					"CREATE s<-[:BELONGS]-(c:Class {props}) " +
-					"SET c.source = s.source " +
+					"SET c.source = coalesce({importSource}, s.source) " +
 					"WITH s, c " +
 					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, displayNameSearchField: {groupSearchField}, filter: p.name})-[:DEPENDS]->g " +
@@ -215,6 +216,7 @@ public class Structure {
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
 					.put("groupSearchField", Validator.sanitize(name))
+					.put("importSource", importSource)
 					.put("props", new JsonObject()
 							.put("externalId", classExternalId)
 							.put("id", UUID.randomUUID().toString())
@@ -245,7 +247,7 @@ public class Structure {
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " : "WHERE s.timetable = {source} ") +
 					"CREATE s<-[:DEPENDS]-(c:Group:FunctionalGroup {props}) " +
-					"SET c.source = coalesce({source}, s.source) ";
+					"SET c.source = coalesce({source}, {importSource}, s.source) ";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
 					.put("props", new JsonObject()
@@ -257,6 +259,7 @@ public class Structure {
 							.put("filter", "FunctionalGroup")
 					);
 			params.put("source", source);
+			params.put("importSource", importSource);
 			getTransaction().add(query, params);
 	}
 
@@ -271,7 +274,7 @@ public class Structure {
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					//(source == null ? "WHERE (NOT(HAS(s.timetable)) OR s.timetable = '' OR s.timetable = 'NOP') " : "WHERE s.timetable = s.source ") +
 					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup:" + label + "Group {props}) " +
-					"SET c.source = coalesce({source}, s.source)";
+					"SET c.source = coalesce({source}, {importSource}, s.source)";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
 					.put("props", new JsonObject()
@@ -283,6 +286,7 @@ public class Structure {
 									.put("filter", name + "-" + label)
 					);
 			params.put("source", source);
+			params.put("importSource", importSource);
 			getTransaction().add(query, params);
 		}
 	}
@@ -630,6 +634,15 @@ public class Structure {
 				.put("parentStructureId", parentStructureId);
 		transactionHelper.add(query, params);
 		transactionHelper.add(query2, params);
+	}
+
+	/**
+	 * Set the source for groups and users belonging to this structure. Without value,
+	 * inherit from structure's source : a CSV import on an AAF structure should set it up
+	 * to ignore inheritance.
+	 */
+	public void setImportSource(String importSource) {
+		this.importSource = importSource;
 	}
 
 	public String getOverrideClass() {
