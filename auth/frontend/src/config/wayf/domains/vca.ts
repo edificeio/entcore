@@ -1,9 +1,5 @@
 import type { WayfDomainConfig } from '~/models/wayf';
 
-// NOTE: pas de clé i18n pour "Académie de Grenoble"/"Académie de Lyon" —
-// réutilise wayf.teacher.lille/.amiens et wayf.perseducnat.lille/.amiens
-// (textes affichés : Lille/Amiens, pas Grenoble/Lyon) en attendant la passe de
-// nettoyage i18n avec le CPO. Écart consigné dans project-wayf-i18n-key-cleanup.
 const ARENA_GRENOBLE_ACS =
   'https://extranet.ac-grenoble.fr/sso/SSO?SPEntityID=urn:fi:ent:prod-vcag-aaa:1.0&TARGET=https://ent.vienne-condrieu-agglomeration.fr';
 const ARENA_LYON_ACS =
@@ -29,12 +25,12 @@ export const vcaConfig: WayfDomainConfig = {
       icon: 'teacher',
       children: [
         {
-          i18n: 'wayf.teacher.lille',
+          i18n: 'wayf.teacher.grenoble',
           color: 'teacher',
           acs: ARENA_GRENOBLE_ACS,
         },
         {
-          i18n: 'wayf.teacher.amiens',
+          i18n: 'wayf.teacher.lyon',
           color: 'teacher',
           acs: ARENA_LYON_ACS,
         },
@@ -46,12 +42,12 @@ export const vcaConfig: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.lille',
+          i18n: 'wayf.perseducnat.grenoble',
           color: 'perseducnat',
           acs: ARENA_GRENOBLE_ACS,
         },
         {
-          i18n: 'wayf.perseducnat.amiens',
+          i18n: 'wayf.perseducnat.lyon',
           color: 'perseducnat',
           acs: ARENA_LYON_ACS,
         },

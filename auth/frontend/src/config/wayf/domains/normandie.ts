@@ -7,10 +7,12 @@ const AGRI_ACS =
 const ARENA_ACS =
   'https://extranet.ac-normandie.fr/sso/SSO?SPEntityID=urn%3Afi%3Asp%3Aent-EDUC-Normandie%3A1%3A0';
 
-// NOTE: plusieurs i18n ci-dessous réutilisent la clé la plus proche disponible
-// en attendant une passe de nettoyage du nommage wayf.* avec le CPO (aucune
-// nouvelle clé créée pour l'instant). Écarts consignés dans la mémoire
-// project-wayf-i18n-key-cleanup.
+// NOTE: wayf.agri, wayf.perseducnat ("Personnel Education Nationale"), la
+// surcharge de wayf.other ("Personnel collectivité et invité") et le texte
+// "Compte EduConnect" (wayf.student/relative.educonnect) sont tous définis
+// uniquement dans les overrides de thème Normandie (theme-open-ent + panda),
+// pas dans l'i18n générique — spécifiques à ce domaine. Plus aucun écart
+// i18n connu pour cette conf (voir project-wayf-i18n-key-cleanup).
 export const normandieConfig: WayfDomainConfig = {
   providers: [
     {
@@ -23,7 +25,7 @@ export const normandieConfig: WayfDomainConfig = {
           color: 'student',
           children: [
             {
-              i18n: 'wayf.perseducnat.local',
+              i18n: 'wayf.student.school.local',
               color: 'student',
               acs: '/auth/login',
             },
@@ -40,7 +42,7 @@ export const normandieConfig: WayfDomainConfig = {
           acs: EDUCONNECT_ACS,
         },
         {
-          i18n: 'wayf.student.special',
+          i18n: 'wayf.student.st-pierre-et-miquelon',
           color: 'student',
           acs: '/auth/login',
         },
@@ -52,11 +54,11 @@ export const normandieConfig: WayfDomainConfig = {
       icon: 'relative',
       children: [
         {
-          i18n: 'wayf.student.ecole',
+          i18n: 'wayf.relative.ecole',
           color: 'relative',
           children: [
             {
-              i18n: 'wayf.perseducnat.local',
+              i18n: 'wayf.relative.school.local',
               color: 'relative',
               acs: '/auth/login',
             },
@@ -68,25 +70,25 @@ export const normandieConfig: WayfDomainConfig = {
           ],
         },
         {
-          i18n: 'wayf.student.college-lycee',
+          i18n: 'wayf.relative.college-lycee',
           color: 'relative',
           acs: EDUCONNECT_ACS,
         },
         {
-          i18n: 'wayf.relative.special',
+          i18n: 'wayf.relative.st-pierre-et-miquelon',
           color: 'relative',
           acs: '/auth/login',
         },
       ],
     },
     {
-      i18n: 'wayf.teacher',
-      color: 'teacher',
-      icon: 'teacher',
+      i18n: 'wayf.perseducnat',
+      color: 'perseducnat',
+      icon: 'perseducnat',
       acs: ARENA_ACS,
     },
     {
-      i18n: 'wayf.perseducnat.agri',
+      i18n: 'wayf.agri',
       color: 'perseducnat',
       icon: 'perseducnat',
       acs: AGRI_ACS,
