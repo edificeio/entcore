@@ -5,10 +5,6 @@ const EDUCONNECT_ACS =
 const ARENA_ACS =
   'https://extranet.ac-guyane.fr/sso/SSO?SPEntityID=https://wilapa-guyane.com/auth/saml/metadata/idp.xml&TARGET=https://wilapa-guyane.com';
 
-// NOTE: wayf.relative n'a pas de clés École / Collège-Lycée séparées (seulement
-// la combinée wayf.relative.ecole-college-lycee) — réutilise les clés
-// wayf.student.ecole/.college-lycee (texte identique, namespace emprunté),
-// écart consigné dans project-wayf-i18n-key-cleanup.
 export const guyaneConfig: WayfDomainConfig = {
   providers: [
     {
@@ -39,12 +35,12 @@ export const guyaneConfig: WayfDomainConfig = {
       icon: 'relative',
       children: [
         {
-          i18n: 'wayf.student.ecole',
+          i18n: 'wayf.relative.ecole',
           color: 'relative',
           acs: '/auth/login',
         },
         {
-          i18n: 'wayf.student.college-lycee',
+          i18n: 'wayf.relative.college-lycee',
           color: 'relative',
           acs: EDUCONNECT_ACS,
         },

@@ -28,7 +28,7 @@ export const primotConfig: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.arena',
+          i18n: 'wayf.perseducnat.academy',
           color: 'perseducnat',
           acs: ARENA_TOURS_ACS,
         },

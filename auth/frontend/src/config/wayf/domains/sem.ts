@@ -5,9 +5,6 @@ const ARENA_ACS =
 const EDUCONNECT_PARENT_ACS =
   'https://educonnect.education.gouv.fr/idp/profile/SAML2/Unsolicited/SSO?providerId=urn%3Afi%3Aent%3Aprod-sem-edu%3A1.0';
 
-// NOTE: "École publique"/"École privée" n'ont pas de clé i18n dédiée — réutilise
-// les clés wayf.relative.* les plus proches en attendant la passe de nettoyage
-// i18n avec le CPO. Écart consigné dans project-wayf-i18n-key-cleanup.
 export const semConfig: WayfDomainConfig = {
   providers: [
     {
@@ -22,12 +19,12 @@ export const semConfig: WayfDomainConfig = {
       icon: 'relative',
       children: [
         {
-          i18n: 'wayf.relative.ecole-college-lycee',
+          i18n: 'wayf.relative.public-school',
           color: 'relative',
           acs: EDUCONNECT_PARENT_ACS,
         },
         {
-          i18n: 'wayf.relative.special',
+          i18n: 'wayf.relative.private-school',
           color: 'relative',
           acs: '/auth/login',
         },
@@ -45,7 +42,7 @@ export const semConfig: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.arena',
+          i18n: 'wayf.perseducnat.academy',
           color: 'perseducnat',
           acs: ARENA_ACS,
         },
