@@ -31,7 +31,7 @@ export const ent04Config: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.arena',
+          i18n: 'wayf.perseducnat.academy',
           color: 'perseducnat',
           acs: ARENA_ACS,
         },
