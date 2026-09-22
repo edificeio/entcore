@@ -773,7 +773,7 @@
   "management.structure.notification.schedules.confirm.title": "Plage silencieuse",
   "management.structure.notification.schedules.info.text": "Cette page permet de définir si les notifications mails ou mobile sont bloquées la nuit et le week-end.",
   "management.structure.notification.schedules.info.title": "Droit à la déconnexion : restreindre les horaires de réception des notifications",
-  "management.structure.notification.schedules.paragraph": "Si la fonctionnalité activée, les utilisateurs recevront les notifications mails et mobiles uniquement du lundi au vendredi de 07h00 à 20h00.\nEn dehors de ces plages horaires, une plage silencieuse se met en place : les notifications sont bloquées. À la reprise des plages de notifications, elles sont envoyées dans un mail récapitulatif ou une notification mobile.",
+  "management.structure.notification.schedules.paragraph": "Si la fonctionnalité activée, les utilisateurs recevront les notifications mails et mobiles uniquement du lundi au vendredi de 07h00 à 20h00.\nEn dehors de ces plages horaires, une plage silencieuse se met en place : les notifications sont bloquées. À la reprise des plages de notifications, elles sont envoyées dans un mail récapitulatif.",
   "management.structure.notification.schedules.save": "Enregistrer",
   "management.structure.notification.schedules.save.error.content": "La nouvelle plage silencieuse n'a pas été enregistrée.",
   "management.structure.notification.schedules.save.error.title": "Erreur d'enregistrement",
