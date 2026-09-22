@@ -8,6 +8,7 @@ import {
   natiConfig,
   normandieConfig,
   primotConfig,
+  semConfig,
 } from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
@@ -28,6 +29,7 @@ export const wayfConfig: WayfConfig = {
     'nati.pf': natiConfig,
     'ent.l-educdenormandie.fr': normandieConfig,
     'www.primot.fr': primotConfig,
+    'sem.edifice.io': semConfig,
     'localhost': DEFAULT_WAYF_CONFIG,
   },
 };
