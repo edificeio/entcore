@@ -42,6 +42,8 @@ export interface WayfPartner {
 export interface WayfDomainConfig {
   providers: WayfProvider[];
   partners?: WayfPartner[];
+  /** Whether the Édifice logo links to edifice.io. Defaults to `true`. */
+  edificeLogoClickable?: boolean;
 }
 
 export interface WayfConfig {
