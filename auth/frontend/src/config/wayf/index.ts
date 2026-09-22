@@ -9,6 +9,7 @@ import {
   normandieConfig,
   primotConfig,
   semConfig,
+  vcaConfig,
 } from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
@@ -30,6 +31,7 @@ export const wayfConfig: WayfConfig = {
     'ent.l-educdenormandie.fr': normandieConfig,
     'www.primot.fr': primotConfig,
     'sem.edifice.io': semConfig,
+    'ent.vienne-condrieu-agglomeration.fr': vcaConfig,
     'localhost': DEFAULT_WAYF_CONFIG,
   },
 };
