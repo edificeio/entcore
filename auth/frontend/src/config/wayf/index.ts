@@ -1,6 +1,6 @@
 import type { WayfConfig } from '~/models/wayf';
 import { DEFAULT_WAYF_CONFIG } from './default';
-import { hdfConfig, natiConfig } from './domains';
+import { guadeloupeConfig, hdfConfig, natiConfig } from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
 
@@ -14,6 +14,7 @@ export { DEFAULT_WAYF_CONFIG } from './default';
 export const wayfConfig: WayfConfig = {
   'wayf-v2': {
     'enthdf.fr': hdfConfig,
+    'karukera.ac-guadeloupe.fr': guadeloupeConfig,
     'nati.pf': natiConfig,
     'localhost': DEFAULT_WAYF_CONFIG,
   },
