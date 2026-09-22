@@ -506,31 +506,36 @@ public class AuthController extends BaseController {
 							}
 
 						} else {
-							String errorString = new JsonObject(response.getBody()).getString("error_description");
-							if (OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED.equals(errorString)) {
-								trace.info(String.format(
-										"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
-										getIp(request), OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED,
-										req.getParameter("username"), request.headers().get("Referer")));
-							} else if (OAuthDataHandler.AUTH_ERROR_BLOCKED_USER.equals(errorString)) {
-								trace.info(String.format(
-										"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
-										getIp(request), OAuthDataHandler.AUTH_ERROR_BLOCKED_USER,
-										req.getParameter("username"), request.headers().get("Referer")));
-							} else if ("auth.error.ban".equals(errorString)) {
-								trace.info(String.format(
-										"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
-										getIp(request), "auth.error.ban", req.getParameter("username"),
-										request.headers().get("Referer")));
-							} else if (OAuthDataHandler.AUTH_ERROR_BLOCKED_PROFILETYPE.equals(errorString)) {
-								trace.info(String.format(
-										"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
-										getIp(request), OAuthDataHandler.AUTH_ERROR_BLOCKED_PROFILETYPE,
-										req.getParameter("username"), request.headers().get("Referer")));
+							if (response.getCode() != 200) {
+								String errorString = new JsonObject(response.getBody()).getString("error_description");
+								if (OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED.equals(errorString)) {
+									trace.info(String.format(
+											"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
+											getIp(request), OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED,
+											req.getParameter("username"), request.headers().get("Referer")));
+								} else if (OAuthDataHandler.AUTH_ERROR_BLOCKED_USER.equals(errorString)) {
+									trace.info(String.format(
+											"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
+											getIp(request), OAuthDataHandler.AUTH_ERROR_BLOCKED_USER,
+											req.getParameter("username"), request.headers().get("Referer")));
+								} else if ("auth.error.ban".equals(errorString)) {
+									trace.info(String.format(
+											"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
+											getIp(request), "auth.error.ban", req.getParameter("username"),
+											request.headers().get("Referer")));
+								} else if (OAuthDataHandler.AUTH_ERROR_BLOCKED_PROFILETYPE.equals(errorString)) {
+									trace.info(String.format(
+											"%s - Erreur de connexion ( %s ) pour l'utilisateur %s - Referer %s",
+											getIp(request), OAuthDataHandler.AUTH_ERROR_BLOCKED_PROFILETYPE,
+											req.getParameter("username"), request.headers().get("Referer")));
+								} else {
+									trace.info(String.format(
+											"%s - Erreur de connexion pour l'utilisateur - Referer %s",
+											getIp(request), request.headers().get("Referer")));
+								}
 							} else {
-								trace.info(String.format(
-										"%s - Erreur de connexion pour l'utilisateur - Referer %s",
-										getIp(request), request.headers().get("Referer")));
+								//create login event for AuthorizationCode, ClientCredentials, etc.
+								eventStore.createAndStoreEventByUserId(AuthEvent.LOGIN.name(), userData.getId(), clientId, request);
 							}
 
 							renderJson(request, new JsonObject(response.getBody()), response.getCode());
