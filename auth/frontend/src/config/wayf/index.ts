@@ -3,6 +3,7 @@ import { DEFAULT_WAYF_CONFIG } from './default';
 import {
   ent04Config,
   guadeloupeConfig,
+  guyaneConfig,
   hdfConfig,
   leiaConfig,
   natiConfig,
@@ -27,6 +28,7 @@ export const wayfConfig: WayfConfig = {
     'ent04.fr': ent04Config,
     'enthdf.fr': hdfConfig,
     'karukera.ac-guadeloupe.fr': guadeloupeConfig,
+    'wilapa-guyane.com': guyaneConfig,
     'nati.pf': natiConfig,
     'ent.l-educdenormandie.fr': normandieConfig,
     'www.primot.fr': primotConfig,
