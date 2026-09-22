@@ -108,6 +108,7 @@ public class CsvFeeder implements Feed {
 							handler.handle(new ResultMessage().error("structure.error"));
 							return;
 						}
+						s.setImportSource(getFeederSource());
 						if (isNotEmpty(overrideClass)) {
 							s.setOverrideClass(overrideClass);
 						}
