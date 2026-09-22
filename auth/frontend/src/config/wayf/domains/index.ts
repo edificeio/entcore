@@ -1,6 +1,7 @@
 export { ent04Config } from './ent04';
 export { eprimoConfig } from './eprimo';
 export { guadeloupeConfig } from './guadeloupe';
+export { guyaneConfig } from './guyane';
 export { hdfConfig } from './hdf';
 export { leiaConfig } from './leia';
 export { natiConfig } from './nati';
