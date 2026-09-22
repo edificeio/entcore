@@ -26,7 +26,7 @@ export const guadeloupeConfig: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.arena',
+          i18n: 'wayf.perseducnat.academy',
           color: 'perseducnat',
           acs: 'https://bv.ac-guadeloupe.fr/sso/SSO?SPEntityID=https://karukera.ac-guadeloupe.fr/auth/saml/metadata/idp.xml&TARGET=https://karukera.ac-guadeloupe.fr',
         },

@@ -49,7 +49,7 @@ export const leiaConfig: WayfDomainConfig = {
       icon: 'teacher',
       children: [
         {
-          i18n: 'wayf.perseducnat.arena',
+          i18n: 'wayf.teacher.educnat',
           color: 'teacher',
           acs: ARENA_ACS,
         },
@@ -66,7 +66,7 @@ export const leiaConfig: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.arena',
+          i18n: 'wayf.perseducnat.academy',
           color: 'perseducnat',
           acs: ARENA_ACS,
         },
