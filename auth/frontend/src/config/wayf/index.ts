@@ -1,6 +1,12 @@
 import type { WayfConfig } from '~/models/wayf';
 import { DEFAULT_WAYF_CONFIG } from './default';
-import { guadeloupeConfig, hdfConfig, leiaConfig, natiConfig } from './domains';
+import {
+  guadeloupeConfig,
+  hdfConfig,
+  leiaConfig,
+  natiConfig,
+  normandieConfig,
+} from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
 
@@ -17,6 +23,7 @@ export const wayfConfig: WayfConfig = {
     'enthdf.fr': hdfConfig,
     'karukera.ac-guadeloupe.fr': guadeloupeConfig,
     'nati.pf': natiConfig,
+    'ent.l-educdenormandie.fr': normandieConfig,
     'localhost': DEFAULT_WAYF_CONFIG,
   },
 };
