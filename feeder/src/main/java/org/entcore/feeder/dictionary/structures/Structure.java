@@ -637,9 +637,9 @@ public class Structure {
 	}
 
 	/**
-	 * Fixe la source portée par les classes et groupes créés sous cette structure. Sans valeur,
-	 * ils héritent de la source de la structure : un import CSV sur une structure AAF doit la
-	 * renseigner pour ne pas marquer AAF ce qu'il vient de créer.
+	 * Set the source for groups and users belonging to this structure. Without value,
+	 * inherit from structure's source : a CSV import on an AAF structure should set it up
+	 * to ignore inheritance.
 	 */
 	public void setImportSource(String importSource) {
 		this.importSource = importSource;

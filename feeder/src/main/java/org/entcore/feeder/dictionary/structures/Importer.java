@@ -61,7 +61,7 @@ public class Importer {
 	private static final Logger log = LoggerFactory.getLogger(Importer.class);
 
 	public static final JsonArray DEFAULT_EXCLUDED_STRUCTURE_NAME_PREFIXES = new JsonArray().add("CMS-");
-	/** Sources alimentées par l'annuaire fédérateur (AAF 2D et 1D). */
+	/** academic sources  (AAF 2D et 1D). */
 	private static final List<String> AAF_SOURCES = Arrays.asList("AAF", "AAF1D");
 	private static final String EXCLUDED_STRUCTURE_REASON = "excluded.structure.name.prefix";
 
@@ -504,8 +504,8 @@ public class Importer {
 	}
 
 	/**
-	 * Un import non-AAF (CSV, EDT...) ne doit pas déclasser une structure alimentée par l'AAF :
-	 * la source déjà en base est conservée quand elle vaut AAF ou AAF1D.
+	 * An import not AAF (CSV, EDT...) should not change the AAF sources :
+	 * source is kept if source is AAF or AAF1D.
 	 */
 	private void keepAafSource(ImporterStructure existing, JsonObject struct) {
 		final String existingSource = existing.getStruct().getString("source");

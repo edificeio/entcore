@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
 
 /**
- * Vérifie que la source d'une structure alimentée par l'AAF survit à un import CSV.
+ * Verify thath strcuture's source from AAF survive a CSV import.
  */
 @RunWith(VertxUnitRunner.class)
 public class ImporterStructureSourceTest {
@@ -41,7 +41,7 @@ public class ImporterStructureSourceTest {
         GraphData.clear();
     }
 
-    /** L'Importer et GraphData sont des singletons : les laisser chargés fait dérailler les autres classes de test. */
+    /** Importer and GraphData are singletons : keep them in memory impact other tests. */
     @AfterClass
     public static void releaseImporter() {
         Importer.getInstance().clear();
