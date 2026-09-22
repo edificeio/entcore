@@ -58,7 +58,6 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	private static final String PRENOMS = "Prenoms";
 	private static final String RELATIVE = "Relative";
 	private static final String STRUCTURE_ID = "structureId";
-	private static final String STRUCTURES = "structures";
 	private static final String STRUCTURE_NODES = "structureNodes";
 	private static final String SUBJECT_TAUGHT = "subjectTaught";
 	private static final String STUDENT = "Student";
@@ -99,7 +98,7 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			}
 
 			// Functions
-			if (data.containsKey(STRUCTURES) && data.containsKey(FUNCTIONS)) {
+			if (data.containsKey(STRUCTURE_NODES) && data.containsKey(FUNCTIONS)) {
 				JsonArray positions = data.getJsonArray(USER_POSITIONS, new JsonArray());
 				JsonArray structures = data.getJsonArray(STRUCTURE_NODES, new JsonArray());
 				JsonArray functions = data.getJsonArray(SUBJECT_TAUGHT, new JsonArray());
