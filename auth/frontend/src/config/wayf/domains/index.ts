@@ -5,4 +5,5 @@ export { hdfConfig } from './hdf';
 export { leiaConfig } from './leia';
 export { natiConfig } from './nati';
 export { normandieConfig } from './normandie';
+export { primotConfig } from './primot';
 export { reunionConfig } from './reunion';
