@@ -7,6 +7,7 @@ import {
   leiaConfig,
   natiConfig,
   normandieConfig,
+  primotConfig,
 } from './domains';
 
 export { DEFAULT_WAYF_CONFIG } from './default';
@@ -26,6 +27,7 @@ export const wayfConfig: WayfConfig = {
     'karukera.ac-guadeloupe.fr': guadeloupeConfig,
     'nati.pf': natiConfig,
     'ent.l-educdenormandie.fr': normandieConfig,
+    'www.primot.fr': primotConfig,
     'localhost': DEFAULT_WAYF_CONFIG,
   },
 };
