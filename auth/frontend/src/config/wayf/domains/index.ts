@@ -1,3 +1,4 @@
+export { ent04Config } from './ent04';
 export { eprimoConfig } from './eprimo';
 export { guadeloupeConfig } from './guadeloupe';
 export { hdfConfig } from './hdf';

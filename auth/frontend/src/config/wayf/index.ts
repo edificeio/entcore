@@ -1,6 +1,7 @@
 import type { WayfConfig } from '~/models/wayf';
 import { DEFAULT_WAYF_CONFIG } from './default';
 import {
+  ent04Config,
   guadeloupeConfig,
   hdfConfig,
   leiaConfig,
@@ -20,6 +21,7 @@ export { DEFAULT_WAYF_CONFIG } from './default';
 export const wayfConfig: WayfConfig = {
   'wayf-v2': {
     'ent.leia.corsica': leiaConfig,
+    'ent04.fr': ent04Config,
     'enthdf.fr': hdfConfig,
     'karukera.ac-guadeloupe.fr': guadeloupeConfig,
     'nati.pf': natiConfig,
