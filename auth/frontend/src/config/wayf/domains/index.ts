@@ -8,3 +8,4 @@ export { normandieConfig } from './normandie';
 export { primotConfig } from './primot';
 export { reunionConfig } from './reunion';
 export { semConfig } from './sem';
+export { vcaConfig } from './vca';
