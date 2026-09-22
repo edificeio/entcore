@@ -102,7 +102,7 @@ export const WayfPage = () => {
           {childTheme && (
             <img
               className="wayf-logo"
-              src={`/assets/themes/${childTheme}/img/logo.png`}
+              src={`/assets/themes/${childTheme}/img/logo-wayf.png`}
               alt="logo"
             />
           )}
@@ -110,7 +110,9 @@ export const WayfPage = () => {
 
         {/* Espace authentification */}
         <div className="wayf-selection__auth">
-          <h1 className="wayf-title" data-testid="wayf-label-choice">{t('wayf.choice')}</h1>
+          <h1 className="wayf-title" data-testid="wayf-label-choice">
+            {t('wayf.choice')}
+          </h1>
           <div className="wayf-view-container">
             {transitions((style, item) => (
               <animated.div style={style} className="wayf-view-slide">
