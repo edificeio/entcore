@@ -696,6 +696,8 @@
   "homepage.notifications.filter-modal.trigger": "Filtrer les notifications",
   "homepage.notifications.new-badge": "Nouvelle notification",
   "homepage.notifications.options.delete": "Supprimer",
+  "homepage.notifications.options.delete.success": "La notification a bien été supprimée de votre fil",
+  "homepage.notifications.options.delete.error": "Erreur lors de la suppression de la notification",
   "homepage.notifications.options.label": "Options de la notification",
   "homepage.notifications.options.report": "Signaler",
   "homepage.notifications.report-modal.body": "Attention ! Vous souhaitez signaler cette notification comme inappropriée, car elle ne respecte pas les conditions d'utilisation de l'ENT. L’heure et l’origine de ce signalement seront enregistrées et transmises à un administrateur.",
