@@ -7,12 +7,6 @@ const AGRI_ACS =
 const ARENA_ACS =
   'https://extranet.ac-normandie.fr/sso/SSO?SPEntityID=urn%3Afi%3Asp%3Aent-EDUC-Normandie%3A1%3A0';
 
-// NOTE: wayf.agri, wayf.perseducnat ("Personnel Education Nationale"), la
-// surcharge de wayf.other ("Personnel collectivité et invité") et le texte
-// "Compte EduConnect" (wayf.student/relative.educonnect) sont tous définis
-// uniquement dans les overrides de thème Normandie (theme-open-ent + panda),
-// pas dans l'i18n générique — spécifiques à ce domaine. Plus aucun écart
-// i18n connu pour cette conf (voir project-wayf-i18n-key-cleanup).
 export const normandieConfig: WayfDomainConfig = {
   providers: [
     {
