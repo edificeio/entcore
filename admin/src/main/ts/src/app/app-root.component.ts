@@ -1,7 +1,7 @@
 import { JsonObject } from '@angular/compiler-cli/ngcc/src/utils';
 import { Component, Injector } from '@angular/core';
 import { Data } from '@angular/router';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { OdeComponent } from 'ngx-ode-core';
 import { ScreebService } from './core/services/screeb.service';
 import { globalStore } from './core/store/global.store';
