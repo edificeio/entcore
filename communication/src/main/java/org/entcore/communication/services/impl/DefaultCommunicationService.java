@@ -182,8 +182,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				// u->G1->G2->visible + u->G1->visible
 				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
 						"WHERE\n" +
-						"    g.nbUsers > 0\n" +
-						"    AND g.users IN ['BOTH', 'INCOMING']\n" +
+						"    g.users IN ['BOTH', 'INCOMING']\n" +
 						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
 						"        DISTINCT CASE\n" +
 						"            WHEN g.users = 'BOTH' THEN g.id\n" +
@@ -210,8 +209,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						"UNION \n" +
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
 						"WHERE \n" +
-						"    g.nbUsers > 0 \n" +
-						"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
+						"   g.users IN ['BOTH', 'INCOMING'] \n" +
 						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
 						"        DISTINCT CASE\n" +
 						"            WHEN g.users = 'BOTH' THEN g.id\n" +
@@ -247,8 +245,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						// u->G<-[DEPENDS]-G2 group include into another group list G2
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
 						"WHERE \n" +
-						"    g.nbUsers > 0 \n" +
-						"    AND g.users IN ['BOTH', 'INCOMING'] \n" +
+						"    g.users IN ['BOTH', 'INCOMING'] \n" +
 						"    AND visibles.nbUsers > 0 \n" +
 						expectIdVisiblesFilter +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
@@ -303,8 +300,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				// u->G1->G2->visible + u->G1->visible
 				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
 						"WHERE\n" +
-						"    g.nbUsers > 0\n" +
-						"    AND g.users IN ['BOTH', 'INCOMING']\n" +
+						"   g.users IN ['BOTH', 'INCOMING']\n" +
 						"WITH (REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) + COLLECT(\n" +
 						"        DISTINCT CASE\n" +
 						"            WHEN g.users = 'BOTH' THEN g.id\n" +
