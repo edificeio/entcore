@@ -177,6 +177,15 @@ public class DefaultCommunicationService implements CommunicationService {
 		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
 				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
 				: "" ;
+		// A profile restriction does not read the same way on a user, on a profile group and on any other group.
+		final String profileFilter = visibleIdentityRequest.getProfileFilter();
+		final boolean filterOnProfile = profileFilter != null && !profileFilter.trim().isEmpty();
+		final String userProfileFilter = filterOnProfile ? " AND {profileFilter} IN m.profiles " : "";
+		final String groupProfileFilter = filterOnProfile ?
+				" AND ((visibles:ProfileGroup AND visibles.filter = {profileFilter}) " +
+				"      OR (NOT(visibles:ProfileGroup) AND visibles.users IN ['BOTH', 'OUTGOING'] " +
+				"          AND (visibles)<-[:IN]-(:User {profiles: {profileFilterAsList}}))) "
+				: "";
 
 		String query =
 				// u->G1->G2->visible + u->G1->visible
@@ -202,6 +211,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
 						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
+						userProfileFilter +
 						" WITH DISTINCT m as visibles " +
 						actionFilter +
 						"return DISTINCT visibles.id as id, true as isUser \n" + extraField +
@@ -224,6 +234,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
 						expectIdVisiblesFilter +
+						groupProfileFilter +
 						" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField +
 						// u->u2 => direct communication
 						"UNION \n" +
@@ -238,6 +249,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
 						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
+						userProfileFilter +
 						"WITH DISTINCT m as visibles " +
 						actionFilter +
 						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField +
@@ -246,9 +258,10 @@ public class DefaultCommunicationService implements CommunicationService {
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
 						"WHERE \n" +
 						"    g.users IN ['BOTH', 'INCOMING'] \n" +
-						"    AND visibles.nbUsers > 0 \n" +
+						"    AND (NOT(HAS(visibles.nbUsers)) OR visibles.nbUsers > 0) \n" +
 						expectIdVisiblesFilter +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
+						groupProfileFilter +
 						"return DISTINCT visibles.id as id, false as isUser " + extraField;
 		JsonObject queryParams = new JsonObject()
 				.put("userId", userId)
@@ -266,6 +279,10 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		if (visibleIdentityRequest.getWorkflowRightFilter() != null) {
 			queryParams.put("action", visibleIdentityRequest.getWorkflowRightFilter());
+		}
+		if (filterOnProfile) {
+			queryParams.put("profileFilter", profileFilter)
+					.put("profileFilterAsList", new JsonArray().add(profileFilter));
 		}
 		neo4j.execute(query, queryParams, validResultHandler(responseHandler));
 	}

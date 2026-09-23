@@ -1476,6 +1476,19 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void listRelatives(JsonArray userIds, Handler<Either<String, JsonArray>> handler) {
+		if (userIds == null || userIds.isEmpty()) {
+			handler.handle(new Either.Right<>(new JsonArray()));
+			return;
+		}
+		final String query =
+				"MATCH (u:User)-[:RELATED]->(r:User) " +
+				"WHERE u.id IN {userIds} " +
+				"RETURN DISTINCT r.id as id ";
+		neo.execute(query, new JsonObject().put("userIds", userIds), validResultHandler(handler));
+	}
+
+	@Override
 	public void getUsersStructuresWithPreferred(JsonArray userIds, Handler<Either<String, JsonArray>> handler) {
 		if (userIds == null || userIds.isEmpty()) {
 			handler.handle(new Either.Right<>(new JsonArray()));
