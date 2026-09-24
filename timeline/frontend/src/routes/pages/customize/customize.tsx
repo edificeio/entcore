@@ -50,7 +50,7 @@ export const Component = () => {
   return (
     <PageLayout
       scrollMode="columns"
-      variant="fullpage"
+      variant="centered"
       noPadding={{ content: true, sidebarRight: true, sidebarLeft: true }}
       data-product={productOverride}
       data-background={background}
