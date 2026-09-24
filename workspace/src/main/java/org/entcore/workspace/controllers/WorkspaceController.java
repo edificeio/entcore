@@ -982,6 +982,8 @@ public class WorkspaceController extends BaseController {
 						if (inline && ETag.check(request, file)) {
 							notModified(request, file);
 						} else {
+							// iOS Safari/AVPlayer need this header to seek
+							request.response().putHeader("Accept-Ranges", "bytes");
 							JsonObject metadata = DocumentHelper.getMetadata(jo);
 							if (!StringUtils.isEmpty(thumbSize) &&
 									DocumentHelper.getContentType(jo).startsWith("video")) {
@@ -1089,6 +1091,8 @@ public class WorkspaceController extends BaseController {
 					if (ETag.check(request, file)) {
 						notModified(request, file);
 					} else {
+						// iOS Safari/AVPlayer need this header to seek
+						request.response().putHeader("Accept-Ranges", "bytes");
 						storage.sendFile(file, result.getString("name"), request, false,
 								result.getJsonObject("metadata"));
 					}
