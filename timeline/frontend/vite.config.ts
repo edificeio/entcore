@@ -90,9 +90,30 @@ export default ({ mode }: { mode: string }) => {
         },
       },
       {
+        name: 'rewrite-timeline',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/timeline/timeline') {
+              res.writeHead(302, { Location: '/' });
+              res.end();
+              return;
+            }
+            if (req.url === '/') {
+              req.url = '/homepage.html';
+            }
+            next();
+          });
+        },
+      },
+      {
         name: 'rewrite-customize',
         configureServer(server) {
-          server.middlewares.use((req, _res, next) => {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/timeline/customize') {
+              res.writeHead(302, { Location: '/customize' });
+              res.end();
+              return;
+            }
             if (req.url === '/customize') {
               req.url = '/homepage.html';
             }
