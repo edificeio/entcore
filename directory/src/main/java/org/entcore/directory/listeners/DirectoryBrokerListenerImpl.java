@@ -621,4 +621,52 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
 
         return promise.future();
     }
+
+    /**
+     * Retrieves groups by their ENT IDs with basic information (id, name).
+     * Unlike communication-rights-filtered lookups, this returns every group
+     * found regardless of the caller's communication rights or structure
+     * attachment.
+     *
+     * @param request The request containing the list of group IDs
+     * @return Response with the found groups
+     */
+    @Override
+    public Future<GetGroupsByIdsResponseDTO> getGroupsByIds(GetGroupsByIdsRequestDTO request) {
+        final Promise<GetGroupsByIdsResponseDTO> promise = Promise.promise();
+
+        // Check if the request is valid
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getGroupsByIds: " + request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        // Convert list of group IDs to JsonArray
+        final JsonArray groupIdsArray = new JsonArray(request.getGroupIds());
+
+        groupService.getBatchInfos(groupIdsArray, GroupService.Field.DISPLAY_NAME.value(), event -> {
+            if (event.isRight()) {
+                final JsonArray groupsArray = event.right().getValue();
+                try {
+                    // Transform JsonArray of groups to List<GroupDTO>
+                    final List<GroupDTO> groupsList = new ArrayList<>();
+                    for (int i = 0; i < groupsArray.size(); i++) {
+                        final JsonObject groupJson = groupsArray.getJsonObject(i);
+                        final String displayName = groupJson.getString("displayName", groupJson.getString("name"));
+                        groupsList.add(new GroupDTO(groupJson.getString("id"), displayName));
+                    }
+                    promise.complete(new GetGroupsByIdsResponseDTO(groupsList));
+                } catch (Exception err) {
+                    log.error("Error while parsing group array", err);
+                    promise.fail(err);
+                }
+            } else {
+                log.error("Error getting groups by IDs: " + event.left().getValue());
+                promise.fail(event.left().getValue());
+            }
+        });
+
+        return promise.future();
+    }
 }
