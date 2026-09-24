@@ -67,6 +67,7 @@ import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
+import org.entcore.directory.util.ZoneUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
 import javax.xml.bind.JAXBContext;
@@ -76,6 +77,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.text.ParseException;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,6 +99,8 @@ public class UserController extends BaseController {
 	private static final int MOTTO_MAX_LENGTH = 75;
 	private static final int HEALTH_MAX_LENGTH = 1000;
 	private static final int HOBBY_VALUES_MAX_LENGTH = 80;
+	/** Format of the last login date in user exports, readable as a date by spreadsheets. */
+	private static final DateTimeFormatter EXPORT_LAST_LOGIN_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 	private final EventHelper eventHelper;
 	private JsonObject userBookData;
 	private JsonArray userBookMoods;
@@ -569,6 +574,7 @@ public class UserController extends BaseController {
 					final String filterActive = request.params().get("filterActive");
 					final String exportType = request.params().get("type") == null ? "" : request.params().get("type");
 					final String format = request.params().get("format");
+					final ZoneId zone = ZoneUtils.parseOrUtc(request.params().get("tz"));
 					Handler<Either<String, JsonArray>> handler;
 
 					//hack Chamilo and PMB
@@ -591,7 +597,7 @@ public class UserController extends BaseController {
 										JsonObject user = users.getJsonObject(i);
 										if (!StringUtils.isEmpty(user.getString("lastLogin"))) {
 											try {
-												String formated = DateUtils.format(DateUtils.parse(user.getString("lastLogin"), "yyyy-MM-dd'T'HH:mm:ss.SSSX"), "dd-MM-yyyy HH:mm");
+												String formated = DateUtils.parse(user.getString("lastLogin"), "yyyy-MM-dd'T'HH:mm:ss.SSSX").toInstant().atZone(zone).format(EXPORT_LAST_LOGIN_FORMATTER);
 												user.put("lastLogin", formated);
 											} catch (ParseException pe) { /* Shouldn't prevent the export from going on */ }
 										}
