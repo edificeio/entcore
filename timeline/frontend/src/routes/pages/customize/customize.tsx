@@ -10,7 +10,7 @@ import {
 
 import { IconArrowLeft } from '@edifice.io/react/icons';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CustomizationForm } from '~/components/CustomizationForm';
 import { CustomizationPreview } from '~/components/CustomizationPreview/CustomizationPreview';
 import { useCustomizationForm } from '~/hooks/useCustomizationForm';
@@ -25,6 +25,7 @@ export const loader = async () => {
 export const Component = () => {
   const { init } = useEdificeClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { md, lg } = useBreakpoint();
   const { common_t } = useI18n();
   const { background, productOverride } = useBackground();
@@ -40,11 +41,26 @@ export const Component = () => {
   };
 
   const handleBackClick = () => {
-    // Reload with changes, after navigating back
-    window.addEventListener('popstate', () => window.location.reload(), {
-      once: true,
-    });
-    navigate(-1);
+    // Go back to URL in the callback query param, if any.
+    const callback = searchParams.get('callback');
+
+    if (!callback) {
+      navigate(-1);
+      return;
+    }
+
+    try {
+      const callbackUrl = new URL(callback, location.origin);
+
+      if (callbackUrl.origin !== location.origin) {
+        navigate(-1);
+        return;
+      }
+
+      window.location.assign(callbackUrl.href);
+    } catch {
+      navigate(-1);
+    }
   };
 
   return (
