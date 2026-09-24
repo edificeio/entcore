@@ -68,9 +68,10 @@ public final class AAFHandler extends DefaultHandler {
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		switch (currentTag) {
-			case "id" : addExternalId(s.toString());
+			// Unescape only the markup value (id / attribute value), not the whole file.
+			case "id" : addExternalId(BaseImportProcessing.UNESCAPE_AAF.translate(s.toString()));
 				break;
-			case "value" : addValueInAttribute(s.toString());
+			case "value" : addValueInAttribute(BaseImportProcessing.UNESCAPE_AAF.translate(s.toString()));
 				break;
 		}
 		currentTag = "";
