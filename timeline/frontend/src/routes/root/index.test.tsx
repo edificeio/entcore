@@ -1,4 +1,4 @@
-import { render, screen, within } from '~/mocks/setup';
+import { fireEvent, render, screen, within } from '~/mocks/setup';
 import { Root } from './index';
 
 /**
@@ -159,7 +159,9 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
   it('opens the widgets panel and hides notifications when the trigger is clicked', () => {
     render(<Root />);
 
-    screen.getByRole('button', { name: 'Personnaliser mes widgets' }).click();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Personnaliser mes widgets' }),
+    );
 
     const overlay = screen.getByTestId('overlay');
     expect(
@@ -173,9 +175,13 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
 
   it('closes the widgets panel and falls back to notifications when it requests to close', () => {
     render(<Root />);
-    screen.getByRole('button', { name: 'Personnaliser mes widgets' }).click();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Personnaliser mes widgets' }),
+    );
 
-    screen.getByRole('button', { name: 'Fermer le volet widgets' }).click();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Fermer le volet widgets' }),
+    );
 
     const overlay = screen.getByTestId('overlay');
     expect(
@@ -188,13 +194,18 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
   });
 
   it('closes the widgets panel when notifications are toggled open while it is showing', () => {
+    // Notifications only share the overlay with the widgets panel below the
+    // 'md' breakpoint — on desktop they open in the right sidebar instead.
+    mocks.useBreakpoint.mockReturnValue({ sm: true, md: false });
     render(<Root />);
-    screen.getByRole('button', { name: 'Personnaliser mes widgets' }).click();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Personnaliser mes widgets' }),
+    );
     expect(
       screen.getByTestId('widgets-personalization-panel'),
     ).toBeInTheDocument();
 
-    screen.getByRole('button', { name: 'Notifications' }).click();
+    fireEvent.click(screen.getByRole('button', { name: 'Notifications' }));
 
     const overlay = screen.getByTestId('overlay');
     expect(
