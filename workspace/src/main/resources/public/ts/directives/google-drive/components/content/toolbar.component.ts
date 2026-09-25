@@ -3,6 +3,7 @@ import {
   angular,
   FolderPickerProps,
   FolderPickerSourceFile,
+  idiom as lang,
   model,
   toasts,
 } from "entcore";
@@ -20,10 +21,12 @@ interface ILightbox {
   delete: boolean;
   copy: boolean;
   share: boolean;
+  rename: boolean;
 }
 
 export interface IToolbarViewModel {
   lightbox: ILightbox;
+  currentDocument: GoogleDriveDocument;
 
   hasOneDocumentSelected(selectedDocuments: Array<GoogleDriveDocument>): boolean;
   isSelectedEditable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
@@ -31,6 +34,9 @@ export interface IToolbarViewModel {
   downloadFiles(selectedDocuments: Array<GoogleDriveDocument>): void;
   openDocument(): void;
   editDocument(): void;
+
+  toggleRenameView(state: boolean, selectedDocuments?: Array<GoogleDriveDocument>): void;
+  renameDocument(): void;
 
   toggleDeleteView(state: boolean): void;
   deleteDocuments(): void;
@@ -47,6 +53,7 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
   private workspaceScope: WorkspaceScope;
 
   public lightbox: ILightbox;
+  public currentDocument: GoogleDriveDocument;
   public copyProps: FolderPickerProps;
   public share: ToolbarShareGoogleDriveViewModel;
 
@@ -62,7 +69,9 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
       delete: false,
       copy: false,
       share: false,
+      rename: false,
     };
+    this.currentDocument = null;
 
     this.share = new ToolbarShareGoogleDriveViewModel(scope, this.lightbox);
 
@@ -77,7 +86,11 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
   }
 
   public isSelectedEditable(selectedDocuments: Array<GoogleDriveDocument>): boolean {
-    return selectedDocuments.length > 0 && selectedDocuments[0].editable;
+    return (
+      selectedDocuments.length > 0 &&
+      selectedDocuments[0].editable &&
+      selectedDocuments[0].permissionRole !== "reader"
+    );
   }
 
   public hasOneDocumentSelected(selectedDocuments: Array<GoogleDriveDocument>): boolean {
@@ -114,6 +127,36 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     window.open(googleDriveService.getFiles(model.me.userId, ids));
   }
 
+  public toggleRenameView(state: boolean, selectedDocuments?: Array<GoogleDriveDocument>): void {
+    this.lightbox.rename = state;
+    if (state && selectedDocuments) {
+      this.currentDocument = Object.assign({}, selectedDocuments[0]);
+    } else {
+      this.currentDocument = null;
+    }
+  }
+
+  public renameDocument(): void {
+    const documentToRename: GoogleDriveDocument = this.vm.selectedDocuments[0];
+    if (!documentToRename || !this.currentDocument) return;
+
+    googleDriveService
+      .renameDocument(model.me.userId, documentToRename.id, this.currentDocument.name)
+      .then(() => this.refreshDocuments())
+      .then(() => {
+        this.toggleRenameView(false);
+        this.vm.selectedDocuments = [];
+        googleDriveEventService.sendOpenFolderDocument(this.vm.parentDocument);
+        safeApply(this.vm);
+      })
+      .catch((err: AxiosError) => {
+        console.error("Error while attempting to rename document: " + err.message);
+        this.toggleRenameView(false);
+        this.vm.selectedDocuments = [];
+        safeApply(this.vm);
+      });
+  }
+
   public toggleDeleteView(state: boolean): void {
     this.lightbox.delete = state;
   }
@@ -129,6 +172,8 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
       .then(() => {
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
+        // Refreshes the sidebar tree too, mirroring createFolder's own refresh.
+        googleDriveEventService.sendOpenFolderDocument(this.vm.parentDocument);
         safeApply(this.vm);
       })
       .catch((err: AxiosError) => {
@@ -200,11 +245,11 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
   ): void {
     this.copyProps = {
       i18: {
-        title: type === "copy" ? "workspace.copy.window.title" : "workspace.move.window.title",
-        actionTitle: type === "copy" ? "workspace.copy.window.action" : "workspace.move.window.action",
-        actionProcessing: type === "copy" ? "workspace.copying" : "workspace.moving",
-        actionFinished: type === "copy" ? "workspace.copy.finished" : "workspace.move.finished",
-        info: type === "copy" ? "workspace.copy.window.info" : "workspace.move.window.info",
+        title: type === "copy" ? "google-drive.export.window.title" : "workspace.move.window.title",
+        actionTitle: type === "copy" ? "google-drive.export.window.action" : "workspace.move.window.action",
+        actionProcessing: type === "copy" ? "google-drive.exporting" : "workspace.moving",
+        actionFinished: type === "copy" ? "google-drive.export.window.finished" : "workspace.move.finished",
+        info: type === "copy" ? "google-drive.export.window.info" : "workspace.move.window.info",
       },
       sources: selectedDocuments.map(
         (doc: GoogleDriveDocument) =>
@@ -214,10 +259,18 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
           }) as FolderPickerSourceFile,
       ),
       treeProvider: async () => {
-        if (this.workspaceScope && this.workspaceScope.trees) {
-          return this.workspaceScope.trees.filter((tree) => tree.filter === "owner");
-        }
-        return [];
+        const ownerTrees = this.workspaceScope && this.workspaceScope.trees
+          ? this.workspaceScope.trees.filter((tree) => tree.filter === "owner")
+          : [];
+        // Mirrors classic space's own copy/move picker: wraps "Mes documents" under a labeled
+        // "Espace personnel" root instead of showing it bare (and lets folderTree2.ts render the
+        // home icon for it via isPersonalSpaceWrapper).
+        const ownerWrapper = {
+          name: lang.translate("workspace.personal.space"),
+          children: ownerTrees,
+          isPersonalSpaceWrapper: true,
+        };
+        return [ownerWrapper] as any;
       },
       nextcloudTreeProvider: type === "copy"
         ? null

@@ -35,9 +35,9 @@
                 <i18n>workspace.move</i18n>
             </button>
 
-            <!-- copy -->
+            <!-- copy (labeled "Exporter" for Google Drive sources) -->
             <button ng-click="toolbar.toggleCopyView(true, selectedDocuments)">
-                <i18n>workspace.copy</i18n>
+                <i18n>google-drive.export</i18n>
             </button>
 
             <!-- share document(s) -->
@@ -107,4 +107,7 @@
 </div>
 <div ng-if="toolbar.lightbox.share">
     <div ng-include="'/workspace/public/template/google-drive/toolbar/share/workspace-google-drive-toolbar-share.html'"></div>
+</div>
+<div ng-if="toolbar.lightbox.rename">
+    <div ng-include="'/workspace/public/template/google-drive/toolbar/workspace-google-drive-toolbar-properties.html'"></div>
 </div>

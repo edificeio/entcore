@@ -1,4 +1,4 @@
-import { angular, Document, FolderTreeProps, model, ng, template } from "entcore";
+import { angular, Document, FolderTreeProps, idiom as lang, model, ng, template } from "entcore";
 import { Tree } from "entcore/types/src/ts/workspace/model";
 import { Subscription } from "rxjs";
 import { models } from "../../services";
@@ -13,6 +13,7 @@ import { GoogleDriveQuota } from "./models/googleDriveQuota.model";
 import { GoogleDriveDocumentsUtils } from "./utils/googleDriveDocuments.utils";
 import { safeApply } from "./utils/safeApply.utils";
 import { WorkspaceEntcoreUtils } from "./utils/workspaceEntcore.utils";
+import { nextcloudEventService } from "../nextcloud/services/nextcloudEvent.service";
 
 export interface IGoogleDriveFolderScope {
   documents: Array<GoogleDriveDocument>;
@@ -81,15 +82,23 @@ export const workspaceGoogleDriveFolderController = ng.controller(
         }
 
         const staticFolders: Array<GoogleDriveDocument> = [
-          GoogleDriveDocument.createStaticFolder("trashbin"),
           GoogleDriveDocument.createStaticFolder("shared"),
+          GoogleDriveDocument.createStaticFolder("trashbin"),
         ];
         folder.push(...staticFolders);
+
+        // folder[0] (from initParent()) now nests under the "Google Drive" grouping node as "Mon Drive".
+        if (folder[0]) {
+          folder[0].name = lang.translate("google-drive.mydrive");
+        }
+        const rootGroup: GoogleDriveDocument = GoogleDriveDocument.createRootGroup();
+        rootGroup.children = folder;
+        viewModel.openedFolder = [rootGroup as any];
 
         $scope.folderTree = {
           cssTree: "folders-tree",
           get trees(): any | Array<Tree> {
-            return folder;
+            return [rootGroup];
           },
           isDisabled(folder: models.Element): boolean {
             return false;
@@ -101,7 +110,34 @@ export const workspaceGoogleDriveFolderController = ng.controller(
             return viewModel.selectedFolder === folder;
           },
           async openFolder(folder: models.Element): Promise<void> {
+            // Clicking the "Google Drive" grouping label toggles fold/unfold and also opens "Mon Drive".
+            if ((folder as any).isRootGroup) {
+              if (viewModel.openedFolder.some((f) => f === folder)) {
+                viewModel.openedFolder = viewModel.openedFolder.filter((f) => f !== folder);
+              } else {
+                viewModel.openedFolder.push(folder);
+              }
+              setTimeout(injectRootGroupIcon, 0);
+              return $scope.folderTree.openFolder(rootGroup.children[0] as any);
+            }
+
             viewModel.selectedFolder = folder;
+            // Nextcloud's tree has its own independent selectedFolder; clear it or its last-selected row stays highlighted.
+            const ncTreeEl = document.getElementById("nextcloud-folder-tree");
+            const ncTreeScope: any = angular.element(ncTreeEl).scope();
+            if (ncTreeScope) {
+              ncTreeScope.selectedFolder = null;
+              const phase = ncTreeScope.$root && ncTreeScope.$root.$$phase;
+              if (!phase) {
+                ncTreeScope.$apply();
+              }
+            }
+            // Only clear "selected" (imperative DOM class); clearing "opened" would collapse the tree.
+            if (ncTreeEl) {
+              ncTreeEl.querySelectorAll("a.selected").forEach((el) => {
+                el.classList.remove("selected");
+              });
+            }
             viewModel.setSwitchDisplayHandler();
             viewModel.watchFolderState();
 
@@ -115,6 +151,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
             await viewModel.openDocument(folder);
             viewModel.removeDragFeedback();
             viewModel.addDragFeedback();
+            setTimeout(injectRootGroupIcon, 0);
           },
         };
       };
@@ -281,6 +318,9 @@ export const workspaceGoogleDriveFolderController = ng.controller(
           if (!target.closest?.("#google-drive-folder-tree")) return;
           // If contentContext is set, this is a GD→GD drag — handled elsewhere.
           if (googleDriveEventService.getContentContext()) return;
+          // A Nextcloud-sourced drag also carries "application/json" — no transfer path exists
+          // between Nextcloud and Google Drive, so leave the browser's default "no-drop" cursor.
+          if (nextcloudEventService.getContentContext()) return;
           const types = Array.from(e.dataTransfer?.types ?? []);
           if (!types.includes("application/json")) return;
           // Accept the drop for any area of the GD folder tree. findFolderScope is only used
@@ -476,6 +516,10 @@ export const workspaceGoogleDriveFolderController = ng.controller(
       };
 
       $scope.openDocument = async (document: any): Promise<void> => {
+        if (document.isRootGroup) {
+          // Grouping node — children are set once in initTree() and must not be overwritten here.
+          return;
+        }
         if (document.isStaticFolder) {
           const staticType: string = document.staticFolderType;
           let staticDocuments: Array<GoogleDriveDocument> = [];
@@ -485,6 +529,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
               $scope.isTrashbinOpen = true;
               $scope.isSharedViewOpen = false;
               $rootScope.isGDTrashbinOpen = true;
+              $rootScope.isNextcloudTrashbinOpen = false;
               template.close('lightbox');
               safeApply($scope);
               const trashList = await googleDriveService
@@ -499,6 +544,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
               $scope.isTrashbinOpen = false;
               $scope.isSharedViewOpen = true;
               $rootScope.isGDTrashbinOpen = true;
+              $rootScope.isNextcloudTrashbinOpen = false;
               template.close('lightbox');
               safeApply($scope);
               const sharedList = await googleDriveService
@@ -511,7 +557,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
               break;
           }
 
-          $scope.documents = staticDocuments;
+          // Don't assign to $scope.documents: documents[0] is relied on elsewhere (e.g. computeBreadcrumb).
           googleDriveEventService.sendDocuments({
             parentDocument: document,
             documents: staticDocuments,
@@ -523,6 +569,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
         $scope.isTrashbinOpen = false;
         $scope.isSharedViewOpen = false;
         $rootScope.isGDTrashbinOpen = true;
+        $rootScope.isNextcloudTrashbinOpen = false;
         template.close('lightbox');
         safeApply($scope);
 
@@ -644,6 +691,9 @@ export const workspaceGoogleDriveFolderController = ng.controller(
       $scope.documents = [new GoogleDriveDocument().initParent()];
       $scope.initTree($scope.documents);
       $scope.initDraggable();
+      setTimeout(injectRootGroupIcon, 0);
+      // Attach upfront, otherwise the first tree click fires before openFolder() would attach it.
+      $scope.setSwitchDisplayHandler();
 
       function refreshQuota(): void {
         googleDriveService
@@ -704,6 +754,138 @@ export const workspaceGoogleDriveFolderController = ng.controller(
         };
       }
 
+      // <folder-tree-inner> has no icon slot, so icons are injected as DOM nodes; currentColor lets mobile nav CSS flip them to white.
+      const FOLDER_ICON_SVG: string =
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>';
+      const SHARE_ICON_SVG: string =
+        '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>';
+      const TRASH_ICON_SVG: string =
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6zM10 11v6M14 11v6"/>';
+      const FOLDER_OPEN_ICON_SVG: string =
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M2 8V6a2 2 0 0 1 2-2h4.5l2 2H20a2 2 0 0 1 2 2"/>' +
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M2 8h19a1 1 0 0 1 .97 1.24l-1.5 6A2 2 0 0 1 18.53 17H4.5a2 2 0 0 1-1.94-1.51L1 9.5A1 1 0 0 1 2 8Z"/>';
+
+      const GOOGLE_DRIVE_ROOT_SVG: string =
+        '<path fill="#0066da" d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z"/>' +
+        '<path fill="#00ac47" d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z"/>' +
+        '<path fill="#ea4335" d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.5l5.85 11.5z"/>' +
+        '<path fill="#00832d" d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z"/>' +
+        '<path fill="#2684fc" d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z"/>' +
+        '<path fill="#ffba00" d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z"/>';
+
+      function prependIcon(
+        link: Element,
+        innerSvg: string,
+        markerClass: string,
+        viewBox: string = "0 0 24 24",
+        replaceMarkerClasses: Array<string> = [],
+      ): void {
+        if (!link) return;
+        // Must match !important to beat the theme's own "white-space:normal !important" rule.
+        (link as HTMLElement).style.setProperty("white-space", "nowrap", "important");
+        // Icons (e.g. open/closed folder) can swap on state change — drop the stale variant first.
+        replaceMarkerClasses.forEach((cls) => {
+          if (cls === markerClass) return;
+          const stale = link.querySelector("." + cls);
+          if (stale) stale.remove();
+        });
+        if (link.querySelector("." + markerClass)) return;
+        const icon = document.createElement("span");
+        icon.className = markerClass;
+        icon.style.cssText =
+          "display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;flex-shrink:0;color:#8c939e;";
+        icon.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' +
+          viewBox +
+          '" width="16" height="16">' +
+          innerSvg +
+          "</svg>";
+        link.prepend(icon);
+      }
+
+      // The row shares one ng-click across arrow and label, so the arrow needs its own toggle to collapse independently.
+      function bindFolderToggle(link: Element, folder: GoogleDriveDocument): void {
+        // Excludes the fake arrow (ensureExpandArrow below), which has its own click handler.
+        const arrowEl = link.querySelector("i.arrow:not(.google-drive-fake-arrow)") as
+          | (HTMLElement & { __gdToggleBound?: boolean })
+          | null;
+        if (!arrowEl || arrowEl.__gdToggleBound) return;
+        arrowEl.__gdToggleBound = true;
+        arrowEl.addEventListener("click", (event: Event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          const index = $scope.openedFolder.indexOf(folder as any);
+          if (index > -1) {
+            $scope.openedFolder.splice(index, 1);
+          } else {
+            $scope.openedFolder.push(folder as any);
+          }
+          safeApply($scope);
+          setTimeout(injectRootGroupIcon, 0);
+        });
+      }
+
+      // children is [] until a folder is navigated into, so a real arrow won't show yet; inject a fake one that opens the folder on click.
+      function ensureExpandArrow(link: Element, folder: GoogleDriveDocument): void {
+        const fakeArrow = link.querySelector(".google-drive-fake-arrow");
+        const hasRealArrow = !!link.querySelector("i.arrow:not(.google-drive-fake-arrow)");
+        const notYetChecked = !folder.children || folder.children.length === 0;
+
+        if (hasRealArrow || !notYetChecked) {
+          fakeArrow?.remove();
+          return;
+        }
+        if (fakeArrow) return;
+
+        const arrow = document.createElement("i");
+        arrow.className = "arrow google-drive-fake-arrow";
+        arrow.addEventListener("click", (event: Event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          $scope.folderTree.openFolder(folder as any);
+        });
+        link.prepend(arrow);
+      }
+
+      function injectRootGroupIcon(): void {
+        const treeEl = document.getElementById("google-drive-folder-tree");
+        if (!treeEl) return;
+
+        const links = treeEl.querySelectorAll("folder-tree-inner > a.folder-list-item");
+        links.forEach((link) => {
+          const innerEl: any = link.closest("folder-tree-inner");
+          if (!innerEl) return;
+          const innerJq: any = angular.element(innerEl);
+          // .folder lives on the isolate scope, not the surrounding ng-repeat scope .scope() returns.
+          const scope: any = innerJq.isolateScope?.() ?? innerJq.scope?.();
+          const folder: GoogleDriveDocument = scope?.folder;
+          if (!folder) return;
+
+          if (folder.isRootGroup) {
+            prependIcon(link, GOOGLE_DRIVE_ROOT_SVG, "google-drive-root-icon", "0 0 87.3 78");
+          } else if (folder.staticFolderType === "shared") {
+            prependIcon(link, SHARE_ICON_SVG, "google-drive-child-icon");
+          } else if (folder.staticFolderType === "trashbin") {
+            prependIcon(link, TRASH_ICON_SVG, "google-drive-child-icon");
+          } else {
+            bindFolderToggle(link, folder);
+            const isOpen = $scope.openedFolder?.some((f: any) => f === folder) ?? false;
+            if (isOpen) {
+              prependIcon(link, FOLDER_OPEN_ICON_SVG, "google-drive-child-icon-open", "0 0 24 24", [
+                "google-drive-child-icon",
+                "google-drive-child-icon-open",
+              ]);
+            } else {
+              prependIcon(link, FOLDER_ICON_SVG, "google-drive-child-icon", "0 0 24 24", [
+                "google-drive-child-icon",
+                "google-drive-child-icon-open",
+              ]);
+            }
+            ensureExpandArrow(link, folder);
+          }
+        });
+      }
+
       function switchWorkspaceTreeHandler() {
         const viewModel: IGoogleDriveFolderScope = $scope;
         return function (): void {
@@ -731,14 +913,26 @@ export const workspaceGoogleDriveFolderController = ng.controller(
           }
 
           if (target && viewModel.selectedFolder) {
+            const classicScope: any = WorkspaceEntcoreUtils.workspaceScope();
+            let folder: any = angular.element(target).scope().folder;
+            // Guard against the "Mon espace personnel" grouping header itself landing in openedFolder.folder.
+            const wrapperRoot = classicScope?.wrapperTrees?.[0];
+            const redirectedFromWrapper = folder === wrapperRoot;
+            if (redirectedFromWrapper) {
+              folder = (classicScope?.trees || []).find((t: any) => t.filter === "owner") ?? folder;
+            }
             viewModel.selectedFolder = null;
             $rootScope.isGDTrashbinOpen = false;
-            target.classList.add("selected");
-            WorkspaceEntcoreUtils.updateWorkspaceDocuments(
-              angular.element(target).scope().folder,
-            );
-            WorkspaceEntcoreUtils.workspaceScope()["openedFolder"]["folder"] =
-              angular.element(target).scope().folder;
+            if (!redirectedFromWrapper) {
+              target.classList.add("selected");
+            }
+            if (redirectedFromWrapper) {
+              // setCurrentTree actually fetches content; the plain assignment below only swaps the reference.
+              classicScope.setCurrentTree?.("owner");
+            } else {
+              WorkspaceEntcoreUtils.updateWorkspaceDocuments(folder);
+              classicScope["openedFolder"]["folder"] = folder;
+            }
             WorkspaceEntcoreUtils.toggleWorkspaceContentDisplay(true);
             googleDriveEventService.setContentContext(null);
             template.open("documents", "icons");
@@ -757,6 +951,7 @@ export const workspaceGoogleDriveFolderController = ng.controller(
             viewModel.openedFolder.push(folder);
           }
           safeApply(scope);
+          setTimeout(injectRootGroupIcon, 0);
         };
       }
     },
