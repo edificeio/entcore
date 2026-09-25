@@ -52,6 +52,12 @@
         "items": {
           "type": "string"
         }
+        },
+        "mailNotification": {
+            "type": "boolean"
+        },
+        "pushNotification": {
+            "type": "boolean"
         }
     },
     "required": [
