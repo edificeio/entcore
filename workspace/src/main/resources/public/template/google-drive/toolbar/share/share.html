@@ -1,9 +1,8 @@
 <div class="horizontal-spacing-twice">
-    <h2 style="margin-top: 0;"><i18n>workspace.share</i18n></h2>
+    <h2 style="margin-top: 0;"><i18n>google-drive.shared.current</i18n></h2>
 
     <!-- Existing shares — only meaningful for a single selected document -->
     <div ng-if="toolbar.share.isSingleDocument" class="row">
-        <h3><i18n>google-drive.shared.current</i18n></h3>
 
         <p ng-if="toolbar.share.loadingShares" class="centered">
             <i class="loading"></i>
@@ -14,15 +13,20 @@
         </p>
 
         <ul ng-if="!toolbar.share.loadingShares && toolbar.share.currentShares.length" class="current-shares-list">
-            <li ng-repeat="entry in toolbar.share.currentShares" class="row">
-                <span class="cell reduce-block-two">[[entry.displayName || entry.emailAddress]]</span>
-                <em class="low-importance cell">[[translate('google-drive.role.' + entry.role)]]</em>
+            <li ng-repeat="entry in toolbar.share.currentShares" class="row current-share-entry">
+                <span class="current-share-info">
+                    <svg class="current-share-user-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>
+                    <span class="cell reduce-block-two">[[entry.displayName || entry.emailAddress]]</span>
+                    <em class="low-importance cell">[[translate('google-drive.role.' + entry.role)]]</em>
+                </span>
                 <a
                     ng-if="entry.userId"
                     ng-click="toolbar.share.onRemoveShare(entry)"
-                    class="cell right-magnet"
+                    class="current-share-remove"
+                    aria-label="[[translate('google-drive.unshare')]]"
+                    title="[[translate('google-drive.unshare')]]"
                 >
-                    <i18n>google-drive.unshare</i18n>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"></path></svg>
                 </a>
             </li>
         </ul>
@@ -32,7 +36,7 @@
 
     <!-- Add recipients -->
     <div class="row">
-        <h3><i18n>google-drive.share.search.title</i18n></h3>
+        <h2><i18n>google-drive.share.search.title</i18n></h2>
 
         <search-user
             class="twelve cell"
@@ -48,26 +52,43 @@
             style="position: absolute; top: 68px; left: 0; right: 0; z-index: 10; background: #fff;"
         >
             <div ng-repeat="item in toolbar.share.found" class="row autocomplete">
-                <em ng-click="toolbar.share.addRecipient(item)" class="row">
-                    <span class="cell reduce-block-two">[[item.displayName]]</span>
+                <em
+                    ng-click="item.type === 'Group' ? toolbar.share.addGroupRecipients(item) : toolbar.share.addRecipient(item)"
+                    class="row"
+                >
+                    <svg ng-if="item.type === 'Group'" class="search-result-group-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <svg ng-if="item.type !== 'Group'" class="search-result-group-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>
+                    <span class="cell reduce-block-two">
+                        [[item.displayName]]<span ng-if="item.type === 'Group'" class="low-importance"> ([[item.nbUsers]])</span>
+                    </span>
                 </em>
             </div>
         </div>
 
-        <div class="selected-recipients row" ng-if="toolbar.share.selectedRecipients.length">
-            <span ng-repeat="user in toolbar.share.selectedRecipients" class="tag">
-                [[user.displayName]]
-                <a ng-click="toolbar.share.removeRecipient(user)">&times;</a>
-            </span>
-        </div>
+        <ul class="current-shares-list selected-recipients" ng-if="toolbar.share.selectedRecipients.length">
+            <li ng-repeat="user in toolbar.share.selectedRecipients" class="row current-share-entry">
+                <span class="current-share-info">
+                    <svg class="current-share-user-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>
+                    <span class="cell reduce-block-two">[[user.displayName]]</span>
+                </span>
+                <a
+                    ng-click="toolbar.share.removeRecipient(user)"
+                    class="current-share-remove"
+                    aria-label="[[translate('workspace.warning.cancel')]]"
+                    title="[[translate('workspace.warning.cancel')]]"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                </a>
+            </li>
+        </ul>
+    </div>
 
-        <div class="row">
-            <label><i18n>google-drive.share.role</i18n></label>
-            <select ng-model="toolbar.share.role">
-                <option value="reader">[[translate('google-drive.role.reader')]]</option>
-                <option value="writer">[[translate('google-drive.role.writer')]]</option>
-            </select>
-        </div>
+    <div class="row google-drive-role-row">
+        <label><i18n>google-drive.share.role</i18n></label>
+        <select class="google-drive-role-select" ng-model="toolbar.share.role">
+            <option value="reader">[[translate('google-drive.role.reader')]]</option>
+            <option value="writer">[[translate('google-drive.role.writer')]]</option>
+        </select>
     </div>
 
     <div ng-if="toolbar.share.shareErrors.length" class="row warning">

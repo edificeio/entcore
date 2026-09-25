@@ -27,6 +27,12 @@ export interface IGoogleDriveShareResult {
   message?: string;
 }
 
+export interface IGoogleDriveWorkspaceTransferResult {
+  id: string;
+  status: "ok" | "error";
+  message?: string;
+}
+
 export interface IGoogleDriveService {
   listDocument(userid: string, parentId?: string): Promise<Array<GoogleDriveDocument>>;
 
@@ -55,6 +61,8 @@ export interface IGoogleDriveService {
   createFolder(userid: string, name: string, parentId?: string): Promise<AxiosResponse>;
 
   moveDocument(userid: string, fileId: string, parentId: string): Promise<AxiosResponse>;
+
+  renameDocument(userid: string, fileId: string, newName: string): Promise<AxiosResponse>;
 
   deleteDocuments(userid: string, ids: Array<string>): Promise<AxiosResponse>;
 
@@ -94,6 +102,8 @@ export interface IGoogleDriveService {
 
   openEditLink(userid: string, document: GoogleDriveDocument): void;
 
+  openLocationLink(userid: string, document: GoogleDriveDocument): void;
+
   getStorageQuota(userid: string): Promise<GoogleDriveQuota>;
 
   uploadLocalFilesToCloud(
@@ -101,6 +111,15 @@ export interface IGoogleDriveService {
     files: File[],
     parentId?: string,
   ): Promise<void>;
+}
+
+// These endpoints always return 200; per-item failures only show up in the response body.
+function throwOnTransferErrors(res: AxiosResponse): void {
+  const results: Array<IGoogleDriveWorkspaceTransferResult> = res.data?.data ?? [];
+  const failed = results.filter((r) => r.status === "error");
+  if (failed.length > 0) {
+    throw new Error(failed.map((f) => f.message).filter(Boolean).join("; ") || "transfer failed");
+  }
 }
 
 export const googleDriveService: IGoogleDriveService = {
@@ -209,6 +228,18 @@ export const googleDriveService: IGoogleDriveService = {
     );
   },
 
+  renameDocument: (
+    userid: string,
+    fileId: string,
+    newName: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/rename`,
+      { name: newName },
+    );
+  },
+
   deleteDocuments: (
     userid: string,
     ids: Array<string>,
@@ -282,7 +313,7 @@ export const googleDriveService: IGoogleDriveService = {
       );
   },
 
-  moveDocumentWorkspaceToCloud: (
+  moveDocumentWorkspaceToCloud: async (
     userid: string,
     ids: Array<string>,
     parentId?: string,
@@ -291,12 +322,14 @@ export const googleDriveService: IGoogleDriveService = {
     ids.forEach((id) => urlParams.append("id", id));
     const parentParam = parentId ? `&parentId=${parentId}` : "";
     // @ts-ignore
-    return http.put(
+    const res: AxiosResponse = await http.put(
       `/googledrive/files/user/${userid}/workspace/move/cloud?${urlParams}${parentParam}`,
     );
+    throwOnTransferErrors(res);
+    return res;
   },
 
-  copyDocumentWorkspaceToCloud: (
+  copyDocumentWorkspaceToCloud: async (
     userid: string,
     ids: Array<string>,
     parentId?: string,
@@ -305,9 +338,11 @@ export const googleDriveService: IGoogleDriveService = {
     ids.forEach((id) => urlParams.append("id", id));
     const parentParam = parentId ? `&parentId=${parentId}` : "";
     // @ts-ignore
-    return http.put(
+    const res: AxiosResponse = await http.put(
       `/googledrive/files/user/${userid}/workspace/copy/cloud?${urlParams}${parentParam}`,
     );
+    throwOnTransferErrors(res);
+    return res;
   },
 
   getFile: (userid: string, fileId: string, isFolder: boolean = false): string => {
@@ -323,6 +358,12 @@ export const googleDriveService: IGoogleDriveService = {
   openEditLink: (userid: string, document: GoogleDriveDocument): void => {
     window.open(
       `/googledrive/files/user/${userid}/file/${encodeURIComponent(document.id)}/edit`,
+    );
+  },
+
+  openLocationLink: (userid: string, document: GoogleDriveDocument): void => {
+    window.open(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(document.id)}/location`,
     );
   },
 

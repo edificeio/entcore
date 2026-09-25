@@ -8,18 +8,21 @@ import { ng } from "entcore";
 import { models, workspaceService } from "../services";
 import { FolderTreeProps } from "./folderTree2";
 import { SyncDocument } from "./nextcloud/models/nextcloudFolder.model";
+import { GoogleDriveDocument } from "./google-drive/models/googleDriveDocument.model";
 
 export interface FolderPickerScope {
   treeProps: FolderTreeProps<models.Tree>;
   nextcloudTreeProps: FolderTreeProps<SyncDocument>;
+  googleDriveTreeProps: FolderTreeProps<GoogleDriveDocument>;
   folderProps: FolderPickerProps;
 
   // Tree data
   trees: models.Tree[];
   nextcloudTrees: SyncDocument[];
+  googleDriveTrees: GoogleDriveDocument[];
 
   // UI state
-  selectedFolder: models.Element | SyncDocument;
+  selectedFolder: models.Element | SyncDocument | GoogleDriveDocument;
   newFolder: models.Element;
   search: {
     value: string;
@@ -77,11 +80,12 @@ export interface FolderPickerProps {
   sources: FolderPickerSource[];
   treeProvider?(): Promise<models.Tree[]>;
   nextcloudTreeProvider?(): Promise<SyncDocument[]>;
-  manageSubmit?(folder: models.Element | SyncDocument): boolean;
-  submit?(folder: models.Element | SyncDocument): Promise<void> | void;
+  googleDriveTreeProvider?(): Promise<GoogleDriveDocument[]>;
+  manageSubmit?(folder: models.Element | SyncDocument | GoogleDriveDocument): boolean;
+  submit?(folder: models.Element | SyncDocument | GoogleDriveDocument): Promise<void> | void;
   onCancel(): void;
   onError?(error: any): void;
-  onSubmitSuccess?(dest: models.Element | SyncDocument, count: number): void;
+  onSubmitSuccess?(dest: models.Element | SyncDocument | GoogleDriveDocument, count: number): void;
 }
 
 export const folderPicker2 = ng.directive("folderPicker2", [
@@ -107,6 +111,10 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               <!-- Nextcloud tree -->
               <div class="tree-container nextcloud-tree" ng-if="folderProps.nextcloudTreeProvider">
                 <folder-tree-2 tree-props="nextcloudTreeProps"></folder-tree-2>
+              </div>
+              <!-- Google Drive tree -->
+              <div class="tree-container google-drive-tree" ng-if="folderProps.googleDriveTreeProvider">
+                <folder-tree-2 tree-props="googleDriveTreeProps"></folder-tree-2>
               </div>
               <hr />
               <div class="lightbox-buttons fluid">
@@ -136,8 +144,12 @@ export const folderPicker2 = ng.directive("folderPicker2", [
 
         scope.trees = [];
         scope.nextcloudTrees = [];
+        scope.googleDriveTrees = [];
 
-        const canSelect = function (folder: models.Element | SyncDocument) {
+        const canSelect = function (folder: models.Element | SyncDocument | GoogleDriveDocument) {
+          if ((folder as any).isPersonalSpaceWrapper) {
+            return true;
+          }
           if (folder instanceof models.Element) {
             if ((folder as models.Tree).filter) {
               return (folder as models.Tree).filter == "owner";
@@ -145,6 +157,8 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               return true;
             }
           } else if (folder instanceof SyncDocument) {
+            return folder.isFolder;
+          } else if (folder instanceof GoogleDriveDocument) {
             return folder.isFolder;
           }
           return false;
@@ -183,6 +197,8 @@ export const folderPicker2 = ng.directive("folderPicker2", [
           openFolder(folder: models.Element) {
             selectedNextcloudFolder = null;
             openedNextcloudFolders = [];
+            selectedGoogleDriveFolder = null;
+            openedGoogleDriveFolders = [];
 
             if (canSelect(folder)) {
               openedWorkspaceFolder = selectedWorkspaceFolder = folder;
@@ -214,9 +230,11 @@ export const folderPicker2 = ng.directive("folderPicker2", [
             return selectedNextcloudFolder === folder;
           },
           openFolder(folder: SyncDocument) {
-            // Clear workspace selection
+            // Clear workspace and Google Drive selection
             selectedWorkspaceFolder = null;
             openedWorkspaceFolder = null;
+            selectedGoogleDriveFolder = null;
+            openedGoogleDriveFolders = [];
 
             selectedNextcloudFolder = folder;
             scope.selectedFolder = folder;
@@ -224,6 +242,44 @@ export const folderPicker2 = ng.directive("folderPicker2", [
             // Add to opened folders if not already there
             if (!openedNextcloudFolders.includes(folder)) {
               openedNextcloudFolders.push(folder);
+            }
+          },
+        };
+
+        // Google Drive tree props
+        let selectedGoogleDriveFolder: GoogleDriveDocument = null;
+        let openedGoogleDriveFolders: GoogleDriveDocument[] = [];
+
+        scope.googleDriveTreeProps = {
+          cssTree: "maxheight-half-vh",
+          get trees() {
+            return scope.googleDriveTrees;
+          },
+          isDisabled(folder: GoogleDriveDocument) {
+            return !canSelect(folder);
+          },
+          isOpenedFolder(folder: GoogleDriveDocument) {
+            return openedGoogleDriveFolders.some(
+              (openFolder) => openFolder === folder,
+            );
+          },
+          isSelectedFolder(folder: GoogleDriveDocument) {
+            return selectedGoogleDriveFolder === folder;
+          },
+          openFolder(folder: GoogleDriveDocument) {
+            // Clear workspace and Nextcloud selection
+            selectedWorkspaceFolder = null;
+            openedWorkspaceFolder = null;
+            selectedNextcloudFolder = null;
+            openedNextcloudFolders = [];
+
+            if (canSelect(folder)) {
+              selectedGoogleDriveFolder = folder;
+              scope.selectedFolder = folder;
+            }
+
+            if (!openedGoogleDriveFolders.includes(folder)) {
+              openedGoogleDriveFolders.push(folder);
             }
           },
         };
@@ -248,6 +304,18 @@ export const folderPicker2 = ng.directive("folderPicker2", [
                 scope.nextcloudTrees.length = 0;
                 nextcloudTrees.forEach((tree) =>
                   scope.nextcloudTrees.push(tree),
+                );
+              }
+            }
+
+            // Load Google Drive trees
+            if (scope.folderProps.googleDriveTreeProvider) {
+              const googleDriveTrees =
+                await scope.folderProps.googleDriveTreeProvider();
+              if (googleDriveTrees && googleDriveTrees.length > 0) {
+                scope.googleDriveTrees.length = 0;
+                googleDriveTrees.forEach((tree) =>
+                  scope.googleDriveTrees.push(tree),
                 );
               }
             }

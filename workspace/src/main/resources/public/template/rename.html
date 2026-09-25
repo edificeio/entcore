@@ -1,22 +1,23 @@
-<h2 translate content="workspace.properties"></h2>
+<h2 style="margin-top: 0;" translate content="workspace.properties"></h2>
 
-<div class="flex-row rename-parent" ng-if="renameParent">
-    <label><i18n>workspace.properties.parent</i18n></label>
-    <a ng-href="/workspace/workspace#/folder/[[renameParent._id]]" target=”_blank”>[[renameParent.name]]</a>
-    <ul class="toc">
-        <li><i18n>workspace.properties.managers</i18n></li>
-        <li ng-repeat="manager in getRenameManagers()">
-            <a ng-href="[[manager.uri]]" target=”_blank”>[[manager.name]]</a>
-        </li>
-    </ul>
+<div class="rename-properties-list" ng-if="renameParent">
+    <div class="rename-property">
+        <label><i18n>workspace.properties.parent</i18n></label>
+        <a ng-href="/workspace/workspace#/folder/[[renameParent._id]]" target="_blank">[[renameParent.name]]</a>
+    </div>
+    <div class="rename-property" ng-if="getRenameManagers().length">
+        <label><i18n>workspace.properties.managers</i18n></label>
+        <div class="rename-managers-list">
+            <a ng-repeat="manager in getRenameManagers()" ng-href="[[manager.uri]]" target="_blank">[[manager.name]]</a>
+        </div>
+    </div>
 </div>
-<div class="row">
-    <label class="two cell">
+<div class="rename-property">
+    <label>
         <i18n ng-if="renameTarget.folder">workspace.folder.name</i18n>
         <i18n ng-if="!renameTarget.folder">workspace.document.name</i18n>
     </label>
-    <input class="ten cell" type="text" ng-model="renameTarget.newName" ng-maxlength="80" maxlength="80" placeholder="[[renameTarget.name]]" ng-keypress="preventForbiddenChars($event)" autofocus />
-    <hr />
+    <input class="rename-name-input" type="text" ng-model="renameTarget.newName" ng-maxlength="80" maxlength="80" placeholder="[[renameTarget.name]]" ng-keypress="preventForbiddenChars($event)" autofocus />
 </div>
 
 <div class="lightbox-buttons fluid">
