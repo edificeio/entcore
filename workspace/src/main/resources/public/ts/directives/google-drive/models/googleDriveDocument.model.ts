@@ -54,6 +54,9 @@ export class GoogleDriveDocument {
   isStaticFolder?: boolean;
   staticFolderType?: "trashbin" | "shared";
 
+  // Grouping node wrapping Mon Drive/Documents partagés/Corbeille; openDocument() no-ops for it.
+  isRootGroup?: boolean;
+
   // True when the current user (owner) has shared this document with at least one other user.
   isShared?: boolean;
 
@@ -164,5 +167,26 @@ export class GoogleDriveDocument {
     folder.cacheDocument.setData([]);
     folder.cacheDocument.disableCache();
     return folder;
+  }
+
+  static createRootGroup(): GoogleDriveDocument {
+    const group = new GoogleDriveDocument();
+    group.id = "__group__/root";
+    group.name = lang.translate("google-drive.documents");
+    group.mimeType = GOOGLE_FOLDER_MIME;
+    group.isFolder = true;
+    group.type = DocumentsType.FOLDER;
+    group.role = DocumentRole.FOLDER;
+    group.ownerDisplayName = model.me.login;
+    group.modifiedTime = new Date().toISOString();
+    group.children = [];
+    group.isRootGroup = true;
+    group.cacheChildren = new models.CacheList<any>(0, () => false, () => false);
+    group.cacheChildren.setData([]);
+    group.cacheChildren.disableCache();
+    group.cacheDocument = new models.CacheList<any>(0, () => false, () => false);
+    group.cacheDocument.setData([]);
+    group.cacheDocument.disableCache();
+    return group;
   }
 }

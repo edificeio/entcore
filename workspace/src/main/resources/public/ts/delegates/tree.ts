@@ -1,6 +1,5 @@
-import { template, quota, Quota, $ } from "entcore";
+import { template, quota, Quota, $, idiom as lang } from "entcore";
 import { models, workspaceService } from "../services";
-
 
 
 export interface TreeDelegateScope {
@@ -31,6 +30,7 @@ export interface TreeDelegateScope {
     isOpenedFolder(folder: models.Node): boolean
     openOrCloseFolder(event: Event, folder: models.Node): void
     isRolledFolder(folder: models.Node): boolean
+    isFolderExpanded(folder: models.Node): boolean
     canExpendTree(folder: models.Node): boolean
     setCurrentTree(tree: models.TREE_NAME);
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
@@ -78,10 +78,12 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         $scope.wrapperTrees = [{
             get children() {
                 return $scope.trees.filter(t => !t.hidden);
-            }
+            },
+            name: lang.translate("workspace.personal.space"),
         }]
         $scope.quota = quota;
-        $scope.rolledFolders = []
+        // Open by default so it doesn't collapse whenever another section becomes active.
+        $scope.rolledFolders = [$scope.wrapperTrees[0]]
         quota.refresh();
         //load trees
         refreshAll().then(e => {
@@ -191,7 +193,6 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         return folder.children.length > 0;
     }
     $scope.isOpenedFolder = function (folder) {
-        if(folder === $scope.wrapperTrees[0]) return true;
         if ($scope.openedFolder.folder === folder) {
             return true;
         }
@@ -223,7 +224,27 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
     $scope.isInSelectedFolder = function (folder) {
         return workspaceService.isInFoldersRecursively(folder, $scope.selectedFolders());
     }
+    // Mirrors the <ul ng-if> condition; picks the open/closed folder icon variant.
+    $scope.isFolderExpanded = function (folder) {
+        return $scope.isOpenedFolder(folder) || $scope.isRolledFolder(folder);
+    }
     $scope.openFolderRoute = function (folder, forceReload = false) {
+        // Grouping header has no route of its own; toggle it manually and jump to "Mes documents" on first expand.
+        if (folder === $scope.wrapperTrees[0]) {
+            if ($scope.isRolledFolder(folder)) {
+                $scope.rolledFolders.splice($scope.rolledFolders.indexOf(folder), 1);
+                $scope.safeApply();
+            } else {
+                $scope.rolledFolders.push(folder);
+                const owner = $scope.trees.find((t) => t.filter === "owner");
+                if (owner) {
+                    $scope.openFolderRoute(owner, forceReload);
+                } else {
+                    $scope.safeApply();
+                }
+            }
+            return;
+        }
         const doLocation = function (path) {
             //close view file if needed
             $scope.closeViewFile();

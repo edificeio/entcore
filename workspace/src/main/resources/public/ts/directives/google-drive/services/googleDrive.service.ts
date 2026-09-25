@@ -27,6 +27,12 @@ export interface IGoogleDriveShareResult {
   message?: string;
 }
 
+export interface IGoogleDriveWorkspaceTransferResult {
+  id: string;
+  status: "ok" | "error";
+  message?: string;
+}
+
 export interface IGoogleDriveService {
   listDocument(userid: string, parentId?: string): Promise<Array<GoogleDriveDocument>>;
 
@@ -101,6 +107,15 @@ export interface IGoogleDriveService {
     files: File[],
     parentId?: string,
   ): Promise<void>;
+}
+
+// These endpoints always return 200; per-item failures only show up in the response body.
+function throwOnTransferErrors(res: AxiosResponse): void {
+  const results: Array<IGoogleDriveWorkspaceTransferResult> = res.data?.data ?? [];
+  const failed = results.filter((r) => r.status === "error");
+  if (failed.length > 0) {
+    throw new Error(failed.map((f) => f.message).filter(Boolean).join("; ") || "transfer failed");
+  }
 }
 
 export const googleDriveService: IGoogleDriveService = {
@@ -282,7 +297,7 @@ export const googleDriveService: IGoogleDriveService = {
       );
   },
 
-  moveDocumentWorkspaceToCloud: (
+  moveDocumentWorkspaceToCloud: async (
     userid: string,
     ids: Array<string>,
     parentId?: string,
@@ -291,12 +306,14 @@ export const googleDriveService: IGoogleDriveService = {
     ids.forEach((id) => urlParams.append("id", id));
     const parentParam = parentId ? `&parentId=${parentId}` : "";
     // @ts-ignore
-    return http.put(
+    const res: AxiosResponse = await http.put(
       `/googledrive/files/user/${userid}/workspace/move/cloud?${urlParams}${parentParam}`,
     );
+    throwOnTransferErrors(res);
+    return res;
   },
 
-  copyDocumentWorkspaceToCloud: (
+  copyDocumentWorkspaceToCloud: async (
     userid: string,
     ids: Array<string>,
     parentId?: string,
@@ -305,9 +322,11 @@ export const googleDriveService: IGoogleDriveService = {
     ids.forEach((id) => urlParams.append("id", id));
     const parentParam = parentId ? `&parentId=${parentId}` : "";
     // @ts-ignore
-    return http.put(
+    const res: AxiosResponse = await http.put(
       `/googledrive/files/user/${userid}/workspace/copy/cloud?${urlParams}${parentParam}`,
     );
+    throwOnTransferErrors(res);
+    return res;
   },
 
   getFile: (userid: string, fileId: string, isFolder: boolean = false): string => {
