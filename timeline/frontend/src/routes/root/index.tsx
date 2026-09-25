@@ -3,7 +3,6 @@ import {
   PageLayout,
   useBreakpoint,
   useEdificeClient,
-  useOverlay,
 } from '@edifice.io/react';
 import {
   FavoritesContainer,
@@ -14,10 +13,10 @@ import {
   UsefulLinksContainer,
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
-import { useState } from 'react';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { WidgetsPersonalizationPanelContainer } from '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
+import { useWidgetsPanelLayout } from './hooks/useWidgetsPanelLayout';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -29,24 +28,12 @@ export const Root = () => {
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
     useNotificationsLayout();
   const { md } = useBreakpoint();
-  const { updateOverlayOpen } = useOverlay();
-  const [isWidgetsPanelOpen, setIsWidgetsPanelOpen] = useState(false);
-
-  // The overlay only has one content slot, shared with notifications — keep
-  // the two mutually exclusive rather than stacking them.
-  const openWidgetsPanel = () => {
-    closeNotifications();
-    setIsWidgetsPanelOpen(true);
-    updateOverlayOpen(true);
-  };
-  const closeWidgetsPanel = () => {
-    setIsWidgetsPanelOpen(false);
-    updateOverlayOpen(false);
-  };
-  const handleToggleNotifications = () => {
-    setIsWidgetsPanelOpen(false);
-    toggleNotifications();
-  };
+  const {
+    isWidgetsPanelOpen,
+    openWidgetsPanel,
+    closeWidgetsPanel,
+    handleToggleNotifications,
+  } = useWidgetsPanelLayout({ toggleNotifications, closeNotifications });
 
   if (!init) return <LoadingScreen position={false} />;
 
