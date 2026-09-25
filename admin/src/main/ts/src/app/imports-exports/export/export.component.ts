@@ -69,7 +69,8 @@ export class ExportComponent extends OdeComponent implements OnInit {
     }
 
     launchExport(): void {
-        let link = `/directory/export/users?format=csv&filterActive=${this.filter}`;
+        const tz = encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone);
+        let link = `/directory/export/users?format=csv&filterActive=${this.filter}&tz=${tz}`;
 
         if (this.classe.length > 0) {
             link = `${link}&classId=${this.classe}`;
