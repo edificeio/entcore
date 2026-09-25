@@ -70,8 +70,9 @@ export interface IWorkspaceNextcloudContent {
   closeViewFile(): void;
 
   openTileMenuFor: SyncDocument | null;
+  tileMenuPosition: { top?: string; right?: string };
   isTileMenuOpen(content: SyncDocument): boolean;
-  toggleTileMenu(content: SyncDocument): void;
+  toggleTileMenu(content: SyncDocument, $event?: MouseEvent): void;
   onTileOpen(content: SyncDocument): void;
   onTileEdit(content: SyncDocument): void;
   onTileDownload(content: SyncDocument): void;
@@ -186,11 +187,20 @@ export const workspaceNextcloudContentController = ng.controller(
       // Per-tile "..." menu (icon view) — acts on the tile's own document without going through the
       // real selection state, so opening it never visually selects the tile.
       $scope.openTileMenuFor = null;
+      $scope.tileMenuPosition = {};
       $scope.isTileMenuOpen = function (content: SyncDocument): boolean {
         return $scope.openTileMenuFor === content;
       };
-      $scope.toggleTileMenu = function (content: SyncDocument): void {
-        $scope.openTileMenuFor = $scope.isTileMenuOpen(content) ? null : content;
+      $scope.toggleTileMenu = function (content: SyncDocument, $event?: MouseEvent): void {
+        const wasOpen = $scope.isTileMenuOpen(content);
+        $scope.openTileMenuFor = wasOpen ? null : content;
+        if (!wasOpen && $event) {
+          const rect = ($event.currentTarget as HTMLElement).getBoundingClientRect();
+          $scope.tileMenuPosition = {
+            top: (rect.bottom + 4) + "px",
+            right: (window.innerWidth - rect.right) + "px",
+          };
+        }
       };
       document.addEventListener("click", function (event: MouseEvent): void {
         if (!$scope.openTileMenuFor) return;
@@ -198,6 +208,13 @@ export const workspaceNextcloudContentController = ng.controller(
         $scope.openTileMenuFor = null;
         safeApply($scope);
       });
+      // position:fixed menus don't follow their trigger when an ancestor scrolls underneath them —
+      // close instead of leaving a stale-positioned dropdown floating disconnected from its tile.
+      document.addEventListener("scroll", function (): void {
+        if (!$scope.openTileMenuFor) return;
+        $scope.openTileMenuFor = null;
+        safeApply($scope);
+      }, true);
       $scope.onTileOpen = function (content: SyncDocument): void {
         $scope.openTileMenuFor = null;
         $scope.onOpenContent(content);
@@ -395,6 +412,16 @@ export const workspaceNextcloudContentController = ng.controller(
           },
           dragDropHandler(event: DragEvent, content?: any): void {},
           async dragEndHandler(event: DragEvent, content?: any): Promise<void> {
+            // Defensive reset: a stray inline position (e.g. left by a browser quirk or an
+            // unrelated legacy drag plugin picking up the "draggable" attribute) would otherwise
+            // leave the tile visually stuck instead of snapping back to its grid position.
+            const draggedEl = event?.target as HTMLElement;
+            if (draggedEl?.style) {
+              draggedEl.style.position = "";
+              draggedEl.style.top = "";
+              draggedEl.style.left = "";
+              draggedEl.style.transition = "";
+            }
             await viewModel.moveDocument(
               document.elementFromPoint(event.x, event.y),
               content,
@@ -413,6 +440,10 @@ export const workspaceNextcloudContentController = ng.controller(
               event.dataTransfer.setData("Text", JSON.stringify(content));
             }
             nextcloudEventService.setContentContext(content);
+            // Without this, lockDropzone's flip to true isn't applied until some later digest —
+            // the OS-file dropzone-overlay (its own dragenter/drop listeners) stays mounted during
+            // an internal tile drag and can misfire on drop. Classic space's own drag() already does this.
+            safeApply($scope);
           },
           dropConditionHandler(event: DragEvent, content?: any): boolean {
             return true;

@@ -41,12 +41,6 @@
                 >
                     <i18n>workspace.properties</i18n>
                 </button>
-
-                <!-- popup -->
-                <div
-                    ng-if="toolbar.copyProps"
-                    ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-properties.html'"
-                ></div>
             </div>
 
             <!-- move file(s) -->
@@ -129,3 +123,9 @@
         </div>
     </div>
 </section>
+
+<!-- Rename/properties popup — mounted outside the selection-gated toolbar section so it also
+     works when triggered from the per-tile "..." menu, which deliberately doesn't select the tile. -->
+<div ng-if="toolbar.lightbox.properties">
+    <div ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-properties.html'"></div>
+</div>

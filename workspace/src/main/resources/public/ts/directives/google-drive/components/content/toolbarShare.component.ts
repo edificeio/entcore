@@ -15,6 +15,8 @@ export interface IGoogleDriveUserSearchResult {
   displayName: string;
   type?: string;
   photo?: string;
+  // Only set for group results from /communication/visible/search — member count shown next to the name.
+  nbUsers?: number;
 }
 
 export interface IGoogleDriveShareEntryResolved extends IGoogleDriveShareEntry {
@@ -118,27 +120,71 @@ export class ToolbarShareGoogleDriveViewModel {
       this.found = [];
       return;
     }
-    http
+    const alreadyPicked = new Set<string>([
+      ...this.selectedRecipients.map((u) => u.id),
+      ...this.currentShares.map((s) => s.userId).filter((id): id is string => !!id),
+    ]);
+
+    // Users: the proven /userbook/api/search endpoint (unchanged from before groups were added back).
+    const usersRequest = http
       .get(`/userbook/api/search?name=${encodeURIComponent(term)}`)
-      .then((res: AxiosResponse) => {
-        const alreadyPicked = new Set<string>([
-          ...this.selectedRecipients.map((u) => u.id),
-          ...this.currentShares.map((s) => s.userId).filter((id): id is string => !!id),
-        ]);
-        this.found = (res.data as Array<IGoogleDriveUserSearchResult>).filter(
-          (u) => !alreadyPicked.has(u.id),
-        );
-        safeApply(this.vm);
-      })
+      .then((res: AxiosResponse) => res.data as Array<IGoogleDriveUserSearchResult>)
       .catch((err: Error) => {
         console.error("[GoogleDrive] Error searching users: " + err.message);
+        return [] as Array<IGoogleDriveUserSearchResult>;
       });
+
+    // Groups: Google Drive/Workspace groups aren't provisioned, so a group can't be shared with
+    // directly — selecting one instead expands to its member users, see addGroupRecipients().
+    // /communication/visible/search also returns non-group entries (ShareBookmark, etc.) whose
+    // "type" naming can vary by deployment config, so "nbUsers" (group-only field) is the reliable
+    // signal here rather than matching on a specific type string.
+    const groupsRequest = http
+      .get(`/communication/visible/search?query=${encodeURIComponent(term)}`)
+      .then((res: AxiosResponse) =>
+        (res.data as Array<IGoogleDriveUserSearchResult>)
+          .filter((v) => v.nbUsers !== undefined && v.nbUsers !== null)
+          .map((v) => ({ ...v, type: "Group" })),
+      )
+      .catch((err: Error) => {
+        console.error("[GoogleDrive] Error searching groups: " + err.message);
+        return [] as Array<IGoogleDriveUserSearchResult>;
+      });
+
+    Promise.all([usersRequest, groupsRequest]).then(([users, groups]) => {
+      this.found = [...users, ...groups].filter(
+        (u) => !alreadyPicked.has(u.id) && u.id !== model.me.userId,
+      );
+      safeApply(this.vm);
+    });
   }
 
   addRecipient(user: IGoogleDriveUserSearchResult): void {
     this.selectedRecipients.push(user);
     this.found = this.found.filter((u) => u.id !== user.id);
     this.search = "";
+  }
+
+  // A group can't be shared with directly on Google Drive (groups aren't provisioned there), so
+  // expand it into its member users instead and add each one individually.
+  addGroupRecipients(group: IGoogleDriveUserSearchResult): void {
+    http
+      .get(`/userbook/visible/users/${group.id}`)
+      .then((res: AxiosResponse) => {
+        const alreadyPicked = new Set<string>([
+          ...this.selectedRecipients.map((u) => u.id),
+          ...this.currentShares.map((s) => s.userId).filter((id): id is string => !!id),
+        ]);
+        (res.data as Array<IGoogleDriveUserSearchResult>)
+          .filter((u) => u.id && !alreadyPicked.has(u.id) && u.id !== model.me.userId)
+          .forEach((u) => this.selectedRecipients.push(u));
+        this.found = this.found.filter((u) => u.id !== group.id);
+        this.search = "";
+        safeApply(this.vm);
+      })
+      .catch((err: Error) => {
+        console.error("[GoogleDrive] Error expanding group members: " + err.message);
+      });
   }
 
   removeRecipient(user: IGoogleDriveUserSearchResult): void {

@@ -3,6 +3,7 @@ import {
   angular,
   FolderPickerProps,
   FolderPickerSourceFile,
+  idiom as lang,
   model,
   toasts,
 } from "entcore";
@@ -350,14 +351,18 @@ export class ToolbarSnipletViewModel implements IViewModel {
           }) as FolderPickerSourceFile,
       ),
       treeProvider: async () => {
-        if (this.workspaceScope && this.workspaceScope.trees) {
-          // Make sure we're returning an array of trees
-          const trees = this.workspaceScope.trees.filter(
-            (tree) => tree.filter === "owner",
-          );
-          return trees;
-        }
-        return [];
+        const ownerTrees = this.workspaceScope && this.workspaceScope.trees
+          ? this.workspaceScope.trees.filter((tree) => tree.filter === "owner")
+          : [];
+        // Mirrors classic space's own copy/move picker: wraps "Mes documents" under a labeled
+        // "Espace personnel" root instead of showing it bare (and lets folderTree2.ts render the
+        // home icon for it via isPersonalSpaceWrapper).
+        const ownerWrapper = {
+          name: lang.translate("workspace.personal.space"),
+          children: ownerTrees,
+          isPersonalSpaceWrapper: true,
+        };
+        return [ownerWrapper] as any;
       },
 
       // If copying, we don't need to load Nextcloud folders

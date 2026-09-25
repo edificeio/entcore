@@ -80,19 +80,43 @@
 		.embedded-viewer .controls__navbar{
 			left: 0px;
 		}
-		.rename-parent{
-			align-items: baseline;
-			margin-bottom: 25px;
+		.rename-properties-list{
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			margin-bottom: 10px;
 		}
-		.rename-parent > *{
-			padding-right: 15px;
+		.rename-property{
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			margin-bottom: 8px;
 		}
-		.rename-parent ul.toc{
+		.rename-property label{
+			font-size: 13px;
+			color: #8c939e;
+			font-weight: 500;
+		}
+		.rename-managers-list{
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
 			max-height: 100px;
-    		overflow-y: auto;
+			overflow-y: auto;
 		}
-		.rename-parent ul.toc li a {
-    		line-height: 16px;
+		.rename-name-input{
+			width: 100%;
+			box-sizing: border-box;
+			padding: 8px 12px;
+			border: 1px solid #c6cbd4;
+			border-radius: 5px;
+			font-size: 14px;
+			color: #3f454f;
+		}
+		.rename-name-input:focus{
+			outline: none;
+			border-color: #ff8500;
+			box-shadow: 0 0 0 2px rgba(255, 133, 0, 0.15);
 		}
 		.workspace-app .icons-view explorer i.close-2x{
 			cursor: pointer !important;
@@ -319,6 +343,28 @@
 		.workspace-app .icons-view{
 			text-align: left !important;
 		}
+		/* Google Drive/Nextcloud's icon view sizes itself via a JS-computed pixel height
+		   (contentAreaHeight) but, unlike classic space and their own list view, never got a matching
+		   overflow-y — long folders just overflowed past the bottom instead of scrolling. Safe to add
+		   now that the "..." menu positions itself via JS (position:fixed) instead of depending on this
+		   container's own overflow to stay visible. */
+		.icons-view.google-drive-article,
+		.icons-view.nextcloud-article{
+			overflow-y: auto;
+		}
+		/* Theme's own ".icons-view>div{overflow-y:auto}" (the scrollable tile grid wrapper, needed for
+		   infinite-scroll pagination) leaves overflow-x un-set, which CSS then computes to "auto" too —
+		   silently clipping the "..." dropdown's left overflow for first-column tiles, right where its
+		   icons sit. Force horizontal overflow back to visible on that wrapper specifically. */
+		.icons-view > div{
+			overflow-x: visible !important;
+		}
+		/* Same problem one level up: the theme's ".height-minus200/300.no-overflow{overflow:hidden}"
+		   combo (both classes are already on this <article> in the template, toggled by the tutorial
+		   infotip's visibility) clips on both axes at the outermost tile-grid container too. */
+		.icons-view.no-overflow{
+			overflow-x: visible !important;
+		}
 		/* Larger thumbnails + tighter corners for the icon/thumbnail view, all 3 spaces share .icons-view.
 		   The inner image/icon/clip boxes have their own fixed theme sizes independent of <explorer>'s
 		   own box — resizing just the outer box leaves them small with empty space around, so they're
@@ -512,12 +558,6 @@
 			border: 5px solid #4bafd5 !important;
 			border-bottom: none !important;
 			box-shadow: none !important;
-			/* Sub-pixel rounding can leave a hairline gap around the image where the white
-			   container background peeks through — matching it to the border color hides it. */
-			background: #4bafd5 !important;
-		}
-		.icons-view explorer.radius:hover:not(.selected) .clip{
-			background: #4bafd5 !important;
 		}
 		.icons-view explorer.radius:hover:not(.selected) legend{
 			border: 5px solid #4bafd5 !important;
@@ -565,7 +605,7 @@
 			position: absolute !important;
 			top: 5px;
 			right: 5px;
-			z-index: 20;
+			z-index: 10050;
 		}
 		.icons-view explorer.radius .tile-menu-toggle{
 			display: none;
@@ -600,9 +640,12 @@
 		}
 		.icons-view explorer.radius .tile-menu{
 			display: none;
-			position: absolute;
-			top: calc(100% + 4px);
-			right: 0;
+			/* position:fixed (coordinates computed in JS from the toggle button's own rect, via
+			   ng-style) instead of absolute — several ancestors between here and the page root are
+			   scrollable (overflow-y:auto/scroll for pagination), and a scrolling ancestor clips
+			   content overflowing it on BOTH axes, not just the scrolling one, regardless of the
+			   other axis's own overflow value. Fixed positioning escapes that entirely. */
+			position: fixed;
 			min-width: 170px;
 			margin: 0;
 			padding: 6px 0;
@@ -611,7 +654,7 @@
 			border-radius: 6px;
 			box-shadow: 0 2px 10px rgba(0,0,0,.2);
 			text-align: left;
-			z-index: 21;
+			z-index: 10051;
 		}
 		.icons-view explorer.radius .tile-menu.show{
 			display: block;
@@ -633,6 +676,27 @@
 		.icons-view explorer.radius .tile-menu-icon{
 			flex-shrink: 0;
 			color: #3f454f;
+		}
+		/* Some theme skins (e.g. cg77) ship a blanket "path{fill:...;stroke:...}" rule. CSS always wins
+		   over an SVG element's inline fill/stroke presentation attributes regardless of specificity, so
+		   that rule was silently overriding our icons' paths — force our own values back with !important. */
+		.icons-view explorer.radius .tile-menu-icon:not([fill="currentColor"]) path,
+		.icons-view explorer.radius .tile-menu-icon:not([fill="currentColor"]) rect,
+		.icons-view explorer.radius .tile-menu-icon:not([fill="currentColor"]) circle{
+			fill: none !important;
+			stroke: currentColor !important;
+		}
+		.icons-view explorer.radius .tile-menu-icon[fill="currentColor"] path,
+		.icons-view explorer.radius .tile-menu-icon[fill="currentColor"] rect,
+		.icons-view explorer.radius .tile-menu-icon[fill="currentColor"] circle{
+			fill: currentColor !important;
+			stroke: none !important;
+		}
+		/* Guarantees the tile with an open "..." menu paints above neighboring tiles, in case the
+		   dropdown's overflow-visible content gets visually covered by a later sibling tile. */
+		.icons-view explorer.radius:has(.tile-menu.show){
+			position: relative;
+			z-index: 10049;
 		}
 		/* Same per-tile "..." menu as icon view, but for the list view: always visible in its own trailing
 		   column (not hover-gated) since there's no <explorer> tile to hover here, just a table row. */
@@ -670,9 +734,8 @@
 		}
 		.list-view .tile-menu{
 			display: none;
-			position: absolute;
-			top: calc(100% + 4px);
-			right: 0;
+			/* Fixed + JS-computed coordinates (ng-style), see .icons-view explorer.radius .tile-menu above. */
+			position: fixed;
 			min-width: 170px;
 			margin: 0;
 			padding: 6px 0;
@@ -681,7 +744,7 @@
 			border-radius: 6px;
 			box-shadow: 0 2px 10px rgba(0,0,0,.2);
 			text-align: left;
-			z-index: 21;
+			z-index: 10051;
 		}
 		.list-view .tile-menu.show{
 			display: block;
@@ -733,6 +796,26 @@
 		.content-refresh-button:hover{
 			background: #f0f2f4 !important;
 		}
+		.drive-location-button{
+			display: inline-flex !important;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			padding: 0 !important;
+			margin: 0 0 0 5px !important;
+			border: none !important;
+			outline: none !important;
+			box-shadow: none !important;
+			-webkit-appearance: none;
+			appearance: none;
+			border-radius: 5px;
+			background: transparent !important;
+			cursor: pointer;
+		}
+		.drive-location-button:hover{
+			background: #f0f2f4 !important;
+		}
 		/* Google Drive "shared with" list: replace the default <ul> bullet with a user picto, and the
 		   text "unshare" link with a trash picto, matching the tree's gray icon style. */
 		.current-shares-list{
@@ -763,6 +846,36 @@
 			flex-shrink: 0;
 			color: #8c939e;
 		}
+		/* Recipients about to be shared (pending, not yet confirmed) are shown in orange to distinguish
+		   them from the already-shared list above. */
+		.selected-recipients .current-share-info span.cell,
+		.selected-recipients .current-share-user-icon{
+			color: #ff8500;
+		}
+		.search-result-group-icon{
+			flex-shrink: 0;
+			color: #8c939e;
+		}
+		.found-users-list .autocomplete em{
+			display: flex !important;
+			align-items: center;
+			gap: 6px;
+			width: 100% !important;
+			box-sizing: border-box;
+		}
+		/* This <em> also carries the theme's ".row" class, whose ::after clearfix pseudo-element
+		   becomes an actual (invisible) flex item once display is forced to flex, stealing width
+		   from the real content and leaving the name column artificially narrow. Suppress it. */
+		.found-users-list .autocomplete em.row::after{
+			content: none !important;
+		}
+		.found-users-list .autocomplete em span.cell{
+			flex: 1 1 auto;
+			min-width: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 		.current-shares-list li em{
 			margin-left: 5px;
 		}
@@ -773,6 +886,9 @@
 			gap: 10px;
 			width: 100% !important;
 			box-sizing: border-box;
+		}
+		.google-drive-role-row.row::after{
+			content: none !important;
 		}
 		.google-drive-role-row label{
 			font-size: 14px;
@@ -966,7 +1082,7 @@
 				</div>
 				<!-- Refresh: re-fetches the current folder without a full page reload, for edits made outside the app. First in DOM among the float:right group, so it renders to the right of "Importer". -->
 				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right; display: flex; align-items: center; height: 40px;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen">
-					<button class="content-refresh-button" ng-click="triggerGoogleDriveRefresh()" aria-label="{{translate('workspace.refresh')}}" title="{{translate('workspace.refresh')}}">
+					<button class="content-refresh-button" ng-click="triggerGoogleDriveRefresh()" aria-label="[[translate('workspace.refresh')]]" title="[[translate('workspace.refresh')]]">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff8500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v6h-6"></path></svg>
 					</button>
 				</div>
@@ -990,7 +1106,7 @@
 				</div>
 				<!-- Nextcloud equivalents. -->
 				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right; display: flex; align-items: center; height: 40px;" ng-if="ENABLE_NEXTCLOUD && $root.isNextcloudTrashbinOpen">
-					<button class="content-refresh-button" ng-click="triggerNextcloudRefresh()" aria-label="{{translate('workspace.refresh')}}" title="{{translate('workspace.refresh')}}">
+					<button class="content-refresh-button" ng-click="triggerNextcloudRefresh()" aria-label="[[translate('workspace.refresh')]]" title="[[translate('workspace.refresh')]]">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff8500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v6h-6"></path></svg>
 					</button>
 				</div>

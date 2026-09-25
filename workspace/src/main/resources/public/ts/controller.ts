@@ -108,8 +108,9 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	//selection
 	//per-tile "..." menu (icon view)
 	openTileMenuFor: models.Element | null;
+	tileMenuPosition: { top?: string; right?: string };
 	isTileMenuOpen(item: models.Element): boolean;
-	toggleTileMenu(item: models.Element): void;
+	toggleTileMenu(item: models.Element, $event?: MouseEvent): void;
 	isTileMenuActionVisible(item: models.Element, action: "download" | "rename" | "share" | "move" | "copy" | "trash" | "restore" | "delete"): boolean;
 	onTileOpen(item: models.Element): void;
 	onTileDownload(item: models.Element): void;
@@ -239,11 +240,20 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	// actions open a confirm dialog that reads selection later, so selected is left as-is there —
 	// same as the real toolbar flow, which is the whole point.
 	$scope.openTileMenuFor = null;
+	$scope.tileMenuPosition = {};
 	$scope.isTileMenuOpen = function (item: models.Element): boolean {
 		return $scope.openTileMenuFor === item;
 	};
-	$scope.toggleTileMenu = function (item: models.Element): void {
-		$scope.openTileMenuFor = $scope.isTileMenuOpen(item) ? null : item;
+	$scope.toggleTileMenu = function (item: models.Element, $event?: MouseEvent): void {
+		const wasOpen = $scope.isTileMenuOpen(item);
+		$scope.openTileMenuFor = wasOpen ? null : item;
+		if (!wasOpen && $event) {
+			const rect = ($event.currentTarget as HTMLElement).getBoundingClientRect();
+			$scope.tileMenuPosition = {
+				top: (rect.bottom + 4) + "px",
+				right: (window.innerWidth - rect.right) + "px",
+			};
+		}
 	};
 	document.addEventListener("click", function (event: MouseEvent): void {
 		if (!$scope.openTileMenuFor) return;
@@ -251,6 +261,13 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		$scope.openTileMenuFor = null;
 		$scope.safeApply();
 	});
+	// position:fixed menus don't follow their trigger when an ancestor scrolls underneath them —
+	// close instead of leaving a stale-positioned dropdown floating disconnected from its tile.
+	document.addEventListener("scroll", function (): void {
+		if (!$scope.openTileMenuFor) return;
+		$scope.openTileMenuFor = null;
+		$scope.safeApply();
+	}, true);
 	const withSelected = (item: models.Element, action: () => void): void => {
 		item.selected = true;
 		action();

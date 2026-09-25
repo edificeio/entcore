@@ -62,6 +62,8 @@ export interface IGoogleDriveService {
 
   moveDocument(userid: string, fileId: string, parentId: string): Promise<AxiosResponse>;
 
+  renameDocument(userid: string, fileId: string, newName: string): Promise<AxiosResponse>;
+
   deleteDocuments(userid: string, ids: Array<string>): Promise<AxiosResponse>;
 
   deleteTrashDocuments(userid: string, ids: Array<string>): Promise<AxiosResponse>;
@@ -99,6 +101,8 @@ export interface IGoogleDriveService {
   getFiles(userid: string, ids: Array<string>): string;
 
   openEditLink(userid: string, document: GoogleDriveDocument): void;
+
+  openLocationLink(userid: string, document: GoogleDriveDocument): void;
 
   getStorageQuota(userid: string): Promise<GoogleDriveQuota>;
 
@@ -224,6 +228,18 @@ export const googleDriveService: IGoogleDriveService = {
     );
   },
 
+  renameDocument: (
+    userid: string,
+    fileId: string,
+    newName: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/rename`,
+      { name: newName },
+    );
+  },
+
   deleteDocuments: (
     userid: string,
     ids: Array<string>,
@@ -342,6 +358,12 @@ export const googleDriveService: IGoogleDriveService = {
   openEditLink: (userid: string, document: GoogleDriveDocument): void => {
     window.open(
       `/googledrive/files/user/${userid}/file/${encodeURIComponent(document.id)}/edit`,
+    );
+  },
+
+  openLocationLink: (userid: string, document: GoogleDriveDocument): void => {
+    window.open(
+      `/googledrive/files/user/${userid}/file/${encodeURIComponent(document.id)}/location`,
     );
   },
 

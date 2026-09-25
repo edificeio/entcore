@@ -29,6 +29,7 @@ export interface IWorkspaceGoogleDriveContent {
   viewFile: GoogleDriveDocument | null;
   getFile(document: GoogleDriveDocument): string;
   openEditor(document: GoogleDriveDocument): void;
+  openLocation(document: GoogleDriveDocument): void;
   draggable: Draggable;
   lockDropzone: boolean;
   parentDocument: GoogleDriveDocument;
@@ -69,11 +70,13 @@ export interface IWorkspaceGoogleDriveContent {
   breadcrumb: Array<IGoogleDriveBreadcrumbEntry>;
   goToBreadcrumb(entry: IGoogleDriveBreadcrumbEntry): void;
   openTileMenuFor: GoogleDriveDocument | null;
+  tileMenuPosition: { top?: string; right?: string };
   isTileMenuOpen(content: GoogleDriveDocument): boolean;
-  toggleTileMenu(content: GoogleDriveDocument): void;
+  toggleTileMenu(content: GoogleDriveDocument, $event?: MouseEvent): void;
   onTileOpen(content: GoogleDriveDocument): void;
   onTileEdit(content: GoogleDriveDocument): void;
   onTileDownload(content: GoogleDriveDocument): void;
+  onTileRename(content: GoogleDriveDocument): void;
   onTileMove(content: GoogleDriveDocument): void;
   onTileCopy(content: GoogleDriveDocument): void;
   onTileShare(content: GoogleDriveDocument): void;
@@ -261,11 +264,20 @@ export const workspaceGoogleDriveContentController = ng.controller(
       // Per-tile "..." menu (icon view) — acts on the tile's own document without going through the
       // real selection state, so opening it never visually selects the tile.
       $scope.openTileMenuFor = null;
+      $scope.tileMenuPosition = {};
       $scope.isTileMenuOpen = function (content: GoogleDriveDocument): boolean {
         return $scope.openTileMenuFor === content;
       };
-      $scope.toggleTileMenu = function (content: GoogleDriveDocument): void {
-        $scope.openTileMenuFor = $scope.isTileMenuOpen(content) ? null : content;
+      $scope.toggleTileMenu = function (content: GoogleDriveDocument, $event?: MouseEvent): void {
+        const wasOpen = $scope.isTileMenuOpen(content);
+        $scope.openTileMenuFor = wasOpen ? null : content;
+        if (!wasOpen && $event) {
+          const rect = ($event.currentTarget as HTMLElement).getBoundingClientRect();
+          $scope.tileMenuPosition = {
+            top: (rect.bottom + 4) + "px",
+            right: (window.innerWidth - rect.right) + "px",
+          };
+        }
       };
       document.addEventListener("click", function (event: MouseEvent): void {
         if (!$scope.openTileMenuFor) return;
@@ -273,6 +285,13 @@ export const workspaceGoogleDriveContentController = ng.controller(
         $scope.openTileMenuFor = null;
         safeApply($scope);
       });
+      // position:fixed menus don't follow their trigger when an ancestor scrolls underneath them —
+      // close instead of leaving a stale-positioned dropdown floating disconnected from its tile.
+      document.addEventListener("scroll", function (): void {
+        if (!$scope.openTileMenuFor) return;
+        $scope.openTileMenuFor = null;
+        safeApply($scope);
+      }, true);
       $scope.onTileOpen = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
         $scope.onOpenContent(content);
@@ -284,6 +303,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
       $scope.onTileDownload = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
         $scope.toolbar.downloadFiles([content]);
+      };
+      $scope.onTileRename = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.toggleRenameView(true, [content]);
       };
       $scope.onTileMove = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
@@ -471,6 +494,16 @@ export const workspaceGoogleDriveContentController = ng.controller(
           },
           dragDropHandler(event: DragEvent, content?: any): void {},
           async dragEndHandler(event: DragEvent, content?: any): Promise<void> {
+            // Defensive reset: a stray inline position (e.g. left by a browser quirk or an
+            // unrelated legacy drag plugin picking up the "draggable" attribute) would otherwise
+            // leave the tile visually stuck instead of snapping back to its grid position.
+            const draggedEl = event?.target as HTMLElement;
+            if (draggedEl?.style) {
+              draggedEl.style.position = "";
+              draggedEl.style.top = "";
+              draggedEl.style.left = "";
+              draggedEl.style.transition = "";
+            }
             document.removeEventListener("drop", onNativeDrop);
             // Skip moveDocument if drop was on the GD folder tree — capture-phase handler already handled it
             if (dropTarget && !dropTarget.closest?.("#google-drive-folder-tree")) {
@@ -494,6 +527,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
             }) : "{}";
             event.dataTransfer.setData("application/json", transferData);
             googleDriveEventService.setContentContext(content);
+            // Without this, lockDropzone's flip to true isn't applied until some later digest —
+            // the OS-file dropzone-overlay (its own dragenter/drop listeners) stays mounted during
+            // an internal tile drag and can misfire on drop. Classic space's own drag() already does this.
+            safeApply($scope);
           },
           dropConditionHandler(event: DragEvent, content?: any): boolean {
             return true;
@@ -672,6 +709,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
 
       $scope.openEditor = function (document: GoogleDriveDocument): void {
         googleDriveService.openEditLink(model.me.userId, document);
+      };
+
+      $scope.openLocation = function (document: GoogleDriveDocument): void {
+        googleDriveService.openLocationLink(model.me.userId, document);
       };
 
       $scope.isDropzoneEnabled = function (): boolean {
