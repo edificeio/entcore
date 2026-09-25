@@ -324,7 +324,7 @@ public class UserBookController extends BaseController {
 		String customReturn =
 				"MATCH (s:Group { id : {groupId}})<-[:IN]-(visibles) " +
 				"RETURN DISTINCT HEAD(visibles.profiles) as type, visibles.id as id, " +
-				"visibles.displayName as displayName, visibles.login as login " +
+				"visibles.displayName as displayName " +
 				"ORDER BY type DESC, displayName ";
 		final JsonObject params = new JsonObject().put("groupId", groupId);
 		UserUtils.findVisibleUsers(eb, request, true, false, customReturn, params, new Handler<JsonArray>() {
