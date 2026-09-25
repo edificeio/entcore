@@ -14,7 +14,9 @@ import {
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
+import { WidgetsPersonalizationPanelContainer } from '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
+import { useWidgetsPanelLayout } from './hooks/useWidgetsPanelLayout';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -26,6 +28,12 @@ export const Root = () => {
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
     useNotificationsLayout();
   const { md } = useBreakpoint();
+  const {
+    isWidgetsPanelOpen,
+    openWidgetsPanel,
+    closeWidgetsPanel,
+    handleToggleNotifications,
+  } = useWidgetsPanelLayout({ toggleNotifications, closeNotifications });
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -37,7 +45,7 @@ export const Root = () => {
         sidebarRight: true,
       }}
     >
-      <PageLayout.Header onNotificationsClick={toggleNotifications} />
+      <PageLayout.Header onNotificationsClick={handleToggleNotifications} />
       <PageLayout.SidebarLeft className="bg-white">
         <div className="d-flex flex-column py-16 gap-16 ">
           {!md && <MessageFlashListContainer />}
@@ -50,9 +58,11 @@ export const Root = () => {
         <div className="d-flex flex-column py-16 gap-16">
           <BetaSwitchContainer />
           {md && <MessageFlashListContainer />}
-          <UserSpaceContainer>
+          <UserSpaceContainer onCustomizeWidgetsClick={openWidgetsPanel}>
             <FavoritesContainer />
           </UserSpaceContainer>
+          {/* TODO: gate on isVisible('<widget-name>') once "Liens utiles"
+              is registered as a widget in the catalog */}
           <UsefulLinksContainer />
         </div>
       </PageLayout.Content>
@@ -65,11 +75,15 @@ export const Root = () => {
         </PageLayout.SidebarRight>
       ) : (
         <PageLayout.Overlay
-          closeButton={true}
-          onClose={closeNotifications}
+          closeButton={!isWidgetsPanelOpen}
+          onClose={isWidgetsPanelOpen ? closeWidgetsPanel : closeNotifications}
           backdrop={true}
         >
-          <NotificationListContainer />
+          {isWidgetsPanelOpen ? (
+            <WidgetsPersonalizationPanelContainer onClose={closeWidgetsPanel} />
+          ) : (
+            <NotificationListContainer />
+          )}
         </PageLayout.Overlay>
       )}
       <PageLayout.HelpZone />
