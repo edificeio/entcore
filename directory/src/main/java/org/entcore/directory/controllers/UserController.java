@@ -100,7 +100,7 @@ public class UserController extends BaseController {
 	private static final int HEALTH_MAX_LENGTH = 1000;
 	private static final int HOBBY_VALUES_MAX_LENGTH = 80;
 	/** Format of the last login date in user exports, readable as a date by spreadsheets. */
-	private static final DateTimeFormatter EXPORT_LAST_LOGIN_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+	private static final DateTimeFormatter EXPORT_LAST_LOGIN_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 	private final EventHelper eventHelper;
 	private JsonObject userBookData;
 	private JsonArray userBookMoods;
