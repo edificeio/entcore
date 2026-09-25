@@ -39,6 +39,7 @@ public class CommunicationDiscoverVisibleFilter implements ResourcesProvider {
             JsonObject params = new JsonObject().put("userId", user.getUserId()).put("groupId", groupId);
 
             check(query, params, handler);
+            return;
         }
 
         handler.handle(true);
