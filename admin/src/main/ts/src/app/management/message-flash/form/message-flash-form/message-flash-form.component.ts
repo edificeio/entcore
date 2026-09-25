@@ -291,7 +291,9 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         let promise;
         let key: string;
         this.loadedLanguages.forEach(lang => this.message.contents[lang] = this.replaceItalicTags(this.message.contents[lang]));
-       
+
+        this.message.mailNotification = this.mailNotification;
+        this.message.pushNotification = this.pushNotification;
         this.message.startDate = dayjs(this.message.startDate).startOf('day').toISOString();
         this.message.endDate = dayjs(this.message.endDate).endOf('day').toISOString();
 
@@ -303,9 +305,6 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             key = 'create';
         }
         promise.then(() => {
-            if (this.mailNotification || this.pushNotification) {
-                MessageFlashService.sendNotifications(this.message, this.structure, this.selectedLanguage, this.mailNotification, this.pushNotification);
-            }
             this.goBack(true);
             this.ns.success(
                 { key: 'notify.management.' + key + '.success.content', parameters: {} },

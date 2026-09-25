@@ -22,19 +22,24 @@
             }
         },
         "color": {
-            "oneOf": [{
-                "type": "string"
-            }, {
-                "type": "null"
-            }]
-
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ]
         },
         "customColor": {
-            "oneOf": [{
-                "type": "string"
-            }, {
-                "type": "null"
-            }]
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ]
         },
         "structureId": {
             "type": "string"
@@ -43,17 +48,26 @@
             "type": "string"
         },
         "signatureColor": {
-            "oneOf": [{
-                "type": "string"
-            }, {
-                "type": "null"
-            }]
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ]
         },
-      "userPositions": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+        "userPositions": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "mailNotification": {
+            "type": "boolean"
+        },
+        "pushNotification": {
+            "type": "boolean"
         }
     },
     "required": [

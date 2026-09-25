@@ -232,6 +232,42 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	}
 
 	@Override
+	public Future<List<String>> listUsersToNotify(String structureId, JsonArray profiles, JsonArray userPositions) {
+		Promise<List<String>> promise = Promise.promise();
+
+		// Same targeting as listForUser: member of the structure, and matching profile, ADML of the structure or position
+		String neo4jQuery =
+				"MATCH (:Structure {id: {structureId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+				"WITH DISTINCT u " +
+				"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->(:Function {externalId: {admlFunction}}) " +
+				"OPTIONAL MATCH (u)-[:HAS_POSITION]->(p:UserPosition) " +
+				"WITH u, rf, COLLECT(p.name) AS positions " +
+				"WHERE HEAD(u.profiles) IN {profiles} " +
+				"OR ({targetAdml} AND rf IS NOT NULL AND {structureId} IN rf.scope) " +
+				"OR ANY(pos IN positions WHERE pos IN {userPositions}) " +
+				"RETURN DISTINCT u.id AS id";
+		JsonObject neo4jParams = new JsonObject()
+				.put("structureId", structureId)
+				.put("admlFunction", ADMIN_LOCAL)
+				.put("profiles", profiles)
+				.put("targetAdml", profiles.contains("AdminLocal"))
+				.put("userPositions", userPositions);
+
+		Neo4j.getInstance().execute(neo4jQuery, neo4jParams, neo4jResult -> {
+			if (!"ok".equals(neo4jResult.body().getString("status"))) {
+				promise.fail("Failed to query users to notify from Neo4j");
+				return;
+			}
+			List<String> userIds = neo4jResult.body().getJsonArray("result").stream()
+					.map(o -> ((JsonObject) o).getString("id"))
+					.collect(Collectors.toList());
+			promise.complete(userIds);
+		});
+
+		return promise.future();
+	}
+
+	@Override
 	public void getSubstructuresByMessageId(String messageId, Handler<Either<String, JsonArray>> handler) {
 		String query = "SELECT structure_id FROM " + STRUCT_JOIN_TABLE + " m " +
 				"WHERE m.message_id = ?";

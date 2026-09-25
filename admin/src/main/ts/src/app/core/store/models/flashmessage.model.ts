@@ -20,12 +20,17 @@ export class FlashMessageModel extends Model<FlashMessageModel> {
     subStructures?: string[];
     userPositions?: string[];
 
+    mailNotification: boolean;
+    pushNotification: boolean;
+
     constructor() {
         super({});
         this.profiles = [];
         this.subStructures = [];
         this.contents = {};
         this.userPositions = [];
+        this.mailNotification = false;
+        this.pushNotification = false;
     }
 
     get id() { return this._id; }

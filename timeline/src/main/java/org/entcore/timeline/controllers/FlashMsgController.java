@@ -19,10 +19,12 @@
 package org.entcore.timeline.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -39,6 +41,8 @@ import org.entcore.timeline.Timeline;
 import org.entcore.timeline.services.FlashMsgService;
 import org.entcore.timeline.services.impl.FlashMsgServiceSqlImpl;
 import io.vertx.core.Handler;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -59,6 +63,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class FlashMsgController extends BaseController {
 	static final String RESOURCE_NAME = "message_flash";
+	private static final Logger log = LoggerFactory.getLogger(FlashMsgController.class);
 	private FlashMsgService service;
 	private TimelineHelper notification;
 	private final EventHelper eventHelper;
@@ -175,29 +180,100 @@ public class FlashMsgController extends BaseController {
 		createFlashMsg(request, request.params().get("structureId"));
 	}
 
-	private void createFlashMsg(final HttpServerRequest request, String structureId)
-	{
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.create", new Handler<JsonObject>() {
-					public void handle(JsonObject body) {
-						if(body == null){
-							badRequest(request);
-							return;
-						}
-
-						body.put("domain", getHost(request));
-						body.put("author", user.getUsername());
-						body.put("lastModifier", user.getUsername());
-						if(structureId != null)
-							body.put("structureId", structureId);
-						final Handler<Either<String,JsonObject>> resultHandler = defaultResponseHandler(request);
-						service.create(body, eventHelper.onCreateResource(request, RESOURCE_NAME, resultHandler));
-					}
-				});
+	private void createFlashMsg(final HttpServerRequest request, String structureId) {
+		UserUtils.getUserInfos(eb, request,
+				user -> RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.create",
+						body -> {
+            if(body == null){
+                badRequest(request);
+                return;
+            }
+            body.put("domain", getHost(request));
+            body.put("author", user.getUsername());
+            body.put("lastModifier", user.getUsername());
+            if(structureId != null) {
+				body.put("structureId", structureId);
 			}
-		});
+			boolean mailNotification = body.getBoolean("mailNotification", false);
+			boolean pushNotification = body.getBoolean("pushNotification", false);
+			body.remove("mailNotification");
+			body.remove("pushNotification");
+            final Handler<Either<String,JsonObject>> resultHandler = (either) -> {
+				defaultResponseHandler(request).handle(either);
+				if(either.isLeft() || !(mailNotification || pushNotification)) {
+					return;
+				}
+				final String language = Utils
+						.getOrElse(I18n.acceptLanguage(request), "fr", false)
+						.split(",")[0].split("-")[0];
+				getUsersToNotify(structureId, body)
+						.onSuccess(usersIds -> notifyUsers(usersIds, body, user, request, language, mailNotification, pushNotification))
+						.onFailure(err -> log.error("Failed to list users to notify for flash message", err));
+			};
+			service.create(body, eventHelper.onCreateResource(request, RESOURCE_NAME, resultHandler));
+        }));
+	}
+
+	private void updateFlashMsg(final HttpServerRequest request, String structureId) {
+		UserUtils.getUserInfos(eb, request, user -> RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.update", body -> {
+			body.put("lastModifier", user.getUsername());
+			if(structureId != null) {
+				body.put("structureId", structureId);
+			}
+			boolean mailNotification = body.getBoolean("mailNotification", false);
+			boolean pushNotification = body.getBoolean("pushNotification", false);
+			body.remove("mailNotification");
+			body.remove("pushNotification");
+			final Handler<Either<String,JsonObject>> resultHandler = (either) -> {
+				defaultResponseHandler(request).handle(either);
+				if(either.isLeft() || !(mailNotification || pushNotification)) {
+					return;
+				}
+				final String language = Utils
+						.getOrElse(I18n.acceptLanguage(request), "fr", false)
+						.split(",")[0].split("-")[0];
+				getUsersToNotify(structureId, body)
+						.onSuccess(usersIds -> notifyUsers(usersIds, body, user, request, language, mailNotification, pushNotification))
+						.onFailure(err -> log.error("Failed to list users to notify for flash message", err));
+			};
+			service.update(request.params().get("id"), structureId, body, resultHandler);
+		}));
+	}
+
+	/**
+	 * Messages without structure are platform-wide (admin V1) and are never notified.
+	 */
+	private Future<List<String>> getUsersToNotify(String structureId, JsonObject message) {
+		if (structureId == null) {
+			return Future.succeededFuture(new ArrayList<>());
+		}
+		return service.listUsersToNotify(structureId,
+				message.getJsonArray("profiles", new JsonArray()),
+				message.getJsonArray("userPositions", new JsonArray()));
+	}
+
+	private void notifyUsers(List<String> users, JsonObject body, UserInfos user, HttpServerRequest request, String language, boolean mailNotification, boolean pushNotification) {
+		String content = body.getJsonObject("contents").getString(language);
+
+		final JsonObject baseParams = new JsonObject()
+				.put("username", user.getUsername())
+				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.put("content", content)
+				.put("disableAntiFlood", true);
+
+		if (mailNotification && !users.isEmpty()) {
+			final JsonObject params = baseParams.copy();
+			notification.notifyTimeline(request, "timeline.send-flash-message-mail", user,
+					users, params);
+		}
+
+		if (pushNotification && !users.isEmpty()) {
+			final JsonObject params = baseParams.copy()
+					.put("pushNotif", new JsonObject().put("title", "push.notif.new.flash.message").put("body", user.getUsername()+ " : " + StringUtils.stripHtmlTag(content)))
+					.put("disableMailNotification", true);
+			notification.notifyTimeline(request, "timeline.send-flash-message-push", user,
+					users, params);
+		}
 	}
 
 	@Delete("/flashmsg/:id")
@@ -248,23 +324,6 @@ public class FlashMsgController extends BaseController {
 		updateFlashMsg(request, request.params().get("structureId"));
 	}
 
-	private void updateFlashMsg(final HttpServerRequest request, String structureId)
-	{
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.update", new Handler<JsonObject>() {
-					public void handle(JsonObject body) {
-						body.put("lastModifier", user.getUsername());
-						if(structureId != null)
-							body.put("structureId", structureId);
-						service.update(request.params().get("id"), structureId, body, defaultResponseHandler(request));
-					}
-				});
-			}
-		});
-	}
-
 	@Get("/flashmsg/listadmin")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
@@ -309,58 +368,6 @@ public class FlashMsgController extends BaseController {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(JsonObject body) {
 				service.setSubstructuresByMessageId(request.params().get("messageId"), request.params().get("structureId"), body, arrayResponseHandler(request));
-			}
-		});
-	}
-
-	@Post("/flashmsg/notify")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
-	@MfaProtected()
-	public void notify(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-					public void handle(JsonObject body) {
-						if(body == null){
-							badRequest(request);
-							return;
-						}
-
-						ArrayList<String> recipientIds = new ArrayList<>();
-						JsonArray ids = body.getJsonArray("recipientIds");
-						for (int i = 0; i < ids.size(); i++) {
-							recipientIds.add(ids.getString(i));
-						}
-
-						String content = body.getString("content");
-						boolean sendMailNotification = body.getBoolean("mailNotification");
-						boolean sendPushNotification = body.getBoolean("pushNotification");
-
-						final JsonObject baseParams = new JsonObject()
-							.put("username", user.getUsername())
-							.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-							.put("content", content)
-							.put("disableAntiFlood", true);
-
-						if (sendMailNotification && !recipientIds.isEmpty()) {
-							final JsonObject params = baseParams.copy();
-							notification.notifyTimeline(request, "timeline.send-flash-message-mail", user,
-							recipientIds, params);
-						}
-
-						if (sendPushNotification && !recipientIds.isEmpty()) {
-							final JsonObject params = baseParams.copy()
-								.put("pushNotif", new JsonObject().put("title", "push.notif.new.flash.message").put("body", user.getUsername()+ " : " + StringUtils.stripHtmlTag(content)))
-								.put("disableMailNotification", true);
-							notification.notifyTimeline(request, "timeline.send-flash-message-push", user,
-							recipientIds, params);
-						}
-
-						request.response().setStatusCode(200).end();
-					}
-				});
 			}
 		});
 	}
