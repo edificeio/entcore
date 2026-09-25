@@ -33,7 +33,25 @@
 			   dragdrop="dropTo(folder, $originalEvent)"
 			   dropcondition="dropCondition(folder)"
 			   help-box-step="[[folder.helpbox]]">
-			   <i class="arrow" ng-if="canExpendTree(folder)" ng-click="openOrCloseFolder($event,folder)"></i><i ng-if="folder.filter == 'shared'" class="shared"></i> <span class="workspace-menu-label no-style">[[folder.name]]<i class="loading" ng-if="folder.isChildrenOrDocumentLoading"></i></span>
+			   <i class="arrow" ng-if="canExpendTree(folder)" ng-click="openOrCloseFolder($event,folder)"></i>
+			   <!-- Icons matching the Google Drive tree's own outline set. -->
+			   <span ng-if="folder === wrapperTrees[0]" class="workspace-tree-icon workspace-tree-icon-mono" style="display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;color:#8c939e;">
+			       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 11.5 12 4l9 7.5M5.5 10v9a1 1 0 0 0 1 1h3.5v-6h4v6H17a1 1 0 0 0 1-1v-9"/></svg>
+			   </span>
+			   <!-- Also covers real subfolders (plain Elements have no .filter). -->
+			   <span ng-if="(folder.filter == 'owner' || folder.filter == 'protected' || (!folder.filter && folder !== wrapperTrees[0])) && !isFolderExpanded(folder)" class="workspace-tree-icon workspace-tree-icon-mono" style="display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;color:#8c939e;">
+			       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+			   </span>
+			   <span ng-if="(folder.filter == 'owner' || folder.filter == 'protected' || (!folder.filter && folder !== wrapperTrees[0])) && isFolderExpanded(folder)" class="workspace-tree-icon workspace-tree-icon-mono" style="display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;color:#8c939e;">
+			       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M2 8V6a2 2 0 0 1 2-2h4.5l2 2H20a2 2 0 0 1 2 2"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M2 8h19a1 1 0 0 1 .97 1.24l-1.5 6A2 2 0 0 1 18.53 17H4.5a2 2 0 0 1-1.94-1.51L1 9.5A1 1 0 0 1 2 8Z"/></svg>
+			   </span>
+			   <span ng-if="folder.filter == 'shared'" class="workspace-tree-icon workspace-tree-icon-mono" style="display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;color:#8c939e;">
+			       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+			   </span>
+			   <span ng-if="folder.filter == 'trash'" class="workspace-tree-icon workspace-tree-icon-mono" style="display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;color:#8c939e;">
+			       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6zM10 11v6M14 11v6"/></svg>
+			   </span>
+			   <span class="workspace-menu-label no-style">[[folder.name]]<i class="loading" ng-if="folder.isChildrenOrDocumentLoading"></i></span>
 			</a>
 			<!--MUST BE AFTER a.droptarget-->
 			<span ng-class="{'highlight-no-droppable':cannotDropSelectionOnElement(folder)}" class="highlight-title highlight-title-border">
@@ -215,6 +233,573 @@
 		.document-buttons-add-mobile-wrapper, .document-buttons-add-mobile-wrapper button{
 			width: 100% !important;
 		}
+		/* "Créer un document" (Google Drive) dropdown — no framework dropdown component here. */
+		.google-drive-create-document-wrapper{
+			position: relative;
+		}
+		.google-drive-create-document-menu{
+			display: none;
+			position: absolute;
+			top: calc(100% + 4px);
+			right: 0;
+			min-width: 220px;
+			background: #fff;
+			border: 1px solid #e0e0e0;
+			border-radius: 8px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+			list-style: none;
+			margin: 0;
+			padding: 6px;
+			z-index: 50;
+		}
+		.google-drive-create-document-menu.show{
+			display: block;
+		}
+		.google-drive-create-document-menu li{
+			list-style: none;
+		}
+		.google-drive-create-document-menu li a{
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 8px 10px;
+			border-radius: 6px;
+			color: #333;
+			cursor: pointer;
+			white-space: nowrap;
+		}
+		.google-drive-create-document-menu li a:hover{
+			background: #f5f5f5;
+		}
+		.google-drive-create-document-menu li a img{
+			width: 20px;
+			height: 20px;
+			flex-shrink: 0;
+		}
+		/* Modern list-view checkbox, scoped to table.list-view (shared by all 3 spaces). */
+		table.list-view input[type=checkbox]{
+			-webkit-appearance: none;
+			appearance: none;
+			width: 18px;
+			height: 18px;
+			margin: 0;
+			border: 2px solid #c4c9d1;
+			border-radius: 5px;
+			background-color: #fff;
+			cursor: pointer;
+			position: relative;
+			top: 2px;
+			transition: background-color .15s ease, border-color .15s ease;
+		}
+		table.list-view input[type=checkbox]:hover{
+			border-color: #ff8500;
+		}
+		table.list-view input[type=checkbox]:checked{
+			background-color: #ff8500;
+			border-color: #ff8500;
+		}
+		table.list-view input[type=checkbox]:checked::after{
+			content: "";
+			position: absolute;
+			left: 3px;
+			top: 0px;
+			width: 5px;
+			height: 9px;
+			border: solid #fff;
+			border-width: 0 2px 2px 0;
+			transform: rotate(45deg);
+		}
+		table.list-view input[type=checkbox]:focus-visible{
+			outline: 2px solid #ff8500;
+			outline-offset: 2px;
+		}
+		/* Thumbnails are inline-block, so the theme's own text-align:center on .icons-view centers them
+		   as a group — left-align instead. Scoped to .workspace-app since .icons-view is also used
+		   by other modules (e.g. media-library) that should keep their own centering. */
+		.workspace-app .icons-view{
+			text-align: left !important;
+		}
+		/* Larger thumbnails + tighter corners for the icon/thumbnail view, all 3 spaces share .icons-view.
+		   The inner image/icon/clip boxes have their own fixed theme sizes independent of <explorer>'s
+		   own box — resizing just the outer box leaves them small with empty space around, so they're
+		   scaled up here too (~1.2x the theme's own 117px/160px). */
+		.icons-view explorer{
+			width: 160px !important;
+			height: auto !important;
+		}
+		/* Same width as <explorer> itself so the image lines up edge-to-edge with the legend below it
+		   (the legend is position:absolute, sized to explorer's full width, not the container's). */
+		.icons-view explorer .container,
+		.icons-view .element .container{
+			width: 160px !important;
+			height: 140px !important;
+		}
+		.icons-view explorer .img.container,
+		.icons-view .element .img.container{
+			height: 140px !important;
+		}
+		.icons-view explorer .clip{
+			width: 100% !important;
+			height: 140px !important;
+		}
+		/* The <img> itself carries hardcoded HTML width/height attributes (its natural size),
+		   which override the .clip container's own CSS size — force it to fill .clip instead. */
+		.icons-view explorer .clip img{
+			width: 100% !important;
+			height: 100% !important;
+			object-fit: cover;
+		}
+		.icons-view explorer a i,
+		.icons-view .element a i{
+			width: 100% !important;
+			height: 140px !important;
+			background-size: auto 60% !important;
+		}
+		/* Image sits above the legend now (see flex/order block below), so only its top corners
+		   are rounded — the bottom edge butts against the legend, which carries the bottom radius. */
+		.icons-view explorer.radius a{
+			border-top-left-radius: 5px !important;
+			border-top-right-radius: 0 !important;
+			border-bottom-left-radius: 0 !important;
+			border-bottom-right-radius: 0 !important;
+		}
+		/* Only the border/frame is rounded — the image/icon/video content itself stays square. */
+		.icons-view explorer.radius img,
+		.icons-view explorer.radius a .cell.video{
+			border-radius: 0 !important;
+		}
+		/* Winning theme rule is "explorer.radius legend" (Google Drive/Nextcloud have no .element
+		   wrapper — only the classic space does — so a ".element legend" selector never matches them). */
+		.icons-view explorer.radius legend{
+			border-bottom-left-radius: 5px !important;
+			border-bottom-right-radius: 5px !important;
+		}
+		/* Legend was position:absolute, overlaid on the bottom of the thumbnail image — move it below
+		   instead, in normal flow. <explorer> itself stays the single clickable/selectable unit either way. */
+		.icons-view explorer.radius legend,
+		.icons-view .element legend{
+			position: static !important;
+			bottom: auto !important;
+			left: auto !important;
+		}
+		/* Solid gray legend background (theme's own is a translucent black overlay, meant for sitting on top of the image), orange when the tile is selected.
+		   Matching side/bottom border to the image's own border — both are 160px border-box, but without this the borderless legend visually "overflows" next to the bordered image. */
+		.icons-view explorer legend,
+		.icons-view .element legend{
+			background: #f0f2f4 !important;
+			border: 5px solid #f0f2f4 !important;
+			border-top: none !important;
+		}
+		/* Theme's default (non-selected, non-hover) border is a near-invisible #e9ebef 1px — darken and thicken it.
+		   No bottom border here either (same split as selected/hover), so the default tile height matches them. */
+		.icons-view explorer a.container,
+		.icons-view explorer .img.container,
+		.icons-view .element a.container,
+		.icons-view .element .img.container{
+			border-width: 5px !important;
+			border-bottom: none !important;
+			border-color: #f0f2f4 !important;
+		}
+		.icons-view explorer .selected legend,
+		.icons-view .element .selected legend{
+			background: #ff8500 !important;
+		}
+		/* Black legend text by default, back to white once the tile is selected (orange bg keeps it readable). */
+		.icons-view explorer legend,
+		.icons-view explorer legend a,
+		.icons-view explorer legend strong,
+		.icons-view .element legend,
+		.icons-view .element legend a,
+		.icons-view .element legend strong{
+			color: #000 !important;
+		}
+		.icons-view explorer .selected legend,
+		.icons-view explorer .selected legend a,
+		.icons-view explorer .selected legend strong,
+		.icons-view .element .selected legend,
+		.icons-view .element .selected legend a,
+		.icons-view .element .selected legend strong{
+			color: #fff !important;
+		}
+		/* Left-align the legend text (theme centers it). The Google Drive share icon sits inline right before
+		   the filename inside the same <a>, so it moves along with the text instead of staying centered alone. */
+		.icons-view explorer legend,
+		.icons-view explorer legend a,
+		.icons-view .element legend,
+		.icons-view .element legend a{
+			text-align: left !important;
+		}
+		/* Match the share icon to the legend text: black by default, white when selected. */
+		.icons-view explorer legend svg,
+		.icons-view .element legend svg{
+			fill: #000 !important;
+		}
+		.icons-view explorer .selected legend svg,
+		.icons-view .element .selected legend svg{
+			fill: #fff !important;
+		}
+		/* The visible legend ("no-1d") sits BEFORE the thumbnail in the DOM (a second "no-2d" copy
+		   after it is hidden by the theme) — flex+order puts it after visually without touching
+		   the 3 separate icons.html templates that share this <explorer> markup. */
+		.icons-view explorer .explorer > div{
+			display: flex !important;
+			flex-direction: column !important;
+		}
+		.icons-view explorer .explorer > div > legend{
+			order: 2 !important;
+			width: 160px !important;
+			margin: 0 !important;
+			box-sizing: border-box !important;
+		}
+		.icons-view explorer .explorer > div > a.container{
+			order: 1 !important;
+			width: 160px !important;
+			margin: 0 !important;
+			float: none !important;
+			box-sizing: border-box !important;
+		}
+		/* Classic space's icons.html has no wrapper div (legend/container are direct children of
+		   .explorer itself) — same flex/order trick, applied one level up. */
+		.icons-view .element .explorer{
+			display: flex !important;
+			flex-direction: column !important;
+		}
+		.icons-view .element .explorer > legend{
+			order: 2 !important;
+			width: 160px !important;
+			margin: 0 !important;
+			box-sizing: border-box !important;
+		}
+		.icons-view .element .explorer > a.container{
+			order: 1 !important;
+			width: 160px !important;
+			margin: 0 !important;
+			float: none !important;
+			box-sizing: border-box !important;
+		}
+		/* Theme's own selection border ("...selected a.container{border:1px solid #ff8500}") only
+		   wraps the image, since that's all it used to take when the legend overlaid it — now that
+		   the legend sits below in normal flow, extend the same border down around it too, split so
+		   the two halves join into one continuous outline (no doubled border where they meet). */
+		.icons-view explorer .selected a.container,
+		.icons-view .element .selected a.container{
+			border: 5px solid #ff8500 !important;
+			border-bottom: none !important;
+			border-top-left-radius: 5px !important;
+			border-top-right-radius: 0 !important;
+			border-bottom-left-radius: 0 !important;
+			border-bottom-right-radius: 0 !important;
+		}
+		.icons-view explorer .selected legend,
+		.icons-view .element .selected legend{
+			border: 5px solid #ff8500 !important;
+			border-top: none !important;
+			border-bottom-left-radius: 5px !important;
+			border-bottom-right-radius: 5px !important;
+		}
+		/* Theme tints the selected content's background pale blue (image opacity drops to 40% over it) — keep
+		   that same translucent-wash effect, just gray instead of blue. */
+		.icons-view explorer.selected .container,
+		.icons-view .element.selected .container{
+			background-color: #e3e5e8 !important;
+			border-color: #e3e5e8 !important;
+		}
+		/* Blue hover instead of orange (theme's own hover rule only covers the image) — the <explorer> tag itself
+		   always carries "selected" (set by the explorer directive on click, regardless of space), so gating
+		   on it directly here works for all 3 spaces without needing their different internal wrapper markup.
+		   :not(.selected) so a lingering cursor never hides the orange selection behind hover blue. */
+		.icons-view explorer.radius:hover:not(.selected) a.container{
+			border: 5px solid #4bafd5 !important;
+			border-bottom: none !important;
+			box-shadow: none !important;
+		}
+		.icons-view explorer.radius:hover:not(.selected) legend{
+			border: 5px solid #4bafd5 !important;
+			border-top: none !important;
+			background: #4bafd5 !important;
+			color: #fff !important;
+		}
+		.icons-view explorer.radius:hover:not(.selected) legend a,
+		.icons-view explorer.radius:hover:not(.selected) legend strong{
+			color: #fff !important;
+		}
+		.icons-view explorer.radius:hover:not(.selected) legend svg{
+			fill: #fff !important;
+		}
+		/* Theme forces the folder/unknown/audio icon orange on hover (its own default color is already
+		   blue, inherited from the container link) — keep it blue to match our hover color. */
+		.icons-view explorer.radius:hover:not(.selected) i.folder-large,
+		.icons-view explorer.radius:hover:not(.selected) i.unknown-large,
+		.icons-view explorer.radius:hover:not(.selected) i.audio-large{
+			color: #4bafd5 !important;
+		}
+		/* A selected tile must look identical whether hovered or not — theme's own a.container:hover /
+		   icon:hover rules would otherwise leak through, since the hover overrides above deliberately
+		   exclude .selected tiles. */
+		.icons-view explorer.radius.selected:hover a.container{
+			border: 5px solid #ff8500 !important;
+			border-bottom: none !important;
+			box-shadow: none !important;
+			border-top-left-radius: 5px !important;
+			border-top-right-radius: 0 !important;
+			border-bottom-left-radius: 0 !important;
+			border-bottom-right-radius: 0 !important;
+		}
+		.icons-view explorer.radius.selected:hover i.folder-large,
+		.icons-view explorer.radius.selected:hover i.unknown-large,
+		.icons-view explorer.radius.selected:hover i.audio-large{
+			color: #4bafd5 !important;
+		}
+		/* Per-tile "..." menu: dropdown needs to escape <explorer>'s own overflow:hidden (its image
+		   clipping now happens in .clip instead, so this is safe to open up). */
+		.icons-view explorer.radius{
+			overflow: visible !important;
+		}
+		.icons-view explorer.radius .tile-menu-wrapper{
+			position: absolute !important;
+			top: 5px;
+			right: 5px;
+			z-index: 20;
+		}
+		.icons-view explorer.radius .tile-menu-toggle{
+			display: none;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			padding: 0;
+			margin: 0;
+			border: none;
+			outline: none;
+			box-shadow: none;
+			-webkit-appearance: none;
+			appearance: none;
+			border-top-left-radius: 5px;
+			border-top-right-radius: 0;
+			border-bottom-left-radius: 5px;
+			border-bottom-right-radius: 5px;
+			background: #fff;
+			cursor: pointer;
+		}
+		.icons-view explorer.radius .tile-menu-toggle:focus,
+		.icons-view explorer.radius .tile-menu-toggle:active,
+		.icons-view explorer.radius .tile-menu-toggle:hover{
+			outline: none;
+			box-shadow: none;
+			border: none;
+		}
+		.icons-view explorer.radius:hover .tile-menu-toggle,
+		.icons-view explorer.radius .tile-menu-wrapper:has(.tile-menu.show) .tile-menu-toggle{
+			display: flex;
+		}
+		.icons-view explorer.radius .tile-menu{
+			display: none;
+			position: absolute;
+			top: calc(100% + 4px);
+			right: 0;
+			min-width: 170px;
+			margin: 0;
+			padding: 6px 0;
+			list-style: none;
+			background: #fff;
+			border-radius: 6px;
+			box-shadow: 0 2px 10px rgba(0,0,0,.2);
+			text-align: left;
+			z-index: 21;
+		}
+		.icons-view explorer.radius .tile-menu.show{
+			display: block;
+		}
+		.icons-view explorer.radius .tile-menu li a{
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 7px 16px;
+			color: #3f454f;
+			font-size: 14px;
+			white-space: nowrap;
+			cursor: pointer;
+			text-decoration: none;
+		}
+		.icons-view explorer.radius .tile-menu li a:hover{
+			background: #f0f2f4;
+		}
+		.icons-view explorer.radius .tile-menu-icon{
+			flex-shrink: 0;
+			color: #3f454f;
+		}
+		/* Same per-tile "..." menu as icon view, but for the list view: always visible in its own trailing
+		   column (not hover-gated) since there's no <explorer> tile to hover here, just a table row. */
+		.list-view .tile-menu-column{
+			width: 40px;
+			text-align: right;
+		}
+		.list-view .tile-menu-wrapper{
+			position: relative;
+			display: inline-block;
+		}
+		.list-view .tile-menu-toggle{
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 26px;
+			height: 26px;
+			padding: 0;
+			margin: 0;
+			border: none;
+			outline: none;
+			box-shadow: none;
+			-webkit-appearance: none;
+			appearance: none;
+			border-radius: 5px;
+			background: #fff;
+			cursor: pointer;
+		}
+		.list-view .tile-menu-toggle:focus,
+		.list-view .tile-menu-toggle:active,
+		.list-view .tile-menu-toggle:hover{
+			outline: none;
+			box-shadow: none;
+			border: none;
+		}
+		.list-view .tile-menu{
+			display: none;
+			position: absolute;
+			top: calc(100% + 4px);
+			right: 0;
+			min-width: 170px;
+			margin: 0;
+			padding: 6px 0;
+			list-style: none;
+			background: #fff;
+			border-radius: 6px;
+			box-shadow: 0 2px 10px rgba(0,0,0,.2);
+			text-align: left;
+			z-index: 21;
+		}
+		.list-view .tile-menu.show{
+			display: block;
+		}
+		.list-view .tile-menu li{
+			margin: 0 !important;
+			padding: 0 !important;
+			list-style: none !important;
+		}
+		.list-view .tile-menu li a{
+			display: flex !important;
+			align-items: center !important;
+			gap: 10px !important;
+			padding: 7px 16px !important;
+			margin: 0 !important;
+			color: #3f454f !important;
+			font-size: 14px !important;
+			line-height: normal !important;
+			white-space: nowrap !important;
+			cursor: pointer !important;
+			text-decoration: none !important;
+		}
+		.list-view .tile-menu li a:hover{
+			background: #f0f2f4 !important;
+		}
+		.list-view .tile-menu-icon{
+			flex-shrink: 0;
+			color: #3f454f;
+		}
+		/* Expand/collapse arrows in the left tree are orange by default (theme's i.arrow::before) — match the
+		   gray used by the tree's own folder/document pictograms instead. */
+		.workspace-app nav.vertical ul li a i.arrow::before,
+		.workspace-app nav.vertical ul li a.opened i.arrow::before{
+			color: #8c939e !important;
+		}
+		/* Same for the move/copy picker's own tree (folder-tree-2) — it isn't wrapped in nav.vertical, so it
+		   falls back to the theme's generic white i.arrow instead of the orange nav.vertical one. */
+		.workspace-app .tree-container i.arrow{
+			color: #8c939e !important;
+		}
+		/* On small screens the menu sits on a blue background — gray arrows would be hard to read there, so keep them white. */
+		@media screen and (max-width: 800px){
+			.workspace-app nav.vertical ul li a i.arrow::before,
+			.workspace-app nav.vertical ul li a.opened i.arrow::before{
+				color: #fff !important;
+			}
+			/* Theme also turns the folder label blue on arrow hover — invisible on the same blue background. */
+			.workspace-app nav.vertical ul li a:not(.selected) .arrow:hover~.workspace-menu-label,
+			.workspace-app .app-menu ul li a:not(.selected) .arrow:hover~.workspace-menu-label{
+				color: #fff !important;
+			}
+		}
+		/* Removes the theme's per-tree vertical bar, duplicated when GD/Nextcloud add their own top-level uls. */
+		#classic-folder-tree-ul,
+		#google-drive-folder-tree nav.vertical > ul,
+		#nextcloud-folder-tree nav.vertical > ul {
+			border-left: none !important;
+		}
+		/* Theme's "minheight-100"/"maxheight-minus..." classes assume one single scrollable list;
+		   with classic/Nextcloud/Google Drive as independent collapsible sections in the same list,
+		   that fixed min-height leaves a gap below a collapsed section instead of shrinking. */
+		#classic-folder-tree-ul {
+			min-height: 0 !important;
+			height: auto !important;
+		}
+		/* Same vertical-bar removal, in the copy/move destination picker. */
+		.tree-container nav.vertical > ul {
+			border-left: none !important;
+		}
+		/* Below this width the burger-menu tree gets a solid blue background; force icons white so they stay visible. */
+		@media screen and (max-width: 800px) {
+			nav.vertical[side-nav] .workspace-tree-icon-mono,
+			nav.vertical[side-nav] .google-drive-child-icon,
+			nav.vertical[side-nav] .google-drive-child-icon-open,
+			nav.vertical[side-nav] .nextcloud-child-icon,
+			nav.vertical[side-nav] .nextcloud-child-icon-open {
+				color: #fff !important;
+			}
+			/* The Nextcloud logo uses a literal fill, not currentColor, so it needs its own override. */
+			nav.vertical[side-nav] .nextcloud-root-icon path {
+				fill: #fff !important;
+			}
+		}
+		/* Below 800px the sidebar becomes a full-screen drawer; show the in-flow mobile footer copies instead of the fixed ones. */
+		.workspace-quota-footer-mobile,
+		.google-drive-quota-footer-mobile,
+		.nextcloud-quota-footer-mobile {
+			display: none;
+			padding: 12px 16px;
+			box-sizing: border-box;
+		}
+		@media screen and (max-width: 800px) {
+			.workspace-quota-footer,
+			.google-drive-quota-footer,
+			.nextcloud-quota-footer {
+				display: none !important;
+			}
+			/* Flex column + high order forces whichever footer copy is visible to the true bottom, regardless of source position. */
+			nav.vertical[side-nav] {
+				display: flex;
+				flex-direction: column;
+			}
+			.workspace-quota-footer-mobile,
+			.google-drive-quota-footer-mobile,
+			.nextcloud-quota-footer-mobile {
+				display: block;
+				order: 999;
+			}
+		}
+		/* Same as the theme's .emptyscreen, minus "height:inherit" which collapsed here (no sized ancestor). */
+		.emptyscreen-google-drive,
+		.emptyscreen-nextcloud {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			margin-top: 25px;
+		}
+		/* Theme forces overflow-y:scroll (always visible); auto shows a scrollbar only when actually needed. */
+		.maxheight-half-vh {
+			overflow-x: hidden !important;
+			overflow-y: auto !important;
+		}
 		</style>
 		<script>
 		// TODO: create a directive that add the correct class
@@ -234,6 +819,12 @@
 					<i class="storage"></i><i18n class="storage zero-mobile">workspace.headers</i18n>
 					<i class="storage"></i><i18n class="storage zero-desktop">workspace.headers.short</i18n>
 				</h1>
+				<div workflow="lool.createDocument" class="aligned document-buttons-import-wrapper" style="float: left;" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && !$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen">
+					<button class="document-buttons-import" ng-click="openLoolModal()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"></path></svg>
+						<i18n>workspace.lool.create-document</i18n>
+					</button>
+				</div>
 				<div class="right-magnet zero-mobile vertical-spacing-twice-1d " ng-if="openedFolder.all.length || reloadingContent">
 					<div ng-repeat="button in currentTree.buttons" class="aligned">
 						<button ng-click="button.action()" ng-hide="canEmptyTrash()" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="document-buttons-add">
@@ -241,12 +832,79 @@
 							<span>[[button.text]]</span>
 						</button>
 					</div>
-					<div workflow="lool.createDocument" class="aligned document-buttons-import-wrapper" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
-					<button class="document-buttons-import" ng-click="openLoolModal()">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M1 4a3 3 0 0 1 3-3h16a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3zm3-1a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm1 9a1 1 0 0 1 1-1h5V6a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H6a1 1 0 0 1-1-1" clip-rule="evenodd"></path></svg>
-						<i18n>workspace.lool.create-document</i18n>
+				</div>
+				<!-- Not class="right-magnet": toggleWorkspaceContentDisplay() force-hides that class on GD. -->
+				<!-- float:left so this button sits apart from the float:right button group. -->
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper google-drive-create-document-wrapper" style="float: left;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
+					<button class="document-buttons-import" ng-click="toggleGoogleDriveCreateDocumentMenu()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"></path></svg>
+						<span><i18n>google-drive.create.document.button</i18n></span>
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"></path></svg>
 					</button>
-					</div>
+					<ul class="google-drive-create-document-menu" ng-class="{show: isGoogleDriveCreateDocumentMenuOpen}">
+						<li ng-repeat="docType in googleDriveDocTypes">
+							<a ng-click="triggerGoogleDriveCreateDocument(docType)">
+								<img ng-src="[[docType.icon]]" alt="">
+								<span>[[translate(docType.label)]]</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
+					<button class="document-buttons-add" ng-click="triggerGoogleDriveImport()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd" clip-path="url(#icon-download-gd_svg__a)" clip-rule="evenodd"><path d="M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414"></path><path d="M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1"></path><path d="M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994"></path></g><defs><clipPath id="icon-download-gd_svg__a"><path fill="#fff" d="M0 0h24v24H0z"></path></clipPath></defs></svg>
+						<span><i18n>import.file</i18n></span>
+					</button>
+				</div>
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
+					<button class="document-buttons-add" ng-click="triggerGoogleDriveCreateFolder()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-1 9h-3v3h-2v-3h-3v-2h3v-3h2v3h3z"></path></svg>
+						<span><i18n>folder.new</i18n></span>
+					</button>
+				</div>
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveTrashbinOpen() && isGoogleDriveTrashEmptyable()">
+					<button class="document-buttons-add" ng-click="triggerGoogleDriveEmptyTrash()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"></path></svg>
+						<span><i18n>workspace.empty.trash</i18n></span>
+					</button>
+				</div>
+				<!-- Nextcloud equivalents. -->
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_NEXTCLOUD && $root.isNextcloudTrashbinOpen && isNextcloudImportableFolder()">
+					<button class="document-buttons-add" ng-click="triggerNextcloudImport()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd" clip-path="url(#icon-download-nc_svg__a)" clip-rule="evenodd"><path d="M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414"></path><path d="M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1"></path><path d="M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994"></path></g><defs><clipPath id="icon-download-nc_svg__a"><path fill="#fff" d="M0 0h24v24H0z"></path></clipPath></defs></svg>
+						<span><i18n>import.file</i18n></span>
+					</button>
+				</div>
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_NEXTCLOUD && $root.isNextcloudTrashbinOpen && isNextcloudImportableFolder()">
+					<button class="document-buttons-add" ng-click="triggerNextcloudCreateFolder()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-1 9h-3v3h-2v-3h-3v-2h3v-3h2v3h3z"></path></svg>
+						<span><i18n>folder.new</i18n></span>
+					</button>
+				</div>
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_NEXTCLOUD && $root.isNextcloudTrashbinOpen && isNextcloudTrashbinOpen() && isNextcloudTrashEmptyable()">
+					<button class="document-buttons-add" ng-click="triggerNextcloudEmptyTrash()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"></path></svg>
+						<span><i18n>workspace.empty.trash</i18n></span>
+					</button>
+				</div>
+				<!-- Classic create-folder/empty-trash, hidden while GD or Nextcloud is active. -->
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right; margin-right: 8px;" ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen && canCreateNewFolder()">
+					<button class="document-buttons-add" ng-click="openNewFolderView()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-1 9h-3v3h-2v-3h-3v-2h3v-3h2v3h3z"></path></svg>
+						<span><i18n>folder.new</i18n></span>
+					</button>
+				</div>
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right; margin-right: 8px;" ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen && canCreateNewFolderShared()">
+					<button class="document-buttons-add" ng-click="openNewFolderView()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-1 9h-3v3h-2v-3h-3v-2h3v-3h2v3h3z"></path></svg>
+						<span><i18n>folder.new.shared</i18n></span>
+					</button>
+				</div>
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right; margin-right: 8px;" ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen && canEmptyTrash() && !isTrashEmpty()">
+					<button class="document-buttons-add" ng-click="confirmDelete()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"></path></svg>
+						<span><i18n>workspace.empty.trash</i18n></span>
+					</button>
 				</div>
 			</app-title>
 		</div>
@@ -254,17 +912,11 @@
 			<section class="four twelve-mobile cell">
 				<!--IMPORT DESKTOP-->
 				<nav class="vertical nav-droppable mobile-navigation" side-nav>
-					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus350 maxheight-minus370-1d overflowx-hd maxheight-minus200-mobile minheight-100"></div>
+					<!-- <ul>/<li> shape needed for the theme's "ul li a i.arrow" selectors; id="classic-folder-tree-root" is used by GD/Nextcloud's WorkspaceEntcoreUtils. -->
+					<ul id="classic-folder-tree-ul" class="folder-tree maxheight-minus350 maxheight-minus370-1d overflowx-hd maxheight-minus200-mobile minheight-100">
+						<li id="classic-folder-tree-root" data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="highlight-title-wrapper"></li>
+					</ul>
 
-					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
-					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
-					<a ng-click="confirmDelete()" ng-if="canEmptyTrash() && !$root.isGDTrashbinOpen" ng-hide="isTrashEmpty()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
-					<div class="row" ng-hide="canEmptyTrash() && isTrashEmpty()">
-						<h2>
-							<i18n>quota.title</i18n>
-						</h2>
-						<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
-					</div>
 					<div ng-if="ENABLE_NEXTCLOUD">
 					    <div ng-switch="USE_NEXTCLOUD_SNIPLET">
 							<workspace-nextcloud-folder
@@ -289,26 +941,67 @@
 						>
 						</workspace-google-drive-folder>
 					</div>
+
+					<!-- Mobile copy of the footer above, in normal flow (not position:fixed) for the full-screen burger-menu drawer. -->
+					<div class="workspace-quota-footer-mobile" ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen" ng-hide="canEmptyTrash() && isTrashEmpty()">
+						<div style="height: 5px; border-radius: 3px; background: rgba(255,255,255,0.35); overflow: hidden;">
+							<div style="height: 100%; border-radius: 3px; background: #fff;" ng-style="{'width': (quota.used / quota.max * 100) + '%'}"></div>
+						</div>
+						<div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 13px; color: #fff;">
+							<span style="display: inline-flex; align-items: center;">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="margin-right: 6px; vertical-align: middle; flex-shrink: 0; color: #fff;"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 11.5 12 4l9 7.5M5.5 10v9a1 1 0 0 0 1 1h3.5v-6h4v6H17a1 1 0 0 0 1-1v-9"/></svg>
+								<i18n>google-drive.quota</i18n>
+							</span>
+							<span>[[quota.used]] [[quota.unit]] / [[quota.max]] [[quota.unit]]</span>
+						</div>
+					</div>
+					<!-- Nextcloud equivalent, kept here (not workspace-nextcloud-folder.html) to stay a direct child of this flex nav. -->
+					<div class="nextcloud-quota-footer-mobile" ng-if="ENABLE_NEXTCLOUD && $root.isNextcloudTrashbinOpen">
+						<div style="height: 5px; border-radius: 3px; background: rgba(255,255,255,0.35); overflow: hidden;">
+							<div ng-if="getNextcloudTreeScope().userInfo.quota.total !== 0" style="height: 100%; border-radius: 3px; background: #fff;" ng-style="{'width': (getNextcloudTreeScope().userInfo.quota.used / getNextcloudTreeScope().userInfo.quota.total * 100) + '%'}"></div>
+						</div>
+						<div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 13px; color: #fff;">
+							<span style="display: inline-flex; align-items: center;">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 128" width="16" height="8" style="margin-right: 6px; vertical-align: middle; flex-shrink: 0;"><path fill="#fff" d="m128 7c-25.871 0-47.817 17.485-54.713 41.209-5.9795-12.461-18.642-21.209-33.287-21.209-20.304 0-37 16.696-37 37s16.696 37 37 37c14.645 0 27.308-8.7481 33.287-21.209 6.8957 23.724 28.842 41.209 54.713 41.209s47.817-17.485 54.713-41.209c5.9795 12.461 18.642 21.209 33.287 21.209 20.304 0 37-16.696 37-37s-16.696-37-37-37c-14.645 0-27.308 8.7481-33.287 21.209-6.8957-23.724-28.842-41.209-54.713-41.209zm0 22c19.46 0 35 15.54 35 35s-15.54 35-35 35-35-15.54-35-35 15.54-35 35-35zm-88 20c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15zm176 0c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15z"/></svg>
+								<i18n>nextcloud.quota</i18n>
+							</span>
+							<span ng-if="getNextcloudTreeScope().userInfo.quota.total !== 0">[[getNextcloudTreeScope().userInfo.quota.used]] [[getNextcloudTreeScope().userInfo.quota.unit]] / [[getNextcloudTreeScope().userInfo.quota.total]] [[getNextcloudTreeScope().userInfo.quota.unit]]</span>
+							<span ng-if="getNextcloudTreeScope().userInfo.quota.total === 0"><i18n>nextcloud.unlimited.space</i18n></span>
+						</div>
+					</div>
 				</nav>
 
 
 			</section>
 			<section class="margin-four">
 				<h3 class="zero-desktop twelve-mobile">[[currentFolderName()]]</h3>
-				<nav class="twelve cell toggle-buttons-spacer">
+				<nav id="workspace-content-area" class="twelve cell toggle-buttons-spacer">
 					<div class="row">
 						<!--IMPORT MOBILE-->
-						<div ng-if="openedFolder.all.length || reloadingContent" class="zero-desktop six-mobile document-buttons-import-mobile-wrapper" ng-repeat="button in currentTree.buttons">
-							<button ng-click="button.action(button.url)" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="document-buttons-add">
-								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M1 4a3 3 0 0 1 3-3h16a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3zm3-1a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm1 9a1 1 0 0 1 1-1h5V6a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H6a1 1 0 0 1-1-1" clip-rule="evenodd"></path></svg>
+						<!-- Flex row (auto-width, right-aligned) so several buttons fit per row instead of stacking full-width. -->
+						<div class="zero-desktop" style="display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+							<button class="document-buttons-import" style="margin-right: auto;" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && !$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen && (openedFolder.all.length || reloadingContent)" ng-click="openLoolModal()">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"></path></svg>
+								<i18n>workspace.lool.create-document</i18n>
+							</button>
+							<!-- No floats here, so DOM order is visual order — written to match the desktop row's visual order. -->
+							<button class="document-buttons-add" ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen && canCreateNewFolder()" ng-click="openNewFolderView()">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-1 9h-3v3h-2v-3h-3v-2h3v-3h2v3h3z"></path></svg>
+								<span><i18n>folder.new</i18n></span>
+							</button>
+							<button class="document-buttons-add" ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen && canCreateNewFolderShared()" ng-click="openNewFolderView()">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-1 9h-3v3h-2v-3h-3v-2h3v-3h2v3h3z"></path></svg>
+								<span><i18n>folder.new.shared</i18n></span>
+							</button>
+							<button class="document-buttons-add" ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen && canEmptyTrash() && !isTrashEmpty()" ng-click="confirmDelete()">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"></path></svg>
+								<span><i18n>workspace.empty.trash</i18n></span>
+							</button>
+							<!-- GD's own mobile equivalents live in workspace-google-drive-content.html instead. -->
+							<button ng-if="openedFolder.all.length || reloadingContent" ng-repeat="button in currentTree.buttons" ng-click="button.action(button.url)" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="document-buttons-add">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd" clip-path="url(#icon-download-classic-mobile_svg__a)" clip-rule="evenodd"><path d="M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414"></path><path d="M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1"></path><path d="M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994"></path></g><defs><clipPath id="icon-download-classic-mobile_svg__a"><path fill="#fff" d="M0 0h24v24H0z"></path></clipPath></defs></svg>
 								<span>[[translate(button.text)]]</span>
 							</button>
-						</div>
-						<div class="zero-desktop six-mobile document-buttons-add-mobile-wrapper" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && (openedFolder.all.length || reloadingContent)">
-						<button class="document-buttons-import" ng-click="openLoolModal()">
-							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd" clip-path="url(#icon-download_svg__a)" clip-rule="evenodd"><path d="M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414"></path><path d="M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1"></path><path d="M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994"></path></g><defs><clipPath id="icon-download_svg__a"><path fill="#fff" d="M0 0h24v24H0z"></path></clipPath></defs></svg>
-							<i18n>workspace.lool.create-document</i18n>
-						</button>
 						</div>
 						<!--SEARCH DESKTOP-->
 						<div class="cell eight search-pagination zero-mobile" ng-if="openedFolder.all.length">
@@ -364,11 +1057,12 @@
 						<p ng-if="openedFolder.folder === currentTree" class="emptyscreen-footer">
 							<i18n>empty.workspace</i18n>
 						</p>
-						<div style="display: grid; grid-template-columns: 1fr 1fr">
+						<!-- Flex (not a 2-col grid) so this stays centered when the LOOL button doesn't render. -->
+						<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 16px;">
 							<button ng-click="currentTree.buttons[0].action()" ng-disabled="currentTree.buttons[0].disabled()" workflow="[[currentTree.buttons[0].workflow]]">
 								<i18n>workspace.create.workspace</i18n>
 							</button>
-							<div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
+							<div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && !$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen">
 							<button class="primary-button" ng-click="openLoolModal()">
 								<i18n>workspace.lool.create-document</i18n>
 							</button>
@@ -419,6 +1113,27 @@
 					</div>
 
 					<container template="documents" ng-hide="isSearching()"></container>
+
+					<!-- "Espace de stockage" footer, pinned bottom-left, sized to match the sidebar's own width. -->
+					<div
+						class="workspace-quota-footer"
+						ng-style="{'background': footerBackgroundColor, 'left': footerLeft + 'px', 'width': footerWidth + 'px'}"
+						style="position: fixed; bottom: 0; z-index: 7000; padding: 8px 16px; box-sizing: border-box;"
+						ng-if="!$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen"
+						ng-hide="canEmptyTrash() && isTrashEmpty()"
+					>
+						<div style="height: 5px; border-radius: 3px; background: #c6cbd4; overflow: hidden;">
+							<div style="height: 100%; border-radius: 3px; background: #4bafd5;" ng-style="{'width': (quota.used / quota.max * 100) + '%'}"></div>
+						</div>
+						<div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 13px; color: #8c939e;">
+							<span style="display: inline-flex; align-items: center;">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="margin-right: 6px; vertical-align: middle; flex-shrink: 0; color: #8c939e;"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 11.5 12 4l9 7.5M5.5 10v9a1 1 0 0 0 1 1h3.5v-6h4v6H17a1 1 0 0 0 1-1v-9"/></svg>
+								<i18n>google-drive.quota</i18n>
+							</span>
+							<span>[[quota.used]] [[quota.unit]] / [[quota.max]] [[quota.unit]]</span>
+						</div>
+					</div>
+
 					<div class="flex-row top-spacing-four" ng-show="isSearching()">
 						<div class="centered top-spacing-four">
 							<div class="top-spacing-four notification primary-color">

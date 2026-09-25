@@ -129,6 +129,8 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
       .then(() => {
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
+        // Refreshes the sidebar tree too, mirroring createFolder's own refresh.
+        googleDriveEventService.sendOpenFolderDocument(this.vm.parentDocument);
         safeApply(this.vm);
       })
       .catch((err: AxiosError) => {

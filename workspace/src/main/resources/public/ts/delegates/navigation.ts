@@ -217,6 +217,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         if (mode != "carousel") {
             workspaceService.savePreference({ view: mode })
         }
+        setTimeout(() => ($scope as any).recomputeWorkspaceFooterOffsets?.(), 0);
     }
     let timeout = null;
     $scope.setHighlighted = function (els) {
@@ -242,7 +243,17 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         return $scope.openedFolder.folder.name;
     }
     $scope.setCurrentFolder = function (folder, reload = false) {
+        // "Mon espace personnel" is a grouping header, not a real folder; redirect to "Mes documents".
+        if (folder === (($scope as any).wrapperTrees || [])[0]) {
+            const owner = (($scope as any).trees || []).find((t: any) => t.filter === "owner");
+            folder = owner ?? folder;
+        }
         if (folder !== $scope.openedFolder.folder || reload) {
+            // Subfolders (unlike documents) are a live reference to the tree's cached children array,
+            // not a fresh one per navigation — clear .selected here or a stale selection can resurface
+            // in the new folder and leave the bottom action toolbar stuck visible.
+            $scope.openedFolder.documents.forEach((f) => (f.selected = false));
+            $scope.openedFolder.folders.forEach((f) => (f.selected = false));
             $scope.openedFolder = new models.FolderContext(folder);
             $scope.applySort();
             $scope.reloadFolderContent();
@@ -259,12 +270,17 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         $scope.onReloadContent.next();
         //fetch only documents in contents
         let content: Promise<models.Element[]> = null;
-        if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
+        // Same guard as setCurrentFolder, in case currentTree points at the grouping header.
+        const wrapperRoot = (($scope as any).wrapperTrees || [])[0];
+        const fetchTree = $scope.currentTree === wrapperRoot
+            ? ((($scope as any).trees || []).find((t: any) => t.filter === "owner") ?? $scope.currentTree)
+            : $scope.currentTree;
+        if ($scope.openedFolder.folder && $scope.openedFolder.folder !== wrapperRoot && $scope.openedFolder.folder._id) {
             content = workspaceService.fetchChildren($scope.openedFolder.folder, { filter: "all", hierarchical: false });
-        } else if($scope.currentTree.filter=="shared") {
-            content = workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false }, null, {directlyShared:true});
+        } else if(fetchTree.filter=="shared") {
+            content = workspaceService.fetchChildrenForRoot(fetchTree, { filter: fetchTree.filter, hierarchical: false }, null, {directlyShared:true});
         } else {
-            content = workspaceService.fetchChildrenForRoot($scope.currentTree, { filter: $scope.currentTree.filter, hierarchical: false });
+            content = workspaceService.fetchChildrenForRoot(fetchTree, { filter: fetchTree.filter, hierarchical: false });
         }
         $scope.safeApply();//refresh spinner
         //if revision has changed => a most recent content is loading
@@ -272,6 +288,8 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
             $scope.openedFolder.setDocuments(await content);
             $scope.reloadingContent = false;
             $scope.safeApply();
+            // Content box only enters the DOM once documents load, so the footer offset needs recomputing here too.
+            setTimeout(() => ($scope as any).recomputeWorkspaceFooterOffsets?.(), 0);
         }
     })
     $scope.reloadFolderContent = function () {
@@ -324,6 +342,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
     $scope.closeViewFile = function () {
         if (template.contains('documents', 'viewer')) {
             template.open("documents", viewMode);
+            setTimeout(() => ($scope as any).recomputeWorkspaceFooterOffsets?.(), 0);
         }
     }
     $scope.viewFile = function (document) {

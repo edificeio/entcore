@@ -41,6 +41,12 @@ export interface INextcloudService {
     cloudDocumentName?: string,
   ): Promise<AxiosResponse>;
 
+  copyDocumentWorkspaceToCloud(
+    userid: string,
+    ids: Array<string>,
+    cloudDocumentName?: string,
+  ): Promise<AxiosResponse>;
+
   copyDocumentToWorkspace(
     userid: string,
     paths: Array<string>,
@@ -195,6 +201,22 @@ export const nextcloudService: INextcloudService = {
     // @ts-ignore
     return http.put(
       `/nextcloud/files/user/${userid}/workspace/move/cloud?${urlParams}${parentDocumentNameParam}`,
+    );
+  },
+
+  copyDocumentWorkspaceToCloud: (
+    userid: string,
+    ids: Array<string>,
+    cloudDocumentName?: string,
+  ): Promise<AxiosResponse> => {
+    let urlParams: URLSearchParams = new URLSearchParams();
+    ids.forEach((path: string) => urlParams.append("id", path));
+    const parentDocumentNameParam: string = cloudDocumentName
+      ? `&parentName=${cloudDocumentName}`
+      : "";
+    // @ts-ignore
+    return http.put(
+      `/nextcloud/files/user/${userid}/workspace/copy/cloud?${urlParams}${parentDocumentNameParam}`,
     );
   },
 

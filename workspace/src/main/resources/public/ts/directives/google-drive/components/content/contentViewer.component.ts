@@ -1,9 +1,10 @@
 import { AxiosError } from "axios";
-import { angular, Me, model, ng, template } from "entcore";
+import { angular, idiom as lang, Me, model, ng, template } from "entcore";
 import { Subscription } from "rxjs";
 import { ViewMode } from "../../enums/viewMode.enum";
 import { Draggable } from "../../models/googleDriveDraggable.model";
 import { GoogleDriveDocument } from "../../models/googleDriveDocument.model";
+import { GOOGLE_DRIVE_CREATE_DOCUMENT_TYPES } from "../../models/googleDriveCreateDocumentType.model";
 import { IGoogleDriveEventService } from "../../services/googleDriveEvent.service";
 import {
   GoogleDrivePreference,
@@ -48,8 +49,73 @@ export interface IWorkspaceGoogleDriveContent {
   getGoogleDriveTreeController(): any;
   isTrashMode(): boolean;
   isSharedMode(): boolean;
+  canShowOwner(): boolean;
+  isImportableFolder(): boolean;
+  isTrashEmptyable(): boolean;
+  triggerCreateFolder(): void;
+  triggerEmptyTrash(): void;
+  googleDriveDocTypes: { label: string, icon: string, type: string }[];
+  isGoogleDriveCreateDocumentMenuOpen: boolean;
+  toggleGoogleDriveCreateDocumentMenu(): void;
+  triggerGoogleDriveCreateDocument(docType: { type: string }): void;
+  translate(key: string): string;
   openDocument(document?: GoogleDriveDocument): any;
   closeViewFile(): void;
+  triggerImportFiles(): void;
+  footerBackgroundColor: string;
+  footerLeft: number;
+  footerWidth: number;
+  contentAreaHeight: number;
+  breadcrumb: Array<IGoogleDriveBreadcrumbEntry>;
+  goToBreadcrumb(entry: IGoogleDriveBreadcrumbEntry): void;
+  openTileMenuFor: GoogleDriveDocument | null;
+  isTileMenuOpen(content: GoogleDriveDocument): boolean;
+  toggleTileMenu(content: GoogleDriveDocument): void;
+  onTileOpen(content: GoogleDriveDocument): void;
+  onTileEdit(content: GoogleDriveDocument): void;
+  onTileDownload(content: GoogleDriveDocument): void;
+  onTileMove(content: GoogleDriveDocument): void;
+  onTileCopy(content: GoogleDriveDocument): void;
+  onTileShare(content: GoogleDriveDocument): void;
+  onTileDelete(content: GoogleDriveDocument): void;
+  onTileRestore(content: GoogleDriveDocument): void;
+}
+
+export interface IGoogleDriveBreadcrumbEntry {
+  name: string;
+  folder: GoogleDriveDocument;
+}
+
+// Samples the sidebar's rendered background instead of hardcoding a hex, since themes vary.
+function getSidebarBackgroundColor(): string {
+  let el: Element | null = document.querySelector(
+    "nav.vertical.nav-droppable.mobile-navigation",
+  );
+  while (el) {
+    const bg = window.getComputedStyle(el).backgroundColor;
+    if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
+      return bg;
+    }
+    el = el.parentElement;
+  }
+  return "transparent";
+}
+
+// Footer must align with the sidebar's actual rendered box; a hardcoded left:0 isn't safe to assume.
+function getSidebarRect(): { left: number; width: number } {
+  const sidebarEl = document.querySelector("nav.vertical.nav-droppable.mobile-navigation");
+  if (!sidebarEl) return { left: 0, width: 0 };
+  const rect = sidebarEl.getBoundingClientRect();
+  return { left: rect.left, width: rect.width };
+}
+
+// Theme's own calc(100vh - Npx) height assumes a taller header, so compute it from the box's actual top instead.
+const CONTENT_BOTTOM_GAP_PX = 10;
+function getContentAreaHeight(): number {
+  const boxEl = document.querySelector(".list-view, .icons-view.google-drive-article, .embedded-viewer");
+  if (!boxEl) return 0;
+  const top = boxEl.getBoundingClientRect().top;
+  return Math.max(0, window.innerHeight - top - CONTENT_BOTTOM_GAP_PX);
 }
 
 export const workspaceGoogleDriveContentController = ng.controller(
@@ -67,6 +133,71 @@ export const workspaceGoogleDriveContentController = ng.controller(
       $scope.documents = [];
       $scope.parentDocument = null;
       $scope.selectedDocuments = [];
+      $scope.footerBackgroundColor = getSidebarBackgroundColor();
+      $scope.footerLeft = 0;
+      $scope.footerWidth = 0;
+      $scope.contentAreaHeight = 0;
+      $scope.breadcrumb = [];
+
+      // No stable folder tree to walk for ancestors, so breadcrumb is inferred from navigation events.
+      let breadcrumbState: Array<IGoogleDriveBreadcrumbEntry> = [];
+      const computeBreadcrumb = (
+        previousParent: GoogleDriveDocument,
+        previousDocuments: Array<GoogleDriveDocument>,
+        nextParent: GoogleDriveDocument,
+      ): Array<IGoogleDriveBreadcrumbEntry> => {
+        if (nextParent && !nextParent.isFolder) {
+          // A file, not a folder — never a valid breadcrumb crumb; leave the folder breadcrumb as-is.
+          return breadcrumbState;
+        }
+        if (!nextParent || nextParent.id === null || nextParent.isGoogleDriveParent) {
+          // Root's .name is a fresh "Google Drive" instance, not the sidebar's renamed "Mes documents" — reuse the sidebar's node instead.
+          const myDrive: GoogleDriveDocument =
+            $scope.getGoogleDriveTreeController()?.documents?.[0] ?? nextParent;
+          breadcrumbState = [{ name: lang.translate("google-drive.mydrive"), folder: myDrive }];
+        } else if (nextParent.isStaticFolder) {
+          breadcrumbState = [{ name: nextParent.name, folder: nextParent }];
+        } else if (previousDocuments?.some((doc) => doc.id === nextParent.id)) {
+          breadcrumbState = [...breadcrumbState, { name: nextParent.name, folder: nextParent }];
+        } else if (previousParent?.id === nextParent.id) {
+          // keep existing breadcrumb as-is
+        } else {
+          // Unknown jump — can't reconstruct full ancestry, fall back to a shallow path.
+          const myDrive: GoogleDriveDocument =
+            $scope.getGoogleDriveTreeController()?.documents?.[0] ?? nextParent;
+          breadcrumbState = [
+            { name: lang.translate("google-drive.mydrive"), folder: myDrive },
+            { name: nextParent.name, folder: nextParent },
+          ];
+        }
+        return breadcrumbState;
+      };
+
+      $scope.goToBreadcrumb = function (entry: IGoogleDriveBreadcrumbEntry): void {
+        if (!entry?.folder) return;
+        googleDriveEventService.sendOpenFolderDocument(entry.folder);
+      };
+
+      const recomputeFooterOffsets = (): void => {
+        const sidebarRect = getSidebarRect();
+        $scope.footerLeft = sidebarRect.left;
+        $scope.footerWidth = sidebarRect.width;
+        $scope.contentAreaHeight = getContentAreaHeight();
+        safeApply($scope);
+      };
+      // A single deferred call isn't reliable — the new template may not be compiled yet, so retry with backoff.
+      const scheduleRecompute = (attempt: number = 0): void => {
+        const boxEl = document.querySelector(".list-view, .icons-view.google-drive-article, .embedded-viewer");
+        if (boxEl || attempt >= 10) {
+          recomputeFooterOffsets();
+          return;
+        }
+        setTimeout(() => scheduleRecompute(attempt + 1), 50);
+      };
+      window.addEventListener("resize", recomputeFooterOffsets);
+      ($scope as any).$on("$destroy", () => {
+        window.removeEventListener("resize", recomputeFooterOffsets);
+      });
 
       let googleDrivePreference = new Preference();
       let subscription = new Subscription();
@@ -83,17 +214,111 @@ export const workspaceGoogleDriveContentController = ng.controller(
         return $scope.getGoogleDriveTreeController()?.isSharedViewOpen ?? false;
       };
 
+      $scope.canShowOwner = function (): boolean {
+        return $scope.isSharedMode();
+      };
+
+      // Mobile-only mirror of the header's "Créer un dossier"/"Vider la corbeille" actions.
+      $scope.isImportableFolder = function (): boolean {
+        return !$scope.isTrashMode() && !$scope.isSharedMode();
+      };
+
+      $scope.isTrashEmptyable = function (): boolean {
+        return ($scope.getGoogleDriveTreeController()?.documents?.length ?? 0) > 0;
+      };
+
+      $scope.triggerCreateFolder = function (): void {
+        $scope.getGoogleDriveTreeController()?.folderCreation?.toggleCreateFolder(true, null);
+      };
+
+      $scope.triggerEmptyTrash = function (): void {
+        const treeScope = $scope.getGoogleDriveTreeController();
+        if (treeScope?.emptyTrashbin) treeScope.emptyTrashbin.lightbox.emptyTrash = true;
+      };
+
+      // Mobile "Créer un document" dropdown — mirrors the header button in controller.ts (separate scope).
+      $scope.googleDriveDocTypes = GOOGLE_DRIVE_CREATE_DOCUMENT_TYPES;
+      $scope.isGoogleDriveCreateDocumentMenuOpen = false;
+      $scope.toggleGoogleDriveCreateDocumentMenu = function (): void {
+        $scope.isGoogleDriveCreateDocumentMenuOpen = !$scope.isGoogleDriveCreateDocumentMenuOpen;
+      };
+      $scope.triggerGoogleDriveCreateDocument = function (docType: { type: string }): void {
+        $scope.isGoogleDriveCreateDocumentMenuOpen = false;
+        window.open(`/googledrive/files/create/${docType.type}`, "_blank");
+      };
+      $scope.translate = function (key: string): string {
+        return lang.translate(key);
+      };
+      // Close the dropdown on outside click (separate scope from controller.ts's own listener).
+      document.addEventListener("click", function (event: MouseEvent): void {
+        if (!$scope.isGoogleDriveCreateDocumentMenuOpen) return;
+        if ((event.target as HTMLElement)?.closest(".google-drive-create-document-wrapper")) return;
+        $scope.isGoogleDriveCreateDocumentMenuOpen = false;
+        safeApply($scope);
+      });
+
+      // Per-tile "..." menu (icon view) — acts on the tile's own document without going through the
+      // real selection state, so opening it never visually selects the tile.
+      $scope.openTileMenuFor = null;
+      $scope.isTileMenuOpen = function (content: GoogleDriveDocument): boolean {
+        return $scope.openTileMenuFor === content;
+      };
+      $scope.toggleTileMenu = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = $scope.isTileMenuOpen(content) ? null : content;
+      };
+      document.addEventListener("click", function (event: MouseEvent): void {
+        if (!$scope.openTileMenuFor) return;
+        if ((event.target as HTMLElement)?.closest(".tile-menu-wrapper")) return;
+        $scope.openTileMenuFor = null;
+        safeApply($scope);
+      });
+      $scope.onTileOpen = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.onOpenContent(content);
+      };
+      $scope.onTileEdit = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        googleDriveService.openEditLink(model.me.userId, content);
+      };
+      $scope.onTileDownload = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.downloadFiles([content]);
+      };
+      $scope.onTileMove = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.toggleMoveView(true, [content]);
+      };
+      $scope.onTileCopy = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.toggleCopyView(true, [content]);
+      };
+      $scope.onTileShare = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.share.toggleShareView(true, [content]);
+      };
+      $scope.onTileDelete = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.selectedDocuments = [content];
+        $scope.toolbar.toggleDeleteView(true);
+      };
+      $scope.onTileRestore = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.selectedDocuments = [content];
+        $scope.toolbar.restoreDocuments();
+      };
+
       Promise.all([
         initDocumentsContent(googleDriveService, $scope),
         googleDrivePreference.init(),
       ])
-        .then(() => {
-          $scope.changeViewMode(googleDrivePreference.viewMode);
+        .then(async () => {
+          await $scope.changeViewMode(googleDrivePreference.viewMode);
           $scope.viewList = new GoogleDriveViewList($scope);
           $scope.viewIcons = new GoogleDriveViewIcons($scope);
           $scope.toolbar = new ToolbarSnipletViewModel($scope);
           $scope.isLoaded = true;
           safeApply($scope);
+          scheduleRecompute();
         })
         .catch((err: AxiosError) => {
           console.error("Error while initializing Google Drive content: " + err.message);
@@ -106,6 +331,15 @@ export const workspaceGoogleDriveContentController = ng.controller(
           .getDocumentsState()
           .subscribe(
             (res: { parentDocument: GoogleDriveDocument; documents: Array<GoogleDriveDocument> }) => {
+              $scope.breadcrumb = computeBreadcrumb($scope.parentDocument, $scope.documents, res.parentDocument);
+
+              // Navigating away while a file is open in the viewer needs to switch back to the list/icon view.
+              if ($scope.viewFile) {
+                $scope.viewFile = null;
+                const preference: GoogleDrivePreference = Me.preferences["google-drive"];
+                $scope.changeViewMode(preference.viewMode);
+              }
+
               if (res.documents && res.documents.length > 0) {
                 $scope.parentDocument = res.parentDocument;
                 if ($scope.isTrashMode()) {
@@ -117,8 +351,14 @@ export const workspaceGoogleDriveContentController = ng.controller(
                 $scope.parentDocument = res.parentDocument;
                 $scope.documents = [];
               }
+              // $scope.documents is a fresh array on every navigation, but $scope.selectedDocuments
+              // (which drives the bottom action toolbar) is a separate property only updated by
+              // onSelectContent — without this it keeps stale references after switching folders.
+              $scope.selectedDocuments = [];
               $scope.isLoaded = true;
               safeApply($scope);
+              // Breadcrumb/footer height can change, so recompute the content area's bottom edge.
+              scheduleRecompute();
             },
           ),
       );
@@ -263,13 +503,7 @@ export const workspaceGoogleDriveContentController = ng.controller(
           e.preventDefault();
           if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
         };
-        const onOsFileDropContent = (e: DragEvent): void => {
-          const target = e.target as Element;
-          if (!target.closest?.("#google-drive-content")) return;
-          if (!Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
-          e.stopPropagation();
-          e.preventDefault();
-          const files = Array.from(e.dataTransfer?.files ?? []);
+        const uploadFilesToCurrentFolder = (files: Array<File>): void => {
           if (files.length === 0) return;
           // Setting lockDropzone=true removes <dropzone-overlay> from the DOM via ng-if.
           // When it re-enters the DOM (lockDropzone=false), the directive re-links and
@@ -293,13 +527,37 @@ export const workspaceGoogleDriveContentController = ng.controller(
             })
             .then(done, done);
         };
+
+        const onOsFileDropContent = (e: DragEvent): void => {
+          const target = e.target as Element;
+          if (!target.closest?.("#google-drive-content")) return;
+          if (!Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
+          e.stopPropagation();
+          e.preventDefault();
+          uploadFilesToCurrentFolder(Array.from(e.dataTransfer?.files ?? []));
+        };
         document.addEventListener("dragover", onOsFileDragOverContent, true);
         document.addEventListener("drop", onOsFileDropContent, true);
         ($scope as any).$on("$destroy", () => {
           document.removeEventListener("dragover", onOsFileDragOverContent, true);
           document.removeEventListener("drop", onOsFileDropContent, true);
         });
+
+        const onImportInputChange = (e: Event): void => {
+          const input = e.target as HTMLInputElement;
+          uploadFilesToCurrentFolder(Array.from(input.files ?? []));
+          input.value = "";
+        };
+        const importInput = document.getElementById("google-drive-import-input");
+        importInput?.addEventListener("change", onImportInputChange);
+        ($scope as any).$on("$destroy", () => {
+          importInput?.removeEventListener("change", onImportInputChange);
+        });
       }
+
+      $scope.triggerImportFiles = function (): void {
+        document.getElementById("google-drive-import-input")?.click();
+      };
 
       function sortDocumentsByFolder(
         a: GoogleDriveDocument,
@@ -375,12 +633,14 @@ export const workspaceGoogleDriveContentController = ng.controller(
         $scope.selectedDocuments = [];
         template.open("documents-content", `google-drive/content/views/${mode}`);
         safeApply($scope);
+        scheduleRecompute();
       };
 
       $scope.openDocument = function (document?: GoogleDriveDocument): any {
         $scope.viewFile = document ?? $scope.selectedDocuments[0];
         template.open("documents-content", `google-drive/content/views/viewer`);
         $scope.selectedDocuments = [];
+        scheduleRecompute();
       };
 
       $scope.closeViewFile = function (): any {

@@ -1,5 +1,7 @@
 import { template, notify } from "entcore";
 import { models, workspaceService } from "../services";
+import { GoogleDriveDocument } from "../directives/google-drive/models/googleDriveDocument.model";
+import { SyncDocument } from "../directives/nextcloud/models/nextcloudFolder.model";
 
 export interface DragDelegateScope {
     //from others
@@ -11,8 +13,8 @@ export interface DragDelegateScope {
     safeApply()
     selectedItems(): models.Element[];
     setMovingElements(elts: models.Element[])
-    moveSubmit(dest: models.Element, elts?: models.Element[])
-    copySubmit(dest: models.Element, elts?: models.Element[]):Promise<any>
+    moveSubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[])
+    copySubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[]):Promise<any>
     //
     //drag and drop
     countDragItems(): number

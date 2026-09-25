@@ -1,5 +1,5 @@
 import { AxiosError, AxiosResponse } from "axios";
-import { angular, Me, model, ng, template, workspace } from "entcore";
+import { angular, idiom as lang, Me, model, ng, template, workspace } from "entcore";
 import { Subscription } from "rxjs";
 import { ViewMode } from "../../enums/viewMode.enum";
 import { Draggable } from "../../models/nextcloudDraggable.model";
@@ -12,6 +12,7 @@ import {
 } from "../../services/nextcloud.preferences";
 import { INextcloudService } from "../../services/nextcloud.service";
 import { safeApply } from "../../utils/safeApply.utils";
+import { WorkspaceEntcoreUtils } from "../../utils/workspaceEntcore.utils";
 import { UploadFileSnipletViewModel } from "./fileUpload.component";
 import { NextcloudViewIcons } from "./iconView.component";
 import { INextcloudViewList, NextcloudViewList } from "./listView.component";
@@ -55,9 +56,36 @@ export interface IWorkspaceNextcloudContent {
   getNextcloudTreeController(): any;
 
   isTrashMode(): boolean;
+  isImportableFolder(): boolean;
+  isTrashEmptyable(): boolean;
+  triggerCreateFolder(): void;
+  triggerEmptyTrash(): void;
+  footerBackgroundColor: string;
+  footerLeft: number;
+  footerWidth: number;
+  breadcrumb: Array<INextcloudBreadcrumbEntry>;
+  goToBreadcrumb(entry: INextcloudBreadcrumbEntry): void;
 
   openDocument(document?: SyncDocument): any;
   closeViewFile(): void;
+
+  openTileMenuFor: SyncDocument | null;
+  isTileMenuOpen(content: SyncDocument): boolean;
+  toggleTileMenu(content: SyncDocument): void;
+  onTileOpen(content: SyncDocument): void;
+  onTileEdit(content: SyncDocument): void;
+  onTileDownload(content: SyncDocument): void;
+  onTileRename(content: SyncDocument): void;
+  onTileMove(content: SyncDocument): void;
+  onTileCopy(content: SyncDocument): void;
+  onTileShare(content: SyncDocument): void;
+  onTileDelete(content: SyncDocument): void;
+  onTileRestore(content: SyncDocument): void;
+}
+
+export interface INextcloudBreadcrumbEntry {
+  name: string;
+  folder: SyncDocument;
 }
 
 export const workspaceNextcloudContentController = ng.controller(
@@ -78,11 +106,53 @@ export const workspaceNextcloudContentController = ng.controller(
       $scope.selectedDocuments = new Array<SyncDocument>();
       // fetch nextcloud url hidden state in order to hide or show the nextcloud url
       $scope.isNextcloudUrlHidden = false;
+      $scope.breadcrumb = [];
 
       let nextcloudPreference = new Preference();
       let orderDesc: boolean = false;
       let orderField: string = null;
       let subscription = new Subscription();
+
+      // No stable folder tree to walk for ancestors, so breadcrumb is inferred from navigation.
+      let breadcrumbState: Array<INextcloudBreadcrumbEntry> = [];
+      const computeBreadcrumb = (
+        previousParent: SyncDocument,
+        previousDocuments: Array<SyncDocument>,
+        nextParent: SyncDocument,
+      ): Array<INextcloudBreadcrumbEntry> => {
+        if (nextParent && !nextParent.isFolder) {
+          // A file, not a folder — never a valid breadcrumb crumb; leave the folder breadcrumb as-is.
+          return breadcrumbState;
+        }
+        if (!nextParent || nextParent.path === null || nextParent.isNextcloudParent) {
+          // openDocument() gives a fresh instance for root each time, so reuse the sidebar's stable node instead.
+          const myDrive: SyncDocument =
+            $scope.getNextcloudTreeController()?.documents?.[0] ?? nextParent;
+          breadcrumbState = [{ name: lang.translate("nextcloud.documents"), folder: myDrive }];
+        } else if (nextParent.isStaticFolder) {
+          breadcrumbState = [{ name: nextParent.name, folder: nextParent }];
+        } else if (previousDocuments?.some((doc) => doc.path === nextParent.path)) {
+          // Descending: the new folder was a row in the listing we were just looking at.
+          breadcrumbState = [...breadcrumbState, { name: nextParent.name, folder: nextParent }];
+        } else if (previousParent?.path === nextParent.path) {
+          // Same folder (e.g. a refresh) — keep the existing breadcrumb as-is.
+        } else {
+          // Unknown jump: can't reconstruct full ancestry, fall back to a shallow path.
+          const myDrive: SyncDocument =
+            $scope.getNextcloudTreeController()?.documents?.[0] ?? nextParent;
+          breadcrumbState = [
+            { name: lang.translate("nextcloud.documents"), folder: myDrive },
+            { name: nextParent.name, folder: nextParent },
+          ];
+        }
+        return breadcrumbState;
+      };
+
+      $scope.goToBreadcrumb = function (entry: INextcloudBreadcrumbEntry): void {
+        if (!entry?.folder) return;
+        $scope.closeViewFile();
+        nextcloudEventService.sendOpenFolderDocument(entry.folder);
+      };
 
       $scope.getNextcloudTreeController = function () {
         return angular.element(document.getElementById(nextcloudTree)).scope();
@@ -92,6 +162,95 @@ export const workspaceNextcloudContentController = ng.controller(
         const treeController = $scope.getNextcloudTreeController();
         return treeController?.isTrashbinOpen;
       };
+
+      // Mobile-only actions: header versions are hidden here, so duplicate them in this controller's DOM.
+      $scope.isImportableFolder = function (): boolean {
+        return !$scope.isTrashMode();
+      };
+
+      $scope.isTrashEmptyable = function (): boolean {
+        return ($scope.getNextcloudTreeController()?.documents?.length ?? 0) > 0;
+      };
+
+      $scope.triggerCreateFolder = function (): void {
+        $scope.getNextcloudTreeController()?.folderCreation?.toggleCreateFolder(true, null);
+      };
+
+      $scope.triggerEmptyTrash = function (): void {
+        const treeScope = $scope.getNextcloudTreeController();
+        if (treeScope?.emptyTrashbin) treeScope.emptyTrashbin.lightbox.emptyTrash = true;
+      };
+
+      // Per-tile "..." menu (icon view) — acts on the tile's own document without going through the
+      // real selection state, so opening it never visually selects the tile.
+      $scope.openTileMenuFor = null;
+      $scope.isTileMenuOpen = function (content: SyncDocument): boolean {
+        return $scope.openTileMenuFor === content;
+      };
+      $scope.toggleTileMenu = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = $scope.isTileMenuOpen(content) ? null : content;
+      };
+      document.addEventListener("click", function (event: MouseEvent): void {
+        if (!$scope.openTileMenuFor) return;
+        if ((event.target as HTMLElement)?.closest(".tile-menu-wrapper")) return;
+        $scope.openTileMenuFor = null;
+        safeApply($scope);
+      });
+      $scope.onTileOpen = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.onOpenContent(content);
+      };
+      $scope.onTileEdit = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        nextcloudService.openNextcloudEditLink(content, $scope.nextcloudUrl);
+      };
+      $scope.onTileDownload = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.downloadFiles([content]);
+      };
+      $scope.onTileRename = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.toggleRenameView(true, [content]);
+      };
+      $scope.onTileMove = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.toggleMoveView(true, [content]);
+      };
+      $scope.onTileCopy = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.toggleCopyView(true, [content]);
+      };
+      $scope.onTileShare = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.share.toggleShareView(true, [content]);
+      };
+      $scope.onTileDelete = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.selectedDocuments = [content];
+        $scope.toolbar.toggleDeleteView(true);
+      };
+      $scope.onTileRestore = function (content: SyncDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.selectedDocuments = [content];
+        $scope.toolbar.restoreDocuments();
+      };
+
+      // Reuses the classic sidebar's footer offsets rather than recomputing them independently.
+      $scope.footerBackgroundColor = "";
+      $scope.footerLeft = 0;
+      $scope.footerWidth = 0;
+      const recomputeFooterOffsets = (): void => {
+        const workspaceScope: any = WorkspaceEntcoreUtils.workspaceScope();
+        $scope.footerBackgroundColor = workspaceScope?.footerBackgroundColor ?? "";
+        $scope.footerLeft = workspaceScope?.footerLeft ?? 0;
+        $scope.footerWidth = workspaceScope?.footerWidth ?? 0;
+        safeApply($scope);
+      };
+      window.addEventListener("resize", recomputeFooterOffsets);
+      ($scope as any).$on("$destroy", () => {
+        window.removeEventListener("resize", recomputeFooterOffsets);
+      });
+      setTimeout(recomputeFooterOffsets, 0);
 
       nextcloudService
         .getIsNextcloudUrlHidden()
@@ -136,6 +295,8 @@ export const workspaceNextcloudContentController = ng.controller(
               parentDocument: SyncDocument;
               documents: Array<SyncDocument>;
             }) => {
+              $scope.breadcrumb = computeBreadcrumb($scope.parentDocument, $scope.documents, res.parentDocument);
+
               if (res.documents && res.documents.length > 0) {
                 $scope.parentDocument = res.parentDocument;
 
@@ -156,6 +317,10 @@ export const workspaceNextcloudContentController = ng.controller(
                 $scope.parentDocument = res.parentDocument;
                 $scope.documents = [];
               }
+              // $scope.documents is a fresh array on every navigation, but $scope.selectedDocuments
+              // (which drives the bottom action toolbar) is a separate property only updated by
+              // onSelectContent — without this it keeps stale references after switching folders.
+              $scope.selectedDocuments = [];
               $scope.isLoaded = true;
               safeApply($scope);
             },
@@ -337,13 +502,14 @@ export const workspaceNextcloudContentController = ng.controller(
                 console.error(message + err.message);
               });
           }
-        } else {
+        } else if (folderContent.folder instanceof SyncDocument) {
           processMoveToNextcloud(
             document,
             folderContent.folder,
             selectedFolderFromNextcloudTree,
           );
         }
+        // else: drop target isn't a workspace or Nextcloud folder (e.g. Google Drive) — no transfer path exists, reject silently.
       }
 
       async function moveAllDocuments(

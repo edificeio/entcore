@@ -12,6 +12,7 @@ import { SyncDocument } from "../../models/nextcloudFolder.model";
 import { INextcloudFolderScope } from "../../nextcloudFolder.directive";
 import { nextcloudUserService } from "../../services/nextcloudUser.service";
 import { nextcloudService } from "../../services/nextcloud.service";
+import { nextcloudEventService } from "../../services/nextcloudEvent.service";
 import { safeApply } from "../../utils/safeApply.utils";
 import { IWorkspaceNextcloudContent } from "./contentViewer.component";
 import { ToolbarShareSnipletViewModel } from "./toolbarShare.components";
@@ -234,6 +235,8 @@ export class ToolbarSnipletViewModel implements IViewModel {
       .then(() => {
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
+        // Refreshes the sidebar tree too, mirroring createFolder's own refresh.
+        nextcloudEventService.sendOpenFolderDocument(this.vm.parentDocument);
         safeApply(this.vm);
       })
       .catch((err: AxiosError) => {

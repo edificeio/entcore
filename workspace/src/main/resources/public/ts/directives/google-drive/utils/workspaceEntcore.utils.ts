@@ -6,7 +6,8 @@ import { GoogleDriveDocumentsUtils } from "./googleDriveDocuments.utils";
 import ng = require("angular");
 
 export class WorkspaceEntcoreUtils {
-  static $ENTCORE_WORKSPACE: string = `div[data-ng-include="'folder-content'"]`;
+  // Old tag-based selector broke once ENABLE_GOOGLE_DRIVE rendered this element as <li> instead of <div>.
+  static $ENTCORE_WORKSPACE: string = `#classic-folder-tree-root`;
 
   static toggleWorkspaceContentDisplay(state: boolean): void {
     const searchImportViewQuery: string =

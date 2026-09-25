@@ -1,9 +1,8 @@
 <div class="horizontal-spacing-twice">
-    <h2 style="margin-top: 0;"><i18n>workspace.share</i18n></h2>
+    <h2 style="margin-top: 0;"><i18n>google-drive.shared.current</i18n></h2>
 
     <!-- Existing shares — only meaningful for a single selected document -->
     <div ng-if="toolbar.share.isSingleDocument" class="row">
-        <h3><i18n>google-drive.shared.current</i18n></h3>
 
         <p ng-if="toolbar.share.loadingShares" class="centered">
             <i class="loading"></i>
@@ -32,7 +31,7 @@
 
     <!-- Add recipients -->
     <div class="row">
-        <h3><i18n>google-drive.share.search.title</i18n></h3>
+        <h2><i18n>google-drive.share.search.title</i18n></h2>
 
         <search-user
             class="twelve cell"

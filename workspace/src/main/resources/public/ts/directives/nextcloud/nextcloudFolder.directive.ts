@@ -14,6 +14,7 @@ import { INextcloudService } from "./services/nextcloud.service";
 import { NextcloudDocumentsUtils } from "./utils/nextcloudDocuments.utils";
 import { safeApply } from "./utils/safeApply.utils";
 import { WorkspaceEntcoreUtils } from "./utils/workspaceEntcore.utils";
+import { googleDriveEventService } from "../google-drive/services/googleDriveEvent.service";
 
 export interface INextcloudFolderScope {
   documents: Array<SyncDocument>;
@@ -49,15 +50,19 @@ export const workspaceNextcloudFolderController = ng.controller(
   "NextcloudFolderController",
   [
     "$scope",
+    "$rootScope",
     "NextcloudService",
     "NextcloudUserService",
     "NextcloudEventService",
     (
       $scope: INextcloudFolderScope,
+      $rootScope: any,
       nextcloudService: INextcloudService,
       nextcloudUserService: INextcloudUserService,
       nextcloudEventService: INextcloudEventService,
     ) => {
+      // Mirrors $rootScope.isGDTrashbinOpen: true once Nextcloud is the active section.
+      $rootScope.isNextcloudTrashbinOpen = false;
       $scope.userInfo = null;
       $scope.documents = [];
       $scope.folderTree = {};
@@ -85,6 +90,7 @@ export const workspaceNextcloudFolderController = ng.controller(
               $scope.documents = [new SyncDocument().initParent()];
               $scope.initTree($scope.documents);
               $scope.initDraggable();
+              setTimeout(injectNextcloudRootGroupIcon, 0);
 
               const urlParams = new URLSearchParams(window.location.search);
               if (urlParams.get("folder") === "synced") {
@@ -113,7 +119,9 @@ export const workspaceNextcloudFolderController = ng.controller(
         nextcloudEventService
           .getOpenedFolderDocument()
           .subscribe((document: SyncDocument) => {
-            let getFolderContext: SyncDocument = $scope.folderTree.trees.find(
+            // trees() now returns a single "Nextcloud" root wrapper, so search its children instead.
+            const roots: Array<SyncDocument> = $scope.folderTree.trees as any;
+            let getFolderContext: SyncDocument = (roots?.[0]?.children ?? []).find(
               (f) => f.fileId === document.fileId,
             );
             $scope.folderTree.openFolder(
@@ -142,10 +150,16 @@ export const workspaceNextcloudFolderController = ng.controller(
         // then we  add them to the folder tree
         folder.push(...staticFolders);
 
+        // Wraps "Mes documents"/"Corbeille" under a single "Nextcloud" root — see SyncDocument.createRootGroup().
+        const rootGroup = SyncDocument.createRootGroup();
+        rootGroup.children = folder;
+        // Open by default on page load, mirroring Google Drive's own root group.
+        viewModel.openedFolder = [rootGroup as any];
+
         $scope.folderTree = {
           cssTree: "folders-tree",
           get trees(): any | Array<Tree> {
-            return folder;
+            return [rootGroup] as any;
           },
           isDisabled(folder: models.Element): boolean {
             return false;
@@ -159,7 +173,34 @@ export const workspaceNextcloudFolderController = ng.controller(
             return viewModel.selectedFolder === folder;
           },
           async openFolder(folder: models.Element): Promise<void> {
+            // Clicking the "Nextcloud" grouping label toggles fold/unfold and also opens "Mes documents".
+            if ((folder as any).isRootGroup) {
+              if (viewModel.openedFolder.some((f) => f === folder)) {
+                viewModel.openedFolder = viewModel.openedFolder.filter((f) => f !== folder);
+              } else {
+                viewModel.openedFolder.push(folder);
+              }
+              setTimeout(injectNextcloudRootGroupIcon, 0);
+              return $scope.folderTree.openFolder(rootGroup.children[0] as any);
+            }
+
             viewModel.selectedFolder = folder;
+            // Clear Google Drive's own selectedFolder so its last-selected row doesn't stay highlighted.
+            const gdTreeEl = document.getElementById("google-drive-folder-tree");
+            const gdTreeScope: any = angular.element(gdTreeEl).scope();
+            if (gdTreeScope) {
+              gdTreeScope.selectedFolder = null;
+              const phase = gdTreeScope.$root && gdTreeScope.$root.$$phase;
+              if (!phase) {
+                gdTreeScope.$apply();
+              }
+            }
+            // Only clear "selected" — "opened" also drives expand/fold state, clearing it would collapse the tree.
+            if (gdTreeEl) {
+              gdTreeEl.querySelectorAll("a.selected").forEach((el) => {
+                el.classList.remove("selected");
+              });
+            }
             viewModel.setSwitchDisplayHandler();
             // create handler in case icon are only clicked
             viewModel.watchFolderState();
@@ -176,6 +217,7 @@ export const workspaceNextcloudFolderController = ng.controller(
             }
 
             await viewModel.openDocument(folder);
+            setTimeout(injectNextcloudRootGroupIcon, 0);
 
             // reset drag feedback by security
             viewModel.removeDragFeedback();
@@ -302,6 +344,10 @@ export const workspaceNextcloudFolderController = ng.controller(
       };
 
       $scope.openDocument = async (document: any): Promise<void> => {
+        if (document.isRootGroup) {
+          // Pure grouping node ("Nextcloud" wrapping Mes documents/Corbeille) — nothing to load.
+          return;
+        }
         if ((<any>document).isStaticFolder) {
           const staticType: string = (<any>document).staticFolderType;
           let staticDocuments: Array<SyncDocument> = [];
@@ -309,6 +355,8 @@ export const workspaceNextcloudFolderController = ng.controller(
           switch (staticType) {
             case "trashbin":
               $scope.isTrashbinOpen = true;
+              $rootScope.isNextcloudTrashbinOpen = true;
+              $rootScope.isGDTrashbinOpen = false;
               const trashList = await nextcloudService
                 .listTrash(model.me.userId)
                 .catch((err: Error) => {
@@ -329,6 +377,8 @@ export const workspaceNextcloudFolderController = ng.controller(
         }
 
         $scope.isTrashbinOpen = false;
+        $rootScope.isNextcloudTrashbinOpen = true;
+        $rootScope.isGDTrashbinOpen = false;
 
         let syncDocuments: Array<SyncDocument> = await nextcloudService
           .listDocument(model.me.userId, document.path ? document.path : null)
@@ -482,10 +532,87 @@ export const workspaceNextcloudFolderController = ng.controller(
 
       function onDragOver(element: HTMLElement): EventListener {
         return function (event: Event): void {
+          // A Google Drive-sourced drag has no transfer path into Nextcloud — leave the
+          // browser's default "no-drop" cursor instead of highlighting this as a valid target.
+          if (googleDriveEventService.getContentContext()) return;
           event.preventDefault();
           event.stopPropagation();
           element.firstElementChild.classList.add("droptarget");
         };
+      }
+
+      // <folder-tree-inner> has no icon slot — icons are injected as plain DOM nodes after render.
+      const FOLDER_ICON_SVG: string =
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>';
+      const FOLDER_OPEN_ICON_SVG: string =
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M2 8V6a2 2 0 0 1 2-2h4.5l2 2H20a2 2 0 0 1 2 2"/>' +
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M2 8h19a1 1 0 0 1 .97 1.24l-1.5 6A2 2 0 0 1 18.53 17H4.5a2 2 0 0 1-1.94-1.51L1 9.5A1 1 0 0 1 2 8Z"/>';
+      const TRASH_ICON_SVG: string =
+        '<path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6zM10 11v6M14 11v6"/>';
+      // Official Nextcloud mark, recolored to brand blue to match Google Drive's colored root icon.
+      const NEXTCLOUD_ROOT_SVG: string =
+        '<path fill="#0082c9" d="m128 7c-25.871 0-47.817 17.485-54.713 41.209-5.9795-12.461-18.642-21.209-33.287-21.209-20.304 0-37 16.696-37 37s16.696 37 37 37c14.645 0 27.308-8.7481 33.287-21.209 6.8957 23.724 28.842 41.209 54.713 41.209s47.817-17.485 54.713-41.209c5.9795 12.461 18.642 21.209 33.287 21.209 20.304 0 37-16.696 37-37s-16.696-37-37-37c-14.645 0-27.308 8.7481-33.287 21.209-6.8957-23.724-28.842-41.209-54.713-41.209zm0 22c19.46 0 35 15.54 35 35s-15.54 35-35 35-35-15.54-35-35 15.54-35 35-35zm-88 20c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15zm176 0c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15z"/>';
+
+      function prependIcon(
+        link: Element,
+        innerSvg: string,
+        markerClass: string,
+        viewBox: string = "0 0 24 24",
+        replaceMarkerClasses: Array<string> = [],
+      ): void {
+        if (!link) return;
+        (link as HTMLElement).style.setProperty("white-space", "nowrap", "important");
+        replaceMarkerClasses.forEach((cls) => {
+          if (cls === markerClass) return;
+          const stale = link.querySelector("." + cls);
+          if (stale) stale.remove();
+        });
+        if (link.querySelector("." + markerClass)) return;
+        const icon = document.createElement("span");
+        icon.className = markerClass;
+        icon.style.cssText =
+          "display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;flex-shrink:0;color:#8c939e;";
+        icon.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' +
+          viewBox +
+          '" width="16" height="16">' +
+          innerSvg +
+          "</svg>";
+        link.prepend(icon);
+      }
+
+      function injectNextcloudRootGroupIcon(): void {
+        const treeEl = document.getElementById("nextcloud-folder-tree");
+        if (!treeEl) return;
+
+        const links = treeEl.querySelectorAll("folder-tree-inner > a.folder-list-item");
+        links.forEach((link) => {
+          const innerEl: any = link.closest("folder-tree-inner");
+          if (!innerEl) return;
+          const innerJq: any = angular.element(innerEl);
+          const scope: any = innerJq.isolateScope?.() ?? innerJq.scope?.();
+          const folder: SyncDocument = scope?.folder;
+          if (!folder) return;
+
+          if (folder.isRootGroup) {
+            prependIcon(link, NEXTCLOUD_ROOT_SVG, "nextcloud-root-icon", "0 0 256 128");
+          } else if (folder.staticFolderType === "trashbin") {
+            prependIcon(link, TRASH_ICON_SVG, "nextcloud-child-icon");
+          } else {
+            const isOpen = $scope.openedFolder?.some((f: any) => f === folder) ?? false;
+            if (isOpen) {
+              prependIcon(link, FOLDER_OPEN_ICON_SVG, "nextcloud-child-icon-open", "0 0 24 24", [
+                "nextcloud-child-icon",
+                "nextcloud-child-icon-open",
+              ]);
+            } else {
+              prependIcon(link, FOLDER_ICON_SVG, "nextcloud-child-icon", "0 0 24 24", [
+                "nextcloud-child-icon",
+                "nextcloud-child-icon-open",
+              ]);
+            }
+          }
+        });
       }
 
       function switchWorkspaceTreeHandler() {
@@ -531,17 +658,25 @@ export const workspaceNextcloudFolderController = ng.controller(
           }
 
           if (target && viewModel.selectedFolder) {
+            const classicScope: any = WorkspaceEntcoreUtils.workspaceScope();
+            let folder: any = angular.element(target).scope().folder;
+            // "Nextcloud" is a pure grouping header; redirect so its children aren't treated as documents inside it.
+            const wrapperRoot = classicScope?.wrapperTrees?.[0];
+            const redirectedFromWrapper = folder === wrapperRoot;
+            if (redirectedFromWrapper) {
+              folder = (classicScope?.trees || []).find((t: any) => t.filter === "owner") ?? folder;
+            }
             // go back to workspace content display
             // clear nextCloudTree interaction
             viewModel.selectedFolder = null;
-            target.classList.add("selected");
+            $rootScope.isNextcloudTrashbinOpen = false;
+            if (!redirectedFromWrapper) {
+              target.classList.add("selected");
+            }
             // update workspace folder content
-            WorkspaceEntcoreUtils.updateWorkspaceDocuments(
-              angular.element(target).scope().folder,
-            );
+            WorkspaceEntcoreUtils.updateWorkspaceDocuments(folder);
             //set the right openedFolder
-            WorkspaceEntcoreUtils.workspaceScope()["openedFolder"]["folder"] =
-              angular.element(target).scope().folder;
+            WorkspaceEntcoreUtils.workspaceScope()["openedFolder"]["folder"] = folder;
             // display workspace contents (search bar, menu, list of folder/files...) interactions
             WorkspaceEntcoreUtils.toggleWorkspaceContentDisplay(true);
             // remove any content context cache
