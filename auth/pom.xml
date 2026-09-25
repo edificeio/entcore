@@ -39,7 +39,7 @@
         <dependency>
             <groupId>jp.eisbahn</groupId>
             <artifactId>oauth2-server</artifactId>
-            <version>1.5.1</version>
+            <version>1.5.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
