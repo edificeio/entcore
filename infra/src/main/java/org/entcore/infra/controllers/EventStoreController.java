@@ -127,6 +127,59 @@ public class EventStoreController extends BaseController {
 		});
 	}
 
+	@Post("/event/backchannel/store")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void storeBackChannelEvent(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, payload -> {
+			final String eventType = payload.getString("event-type", "*");
+			if (eventWhiteList.contains(eventType.toUpperCase()) || eventWhiteList.contains(eventType.toLowerCase())) {
+				final String userId = payload.getString("userId");
+				if (StringUtils.isEmpty(userId)) {
+					Renders.badRequest(request, "userId is undefined");
+					return;
+				} else if (userBlackList.contains(userId)) {
+					Renders.badRequest(request, "userId is not authorized");
+					return;
+				}
+
+				UserUtils.getUserInfos(eb, userId, user -> {
+					if (user != null) {
+						final JsonObject event = new JsonObject();
+						event.put("event-type", eventType);
+						event.put("date", payload.getValue("date", System.currentTimeMillis()));
+						event.put("userId", userId);
+						event.put("ua", payload.getValue("ua"));
+						event.put("referer", payload.getValue("referer"));
+						event.put("ip", payload.getValue("ip"));
+						if (payload.containsKey("module")) {
+							event.put("module", payload.getValue("module"));
+						}
+
+						if (user.getType() != null) {
+							event.put("profil", user.getType());
+						}
+						if (user.getStructures() != null) {
+							event.put("structures", new JsonArray(user.getStructures()));
+						}
+						if (user.getClasses() != null) {
+							event.put("classes", new JsonArray(user.getClasses()));
+						}
+						if (user.getGroupsIds() != null) {
+							event.put("groups", new JsonArray(user.getGroupsIds()));
+						}
+
+						eventStoreService.store(event, voidResponseHandler(request));
+					} else {
+						Renders.badRequest(request, "user is unknown");
+					}
+				});
+			} else {
+				Renders.badRequest(request, "bad event:"+eventType);
+			}
+		});
+	}
+
 	@Post("/event/mobile/store")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void storeMobile(final HttpServerRequest request) {
