@@ -387,7 +387,7 @@ public class CommunicationController extends BaseController {
 	 * @param request the HTTP request; must contain a {@code groupId} path parameter
 	 *                identifying the group whose members are to be listed
 	 * @return a list of user objects  {@link org.entcore.communication.dto.rest.UserDTO},
-	 *         each containing {@code id}, {@code displayName}, {@code login}, and {@code type} fields,
+	 *         each containing {@code id}, {@code displayName}, and {@code type} fields,
 	 *         ordered by profile type (descending) then display name
 	 */
 	@Get("/visible/group/:groupId")
@@ -409,7 +409,7 @@ public class CommunicationController extends BaseController {
 								"MATCH (s:Group { id : {groupId}})<-[:IN]-(u:User) " +
 								"USING INDEX s:Group(id) "+
 								"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, " +
-								"u.displayName as displayName, u.login as login " +
+								"u.displayName as displayName " +
 								"ORDER BY type DESC, displayName ";
 				final JsonObject params = new JsonObject().put("groupId", groupId);
 				communicationService.visibleUsers(user.getUserId(), null, null, true, true, false, null,
