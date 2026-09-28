@@ -67,7 +67,7 @@
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
-        <jacksonVersion>2.15.2</jacksonVersion>
+        <jacksonVersion>2.18.10</jacksonVersion>
         <casVersion>0.3.1</casVersion>
         <vertxCronTimerVersion>3.0.0</vertxCronTimerVersion>
         <opencsvVersion>3.9</opencsvVersion>
