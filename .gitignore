@@ -90,9 +90,6 @@ conversation/src/main/resources/view/
 **/.nx
 **/frontend/.env*
 *.tsbuildinfo
-# Ignore package.json in "frontend" folders (where a template exists)
-**/frontend/package.json
-**/frontend/scripts/get-tokens/config.json
 
 # Ignore resources files in "backend/public" folders
 **/backend/**/resources/public/*.*
