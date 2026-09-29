@@ -47,6 +47,8 @@ import org.entcore.auth.users.AuthRepositoryEvents;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.NewDeviceWarningTask;
 import org.entcore.auth.users.UserAuthAccount;
+import org.entcore.common.configuration.ConfigurationSupplier;
+import org.entcore.common.configuration.ConfigurationSupplierFactory;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
@@ -81,207 +83,210 @@ public class Auth extends BaseServer {
 
 	public Future<Void> initAuth(final Map<String, Object> authMap, final AsyncMap<String, Object> asyncAuthMap) {
 		final EventBus eb = getEventBus(vertx);
-		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
-		final String JWT_PERIOD_CRON = "jwt-bearer-authorization-periodic";
-		final String JWT_PERIOD = "jwt-bearer-authorization";
+		return ConfigurationSupplierFactory.createConfigurationSupplier(vertx, config).compose(configurationSupplier -> {
+			setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
+			final String JWT_PERIOD_CRON = "jwt-bearer-authorization-periodic";
+			final String JWT_PERIOD = "jwt-bearer-authorization";
 
-		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
-		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore, authMap);
-		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()),
-				(JsonObject) authMap.get("skins"));
+			final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
+			final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore, authMap);
+			SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()),
+					(JsonObject) authMap.get("skins"));
 
-		SmsSenderFactory.getInstance().init(vertx, config);
-		UserValidationFactory.getFactory().setEventStore(eventStore, AuthEvent.SMS.name());
-		final MfaService mfaService;
-		try {
-			mfaService = new DefaultMfaService(vertx, config, authMap).setEventStore(eventStore);
-		} catch (InvalidKeyException e) {
-			return Future.failedFuture(e);
-		}
+			SmsSenderFactory.getInstance().init(vertx, config);
+			UserValidationFactory.getFactory().setEventStore(eventStore, AuthEvent.SMS.name());
+			final MfaService mfaService;
+			try {
+				mfaService = new DefaultMfaService(vertx, config, authMap).setEventStore(eventStore);
+			} catch (InvalidKeyException e) {
+				return Future.failedFuture(e);
+			}
 
-		final JsonObject oic = config.getJsonObject("openid-connect");
-		final OpenIdConnectService openIdConnectService = (oic != null)
-				? new DefaultOpendIdConnectService(oic.getString("iss"), vertx, oic.getString("keys"))
-				: null;
-		final boolean checkFederatedLogin = config.getBoolean("check-federated-login", false);
-		final OAuthDataHandlerFactory oauthDataFactory = new OAuthDataHandlerFactory(
-				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
-				config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0),
-				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore,
-				config.getBoolean("otp-disabled", false), config.getInteger("oauth2-token-expiration-time-seconds", 3600));
+			final JsonObject oic = config.getJsonObject("openid-connect");
+			final OpenIdConnectService openIdConnectService = (oic != null)
+					? new DefaultOpendIdConnectService(oic.getString("iss"), vertx, oic.getString("keys"))
+					: null;
+			final boolean checkFederatedLogin = config.getBoolean("check-federated-login", false);
+			final OAuthDataHandlerFactory oauthDataFactory = new OAuthDataHandlerFactory(
+					openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
+					config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0),
+					config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore,
+					config.getBoolean("otp-disabled", false), config.getInteger("oauth2-token-expiration-time-seconds", 3600));
 
-		AuthController authController = new AuthController(authMap);
-		authController.setEventStore(eventStore);
-		authController.setUserAuthAccount(userAuthAccount);
-		authController.setOauthDataFactory(oauthDataFactory);
-		authController.setCheckFederatedLogin(checkFederatedLogin);
-		authController.setMfaService(mfaService);
-		addController(authController);
 
-		final ConfigurationController configurationController = new ConfigurationController();
-		configurationController.setConfigurationService(new DefaultConfigurationService());
-		addController(configurationController);
-		final JwtVerifier jwtVerifier;
-		if (getOrElse(config.getBoolean(JWT_PERIOD), true)) {
-			jwtVerifier = new JwtVerifier(vertx);
-			oauthDataFactory.setJwtVerifier(jwtVerifier);
-		} else {
-			jwtVerifier = null;
-		}
+			AuthController authController = new AuthController(authMap, configurationSupplier);
+			authController.setEventStore(eventStore);
+			authController.setUserAuthAccount(userAuthAccount);
+			authController.setOauthDataFactory(oauthDataFactory);
+			authController.setCheckFederatedLogin(checkFederatedLogin);
+			authController.setMfaService(mfaService);
+			addController(authController);
 
-		final String customTokenEncryptKey = config.getString("custom-token-encrypt-key", UUID.randomUUID().toString());
-		final String signKey = (String) authMap.get("signKey");
+			final ConfigurationController configurationController = new ConfigurationController();
+			configurationController.setConfigurationService(new DefaultConfigurationService());
+			addController(configurationController);
+			final JwtVerifier jwtVerifier;
+			if (getOrElse(config.getBoolean(JWT_PERIOD), true)) {
+				jwtVerifier = new JwtVerifier(vertx);
+				oauthDataFactory.setJwtVerifier(jwtVerifier);
+			} else {
+				jwtVerifier = null;
+			}
 
-		CustomTokenHelper.setEncryptKey(customTokenEncryptKey);
-		CustomTokenHelper.setSignKey(signKey);
+			final String customTokenEncryptKey = config.getString("custom-token-encrypt-key", UUID.randomUUID().toString());
+			final String signKey = (String) authMap.get("signKey");
 
-		final String samlMetadataFolder = config.getString("saml-metadata-folder");
-		if (samlMetadataFolder != null && !samlMetadataFolder.trim().isEmpty()) {
-			vertx.fileSystem().readDir(samlMetadataFolder, new Handler<AsyncResult<List<String>>>() {
-				@Override
-				public void handle(AsyncResult<List<String>> event) {
-					if (event.succeeded() && event.result().size() > 0) {
-						try {
-							log.info("Loading SAML metadata from folder : " + samlMetadataFolder +
-									" (" + event.result().size() + " file(s) found)");
-							final SamlHelper samlHelper = new SamlHelper(vertx,
-									new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers")),
-									signKey
-							);
-							oauthDataFactory.setSamlHelper(samlHelper);
+			CustomTokenHelper.setEncryptKey(customTokenEncryptKey);
+			CustomTokenHelper.setSignKey(signKey);
 
-							SamlController samlController = new SamlController((JsonObject) authMap.get("skins"));
-							JsonObject conf = config;
-
-							vertx.deployVerticle(SamlValidator.class,
-									new DeploymentOptions().setConfig(conf).setWorker(true));
-							samlController.setEventStore(eventStore);
-							samlController.setUserAuthAccount(userAuthAccount);
-							samlController.setSamlHelper(samlHelper);
-							samlController.setSignKey(signKey);
-							samlController.setSamlWayfParams(config.getJsonObject("saml-wayf"));
-							samlController.setIgnoreCallBackPattern(config.getString("ignoreCallBackPattern"));
-							addController(samlController);
-							if (asyncAuthMap != null) {
-								String loginUri = config.getString("loginUri");
-								String callbackParam = config.getString("callbackParam");
-								if (loginUri != null && !loginUri.trim().isEmpty()) {
-									asyncAuthMap.putIfAbsent("loginUri", loginUri)
-										.onFailure(ex -> log.error("Error when put loginUri", ex));
-								}
-								if (callbackParam != null && !callbackParam.trim().isEmpty()) {
-									asyncAuthMap.putIfAbsent("callbackParam", callbackParam)
-										.onFailure(ex -> log.error("Error when put callbackParam", ex));
-								}
-								final JsonObject authLocations = config.getJsonObject("authLocations");
-								if (authLocations != null && authLocations.size() > 0) {
-									asyncAuthMap.putIfAbsent("authLocations", authLocations.encode())
-										.onFailure(ex -> log.error("Error when put authLocations", ex));
-								}
-							}
-						} catch (Exception e) {
-							log.error("Saml loading error.", e);
-						}
-					} else if (event.failed()) {
-						log.error("Unable to read saml-metadata-folder : " + samlMetadataFolder +
-								". SamlController will not be loaded.", event.cause());
-					} else {
-						log.warn("saml-metadata-folder : " + samlMetadataFolder +
-								" is empty. SamlController will not be loaded.");
-					}
-				}
-			});
-		}
-		final JsonObject openidFederate = config.getJsonObject("openid-federate");
-		final JsonObject openidConnect = config.getJsonObject("openid-connect");
-		final OpenIdConnectController openIdConnectController;
-		if (openidFederate != null || openidConnect != null) {
-			openIdConnectController = new OpenIdConnectController();
-			addController(openIdConnectController);
-		} else {
-			openIdConnectController = null;
-		}
-		if (openidConnect != null) {
-			final String certsPath = openidConnect.getString("certs");
-			if (isNotEmpty(certsPath)) {
-				JWT.listCertificates(vertx, certsPath, new Handler<JsonObject>() {
+			final String samlMetadataFolder = config.getString("saml-metadata-folder");
+			if (samlMetadataFolder != null && !samlMetadataFolder.trim().isEmpty()) {
+				vertx.fileSystem().readDir(samlMetadataFolder, new Handler<AsyncResult<List<String>>>() {
 					@Override
-					public void handle(JsonObject certs) {
-						openIdConnectController.setCertificates(certs);
-						openIdConnectController.setJwksFormat(JWT.generateJwks(certs));
+					public void handle(AsyncResult<List<String>> event) {
+						if (event.succeeded() && event.result().size() > 0) {
+							try {
+								log.info("Loading SAML metadata from folder : " + samlMetadataFolder +
+										" (" + event.result().size() + " file(s) found)");
+								final SamlHelper samlHelper = new SamlHelper(vertx,
+										new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers")),
+										signKey
+								);
+								oauthDataFactory.setSamlHelper(samlHelper);
+
+								SamlController samlController = new SamlController((JsonObject) authMap.get("skins"));
+								JsonObject conf = config;
+
+								vertx.deployVerticle(SamlValidator.class,
+										new DeploymentOptions().setConfig(conf).setWorker(true));
+								samlController.setEventStore(eventStore);
+								samlController.setUserAuthAccount(userAuthAccount);
+								samlController.setSamlHelper(samlHelper);
+								samlController.setSignKey(signKey);
+								samlController.setSamlWayfParams(config.getJsonObject("saml-wayf"));
+								samlController.setIgnoreCallBackPattern(config.getString("ignoreCallBackPattern"));
+								addController(samlController);
+								if (asyncAuthMap != null) {
+									String loginUri = config.getString("loginUri");
+									String callbackParam = config.getString("callbackParam");
+									if (loginUri != null && !loginUri.trim().isEmpty()) {
+										asyncAuthMap.putIfAbsent("loginUri", loginUri)
+												.onFailure(ex -> log.error("Error when put loginUri", ex));
+									}
+									if (callbackParam != null && !callbackParam.trim().isEmpty()) {
+										asyncAuthMap.putIfAbsent("callbackParam", callbackParam)
+												.onFailure(ex -> log.error("Error when put callbackParam", ex));
+									}
+									final JsonObject authLocations = config.getJsonObject("authLocations");
+									if (authLocations != null && authLocations.size() > 0) {
+										asyncAuthMap.putIfAbsent("authLocations", authLocations.encode())
+												.onFailure(ex -> log.error("Error when put authLocations", ex));
+									}
+								}
+							} catch (Exception e) {
+								log.error("Saml loading error.", e);
+							}
+						} else if (event.failed()) {
+							log.error("Unable to read saml-metadata-folder : " + samlMetadataFolder +
+									". SamlController will not be loaded.", event.cause());
+						} else {
+							log.warn("saml-metadata-folder : " + samlMetadataFolder +
+									" is empty. SamlController will not be loaded.");
+						}
 					}
 				});
 			}
-		}
-		if (openidFederate != null) {
-			openIdConnectController.setEventStore(eventStore);
-			openIdConnectController.setUserAuthAccount(userAuthAccount);
-			openIdConnectController.setSignKey(signKey);
-			openIdConnectController.setOpenIdConnectServiceProviderFactory(
-					new DefaultOpenIdServiceProviderFactory(vertx, openidFederate.getJsonObject("domains")));
-			openIdConnectController.setSubMapping(openidFederate.getBoolean("authorizeSubMapping", false));
-			openIdConnectController.setActivationThemes(config.getJsonObject("activation-themes", new JsonObject()));
-
-			final JsonArray authorizedHostsLogin = openidFederate.getJsonArray("authorizedHostsLogin");
-			if (authorizedHostsLogin != null && authorizedHostsLogin.size() > 0) {
-				authController.setAuthorizedHostsLogin(authorizedHostsLogin);
+			final JsonObject openidFederate = config.getJsonObject("openid-federate");
+			final JsonObject openidConnect = config.getJsonObject("openid-connect");
+			final OpenIdConnectController openIdConnectController;
+			if (openidFederate != null || openidConnect != null) {
+				openIdConnectController = new OpenIdConnectController();
+				addController(openIdConnectController);
+			} else {
+				openIdConnectController = null;
 			}
-		}
-
-		final JsonObject NDWConf = config.getJsonObject("new-device-warning");
-		NewDeviceWarningTask NDWTask = null;
-		if(NDWConf != null) {
-			String cron = NDWConf.getString("cron");
-			EmailFactory emailFactory = EmailFactory.getInstance();
-			boolean warnADMC = NDWConf.getBoolean("warn-admc", false);
-			boolean warnADML = NDWConf.getBoolean("warn-adml", false);
-			boolean warnUsers = NDWConf.getBoolean("warn-users", false);
-			int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
-			int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
-			String processInterval = NDWConf.getString("process-interval");
-			NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
-					warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
-					(String) authMap.get("event-store"));
-			// Add controller to trigger the task via API
-			addController(new TaskController(NDWTask));
-			// Schedule the task from cron expression
-			if (cron != null && !cron.trim().isEmpty()) {
-				try {
-					new CronTrigger(vertx, cron).schedule(NDWTask);
-				} catch (ParseException e) {
-					return Future.failedFuture(e);
+			if (openidConnect != null) {
+				final String certsPath = openidConnect.getString("certs");
+				if (isNotEmpty(certsPath)) {
+					JWT.listCertificates(vertx, certsPath, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject certs) {
+							openIdConnectController.setCertificates(certs);
+							openIdConnectController.setJwksFormat(JWT.generateJwks(certs));
+						}
+					});
 				}
 			}
-		}
+			if (openidFederate != null) {
+				openIdConnectController.setEventStore(eventStore);
+				openIdConnectController.setUserAuthAccount(userAuthAccount);
+				openIdConnectController.setSignKey(signKey);
+				openIdConnectController.setOpenIdConnectServiceProviderFactory(
+						new DefaultOpenIdServiceProviderFactory(vertx, openidFederate.getJsonObject("domains")));
+				openIdConnectController.setSubMapping(openidFederate.getBoolean("authorizeSubMapping", false));
+				openIdConnectController.setActivationThemes(config.getJsonObject("activation-themes", new JsonObject()));
 
-		addController(new TestController(NDWTask));
-
-		CanopeCasClient canopeController = new CanopeCasClient(authController);
-		addController(canopeController);
-
-		setRepositoryEvents(new AuthRepositoryEvents(NDWTask));
-
-		addController(new RedirectController());
-
-		if (config.containsKey("carbonio-base-url")
-				&& config.containsKey("carbonio-redirect-url")
-				&& config.containsKey("carbonio-domain-key")) {
-			addController(new CarbonioPreauthController());
-		}
-
-		if (jwtVerifier != null) {
-			DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(null));
-			((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
-			vertx.setPeriodic((config.containsKey(JWT_PERIOD_CRON)
-					&& (config.getLong(JWT_PERIOD_CRON) != null)) ? config.getLong(JWT_PERIOD_CRON) : 60000,
-					new Handler<Long>() {
-				@Override
-				public void handle(Long event) {
-					((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
+				final JsonArray authorizedHostsLogin = openidFederate.getJsonArray("authorizedHostsLogin");
+				if (authorizedHostsLogin != null && authorizedHostsLogin.size() > 0) {
+					authController.setAuthorizedHostsLogin(authorizedHostsLogin);
 				}
-			});
-		}
-		return Future.succeededFuture();
+			}
+
+			final JsonObject NDWConf = config.getJsonObject("new-device-warning");
+			NewDeviceWarningTask NDWTask = null;
+			if(NDWConf != null) {
+				String cron = NDWConf.getString("cron");
+				EmailFactory emailFactory = EmailFactory.getInstance();
+				boolean warnADMC = NDWConf.getBoolean("warn-admc", false);
+				boolean warnADML = NDWConf.getBoolean("warn-adml", false);
+				boolean warnUsers = NDWConf.getBoolean("warn-users", false);
+				int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
+				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
+				String processInterval = NDWConf.getString("process-interval");
+				NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
+						warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
+						(String) authMap.get("event-store"));
+				// Add controller to trigger the task via API
+				addController(new TaskController(NDWTask));
+				// Schedule the task from cron expression
+				if (cron != null && !cron.trim().isEmpty()) {
+					try {
+						new CronTrigger(vertx, cron).schedule(NDWTask);
+					} catch (ParseException e) {
+						return Future.failedFuture(e);
+					}
+				}
+			}
+
+			addController(new TestController(NDWTask));
+
+			CanopeCasClient canopeController = new CanopeCasClient(authController);
+			addController(canopeController);
+
+			setRepositoryEvents(new AuthRepositoryEvents(NDWTask));
+
+			addController(new RedirectController());
+
+			if (config.containsKey("carbonio-base-url")
+					&& config.containsKey("carbonio-redirect-url")
+					&& config.containsKey("carbonio-domain-key")) {
+				addController(new CarbonioPreauthController());
+			}
+
+			if (jwtVerifier != null) {
+				DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(null));
+				((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
+				vertx.setPeriodic((config.containsKey(JWT_PERIOD_CRON)
+								&& (config.getLong(JWT_PERIOD_CRON) != null)) ? config.getLong(JWT_PERIOD_CRON) : 60000,
+						new Handler<Long>() {
+							@Override
+							public void handle(Long event) {
+								((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
+							}
+						});
+			}
+			return Future.succeededFuture();
+		});
 	}
 
 }
