@@ -19,6 +19,7 @@
 
 package org.entcore.auth.controllers;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -97,7 +98,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.entcore.common.configuration.ConfigurationSupplier;
+
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
@@ -124,13 +128,13 @@ public class AuthController extends BaseController {
 	private MfaService mfaSvc;
 	private OpenIdSloServiceImpl sloServiceImpl;
 	private Set<String> clientIdsAuthorized = new HashSet();
+	private ConfigurationSupplier configurationSupplier;
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
 	}
 	public static final String CREATE_SESSION_ADRESS = "auth.createSession";
 
-	private Pattern passwordPattern;
 	private String smsProvider;
 	private boolean slo;
 	private List<String> internalAddress;
@@ -138,8 +142,9 @@ public class AuthController extends BaseController {
 	private long jwtTtlSeconds;
 	private final Map<String, Object> server;
 
-	public AuthController(Map<String, Object> server) {
+	public AuthController(Map<String, Object> server, final ConfigurationSupplier configurationSupplier) {
 		this.server = server;
+		this.configurationSupplier = configurationSupplier;
 	}
 
 	@Override
@@ -156,7 +161,6 @@ public class AuthController extends BaseController {
 		protectedResource = new ProtectedResource();
 		protectedResource.setDataHandlerFactory(oauthDataFactory);
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
-		passwordPattern = Pattern.compile(config.getString("passwordRegex", ".{8}.*"));
 		JsonArray authorizedSessions = getOrElse(config.getJsonArray("authorize-mobile-session"), new JsonArray());
 		authorizedSessions.forEach(session -> clientIdsAuthorized.add((String) session));
 		if (server != null && server.get("smsProvider") != null)
@@ -620,42 +624,48 @@ public class AuthController extends BaseController {
 		final JsonObject context = new JsonObject();
 		context.put("callBack", config.getJsonObject("authenticationServer").getString("loginCallback"));
 		context.put("cgu", config.getBoolean("cgu", true));
-		context.put("passwordRegex", passwordPattern.toString());
-		context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
-		// Human-readable password format :
-		final I18n i18n = I18n.getInstance();
-		final JsonObject pwdResetFormatByLang = new JsonObject();
-		final JsonObject pwdActivationFormatByLang = new JsonObject();
-		i18n.getLanguages(Renders.getHost(request))
-		.stream()
-		.map(String.class::cast)
-		.forEach( (String lang) -> {
-			if( lang != null ) {
-				try {
-					pwdResetFormatByLang.put(lang, i18n.translate("password.rules.reset", Renders.getHost(request), lang));
-				} catch (Exception e) {
-					pwdResetFormatByLang.put(lang, "");
-					log.error(String.format("error when translating password.rules.reset in %s : ", lang), e);
-				}
+		configurationSupplier.getConfigurationString("passwordRegex", null, request)
+		.onSuccess(passwordRegex -> context.put("passwordRegex", passwordRegex))
+		.onFailure(th -> {
+			log.error("Error while getting password regex", th);
+			context.put("passwordRegex", "");
+		}).andThen(r -> {
+			context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
+			// Human-readable password format :
+			final I18n i18n = I18n.getInstance();
+			final JsonObject pwdResetFormatByLang = new JsonObject();
+			final JsonObject pwdActivationFormatByLang = new JsonObject();
+			i18n.getLanguages(Renders.getHost(request))
+					.stream()
+					.map(String.class::cast)
+					.forEach( (String lang) -> {
+						if( lang != null ) {
+							try {
+								pwdResetFormatByLang.put(lang, i18n.translate("password.rules.reset", Renders.getHost(request), lang));
+							} catch (Exception e) {
+								pwdResetFormatByLang.put(lang, "");
+								log.error(String.format("error when translating password.rules.reset in %s : ", lang), e);
+							}
 
-				try {
-					pwdActivationFormatByLang.put(lang, i18n.translate("password.rules.activation", Renders.getHost(request), lang));
-				} catch (Exception e) {
-					pwdActivationFormatByLang.put(lang, "");
-					log.error(String.format("error when translating password.rules.activation in %s : ", lang), e);
-				}
-			}
+							try {
+								pwdActivationFormatByLang.put(lang, i18n.translate("password.rules.activation", Renders.getHost(request), lang));
+							} catch (Exception e) {
+								pwdActivationFormatByLang.put(lang, "");
+								log.error(String.format("error when translating password.rules.activation in %s : ", lang), e);
+							}
+						}
+					});
+			context.put("passwordRegexI18n", pwdResetFormatByLang);
+			context.put("passwordRegexI18nActivation", pwdActivationFormatByLang);
+
+			final JsonArray mfaConfig = new JsonArray();
+			if( Mfa.withSms() ) mfaConfig.add(Mfa.TYPE_SMS);
+			if( Mfa.withEmail() ) mfaConfig.add(Mfa.TYPE_EMAIL);
+			if( Mfa.withTotp() ) mfaConfig.add(Mfa.TYPE_TOTP);
+			context.put("mfaConfig", mfaConfig);
+
+			renderJson(request, context);
 		});
-		context.put("passwordRegexI18n", pwdResetFormatByLang);
-		context.put("passwordRegexI18nActivation", pwdActivationFormatByLang);
-
-		final JsonArray mfaConfig = new JsonArray();
-		if( Mfa.withSms() ) mfaConfig.add(Mfa.TYPE_SMS);
-		if( Mfa.withEmail() ) mfaConfig.add(Mfa.TYPE_EMAIL);
-		if( Mfa.withTotp() ) mfaConfig.add(Mfa.TYPE_TOTP);
-		context.put("mfaConfig", mfaConfig);
-
-		renderJson(request, context);
 	}
 
 	@Get("/user/requirements")
@@ -1267,7 +1277,7 @@ public class AuthController extends BaseController {
 				} else {
 					// Validate fields and collect all errors
 					List<String> validationErrors = new ArrayList<>();
-					String normalizedPhone = phone;
+
 					
 					// Validate login
 					if (StringUtils.isEmpty(login)) {
@@ -1279,113 +1289,125 @@ public class AuthController extends BaseController {
 						validationErrors.add("auth.activation.error.code.missing");
 					}
 
+					final Promise<Void> promise = Promise.promise();
 					// Password validations
 					if (StringUtils.isEmpty(password)) {
 						validationErrors.add("auth.activation.error.password.missing");
+						promise.complete();
 					} else {
 						if (!password.equals(confirmPassword)) {
 							validationErrors.add("auth.activation.error.password.mismatch");
+							promise.complete();
 						}
-						if (!passwordPattern.matcher(password).matches()) {
+						getPasswordRegexPattern(request).onSuccess(p -> {
+							if (!p.matcher(password).matches()) {
+								validationErrors.add("auth.activation.error.password.format");
+							}
+							promise.complete();
+						}).onFailure(th -> {
+							log.error("Error while getting password regex", th);
 							validationErrors.add("auth.activation.error.password.format");
-						}
+							promise.complete();
+						});
 					}
-
-					// Email validations
-					if (config.getJsonObject("mandatory", new JsonObject()).getBoolean("mail", false)
-							&& StringUtils.isEmpty(email)) {
-						validationErrors.add("auth.activation.error.email.mandatory");
-					} else if (!StringUtils.isEmpty(email)) {
-						if (!StringValidation.isEmail(email)) {
-							validationErrors.add("auth.activation.error.email.format");
-						} else if (invalidEmails.containsKey(email)) {
-							validationErrors.add("auth.activation.error.email.blocked");
+					promise.future().onComplete(ar -> {
+						String normalizedPhone = phone;
+						// Email validations
+						if (config.getJsonObject("mandatory", new JsonObject()).getBoolean("mail", false)
+								&& StringUtils.isEmpty(email)) {
+							validationErrors.add("auth.activation.error.email.mandatory");
+						} else if (!StringUtils.isEmpty(email)) {
+							if (!StringValidation.isEmail(email)) {
+								validationErrors.add("auth.activation.error.email.format");
+							} else if (invalidEmails.containsKey(email)) {
+								validationErrors.add("auth.activation.error.email.blocked");
+							}
 						}
-					}
 
-					// Phone validations
-					if (config.getJsonObject("mandatory", new JsonObject()).getBoolean("phone", false)
-							&& StringUtils.isEmpty(phone)) {
-						validationErrors.add("auth.activation.error.phone.mandatory");
-					} else if (!StringUtils.isEmpty(phone)) {
-						String region = PhoneValidation.extractRegion(phone);
-						PhoneValidation.PhoneValidationResult phoneValidation = PhoneValidation.validateMobileNumber(phone, region);
-						if (!phoneValidation.isValid()) {
-							validationErrors.add(phoneValidation.getErrorCode());
+						// Phone validations
+						if (config.getJsonObject("mandatory", new JsonObject()).getBoolean("phone", false)
+								&& StringUtils.isEmpty(phone)) {
+							validationErrors.add("auth.activation.error.phone.mandatory");
+						} else if (!StringUtils.isEmpty(phone)) {
+							String region = PhoneValidation.extractRegion(phone);
+							PhoneValidation.PhoneValidationResult phoneValidation = PhoneValidation.validateMobileNumber(phone, region);
+							if (!phoneValidation.isValid()) {
+								validationErrors.add(phoneValidation.getErrorCode());
+							} else {
+								// Use normalized E.164 format
+								normalizedPhone = phoneValidation.getNormalizedNumber();
+							}
+						}
+
+						if (!validationErrors.isEmpty()) {
+							trace.info(getIp(request) + " - Echec de l'activation du compte utilisateur " + login + " - Referer " + request.headers().get("Referer"));
+							// Translate and concatenate all error messages
+							String combinedMessage = validationErrors.stream()
+									.map(errorKey -> I18n.getInstance().translate(errorKey, getHost(request), I18n.acceptLanguage(request)))
+									.collect(Collectors.joining("<br />"));
+							JsonObject error = new JsonObject().put("error",
+									new JsonObject().put("message", combinedMessage));
+							if (activationCode != null) {
+								error.put("activationCode", activationCode);
+							}
+							if (login != null) {
+								error.put("login", login);
+							}
+							if (config.getBoolean("cgu", true)) {
+								error.put("cgu", true);
+							}
+							renderJson(request, error);
 						} else {
-							// Use normalized E.164 format
-							normalizedPhone = phoneValidation.getNormalizedNumber();
-						}
-					}
+							final String phoneToStore = normalizedPhone;
+							userAuthAccount.activateAccount(login, activationCode, password, email, phoneToStore, theme, request,
+									new io.vertx.core.Handler<Either<String, String>>() {
 
-					if (!validationErrors.isEmpty()) {
-						trace.info(getIp(request) + " - Echec de l'activation du compte utilisateur " + login + " - Referer " + request.headers().get("Referer"));
-						// Translate and concatenate all error messages
-						String combinedMessage = validationErrors.stream()
-							.map(errorKey -> I18n.getInstance().translate(errorKey, getHost(request), I18n.acceptLanguage(request)))
-							.collect(Collectors.joining("<br />"));
-						JsonObject error = new JsonObject().put("error",
-								new JsonObject().put("message", combinedMessage));
-						if (activationCode != null) {
-							error.put("activationCode", activationCode);
-						}
-						if (login != null) {
-							error.put("login", login);
-						}
-						if (config.getBoolean("cgu", true)) {
-							error.put("cgu", true);
-						}
-						renderJson(request, error);
-					} else {
-						final String phoneToStore = normalizedPhone;
-						userAuthAccount.activateAccount(login, activationCode, password, email, phoneToStore, theme, request,
-							new io.vertx.core.Handler<Either<String, String>>() {
-
-								@Override
-								public void handle(Either<String, String> activated) {
-									if (activated.isRight() && activated.right().getValue() != null) {
-										handleActivation(login, request, activated, autoLogin);
-									} else {
-										// if failed because duplicated user
-										if (activated.isLeft()
-												&& "activation.error.duplicated".equals(activated.left().getValue())) {
-											trace.info(getIp(request) + " - Echec de l'activation : utilisateur " + login + " en doublon" + " - Referer " + request.headers().get("Referer"));
-											JsonObject error = new JsonObject().put("error",
-													new JsonObject().put("message",
-															I18n.getInstance().translate(activated.left().getValue(),
-																	getHost(request), I18n.acceptLanguage(request))));
-											error.put("activationCode", activationCode);
-											renderJson(request, error);
-										} else {
-											// else try activation with loginAlias
-											userAuthAccount.activateAccountByLoginAlias(login, activationCode, password,
-													email, phoneToStore, theme, request,
-													new io.vertx.core.Handler<Either<String, String>>() {
-														@Override
-														public void handle(Either<String, String> activated) {
-															if (activated.isRight()
-																	&& activated.right().getValue() != null) {
-																handleActivation(login, request, activated, autoLogin);
-															} else {
-																trace.info(getIp(request) + " - Echec de l'activation : compte utilisateur "
-																		+ login + " introuvable ou déjà activé" + " - Referer " + request.headers().get("Referer"));
-																JsonObject error = new JsonObject().put("error",
-																		new JsonObject().put("message",
-																				I18n.getInstance().translate(
-																						activated.left().getValue(),
-																						getHost(request),
-																						I18n.acceptLanguage(request))));
-																error.put("activationCode", activationCode);
-																renderJson(request, error);
-															}
-														}
-													});
+										@Override
+										public void handle(Either<String, String> activated) {
+											if (activated.isRight() && activated.right().getValue() != null) {
+												handleActivation(login, request, activated, autoLogin);
+											} else {
+												// if failed because duplicated user
+												if (activated.isLeft()
+														&& "activation.error.duplicated".equals(activated.left().getValue())) {
+													trace.info(getIp(request) + " - Echec de l'activation : utilisateur " + login + " en doublon" + " - Referer " + request.headers().get("Referer"));
+													JsonObject error = new JsonObject().put("error",
+															new JsonObject().put("message",
+																	I18n.getInstance().translate(activated.left().getValue(),
+																			getHost(request), I18n.acceptLanguage(request))));
+													error.put("activationCode", activationCode);
+													renderJson(request, error);
+												} else {
+													// else try activation with loginAlias
+													userAuthAccount.activateAccountByLoginAlias(login, activationCode, password,
+															email, phoneToStore, theme, request,
+															new io.vertx.core.Handler<Either<String, String>>() {
+																@Override
+																public void handle(Either<String, String> activated) {
+																	if (activated.isRight()
+																			&& activated.right().getValue() != null) {
+																		handleActivation(login, request, activated, autoLogin);
+																	} else {
+																		trace.info(getIp(request) + " - Echec de l'activation : compte utilisateur "
+																				+ login + " introuvable ou déjà activé" + " - Referer " + request.headers().get("Referer"));
+																		JsonObject error = new JsonObject().put("error",
+																				new JsonObject().put("message",
+																						I18n.getInstance().translate(
+																								activated.left().getValue(),
+																								getHost(request),
+																								I18n.acceptLanguage(request))));
+																		error.put("activationCode", activationCode);
+																		renderJson(request, error);
+																	}
+																}
+															});
+												}
+											}
 										}
-									}
-								}
-							});
+									});
+						}
+					});
 					}
-				}
 			}
 		});
 	}
@@ -1801,87 +1823,97 @@ public class AuthController extends BaseController {
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				final String callback = Utils.getOrElse(request.formAttributes().get("callback"), "/auth/login", false);
 				final String forceChange = Utils.getOrElse(request.formAttributes().get("forceChange"), "");
+				final Promise<Boolean> acceptedPasword = Promise.promise();
+
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
 						&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
 						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
-						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()) {
-					trace.info(getIp(request) + " - Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
-					JsonObject error = new JsonObject().put("error", new JsonObject().put("message", I18n.getInstance()
-							.translate("auth.reset.invalid.argument", getHost(request), I18n.acceptLanguage(request))));
+						|| !password.equals(confirmPassword)) {
+					getPasswordRegexPattern(request).map(p -> p.matcher(password).matches()).onComplete(acceptedPasword);
+				} else {
+					acceptedPasword.complete(false);
+				}
+				acceptedPasword.future().onSuccess(accepted -> {
+					if (!accepted) {
+						trace.info(getIp(request) + " - Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
+						JsonObject error = new JsonObject().put("error", new JsonObject().put("message", I18n.getInstance()
+								.translate("auth.reset.invalid.argument", getHost(request), I18n.acceptLanguage(request))));
+						if (resetCode != null) {
+							error.put("resetCode", resetCode);
+						}
+						renderJson(request, error);
+					} else {
+						DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
+						data.getUserId(login, oldPassword, new Handler<Try<AccessDenied, String>>() {
+
+							@Override
+							public void handle(Try<AccessDenied, String> tryUserId) {
+
+								String userId = null;
+								try {
+									userId = tryUserId.get();
+								} catch (AccessDenied e) {
+									// Will be handled by resetCode check
+								}
+
+								// Keep current session and app token alive
+								Optional<String> sessionId = UserUtils.getSessionId(request);
+								Optional<String> appToken = AppOAuthResourceProvider.getTokenId(new SecureHttpServerRequest(request));
+
+								final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
+								final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
+								final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
+
+									@Override
+									public void handle(String resetedUserId) {
+										if (resetedUserId != null) {
+											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
+											final boolean forcedChangePw = "force".equals(forceChange);
+											UserUtils.deleteCacheSession(eb, resetedUserId, forcedChangePw ? null : sessionIdStr, deleted -> {
+												if (sessionIdStr == null || forcedChangePw) {
+													CookieHelper.set("oneSessionId", "", 0l, request);
+													CookieHelper.set("authenticated", "", 0l, request);
+												}
+												if (forcedChangePw) {
+													redirectionService.redirect(request, config.getJsonObject("authenticationServer",
+															new JsonObject()).getString("loginURL", "/auth/login"));
+												} else {
+													redirectionService.redirect(request, callback);
+												}
+											});
+											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
+										} else {
+											trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
+											error(request, resetCode);
+										}
+									}
+								};
+
+								if (resetCode != null && !resetCode.trim().isEmpty()) {
+									userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
+								} else if (userId != null && !userId.trim().isEmpty()) {
+									userAuthAccount.changePassword(login, password, request, resultHandler);
+								} else {
+									error(request, null);
+								}
+
+							}
+						});
+					}
+				});
+				}
+
+
+				private void error(final HttpServerRequest request, final String resetCode) {
+					JsonObject error = new JsonObject().put("error", new JsonObject().put("message",
+							I18n.getInstance().translate("reset.error", getHost(request), I18n.acceptLanguage(request))));
 					if (resetCode != null) {
 						error.put("resetCode", resetCode);
 					}
 					renderJson(request, error);
-				} else {
-					DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
-					data.getUserId(login, oldPassword, new Handler<Try<AccessDenied, String>>() {
-
-						@Override
-						public void handle(Try<AccessDenied, String> tryUserId) {
-
-							String userId = null;
-							try {
-								userId = tryUserId.get();
-							} catch (AccessDenied e) {
-								// Will be handled by resetCode check
-							}
-
-							// Keep current session and app token alive
-							Optional<String> sessionId = UserUtils.getSessionId(request);
-							Optional<String> appToken = AppOAuthResourceProvider.getTokenId(new SecureHttpServerRequest(request));
-
-							final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
-							final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
-							final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
-
-								@Override
-								public void handle(String resetedUserId) {
-									if (resetedUserId != null) {
-											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
-										final boolean forcedChangePw = "force".equals(forceChange);
-										UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
-											if (sessionIdStr == null || forcedChangePw) {
-												CookieHelper.set("oneSessionId", "", 0l, request);
-												CookieHelper.set("authenticated", "", 0l, request);
-											}
-											if (forcedChangePw) {
-												redirectionService.redirect(request, config.getJsonObject("authenticationServer",
-														new JsonObject()).getString("loginURL", "/auth/login"));
-											} else {
-												redirectionService.redirect(request, callback);
-											}
-										});
-										UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
-									} else {
-											trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login + " - Referer " + request.headers().get("Referer"));
-										error(request, resetCode);
-									}
-								}
-							};
-
-							if (resetCode != null && !resetCode.trim().isEmpty()) {
-								userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
-							} else if(userId != null && !userId.trim().isEmpty()) {
-								userAuthAccount.changePassword(login, password, request, resultHandler);
-							} else {
-								error(request, null);
-							}
-
-						}
-					});
 				}
-			}
-
-			private void error(final HttpServerRequest request, final String resetCode) {
-				JsonObject error = new JsonObject().put("error", new JsonObject().put("message",
-						I18n.getInstance().translate("reset.error", getHost(request), I18n.acceptLanguage(request))));
-				if (resetCode != null) {
-					error.put("resetCode", resetCode);
-				}
-				renderJson(request, error);
-			}
-		});
+			});
 
 	}
 
@@ -2177,6 +2209,19 @@ public class AuthController extends BaseController {
 			mfaSvc.verifyTotpForUser(userId, code)
 				.onSuccess(result -> renderJson(request, result))
 				.onFailure(e -> renderError(request, new JsonObject().put("error", e.getMessage())));
+		});
+	}
+
+	private Future<Pattern> getPasswordRegexPattern(final HttpServerRequest request) {
+		return configurationSupplier.getConfigurationString("passwordRegex", null, request)
+		.map(regex -> regex == null ? ".{8}.*" : regex)
+		.compose(regex -> {
+			try {
+				return Future.succeededFuture(Pattern.compile(regex));
+			} catch (PatternSyntaxException e) {
+				log.error("Invalid password regex pattern: " + regex, e);
+				return Future.failedFuture(e);
+			}
 		});
 	}
 }
