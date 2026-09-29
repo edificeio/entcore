@@ -1079,7 +1079,7 @@
 				</div>
 				<!-- Not class="right-magnet": toggleWorkspaceContentDisplay() force-hides that class on GD. -->
 				<!-- float:left so this button sits apart from the float:right button group. -->
-				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper google-drive-create-document-wrapper" style="float: left;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper google-drive-create-document-wrapper" style="float: left;" ng-if="ENABLE_GOOGLE_DRIVE && HAS_GOOGLE_DRIVE_RIGHT && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
 					<button class="document-buttons-import" ng-click="toggleGoogleDriveCreateDocumentMenu()">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"></path></svg>
 						<span><i18n>google-drive.create.document.button</i18n></span>
@@ -1095,24 +1095,24 @@
 					</ul>
 				</div>
 				<!-- Refresh: re-fetches the current folder without a full page reload, for edits made outside the app. First in DOM among the float:right group, so it renders to the right of "Importer". -->
-				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right; display: flex; align-items: center; height: 40px;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen">
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right; display: flex; align-items: center; height: 40px;" ng-if="ENABLE_GOOGLE_DRIVE && HAS_GOOGLE_DRIVE_RIGHT && $root.isGDTrashbinOpen">
 					<button class="content-refresh-button" ng-click="triggerGoogleDriveRefresh()" aria-label="[[translate('workspace.refresh')]]" title="[[translate('workspace.refresh')]]">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff8500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v6h-6"></path></svg>
 					</button>
 				</div>
-				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && HAS_GOOGLE_DRIVE_RIGHT && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
 					<button class="document-buttons-add" ng-click="triggerGoogleDriveImport()">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd" clip-path="url(#icon-download-gd_svg__a)" clip-rule="evenodd"><path d="M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414"></path><path d="M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1"></path><path d="M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994"></path></g><defs><clipPath id="icon-download-gd_svg__a"><path fill="#fff" d="M0 0h24v24H0z"></path></clipPath></defs></svg>
 						<span><i18n>import.file</i18n></span>
 					</button>
 				</div>
-				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && HAS_GOOGLE_DRIVE_RIGHT && $root.isGDTrashbinOpen && isGoogleDriveImportableFolder()">
 					<button class="document-buttons-add" ng-click="triggerGoogleDriveCreateFolder()">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 6h-8l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-1 9h-3v3h-2v-3h-3v-2h3v-3h2v3h3z"></path></svg>
 						<span><i18n>folder.new</i18n></span>
 					</button>
 				</div>
-				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && $root.isGDTrashbinOpen && isGoogleDriveTrashbinOpen() && isGoogleDriveTrashEmptyable()">
+				<div class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: right;" ng-if="ENABLE_GOOGLE_DRIVE && HAS_GOOGLE_DRIVE_RIGHT && $root.isGDTrashbinOpen && isGoogleDriveTrashbinOpen() && isGoogleDriveTrashEmptyable()">
 					<button class="document-buttons-add" ng-click="triggerGoogleDriveEmptyTrash()">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"></path></svg>
 						<span><i18n>workspace.empty.trash</i18n></span>
@@ -1191,7 +1191,7 @@
 						</div>
 					</div>
 
-					<div ng-if="ENABLE_GOOGLE_DRIVE">
+					<div ng-if="ENABLE_GOOGLE_DRIVE && HAS_GOOGLE_DRIVE_RIGHT">
 						<workspace-google-drive-folder
 							application="google-drive"
 						>
