@@ -85,6 +85,7 @@
     "forum.list": "Forum : lister des catégories",
     "forum.view": "Forum : accéder au service",
     "forum.view.admin": "Forum : gérer les catégories",
+    "googledrive.view": "Google Drive: access the service",
     "group.AdminLocal": "Every administrator {0}.",
     "group.Guest": "Tous les invités du groupe {0}.",
     "group.Personnel": "Staff from group {0}.",
