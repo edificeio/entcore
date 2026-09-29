@@ -1,7 +1,7 @@
 import { model, template, FolderPickerProps, FolderPickerSourceFile, notify, idiom as lang } from "entcore";
 import { models, workspaceService } from "../../services";
 import { GoogleDriveDocument } from "../../directives/google-drive/models/googleDriveDocument.model";
-import { googleDriveService } from "../../directives/google-drive/services/googleDrive.service";
+import { GOOGLE_DRIVE_VIEW_RIGHT, googleDriveService } from "../../directives/google-drive/services/googleDrive.service";
 import { SyncDocument } from "../../directives/nextcloud/models/nextcloudFolder.model";
 import { nextcloudService } from "../../directives/nextcloud/services/nextcloud.service";
 
@@ -72,7 +72,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             };
             return Promise.resolve([ownerWrapper] as any);
         },
-        googleDriveTreeProvider: ENABLE_GOOGLE_DRIVE ? async () => {
+        googleDriveTreeProvider: ENABLE_GOOGLE_DRIVE && model.me.hasWorkflow(GOOGLE_DRIVE_VIEW_RIGHT) ? async () => {
             try {
                 const rootFolder = new GoogleDriveDocument().initParent();
                 // Distinct marker so only the outer node renders the Google Drive logo (both come from initParent()).

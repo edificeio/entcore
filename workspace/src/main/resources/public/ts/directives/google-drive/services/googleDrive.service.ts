@@ -11,6 +11,9 @@ import {
 } from "../models/googleDriveQuota.model";
 import models = workspace.v2.models;
 
+/** Workflow right granting access to Google Drive, declared by the google-drive module. */
+export const GOOGLE_DRIVE_VIEW_RIGHT = "io.edifice.google.drive.controller.GoogleDriveController|view";
+
 export type GoogleDriveShareRole = "reader" | "commenter" | "writer";
 
 export interface IGoogleDriveShareEntry {

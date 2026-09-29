@@ -39,6 +39,7 @@ import { DocumentActionType } from "entcore/types/src/ts/workspace/services";
 import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
 import {GeogebraDelegate, GeogebraDelegateScope} from "./delegates/geogebra";
 import {GOOGLE_DRIVE_CREATE_DOCUMENT_TYPES} from "./directives/google-drive/models/googleDriveCreateDocumentType.model";
+import {GOOGLE_DRIVE_VIEW_RIGHT} from "./directives/google-drive/services/googleDrive.service";
 
 const NEXTCLOUD_VIEW_RIGHT = 'fr.openent.nextcloud.controller.NextcloudController|view';
 
@@ -57,6 +58,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	HAS_NEXTCLOUD_RIGHT: boolean;
 	USE_NEXTCLOUD_SNIPLET: boolean;
 	ENABLE_GOOGLE_DRIVE: boolean;
+	HAS_GOOGLE_DRIVE_RIGHT: boolean;
 	DISABLE_FULL_TEXT_SEARCH: boolean;
 	isGoogleDriveImportableFolder(): boolean;
 	triggerGoogleDriveImport(): void;
@@ -230,6 +232,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.HAS_NEXTCLOUD_RIGHT = model.me.hasWorkflow(NEXTCLOUD_VIEW_RIGHT);
 	$scope.USE_NEXTCLOUD_SNIPLET = USE_NEXTCLOUD_SNIPLET;
 	$scope.ENABLE_GOOGLE_DRIVE = ENABLE_GOOGLE_DRIVE;
+	$scope.HAS_GOOGLE_DRIVE_RIGHT = model.me.hasWorkflow(GOOGLE_DRIVE_VIEW_RIGHT);
 	$scope.DISABLE_FULL_TEXT_SEARCH = DISABLE_FULL_TEXT_SEARCH;
 
 	// Per-tile "..." menu (icon view) — acts on the tile's own item without going through the real
