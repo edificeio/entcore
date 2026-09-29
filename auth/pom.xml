@@ -79,5 +79,11 @@
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>common</artifactId>
+            <version>${entCoreLibsVersion}</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>
