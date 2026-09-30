@@ -1,12 +1,17 @@
+export { cd13Config } from './cd13';
 export { ent04Config } from './ent04';
+export { ent05Config } from './ent05';
 export { eprimoConfig } from './eprimo';
 export { guadeloupeConfig } from './guadeloupe';
 export { guyaneConfig } from './guyane';
 export { hdfConfig } from './hdf';
 export { leiaConfig } from './leia';
+export { moselleConfig } from './moselle';
 export { natiConfig } from './nati';
 export { normandieConfig } from './normandie';
 export { primotConfig } from './primot';
 export { reunionConfig } from './reunion';
 export { semConfig } from './sem';
+export { varConfig } from './var';
 export { vcaConfig } from './vca';
+export { vosgesConfig } from './vosges';
