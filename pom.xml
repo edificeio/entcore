@@ -66,7 +66,7 @@
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.15.2</jacksonVersion>
-        <casVersion>0.3-SNAPSHOT</casVersion>
+        <casVersion>1.0-SNAPSHOT</casVersion>
         <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
