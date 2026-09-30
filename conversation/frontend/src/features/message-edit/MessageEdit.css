@@ -1,0 +1,5 @@
+/* The refactored Input draws a focus halo on its wrapper (`.input`). Keep the
+   legacy look of the subject field: no halo, the caret is enough. */
+.message-subject .input:focus-within {
+  box-shadow: none;
+}

@@ -10,6 +10,7 @@ import { useMessageStore } from '~/store/messageStore';
 import { MessageEditHeader } from './components/MessageEditHeader';
 import { MessageSaveDate } from './components/MessageSaveDate';
 import { useAutoSaveMessage } from './hooks/useAutoSaveMessage';
+import './MessageEdit.css';
 
 export function MessageEdit({ message }: { message?: Message }) {
   const { t } = useI18n();
@@ -47,7 +48,11 @@ export function MessageEdit({ message }: { message?: Message }) {
       {message && (
         <div>
           <MessageEditHeader message={message} />
-          <FormControl id="messageSubject" isRequired className="border-bottom">
+          <FormControl
+            id="messageSubject"
+            isRequired
+            className="message-subject border-bottom"
+          >
             <Input
               placeholder={t('subject')}
               value={subject}
