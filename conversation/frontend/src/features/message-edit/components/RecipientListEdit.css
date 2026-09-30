@@ -1,0 +1,6 @@
+/* The framework draws the focus halo on the whole `.input-group` (fixed
+   30rem wide), which no longer wraps the selected recipients chips. Keep the
+   legacy look of this field: no halo, the caret is enough. */
+.recipient-list-edit .combobox-trigger:focus-within {
+  box-shadow: none;
+}
