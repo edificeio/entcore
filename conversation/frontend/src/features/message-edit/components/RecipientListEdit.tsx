@@ -14,6 +14,7 @@ import { useBookmarkById } from '~/services/queries/user';
 import { useMessageStore } from '~/store/messageStore';
 import { RecipientListItem } from './RecipientListItem';
 import { RecipientListSelectedItem } from './RecipientListSelectedItem';
+import './RecipientListEdit.css';
 
 export type RecipientType = 'to' | 'cc' | 'cci';
 export interface RecipientListProps {
@@ -213,7 +214,7 @@ export function RecipientListEdit({
       : t('conversation.users.search.placeholder');
 
   return (
-    <div className="d-flex align-items-center flex-fill ps-8 pe-16 py-8">
+    <div className="recipient-list-edit d-flex align-items-center flex-fill ps-8 pe-16 py-8">
       <Combobox
         ref={comboboxRef}
         value={searchInputValue}
