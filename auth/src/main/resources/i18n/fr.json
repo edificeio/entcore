@@ -253,6 +253,7 @@
   "wayf.relative.ecole": "École",
   "wayf.relative.ecole-college-lycee": "École, Collège ou Lycée",
   "wayf.relative.educonnect": "EduConnect",
+  "wayf.relative.local": "Compte local ENT",
   "wayf.relative.private-school": "École privée",
   "wayf.relative.public-school": "École publique",
   "wayf.relative.special": "Établissement spécialisé",
@@ -267,7 +268,9 @@
   "wayf.student.special": "Établissement spécialisé",
   "wayf.teacher": "Enseignant",
   "wayf.teacher.agri": "Établissement agricole",
+  "wayf.teacher.arena": "ARENA",
   "wayf.teacher.educnat": "Éducation Nationale",
+  "wayf.teacher.local": "Compte local ENT",
   "wayf.teacher.special": "Établissement spécialisé",
   "weak": "Faible"
 }
