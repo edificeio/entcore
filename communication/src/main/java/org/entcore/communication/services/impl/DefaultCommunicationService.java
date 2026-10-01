@@ -394,7 +394,6 @@ public class DefaultCommunicationService implements CommunicationService {
 				searchFilter +
 				"  WITH DISTINCT m as visibles \n" +
 				" RETURN distinct visibles.id as id, "+
-				"    visibles.login as login,\n" +
 				"    visibles.displayName as username,\n" +
 				"    visibles.lastName as lastName,\n" +
 				"    visibles.firstName as firstName,\n" +
@@ -406,7 +405,6 @@ public class DefaultCommunicationService implements CommunicationService {
 				"WHERE\n" +
 				"    u.id in {userIds} " +
 				"RETURN distinct u.id as id,\n" +
-				"    u.login as login,\n" +
 				"    u.displayName as username,\n" +
 				"    u.lastName as lastName,\n" +
 				"    u.firstName as firstName,\n" +
@@ -425,7 +423,6 @@ public class DefaultCommunicationService implements CommunicationService {
 				searchFilter +
 				" WITH DISTINCT m as visibles\n" +
 				" RETURN distinct visibles.id as id, "+
-				"    visibles.login as login,\n" +
 				"    visibles.displayName as username,\n" +
 				"    visibles.lastName as lastName,\n" +
 				"    visibles.firstName as firstName,\n" +
