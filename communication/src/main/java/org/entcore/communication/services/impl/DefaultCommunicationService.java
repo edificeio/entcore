@@ -162,6 +162,8 @@ public class DefaultCommunicationService implements CommunicationService {
 		List<String> includeVisibleIds = visibleIdentityRequest.getIncludedVisibleIds();
 		boolean itself = visibleIdentityRequest.isItSelf();
 		boolean includeHiddenCommunityGroups = visibleIdentityRequest.isIncludeHiddenCommunity();
+		final boolean includeEmptyGroups = visibleIdentityRequest.isIncludeEmptyGroups();
+		final boolean groupsOnly = visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.GROUPS;
 		String userId = visibleIdentityRequest.getUserId();
 		boolean restrictToExpectedIds = expectedVisiblesIds != null && !expectedVisiblesIds.isEmpty();
 		if (restrictToExpectedIds) {
@@ -187,8 +189,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				"          AND (visibles)<-[:IN]-(:User {profiles: {profileFilterAsList}}))) "
 				: "";
 
-		String query =
-				// u->G1->G2->visible + u->G1->visible
+		// u->G1->G2->visible + u->G1->visible
+		final String usersOfGroupsBranch =
 				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
 						"WHERE\n" +
 						"    g.users IN ['BOTH', 'INCOMING']\n" +
@@ -214,9 +216,9 @@ public class DefaultCommunicationService implements CommunicationService {
 						userProfileFilter +
 						" WITH DISTINCT m as visibles " +
 						actionFilter +
-						"return DISTINCT visibles.id as id, true as isUser \n" + extraField +
-						// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
-						"UNION \n" +
+						"return DISTINCT visibles.id as id, true as isUser \n" + extraField;
+		// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
+		final String communicatingGroupsBranch =
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
 						"WHERE \n" +
 						"   g.users IN ['BOTH', 'INCOMING'] \n" +
@@ -231,13 +233,14 @@ public class DefaultCommunicationService implements CommunicationService {
 						" OPTIONAL MATCH (g2)<-[:DEPENDS]-(g3:Group) \n" +
 						" UNWIND [g2, g3] AS visibles \n" +
 						" WITH DISTINCT visibles \n" +
-						" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
+						" WHERE visibles IS NOT NULL " +
+						(includeEmptyGroups ? " " : " AND COALESCE(visibles.nbUsers, 1) > 0 ") +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
 						expectIdVisiblesFilter +
 						groupProfileFilter +
-						" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField +
-						// u->u2 => direct communication
-						"UNION \n" +
+						" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField;
+		// u->u2 => direct communication
+		final String directBranch =
 						"MATCH (n:User)-[:COMMUNIQUE_DIRECT]->m \n" +
 						"WHERE \n" +
 						"    n.id = {userId}\n" +
@@ -252,21 +255,25 @@ public class DefaultCommunicationService implements CommunicationService {
 						userProfileFilter +
 						"WITH DISTINCT m as visibles " +
 						actionFilter +
-						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField +
-						"UNION \n" +
-						// u->G<-[DEPENDS]-G2 group include into another group list G2
+						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField;
+		// u->G<-[DEPENDS]-G2 group include into another group list G2
+		final String includedGroupsBranch =
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
 						"WHERE \n" +
 						"    g.users IN ['BOTH', 'INCOMING'] \n" +
-						"    AND (NOT(HAS(visibles.nbUsers)) OR visibles.nbUsers > 0) \n" +
+						(includeEmptyGroups ? "" : "    AND (NOT(HAS(visibles.nbUsers)) OR visibles.nbUsers > 0) \n") +
 						expectIdVisiblesFilter +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
 						groupProfileFilter +
 						"return DISTINCT visibles.id as id, false as isUser " + extraField;
+		String query = groupsOnly
+				? communicatingGroupsBranch + "UNION \n" + includedGroupsBranch
+				: usersOfGroupsBranch + "UNION \n" + communicatingGroupsBranch + "UNION \n" +
+				directBranch + "UNION \n" + includedGroupsBranch;
 		JsonObject queryParams = new JsonObject()
 				.put("userId", userId)
 				.put("search", visibleIdentityRequest.getSearch());
-		if (includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
+		if (!groupsOnly && includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
 			//adding extended vision when replying to a message for example
 			query += " UNION " +
 					"  MATCH(visibles:User) WHERE visibles.id IN {includeVisibleIds} " +
@@ -364,7 +371,8 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
-		if(visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.BOTH) {
+		if(visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.BOTH
+				|| visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.GROUPS) {
 			visiblesIdentitiesBothFilter(visibleIdentityRequest, responseHandler);
 		} else {
 			visiblesIdentitiesGroupFilter(visibleIdentityRequest, responseHandler);
