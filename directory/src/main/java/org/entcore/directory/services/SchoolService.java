@@ -108,6 +108,17 @@ public interface SchoolService {
 
     Future<JsonArray> listContacts(String structureId);
 
+	/**
+	 * Userbook content of a structure, restricted to what the user can see : the personnel, the classes
+	 * of the visible groups attached to a class, those groups, and the manual groups attached to the structure
+	 * or to one of its classes.
+	 * @param userId id of the user doing the request
+	 * @param structureId id of the structure
+	 * @return { users: [{type, id, displayName, mood, photo}], classes: [{id, name, level}],
+	 * profileGroups: [{id, name, groupDisplayName}], manualGroups: [{id, name, groupDisplayName}] }
+	 */
+	Future<JsonObject> getVisibleUserbookStructure(String userId, String structureId);
+
     /**
      * Retrieve structure quiet hours preferences (notificationTimezone + notificationQuietHours).
      */

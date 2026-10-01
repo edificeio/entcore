@@ -22,6 +22,7 @@ package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
 import org.entcore.common.user.UserInfos;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -52,8 +53,25 @@ public interface ClassService {
 
 	void listAdmin(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
-	void listDetachedUsers(JsonArray structureIds, UserInfos user, Handler<JsonArray> handler);
+	/**
+	 * Users of the structures attached to none of their classes that the user can see, with their relatives.
+	 * @return [{displayName, lastName, firstName, relativeList, id, type, structureId, structureName}]
+	 */
+	Future<JsonArray> listDetachedUsers(JsonArray structureIds, UserInfos user);
 
-	void findVisibles(UserInfos user, String classId, boolean collectRelative, Handler<JsonArray> handler);
+	/**
+	 * Users of a class the user can see, whatever their profile, with their relatives when collectRelative is true.
+	 * @return [{displayName, lastName, firstName, id, type, relativeList}]
+	 */
+	Future<JsonArray> findVisibles(UserInfos user, String classId, boolean collectRelative);
+
+	/**
+	 * Students and teachers of a class, flagged with their visibility for the user. Every member is listed, but
+	 * the userbook details (mood, photo) are only given for the visible ones.
+	 * @param userId id of the user doing the request
+	 * @param classId id of the class ; null or empty means the classes of the user
+	 * @return [{type, id, displayName, isVisible}], plus {mood, userId, photo} when isVisible is true
+	 */
+	Future<JsonArray> listUserbookClassMembers(String userId, String classId);
 
 }
