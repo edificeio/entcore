@@ -27,7 +27,9 @@
         "
     >
         <div>
-            <div style="font-size: 15px; color: #8c939e;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 15px; color: #8c939e;">
+                <!-- shown while onValidImportFiles() / moveDocument() is in flight — same loader as Google Drive -->
+                <i ng-if="isImporting || isMoving || isDeleting || isRestoring" class="google-drive-import-spinner"></i>
                 <span><i18n>nextcloud.title</i18n></span>
                 <span ng-repeat="crumb in breadcrumb">
                     &gt;

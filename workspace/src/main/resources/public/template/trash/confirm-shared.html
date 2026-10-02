@@ -5,7 +5,12 @@
         <hr />
     </div>
     <div class="lightbox-buttons fluid">
-        <button class="right-magnet" ng-click="toTrash()"><i18n>workspace.delete.confirm.action</i18n></button>
-        <button class="cancel right-magnet" ng-click="template.close('lightbox')"><i18n>cancel</i18n></button>
+        <!-- isDeleting: this lightbox stays open for the whole operation, so the header's own loader
+             is never visible — show the spinner here instead, same fix as Google Drive/Nextcloud. -->
+        <button class="right-magnet" ng-disabled="isDeleting" ng-click="toTrash()">
+            <i class="google-drive-import-spinner" ng-if="isDeleting" style="margin-right: 6px; vertical-align: middle;"></i>
+            <i18n>workspace.delete.confirm.action</i18n>
+        </button>
+        <button class="cancel right-magnet" ng-disabled="isDeleting" ng-click="template.close('lightbox')"><i18n>cancel</i18n></button>
     </div>
 </div>

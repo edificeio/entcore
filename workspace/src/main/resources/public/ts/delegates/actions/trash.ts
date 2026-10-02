@@ -16,6 +16,7 @@ export interface ActionTrashScope {
     confirmDelete();
     isTrashEmpty(): boolean;
     canEmptyTrash(): boolean;
+    isDeleting: boolean;
     //from others
     currentTree: models.ElementTree;
     openedFolder: models.FolderContext
@@ -40,17 +41,31 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
         }
         $scope.confirm = async function () {
             const all = $scope.selectedItems()
-            await workspaceService.trashAll(all);
-            notify.info('workspace.removed.message');
-            template.close('lightbox');
+            $scope.isDeleting = true;
+            $scope.safeApply();
+            try {
+                await workspaceService.trashAll(all);
+                notify.info('workspace.removed.message');
+                template.close('lightbox');
+            } finally {
+                $scope.isDeleting = false;
+                $scope.safeApply();
+            }
         };
     };
 
     $scope.toTrash = async function () {
         const removed = $scope.selectedItems()
-        await workspaceService.trashAll(removed);
-        notify.info('workspace.removed.message');
-        template.close('lightbox');
+        $scope.isDeleting = true;
+        $scope.safeApply();
+        try {
+            await workspaceService.trashAll(removed);
+            notify.info('workspace.removed.message');
+            template.close('lightbox');
+        } finally {
+            $scope.isDeleting = false;
+            $scope.safeApply();
+        }
     };
 
     $scope.restore = async function () {

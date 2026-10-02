@@ -225,6 +225,8 @@ export class ToolbarSnipletViewModel implements IViewModel {
       (selectedDocument: SyncDocument) => selectedDocument.path,
     );
 
+    this.vm.isDeleting = true;
+    safeApply(this.vm);
     nextcloudService
       .deleteDocuments(model.me.userId, paths)
       .then(() => nextcloudUserService.getUserInfo(model.me.userId))
@@ -238,7 +240,6 @@ export class ToolbarSnipletViewModel implements IViewModel {
         this.vm.selectedDocuments = [];
         // Refreshes the sidebar tree too, mirroring createFolder's own refresh.
         nextcloudEventService.sendOpenFolderDocument(this.vm.parentDocument);
-        safeApply(this.vm);
       })
       .catch((err: AxiosError) => {
         this.handleError(
@@ -247,6 +248,9 @@ export class ToolbarSnipletViewModel implements IViewModel {
         );
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
+      })
+      .then(() => {
+        this.vm.isDeleting = false;
         safeApply(this.vm);
       });
   }
@@ -256,6 +260,8 @@ export class ToolbarSnipletViewModel implements IViewModel {
       (selectedDocument: SyncDocument) => selectedDocument.path,
     );
 
+    this.vm.isDeleting = true;
+    safeApply(this.vm);
     nextcloudService
       .deleteTrashDocuments(model.me.userId, paths)
       .then(() => nextcloudUserService.getUserInfo(model.me.userId))
@@ -267,7 +273,6 @@ export class ToolbarSnipletViewModel implements IViewModel {
       .then(() => {
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
-        safeApply(this.vm);
       })
       .catch((err: AxiosError) => {
         this.handleError(
@@ -276,6 +281,9 @@ export class ToolbarSnipletViewModel implements IViewModel {
         );
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
+      })
+      .then(() => {
+        this.vm.isDeleting = false;
         safeApply(this.vm);
       });
   }
@@ -285,6 +293,8 @@ export class ToolbarSnipletViewModel implements IViewModel {
       (selectedDocument: SyncDocument) => selectedDocument.path,
     );
 
+    this.vm.isRestoring = true;
+    safeApply(this.vm);
     nextcloudService
       .restoreDocument(model.me.userId, paths)
       .then(() => nextcloudUserService.getUserInfo(model.me.userId))
@@ -295,7 +305,6 @@ export class ToolbarSnipletViewModel implements IViewModel {
       })
       .then(() => {
         this.vm.selectedDocuments = [];
-        safeApply(this.vm);
       })
       .catch((err: AxiosError) => {
         this.handleError(
@@ -303,6 +312,9 @@ export class ToolbarSnipletViewModel implements IViewModel {
           "Error while attempting to restore documents from content",
         );
         this.vm.selectedDocuments = [];
+      })
+      .then(() => {
+        this.vm.isRestoring = false;
         safeApply(this.vm);
       });
   }
@@ -387,9 +399,9 @@ export class ToolbarSnipletViewModel implements IViewModel {
 
       submit: (selectedFolder: models.Element | SyncDocument) => {
         if (selectedFolder instanceof models.Element) {
-          this.handleSubmitToWorkspace(selectedFolder, selectedDocuments, type);
+          return this.handleSubmitToWorkspace(selectedFolder, selectedDocuments, type);
         } else if (selectedFolder instanceof SyncDocument) {
-          this.handleSubmitToNextcloud(selectedFolder, selectedDocuments, type);
+          return this.handleSubmitToNextcloud(selectedFolder, selectedDocuments);
         }
       },
       onCancel: () => this.closeCopyView(),
@@ -452,39 +464,27 @@ export class ToolbarSnipletViewModel implements IViewModel {
     }
   }
 
-  /**
-   * Handle submission when a Nextcloud folder is selected
-   */
+  // Only ever reached for "move": a Nextcloud destination is never offered when exporting/copying
+  // (setupCopyProps leaves nextcloudTreeProvider null for type "copy").
   private async handleSubmitToNextcloud(
     destFolder: SyncDocument,
     sourceDocuments: Array<SyncDocument>,
-    type: "move" | "copy",
   ): Promise<void> {
     try {
       const destPath = destFolder.path || "/";
-
-      if (type === "move") {
-        for (const doc of sourceDocuments) {
-          await nextcloudService.moveDocument(
-            model.me.userId,
-            doc.path,
-            `${destPath}/${doc.name}`,
-          );
-        }
-        // Refresh views
-        await this.refreshDocuments();
-      } else {
-        // Implement Nextcloud copy functionality here
+      for (const doc of sourceDocuments) {
+        await nextcloudService.moveDocument(
+          model.me.userId,
+          doc.path,
+          `${destPath}/${doc.name}`,
+        );
       }
-
+      await this.refreshDocuments();
       this.closeCopyView();
       this.vm.safeApply();
     } catch (err) {
-      this.handleError(
-        err,
-        `Error ${type === "copy" ? "copying" : "moving"} within Nextcloud`,
-      );
-      toasts.warning(`nextcloud.${type}.error`);
+      this.handleError(err, "Error moving within Nextcloud");
+      toasts.warning("nextcloud.move.error");
       this.closeCopyView();
       this.vm.safeApply();
     }
@@ -511,20 +511,6 @@ export class ToolbarSnipletViewModel implements IViewModel {
       this.setupCopyProps(selectedDocuments, "move");
     }
     this.lightbox.copy = state;
-  }
-
-  private async moveSubmit(selectedFolder: SyncDocument): Promise<void> {
-    this.vm.selectedDocuments.forEach((document) => {
-      nextcloudService.moveDocument(
-        model.me.userId,
-        document.path,
-        selectedFolder.path + "/" + document.name,
-      );
-    });
-    this.vm.selectedDocuments = [];
-    await this.refreshDocuments();
-    this.closeCopyView();
-    this.vm.safeApply();
   }
 
   /*** Utility Methods ***/

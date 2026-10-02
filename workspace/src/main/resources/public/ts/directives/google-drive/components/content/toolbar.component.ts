@@ -163,6 +163,8 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
 
   public deleteDocuments(): void {
     const ids = this.vm.selectedDocuments.map((doc: GoogleDriveDocument) => doc.id);
+    this.vm.isDeleting = true;
+    safeApply(this.vm);
     googleDriveService
       .deleteDocuments(model.me.userId, ids)
       .then(() => {
@@ -174,18 +176,22 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
         this.vm.selectedDocuments = [];
         // Refreshes the sidebar tree too, mirroring createFolder's own refresh.
         googleDriveEventService.sendOpenFolderDocument(this.vm.parentDocument);
-        safeApply(this.vm);
       })
       .catch((err: AxiosError) => {
         console.error("Error while attempting to delete documents: " + err.message);
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
+      })
+      .then(() => {
+        this.vm.isDeleting = false;
         safeApply(this.vm);
       });
   }
 
   public deleteDocumentsPermanently(): void {
     const ids = this.vm.selectedDocuments.map((doc: GoogleDriveDocument) => doc.id);
+    this.vm.isDeleting = true;
+    safeApply(this.vm);
     googleDriveService
       .deleteTrashDocuments(model.me.userId, ids)
       .then(() => {
@@ -196,18 +202,22 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
         googleDriveEventService.requestQuotaRefresh();
-        safeApply(this.vm);
       })
       .catch((err: AxiosError) => {
         console.error("Error while attempting to permanently delete documents: " + err.message);
         this.toggleDeleteView(false);
         this.vm.selectedDocuments = [];
+      })
+      .then(() => {
+        this.vm.isDeleting = false;
         safeApply(this.vm);
       });
   }
 
   public restoreDocuments(): void {
     const ids = this.vm.selectedDocuments.map((doc: GoogleDriveDocument) => doc.id);
+    this.vm.isRestoring = true;
+    safeApply(this.vm);
     googleDriveService
       .restoreDocument(model.me.userId, ids)
       .then(() => {
@@ -216,11 +226,13 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
       })
       .then(() => {
         this.vm.selectedDocuments = [];
-        safeApply(this.vm);
       })
       .catch((err: AxiosError) => {
         console.error("Error while attempting to restore documents: " + err.message);
         this.vm.selectedDocuments = [];
+      })
+      .then(() => {
+        this.vm.isRestoring = false;
         safeApply(this.vm);
       });
   }
@@ -287,9 +299,9 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
           },
       submit: (selectedFolder: models.Element | GoogleDriveDocument) => {
         if (selectedFolder instanceof models.Element) {
-          this.handleSubmitToWorkspace(selectedFolder, selectedDocuments, type);
+          return this.handleSubmitToWorkspace(selectedFolder, selectedDocuments, type);
         } else if (selectedFolder instanceof GoogleDriveDocument) {
-          this.handleSubmitToGoogleDrive(selectedFolder, selectedDocuments, type);
+          return this.handleSubmitToGoogleDrive(selectedFolder, selectedDocuments);
         }
       },
       onCancel: () => this.closeCopyView(),
@@ -330,24 +342,23 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     }
   }
 
+  // Only ever reached for "move": a Google Drive destination is never offered when exporting/copying
+  // (setupCopyProps leaves the picker's Google Drive tree unset for type "copy").
   private async handleSubmitToGoogleDrive(
     destFolder: GoogleDriveDocument,
     sourceDocuments: Array<GoogleDriveDocument>,
-    type: "move" | "copy",
   ): Promise<void> {
     try {
-      if (type === "move") {
-        for (const doc of sourceDocuments) {
-          await googleDriveService.moveDocument(model.me.userId, doc.id, destFolder.id);
-        }
-        await this.refreshDocuments();
+      for (const doc of sourceDocuments) {
+        await googleDriveService.moveDocument(model.me.userId, doc.id, destFolder.id);
       }
+      await this.refreshDocuments();
       this.closeCopyView();
       safeApply(this.vm);
     } catch (err) {
       const e = err as AxiosError;
-      console.error(`Error ${type === "copy" ? "copying" : "moving"} within Google Drive: ` + e.message);
-      toasts.warning(`google-drive.${type}.error`);
+      console.error("Error moving within Google Drive: " + e.message);
+      toasts.warning("google-drive.move.error");
       this.closeCopyView();
       safeApply(this.vm);
     }

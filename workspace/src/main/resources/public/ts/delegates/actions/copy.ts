@@ -13,7 +13,7 @@ export interface ActionCopyDelegateScope {
     isMovingElementsMine(): boolean
     openCopyView()
     openMoveView()
-    moveSubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[])
+    moveSubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[]): Promise<any> | void
     copySubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[]): Promise<any>
     //
     onMoveDoCopy()
@@ -134,7 +134,11 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         return movingItems;
     }
     $scope.openCopyView = function () {
-        movingItems = null;//get moving elements from selection
+        // Snapshotted once here (rather than left null, which would make getMovingElements() keep
+        // re-querying live selection) — the content view's selection can otherwise change or clear
+        // while the folder-picker lightbox is open, so the dialog would silently submit against a
+        // different (or empty) set of items than the one it was opened for.
+        movingItems = $scope.selectedItems();
         const cannotCopy = getMovingElements().filter(f => !f.canCopy);
         if (cannotCopy.length > 0) {
             return;
@@ -149,7 +153,9 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         })
         $scope.copyProps.manageSubmit = null;
         $scope.copyProps.submit = function (dest) {
-            $scope.copySubmit(dest);
+            // Not returning this left folderPicker2's await resolve instantly, so its "Copie en
+            // cours..." submit-button loader never had a chance to show.
+            return $scope.copySubmit(dest);
         };
         template.open('lightbox', 'copy/index');
         setState("normal")
@@ -163,15 +169,15 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         }
         targetFolder = dest;
         if (isGoogleDriveDestination(dest)) {
-            _moveElementsToGoogleDrive(getMovingElements(), dest);
-            return;
+            return _moveElementsToGoogleDrive(getMovingElements(), dest);
         }
         if (isNextcloudDestination(dest)) {
-            _moveElementsToNextcloud(getMovingElements(), dest);
-            return;
+            return _moveElementsToNextcloud(getMovingElements(), dest);
         }
         const res = checkDest(dest, getMovingElements());
         if (res == "toshare") {
+            // Opens a separate confirmation lightbox (onMoveDoMove performs the real move, with its
+            // own "processing" state) — nothing to await here, folderPicker2's submit just resolves.
             template.open('lightbox', 'copy/move-toshare');
         } else if (res == "toown") {
             template.open('lightbox', 'copy/move-toown');
@@ -180,7 +186,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         } else {
             //move without feedback, but still closes the picker and refreshes the view like copySubmit's classic branch
             const toMove = getMovingElements();
-            _moveElements(toMove, dest).then(() => {
+            return _moveElements(toMove, dest).then(() => {
                 $scope.reloadFolderContent();
                 closeCopyView(dest, toMove);
                 $scope.safeApply()
@@ -189,7 +195,8 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
     }
 
     $scope.openMoveView = function () {
-        movingItems = null;//get moving elements from selection
+        // See openCopyView's comment: snapshot now, don't re-query live selection at submit time.
+        movingItems = $scope.selectedItems();
         const cnnotMove = getMovingElements().filter(f => !f.canMove);
         if (cnnotMove.length > 0) {
             return;
@@ -219,7 +226,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             }
         }
         $scope.copyProps.submit = function (dest) {
-            $scope.moveSubmit(dest)
+            return $scope.moveSubmit(dest)
         }
         template.open('lightbox', 'copy/index');
         setState("normal")

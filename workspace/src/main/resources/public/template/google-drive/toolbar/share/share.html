@@ -100,15 +100,19 @@
     </div>
 
     <div class="lightbox-buttons fluid">
+        <!-- toolbar.share.sharing: this lightbox stays open for the whole operation, so the content
+             area's own loader is never visible — show the spinner here instead, same fix as the
+             other confirmation popups (trash, delete, export/move). -->
         <button
             class="nextcloud-button-confirm right-magnet"
             ng-disabled="!toolbar.share.hasRecipients() || toolbar.share.sharing"
             ng-click="toolbar.share.onShare()"
         >
+            <i class="google-drive-import-spinner" ng-if="toolbar.share.sharing" style="margin-right: 6px; vertical-align: middle;"></i>
             <i18n>workspace.share</i18n>
         </button>
 
-        <button class="nextcloud-button-cancel right-magnet" ng-click="toolbar.share.close()">
+        <button class="nextcloud-button-cancel right-magnet" ng-disabled="toolbar.share.sharing" ng-click="toolbar.share.close()">
             <i18n>workspace.warning.cancel</i18n>
         </button>
     </div>

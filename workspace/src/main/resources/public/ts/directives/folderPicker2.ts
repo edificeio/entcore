@@ -23,6 +23,7 @@ export interface FolderPickerScope {
 
   // UI state
   selectedFolder: models.Element | SyncDocument | GoogleDriveDocument;
+  isSubmitting: boolean;
   newFolder: models.Element;
   search: {
     value: string;
@@ -118,8 +119,12 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               </div>
               <hr />
               <div class="lightbox-buttons fluid">
-                  <button class="nextcloud-button-confirm right-magnet" ng-disabled="cannotSubmit()" ng-click="onSubmit()" translate content="[[folderProps.i18.actionTitle]]"></button>
-                  <button class="nextcloud-button-cancel cancel right-magnet" ng-click="onCancel()"><i18n>cancel</i18n></button>
+                  <button class="nextcloud-button-confirm right-magnet" ng-disabled="cannotSubmit()" ng-click="onSubmit()">
+                    <i class="google-drive-import-spinner" ng-if="isSubmitting" style="margin-right: 6px; vertical-align: middle;"></i>
+                    <span ng-if="!isSubmitting" translate content="[[folderProps.i18.actionTitle]]"></span>
+                    <span ng-if="isSubmitting" translate content="[[folderProps.i18.actionProcessing]]"></span>
+                  </button>
+                  <button class="nextcloud-button-cancel cancel right-magnet" ng-disabled="isSubmitting" ng-click="onCancel()"><i18n>cancel</i18n></button>
               </div>
             </div>
           </div>
@@ -147,8 +152,10 @@ export const folderPicker2 = ng.directive("folderPicker2", [
         scope.googleDriveTrees = [];
 
         const canSelect = function (folder: models.Element | SyncDocument | GoogleDriveDocument) {
+          // Synthetic label node (see setupCopyProps's ownerWrapper) grouping the owner trees under
+          // "Mon espace personnel" — navigation/expand only, not a real folder to export/move into.
           if ((folder as any).isPersonalSpaceWrapper) {
-            return true;
+            return false;
           }
           if (folder instanceof models.Element) {
             if ((folder as models.Tree).filter) {
@@ -157,9 +164,13 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               return true;
             }
           } else if (folder instanceof SyncDocument) {
-            return folder.isFolder;
+            // isRootGroup: synthetic "Nextcloud" label node wrapping "Mes documents"/"Corbeille"
+            // (SyncDocument.createRootGroup()) — same navigation-only treatment as isPersonalSpaceWrapper.
+            return folder.isFolder && !(folder as any).isRootGroup;
           } else if (folder instanceof GoogleDriveDocument) {
-            return folder.isFolder;
+            // isGoogleDriveRootWrapper: synthetic "Google Drive" label node wrapping "Mes documents"
+            // (set in setupCopyProps's googleDriveTreeProvider) — same treatment.
+            return folder.isFolder && !(folder as any).isGoogleDriveRootWrapper;
           }
           return false;
         };
@@ -219,7 +230,7 @@ export const folderPicker2 = ng.directive("folderPicker2", [
             return scope.nextcloudTrees;
           },
           isDisabled(folder: SyncDocument) {
-            return false;
+            return !canSelect(folder);
           },
           isOpenedFolder(folder: SyncDocument) {
             return openedNextcloudFolders.some(
@@ -236,8 +247,10 @@ export const folderPicker2 = ng.directive("folderPicker2", [
             selectedGoogleDriveFolder = null;
             openedGoogleDriveFolders = [];
 
-            selectedNextcloudFolder = folder;
-            scope.selectedFolder = folder;
+            if (canSelect(folder)) {
+              selectedNextcloudFolder = folder;
+              scope.selectedFolder = folder;
+            }
 
             // Add to opened folders if not already there
             if (!openedNextcloudFolders.includes(folder)) {
@@ -333,7 +346,8 @@ export const folderPicker2 = ng.directive("folderPicker2", [
         await loadTrees();
 
         // Submission handling
-        scope.cannotSubmit = () => !scope.selectedFolder;
+        scope.isSubmitting = false;
+        scope.cannotSubmit = () => !scope.selectedFolder || scope.isSubmitting;
 
         scope.onSubmit = async () => {
           if (scope.cannotSubmit()) return;
@@ -348,10 +362,14 @@ export const folderPicker2 = ng.directive("folderPicker2", [
 
           try {
             if (scope.folderProps.submit) {
+              scope.isSubmitting = true;
+              scope.safeApply();
               await scope.folderProps.submit(scope.selectedFolder);
+              scope.isSubmitting = false;
               scope.safeApply();
             }
           } catch (e) {
+            scope.isSubmitting = false;
             scope.folderProps.onError(e);
             scope.safeApply();
           }

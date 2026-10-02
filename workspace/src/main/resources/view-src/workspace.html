@@ -33,7 +33,11 @@
 			   dragdrop="dropTo(folder, $originalEvent)"
 			   dropcondition="dropCondition(folder)"
 			   help-box-step="[[folder.helpbox]]">
-			   <i class="arrow" ng-if="canExpendTree(folder)" ng-click="openOrCloseFolder($event,folder)"></i>
+			   <!-- Always rendered (not ng-if) so non-expandable items (Corbeille, Partagés avec moi...)
+			        still reserve the arrow's width — otherwise their label shifts left and looks like a
+			        shallower tree level than their expandable siblings. "invisible-arrow" (visibility:
+			        hidden, not display:none) keeps that space without showing or being clickable. -->
+			   <i class="arrow" ng-class="{'invisible-arrow': !canExpendTree(folder)}" ng-click="openOrCloseFolder($event,folder)"></i>
 			   <!-- Icons matching the Google Drive tree's own outline set. -->
 			   <span ng-if="folder === wrapperTrees[0]" class="workspace-tree-icon workspace-tree-icon-mono" style="display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;color:#8c939e;">
 			       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 11.5 12 4l9 7.5M5.5 10v9a1 1 0 0 0 1 1h3.5v-6h4v6H17a1 1 0 0 0 1-1v-9"/></svg>
@@ -79,6 +83,18 @@
 		}
 		.embedded-viewer .controls__navbar{
 			left: 0px;
+			border-bottom: none !important;
+			box-shadow: none !important;
+		}
+		/* Preview panel's back icon is an inline SVG (thin stroke chevron) instead of the font-icon
+		   glyph — the font only ships bold/filled arrows. stroke="currentColor" on the svg keeps the
+		   existing shared ".back"/":hover" color rules (blue default, orange on hover) working as-is. */
+		.embedded-viewer .controls__navbar h2 > i.back{
+			display: flex !important;
+			align-items: center;
+		}
+		.embedded-viewer .controls__navbar h2 > i.back::before{
+			content: none !important;
 		}
 		.rename-properties-list{
 			display: flex;
@@ -299,6 +315,87 @@
 			width: 20px;
 			height: 20px;
 			flex-shrink: 0;
+		}
+		/* Spinning circle for the "import in progress" notice — scoped here instead of reusing the
+		   shared "i.loading" icon font glyph, which renders as a dotted/segmented circle, not a plain ring.
+		   Kept out of any <p> ancestor: the theme's global "p i{width/height:25px !important}" rule
+		   (_icons.scss) would otherwise override this smaller size. */
+		.google-drive-import-spinner{
+			display: inline-block;
+			width: 12px;
+			height: 12px;
+			border: 2px solid rgba(255,133,0,0.25);
+			border-top-color: #ff8500;
+			border-radius: 50%;
+			animation: google-drive-import-spin 800ms linear infinite;
+		}
+		@keyframes google-drive-import-spin{
+			to{ transform: rotate(360deg); }
+		}
+		/* Thumbnail placeholder while a (lazy-loaded) image tile's full-size file is still downloading.
+		   The spinner is a ::before behind the <img> — once the image paints, it naturally covers it,
+		   no load/error JS wiring needed. */
+		.google-drive-thumbnail{
+			position: relative;
+			background: #f5f6f8;
+		}
+		.google-drive-thumbnail::before{
+			content: "";
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 14px;
+			height: 14px;
+			margin: -7px 0 0 -7px;
+			border: 2px solid rgba(255,133,0,0.25);
+			border-top-color: #ff8500;
+			border-radius: 50%;
+			animation: google-drive-import-spin 800ms linear infinite;
+		}
+		.google-drive-thumbnail img{
+			position: relative;
+			z-index: 1;
+		}
+		/* Visual feedback while dragging a file over a folder tile in the icon view — the
+		   "droptarget" class itself is toggled generically by the shared "dragdrop" directive
+		   (infra's angular-app.js) on dragover/dragleave; "dropcondition" (icons.html) restricts
+		   that toggling to folder tiles only, so file tiles don't light up as if droppable. */
+		/* An inset border/outline here gets covered on some sides by the tile's own inner a.container/
+		   legend — both hardcoded to the same 160px width as <explorer> itself (see the "icons-view
+		   explorer" rules above) and painted on top. Drawing OUTSIDE the box instead (positive
+		   outline-offset, into the natural inline-block gap between tiles) avoids that entirely. */
+		#google-drive-content explorer.droptarget{
+			outline: 2px dashed #ff8500;
+			outline-offset: 2px;
+			background-color: rgba(255,133,0,0.08);
+		}
+		/* Nextcloud equivalents of the two Google Drive blocks above (thumbnail placeholder, drag-over
+		   highlight) — same reasoning, reusing the shared spinner animation/keyframes. */
+		.nextcloud-thumbnail{
+			position: relative;
+			background: #f5f6f8;
+		}
+		.nextcloud-thumbnail::before{
+			content: "";
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 14px;
+			height: 14px;
+			margin: -7px 0 0 -7px;
+			border: 2px solid rgba(255,133,0,0.25);
+			border-top-color: #ff8500;
+			border-radius: 50%;
+			animation: google-drive-import-spin 800ms linear infinite;
+		}
+		.nextcloud-thumbnail img{
+			position: relative;
+			z-index: 1;
+		}
+		#nextcloud-content explorer.droptarget{
+			outline: 2px dashed #ff8500;
+			outline-offset: 2px;
+			background-color: rgba(255,133,0,0.08);
 		}
 		/* Modern list-view checkbox, scoped to table.list-view (shared by all 3 spaces). */
 		table.list-view input[type=checkbox]{
@@ -601,11 +698,13 @@
 		.icons-view explorer.radius{
 			overflow: visible !important;
 		}
+		/* Kept well under 10001 (section.lightbox's own z-index, _lightboxes.scss) — these values used
+		   to be 10049-10051, which is why this "..." toggle was poking through over open modals. */
 		.icons-view explorer.radius .tile-menu-wrapper{
 			position: absolute !important;
 			top: 5px;
 			right: 5px;
-			z-index: 10050;
+			z-index: 61;
 		}
 		.icons-view explorer.radius .tile-menu-toggle{
 			display: none;
@@ -654,7 +753,7 @@
 			border-radius: 6px;
 			box-shadow: 0 2px 10px rgba(0,0,0,.2);
 			text-align: left;
-			z-index: 10051;
+			z-index: 62;
 		}
 		.icons-view explorer.radius .tile-menu.show{
 			display: block;
@@ -696,7 +795,7 @@
 		   dropdown's overflow-visible content gets visually covered by a later sibling tile. */
 		.icons-view explorer.radius:has(.tile-menu.show){
 			position: relative;
-			z-index: 10049;
+			z-index: 60;
 		}
 		/* Same per-tile "..." menu as icon view, but for the list view: always visible in its own trailing
 		   column (not hover-gated) since there's no <explorer> tile to hover here, just a table row. */
@@ -744,7 +843,7 @@
 			border-radius: 6px;
 			box-shadow: 0 2px 10px rgba(0,0,0,.2);
 			text-align: left;
-			z-index: 10051;
+			z-index: 62;
 		}
 		.list-view .tile-menu.show{
 			display: block;
@@ -946,6 +1045,12 @@
 		.workspace-app .tree-container i.arrow{
 			color: #8c939e !important;
 		}
+		/* Reserves the arrow's width for non-expandable tree items instead of collapsing it away
+		   (see folder-content's "i.arrow" — ng-class, not ng-if, now keeps the element in the DOM). */
+		.invisible-arrow{
+			visibility: hidden;
+			pointer-events: none;
+		}
 		/* On small screens the menu sits on a blue background — gray arrows would be hard to read there, so keep them white. */
 		@media screen and (max-width: 800px){
 			.workspace-app nav.vertical ul li a i.arrow::before,
@@ -1060,6 +1165,8 @@
 		<div class="row">
 			<app-title class="twelve">
 				<h1 class="cell right-spacing-twice" data-reload help-box-step="workspace.help.1" help-box-step-priority="-1">
+					<!-- Shown while moving selected items to the trash (classic space) — same loader as Google Drive/Nextcloud. -->
+					<i class="google-drive-import-spinner" ng-if="isDeleting" style="margin-right: 8px; vertical-align: middle;"></i>
 					<i class="storage"></i><i18n class="storage zero-mobile">workspace.headers</i18n>
 					<i class="storage"></i><i18n class="storage zero-desktop">workspace.headers.short</i18n>
 				</h1>

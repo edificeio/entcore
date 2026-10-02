@@ -10,6 +10,7 @@
               on-open="onOpenContent(content)"
               dragstart="draggable.dragStartHandler($originalEvent, content)"
               dragdrop="draggable.dragDropHandler($originalEvent, content)"
+              dropcondition="content.isFolder"
               dragend="draggable.dragEndHandler($originalEvent, content)">
         <div ng-class="{ selected: content.selected }">
             <div class="tile-menu-wrapper" ng-click="$event.stopPropagation()">
@@ -63,8 +64,12 @@
             <a class="container [[content.role]]" ng-switch="content.role">
                 <!-- image format -->
                 <div ng-switch-when="image" class="twelve cell">
-                    <div class="clip">
-                        <img ng-src="[[getFile(content)]]" alt="thumbnail" src="" width="117" height="115" draggable="false"/>
+                    <div class="clip google-drive-thumbnail">
+                        <!-- loading="lazy": a folder full of heavy images otherwise fires every
+                             full-size download request at once (these are proxied originals, not
+                             actual thumbnails — Google Drive's API doesn't expose one here), which
+                             was freezing the tab. This defers off-screen tiles until scrolled near. -->
+                        <img ng-src="[[getFile(content)]]" loading="lazy" alt="thumbnail" src="" width="117" height="115" draggable="false"/>
                     </div>
                 </div>
 

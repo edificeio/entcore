@@ -22,6 +22,7 @@ interface CsvViewerScope {
     controller: CsvController;
     csvDelegate: CsvDelegate;
     loading: boolean;
+    error: boolean;
     tabs: Array<Tab>;
     currentTab: Tab;
     pageIndex: number;
@@ -50,6 +51,7 @@ export const csvViewer = ng.directive('csvViewer', ['$sce', ($sce) => {
             </div>
             <div class="render">
 			    <p ng-if="loading" class="top-spacing-four flex-row align-start justify-center centered-text"><i18n>workspace.preview.loading</i18n>&nbsp;<i class="loading"></i></p>
+			    <p ng-if="error" class="top-spacing-four flex-row align-start justify-center centered-text"><i18n>workspace.preview.unavailable</i18n></p>
                 <table ng-if="showContent()">
                     <tbody>
                         <tr ng-repeat="row in currentTab.rows">
@@ -191,11 +193,22 @@ export const csvViewer = ng.directive('csvViewer', ['$sce', ($sce) => {
                 async setContent(csv) {
                     if (_lastId == csv.id) return;
                     scope.loading = true;
+                    scope.error = false;
                     _lastId = csv.id;
-                    _ngmodel = await csv.content;
-                    recompute();
-                    scope.loading = false;
-                    scope.$apply();
+                    try {
+                        _ngmodel = await csv.content;
+                        recompute();
+                    } catch (e) {
+                        scope.error = true;
+                    } finally {
+                        scope.loading = false;
+                        // Plain scope.$apply() throws "$apply already in progress" if this resolves
+                        // mid-digest, which (uncaught here) would leave the view stuck on "loading".
+                        const phase = (scope as any).$root.$$phase;
+                        if (phase !== "$apply" && phase !== "$digest") {
+                            scope.$apply();
+                        }
+                    }
                 }
             }
             scope.csvDelegate.onInit(scope.controller);
