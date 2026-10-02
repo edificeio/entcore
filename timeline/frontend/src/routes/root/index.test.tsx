@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '~/mocks/setup';
+import { fireEvent, render, screen, waitFor, within } from '~/mocks/setup';
 import { Root } from './index';
 
 /**
@@ -174,7 +174,31 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
     expect(mocks.updateOverlayOpen).toHaveBeenLastCalledWith(true);
   });
 
-  it('closes the widgets panel and falls back to notifications when it requests to close', () => {
+  it('opens the widgets panel over the notifications sidebar in one click on desktop', () => {
+    // Regression: the sidebar closing used to reset the overlay to closed, so
+    // a second click was needed to actually show the widgets panel.
+    localStorage.setItem('timeline:notificationsOpen', 'true');
+    render(<Root />);
+    expect(screen.getByTestId('sidebar-right')).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Personnaliser mes widgets' }),
+    );
+
+    // The notifications sidebar stays open under the overlay
+    expect(screen.getByTestId('sidebar-right')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('overlay')).getByTestId(
+        'widgets-personalization-panel',
+      ),
+    ).toBeInTheDocument();
+    expect(mocks.updateOverlayOpen).toHaveBeenLastCalledWith(true);
+    localStorage.removeItem('timeline:notificationsOpen');
+  });
+
+  it('closes the widgets panel and falls back to notifications when it requests to close (below md)', async () => {
+    // Below 'md' notifications share the overlay slot with the widgets panel
+    mocks.useBreakpoint.mockReturnValue({ sm: true, md: false });
     render(<Root />);
     fireEvent.click(
       screen.getByRole('button', { name: 'Personnaliser mes widgets' }),
@@ -184,14 +208,20 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
       screen.getByRole('button', { name: 'Fermer le volet widgets' }),
     );
 
-    const overlay = screen.getByTestId('overlay');
+    // The panel stays mounted during the overlay slide-out, then unmounts
     expect(
-      within(overlay).queryByTestId('widgets-personalization-panel'),
-    ).not.toBeInTheDocument();
+      screen.getByTestId('widgets-personalization-panel'),
+    ).toBeInTheDocument();
+    expect(mocks.updateOverlayOpen).toHaveBeenLastCalledWith(false);
+    const overlay = screen.getByTestId('overlay');
+    await waitFor(() =>
+      expect(
+        within(overlay).queryByTestId('widgets-personalization-panel'),
+      ).not.toBeInTheDocument(),
+    );
     expect(
       within(overlay).getByTestId('notification-list-container'),
     ).toBeInTheDocument();
-    expect(mocks.updateOverlayOpen).toHaveBeenLastCalledWith(false);
   });
 
   it('closes the widgets panel when notifications are toggled open while it is showing', () => {

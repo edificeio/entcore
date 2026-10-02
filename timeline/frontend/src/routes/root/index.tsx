@@ -14,6 +14,7 @@ import {
   UsefulLinksContainer,
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
+import { useState } from 'react';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { WidgetsPersonalizationPanelContainer } from '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
@@ -26,15 +27,23 @@ export const loader = async () => {
 
 export const Root = () => {
   const { init } = useEdificeClient();
+  // Lifted here because both layout hooks depend on it (overlay sync lives in
+  // useNotificationsLayout)
+  const [isWidgetsPanelOpen, setIsWidgetsPanelOpen] = useState(false);
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
-    useNotificationsLayout();
+    useNotificationsLayout({ isWidgetsPanelOpen });
   const { md } = useBreakpoint();
   const {
-    isWidgetsPanelOpen,
+    isWidgetsPanelMounted,
     openWidgetsPanel,
     closeWidgetsPanel,
     handleToggleNotifications,
-  } = useWidgetsPanelLayout({ toggleNotifications, closeNotifications });
+  } = useWidgetsPanelLayout({
+    isWidgetsPanelOpen,
+    setIsWidgetsPanelOpen,
+    toggleNotifications,
+    closeNotifications,
+  });
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -69,25 +78,27 @@ export const Root = () => {
         </div>
       </PageLayout.Content>
 
-      {isSidebarOpen ? (
+      {isSidebarOpen && (
         <PageLayout.SidebarRight>
           <NotificationListContainer
             onCloseNotifications={closeNotifications}
           />
         </PageLayout.SidebarRight>
-      ) : (
-        <PageLayout.Overlay
-          closeButton={!isWidgetsPanelOpen}
-          onClose={isWidgetsPanelOpen ? closeWidgetsPanel : closeNotifications}
-          backdrop={true}
-        >
-          {isWidgetsPanelOpen ? (
-            <WidgetsPersonalizationPanelContainer onClose={closeWidgetsPanel} />
-          ) : (
-            <NotificationListContainer />
-          )}
-        </PageLayout.Overlay>
       )}
+      {/* Always mounted (even while the notifications sidebar is shown) so the
+          slide-in transition plays and it can stack over the sidebar. */}
+      <PageLayout.Overlay
+        closeButton={!isWidgetsPanelOpen}
+        onClose={isWidgetsPanelOpen ? closeWidgetsPanel : closeNotifications}
+        backdrop={true}
+      >
+        {isWidgetsPanelMounted ? (
+          <WidgetsPersonalizationPanelContainer onClose={closeWidgetsPanel} />
+        ) : (
+          // On desktop notifications live in the sidebar, not in the overlay
+          !md && <NotificationListContainer />
+        )}
+      </PageLayout.Overlay>
       <PageLayout.HelpZone />
     </PageLayout>
   );
