@@ -35,8 +35,8 @@ import org.entcore.feeder.utils.Validator;
 
 import java.util.UUID;
 
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Group {
 
@@ -66,7 +66,19 @@ public class Group {
 			"MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct) " +
 			"WITH DISTINCT g, u ";
 
-	public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
+    private static void applyUsersCommunicationRules(String matchGroups, JsonObject params,
+                                                     TransactionHelper transactionHelper) {
+        transactionHelper.add(matchGroups +
+                                      "WITH g MATCH (g)<-[:IN]-(u:User) " +
+                                      "WHERE g.users = 'INCOMING' OR g.users = 'BOTH' " +
+                                      "MERGE (g)<-[:COMMUNIQUE]-(u) ", params);
+        transactionHelper.add(matchGroups +
+                                      "WITH g MATCH (g)<-[:IN]-(u:User) " +
+                                      "WHERE g.users = 'OUTGOING' OR g.users = 'BOTH' " +
+                                      "MERGE (g)-[:COMMUNIQUE]->(u) ", params);
+    }
+
+    public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
 			TransactionHelper transactionHelper) throws ValidationException {
 		if (object == null) {
 			throw new ValidationException("invalid.group");
@@ -186,9 +198,14 @@ public class Group {
                         "MATCH (g)<-[old:IN]-(u:User) " +
                         "WHERE old.source = 'AUTO' " +
                         "  AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
-                        "DELETE old";
+                            "OPTIONAL MATCH (g)-[com:COMMUNIQUE]-(u) " +
+                            "DELETE old, com";
 
             transactionHelper.add(cleanupQuery, params);
+
+        applyUsersCommunicationRules(
+                "MATCH (g:ManualGroup) WHERE {userPosition} IN g.manualGroupAutolinkUsersPositions ",
+                params, transactionHelper);
         }
 
 	public static void setManualGroupAutolinkUsersPositions(String groupId, JsonArray userPositions,
@@ -212,11 +229,13 @@ public class Group {
 		}
 
 		final String removeQuery =
-				"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
+                "MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(u:User) " +
 						"WHERE old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
-						"DELETE old ";
+                        "OPTIONAL MATCH (g)-[com:COMMUNIQUE]-(u) " +
+                        "DELETE old, com ";
 		transactionHelper.add(removeQuery, params);
 
+        applyUsersCommunicationRules("MATCH (g:ManualGroup {id: {groupId}}) ", params, transactionHelper);
 		User.countUsersInGroups(groupId, null, transactionHelper);
 	}
 
@@ -322,10 +341,11 @@ public class Group {
 				"SET new.updated = {now} ");
 
 		final String removeQuery =
-				"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
+                "MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(u:User) " +
 						"WHERE (EXISTS(g.autolinkUsersFromGroups) OR EXISTS(g.autolinkUsersFromPositions) OR EXISTS(g.manualGroupAutolinkUsersPositions)) " +
 				" AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
-				"DELETE old ";
+                        "OPTIONAL MATCH (g)-[com:COMMUNIQUE]-(u) " +
+                        "DELETE old, com ";
 
 
 		final JsonObject params = new JsonObject()
@@ -334,6 +354,7 @@ public class Group {
 
 		tx.add(linkQuery.toString(), params);
 		tx.add(removeQuery, params);
+        applyUsersCommunicationRules("MATCH (g:ManualGroup {id: {groupId}}) ", params, tx);
 		User.countUsersInGroups(groupId, "ManualGroup", tx);
 		return tx;
 	}
