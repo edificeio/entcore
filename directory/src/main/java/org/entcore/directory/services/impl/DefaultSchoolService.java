@@ -30,6 +30,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.dto.directory.SearchStructuresRequestDTO;
+import org.entcore.broker.api.dto.directory.structure.FullStructureDTO;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -43,15 +45,13 @@ import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 import org.entcore.directory.services.SchoolService;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -1068,6 +1068,94 @@ public class DefaultSchoolService implements SchoolService {
 		return promise.future();
 	}
 
+	@Override
+	public Future<List<FullStructureDTO>> search(SearchStructuresRequestDTO filter) {
+		final Promise<List<FullStructureDTO>> promise = Promise.promise();
+		final StringBuilder query = new StringBuilder(
+				"MATCH (s:Structure) ");
+		final JsonObject params = new JsonObject();
+		final boolean withParents = filter != null && filter.isWithParents();
+		if(filter != null) {
+			final Set<String> ids;
+			if (filter.getIds() == null) {
+				ids = Collections.emptySet();
+			} else {
+				ids = filter.getIds().stream()
+						.filter(Objects::nonNull)
+						.map(String::trim)
+						.filter(s -> !s.isEmpty())
+						.collect(Collectors.toSet());
+			}
+			final List<String> filterSubQueries = new ArrayList<>();
+			if (ids != null && ids.size() > 0) {
+				filterSubQueries.add(" s.id IN {ids} ");
+				params.put("ids", ids);
+			}
+			if (isNotEmpty(filter.getName())) {
+				filterSubQueries.add(" s.name CONTAINS {name} ");
+				params.put("name", filter.getName());
+			}
+			if(!filterSubQueries.isEmpty()) {
+				query.append(" WHERE ")
+				     .append(String.join(" AND ", filterSubQueries));
+			}
+		}
+		if (withParents) {
+			// Find the parent structures attached to each matched structure
+			query.append(" OPTIONAL MATCH (s)-[:HAS_ATTACHMENT*1..]->(ps:Structure) ");
+		}
+		query.append(" RETURN s.source as source, s.feederName as feederName, s.postbox as postbox, " +
+				"s.academy as academy, s.ministry as ministry, s.UAI as UAI, s.city as city, " +
+				"s.zipCode as zipCode, s.type as type, s.externalId as externalId, s.id as id, s.name as name");
+		if (withParents) {
+			query.append(", [ps IN collect(DISTINCT ps) WHERE ps IS NOT NULL | { " +
+					"source: ps.source, feederName: ps.feederName, postbox: ps.postbox, " +
+					"academy: ps.academy, ministry: ps.ministry, UAI: ps.UAI, city: ps.city, " +
+					"zipCode: ps.zipCode, type: ps.type, externalId: ps.externalId, id: ps.id, name: ps.name " +
+					"}] as parentStructures");
+		}
+		neo.execute(query.toString(), params, validResultHandler(results -> {
+			if (results.isRight()) {
+				final List<FullStructureDTO> structures = results.right().getValue().stream()
+						.map(o -> (JsonObject) o)
+						.map(record -> {
+							final Set<FullStructureDTO> parentStructures;
+							if (withParents) {
+								final JsonArray parents = record.getJsonArray("parentStructures", new JsonArray());
+								parentStructures = parents.stream()
+										.map(p -> (JsonObject) p)
+										.map(p -> toFullStructureDTO(p, null))
+										.collect(Collectors.toSet());
+							} else {
+								parentStructures = null;
+							}
+							return toFullStructureDTO(record, parentStructures);
+						})
+						.collect(Collectors.toList());
+				promise.complete(structures);
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
+	private static FullStructureDTO toFullStructureDTO(JsonObject record, Set<FullStructureDTO> parentStructures) {
+		return new FullStructureDTO(
+				record.getString("source"),
+				record.getString("feederName"),
+				record.getString("postbox"),
+				record.getString("academy"),
+				record.getString("ministry"),
+				record.getString("UAI"),
+				record.getString("city"),
+				record.getString("zipCode"),
+				record.getString("type"),
+				record.getString("externalId"),
+				record.getString("id"),
+				record.getString("name"),
+				parentStructures);
+	}
 	public Future<Void> updateDefaultAuth(UserInfos user, String structureId, DefaultAuthModeConfig body) {
 		final Promise<Void> promise = Promise.promise();
 		final StringBuilder query = new StringBuilder(
