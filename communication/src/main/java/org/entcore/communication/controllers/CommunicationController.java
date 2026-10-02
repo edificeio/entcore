@@ -368,6 +368,7 @@ public class CommunicationController extends BaseController {
 		case "visibleUsers":
 			String preFilter = message.body().getString("preFilter");
 			String customReturn = message.body().getString("customReturn");
+			log.warn("DEPRECATED: This method visibleUsers should not be used anymore " + customReturn);
 			JsonObject ap = message.body().getJsonObject("additionnalParams");
 			boolean itSelf = message.body().getBoolean("itself", false);
 			boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
@@ -407,11 +408,13 @@ public class CommunicationController extends BaseController {
 			String pF = message.body().getString("preFilter");
 			String c = message.body().getString("customReturn");
 			JsonObject p = message.body().getJsonObject("additionnalParams");
+			log.warn("DEPRECATED: This method visibleProfilsGroups should not be used anymore " + c);
 			communicationService.visibleProfilsGroups(userId, c, p, pF, responseHandler);
 			break;
 		case "visibleManualGroups":
 			String cr = message.body().getString("customReturn");
 			JsonObject pa = message.body().getJsonObject("additionnalParams");
+			log.warn("DEPRECATED: This method visibleManualGroups should not be used anymore " + cr);
 			communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
 			break;
 		default:
