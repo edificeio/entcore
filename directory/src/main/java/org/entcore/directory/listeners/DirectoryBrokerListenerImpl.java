@@ -621,4 +621,10 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
 
         return promise.future();
     }
+
+    @Override
+    public Future<SearchStructuresResponseDTO> searchStructures(SearchStructuresRequestDTO request) {
+        return this.structureService.search(request)
+            .map(SearchStructuresResponseDTO::new);
+    }
 }
