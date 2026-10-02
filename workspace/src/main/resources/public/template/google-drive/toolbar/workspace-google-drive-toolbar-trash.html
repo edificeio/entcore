@@ -14,15 +14,21 @@
         </div>
 
         <div class="lightbox-buttons fluid">
+            <!-- isDeleting: the content area's own loader (breadcrumb spinner) sits BEHIND this
+                 still-open lightbox for the whole operation, so it's never actually visible —
+                 show the spinner here instead, same fix as folderPicker2's submit button. -->
             <button
                 class="right-magnet"
+                ng-disabled="isDeleting"
                 ng-click="toolbar.deleteDocuments()"
             >
+                <i class="google-drive-import-spinner" ng-if="isDeleting" style="margin-right: 6px; vertical-align: middle;"></i>
                 <i18n>google-drive.documents.confirm.trash.action</i18n>
             </button>
 
             <button
                 class="cancel right-magnet"
+                ng-disabled="isDeleting"
                 ng-click="toolbar.toggleDeleteView(false)"
             >
                 <i18n>cancel</i18n>

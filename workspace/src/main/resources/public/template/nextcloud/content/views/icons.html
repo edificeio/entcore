@@ -38,8 +38,12 @@
             <a class="container [[content.role]]" ng-switch="content.role">
                 <!-- img format -->
                 <div ng-switch-when="image" class="twelve cell">
-                    <div class="clip">
-                        <img ng-src="[[getFile(content)]]" alt="thumbnail" src="" width="117" height="115" draggable="false"/>
+                    <div class="clip nextcloud-thumbnail">
+                        <!-- loading="lazy": this is the full-size file proxy, not a real thumbnail
+                             (Nextcloud's own thumbnail endpoint isn't used here) — a folder full of
+                             heavy images otherwise fires every full download at once. See the same
+                             fix on Google Drive's icons.html. -->
+                        <img ng-src="[[getFile(content)]]" loading="lazy" alt="thumbnail" src="" width="117" height="115" draggable="false"/>
                     </div>
                 </div>
 

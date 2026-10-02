@@ -30,6 +30,16 @@
                 <i18n>workspace.download</i18n>
             </button>
 
+            <!-- rename (single selection only, same as the per-tile "..." menu) -->
+            <div
+                id="google-drive-toolbar-rename"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleRenameView(true, selectedDocuments)">
+                    <i18n>workspace.rename</i18n>
+                </button>
+            </div>
+
             <!-- move file(s) -->
             <button ng-click="toolbar.toggleMoveView(true, selectedDocuments)">
                 <i18n>workspace.move</i18n>

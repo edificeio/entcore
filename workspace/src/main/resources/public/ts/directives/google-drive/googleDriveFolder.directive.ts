@@ -440,6 +440,14 @@ export const workspaceGoogleDriveFolderController = ng.controller(
                   : googleDriveService.moveDocument(model.me.userId, doc.id, targetFolder.id),
               );
 
+            // Drag-and-drop onto the sidebar tree bypasses contentViewer's own moveDocument()/
+            // toolbar's deleteDocuments() entirely, so it needs its own isMoving/isDeleting toggle
+            // for the content area's breadcrumb loader to show.
+            if (contentScope) {
+              if (isTrashTarget) contentScope.isDeleting = true;
+              else contentScope.isMoving = true;
+              safeApply(contentScope);
+            }
             Promise.all(promises)
               .then(() => {
                 googleDriveEventService.setContentContext(null);
@@ -451,6 +459,13 @@ export const workspaceGoogleDriveFolderController = ng.controller(
               .catch((err: Error) => {
                 console.error("Error while moving GD document: " + err.message);
                 googleDriveEventService.setContentContext(null);
+              })
+              .then(() => {
+                if (contentScope) {
+                  contentScope.isDeleting = false;
+                  contentScope.isMoving = false;
+                  safeApply(contentScope);
+                }
               });
           }
           return;

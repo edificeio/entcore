@@ -34,6 +34,10 @@ export interface IWorkspaceNextcloudContent {
   isNextcloudUrlHidden: boolean;
   draggable: Draggable;
   lockDropzone: boolean;
+  isMoving: boolean;
+  isImporting: boolean;
+  isDeleting: boolean;
+  isRestoring: boolean;
   parentDocument: SyncDocument;
   documents: Array<SyncDocument>;
   selectedDocuments: Array<SyncDocument>;
@@ -229,6 +233,10 @@ export const workspaceNextcloudContentController = ng.controller(
       };
       $scope.onTileRename = function (content: SyncDocument): void {
         $scope.openTileMenuFor = null;
+        // renameDocument() (toolbar.component.ts) reads this.vm.selectedDocuments[0] to know which
+        // file to rename — unlike move/copy/share, it isn't closure-captured from the array passed
+        // to toggleRenameView(), so it must be set here too (same as onTileDelete/onTileRestore).
+        $scope.selectedDocuments = [content];
         $scope.toolbar.toggleRenameView(true, [content]);
       };
       $scope.onTileMove = function (content: SyncDocument): void {
@@ -446,7 +454,10 @@ export const workspaceNextcloudContentController = ng.controller(
             safeApply($scope);
           },
           dropConditionHandler(event: DragEvent, content?: any): boolean {
-            return true;
+            // Restricts the shared "dragdrop" directive's dragover/.droptarget highlight (and the
+            // preventDefault() that makes a real HTML5 "drop" possible) to folder tiles only — same
+            // fix as Google Drive's icons.html, so file tiles don't light up as if droppable.
+            return !!content?.isFolder;
           },
         };
       }
@@ -474,6 +485,8 @@ export const workspaceNextcloudContentController = ng.controller(
         let folderContent: any = angular.element(element).scope();
         // if interacted into trees(workspace or nextcloud)
         if (folderContent && folderContent.folder) {
+          $scope.isMoving = true;
+          safeApply($scope);
           processMoveTree(
             folderContent,
             document,
@@ -486,6 +499,8 @@ export const workspaceNextcloudContentController = ng.controller(
           folderContent.content.isFolder
         ) {
           // if interacted into nextcloud
+          $scope.isMoving = true;
+          safeApply($scope);
           processMoveToNextcloud(
             document,
             folderContent.content,
@@ -535,13 +550,16 @@ export const workspaceNextcloudContentController = ng.controller(
                       syncDocument.name != model.me.userId,
                   );
                 updateFolderDocument(selectedFolderFromNextcloudTree);
-                safeApply($scope);
               })
               .catch((err: AxiosError) => {
                 const message: string =
                   "Error while attempting to move nextcloud document to workspace " +
                   "or update nextcloud list";
                 console.error(message + err.message);
+              })
+              .then(() => {
+                $scope.isMoving = false;
+                safeApply($scope);
               });
           }
         } else if (folderContent.folder instanceof SyncDocument) {
@@ -599,11 +617,14 @@ export const workspaceNextcloudContentController = ng.controller(
                   syncDocument.name != model.me.userId,
               );
             updateFolderDocument(selectedFolderFromNextcloudTree);
-            safeApply($scope);
           })
           .catch((err: AxiosError) => {
             const message: string = "Error while updating documents list";
             console.error(message + err.message);
+          })
+          .then(() => {
+            $scope.isMoving = false;
+            safeApply($scope);
           });
       }
 

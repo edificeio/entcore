@@ -32,6 +32,10 @@ export interface IWorkspaceGoogleDriveContent {
   openLocation(document: GoogleDriveDocument): void;
   draggable: Draggable;
   lockDropzone: boolean;
+  isImporting: boolean;
+  isMoving: boolean;
+  isDeleting: boolean;
+  isRestoring: boolean;
   parentDocument: GoogleDriveDocument;
   documents: Array<GoogleDriveDocument>;
   selectedDocuments: Array<GoogleDriveDocument>;
@@ -306,6 +310,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
       };
       $scope.onTileRename = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
+        // renameDocument() (toolbar.component.ts) reads this.vm.selectedDocuments[0] to know which
+        // file to rename — unlike move/copy/share, it isn't closure-captured from the array passed
+        // to toggleRenameView(), so it must be set here too (same as onTileDelete/onTileRestore).
+        $scope.selectedDocuments = [content];
         $scope.toolbar.toggleRenameView(true, [content]);
       };
       $scope.onTileMove = function (content: GoogleDriveDocument): void {
@@ -553,10 +561,12 @@ export const workspaceGoogleDriveContentController = ng.controller(
           // When it re-enters the DOM (lockDropzone=false), the directive re-links and
           // calls scope.hide() so it starts invisible.
           viewModel.lockDropzone = true;
+          viewModel.isImporting = true;
           safeApply($scope);
           const targetFolder = viewModel.parentDocument ?? null;
           const done = (): void => {
             viewModel.lockDropzone = false;
+            viewModel.isImporting = false;
             safeApply($scope);
           };
           googleDriveService
@@ -600,7 +610,14 @@ export const workspaceGoogleDriveContentController = ng.controller(
       }
 
       $scope.triggerImportFiles = function (): void {
-        document.getElementById("google-drive-import-input")?.click();
+        // Deferred: calling .click() synchronously here bubbles a native click event up to
+        // document.body while we're still mid-digest (this is itself invoked from an ng-click),
+        // and an unrelated body-level click listener calls $apply() without a $$phase guard —
+        // throwing "$apply already in progress" and leaving the digest broken, so the import
+        // spinner (and basically all further scope updates) silently stop appearing.
+        setTimeout(() => {
+          document.getElementById("google-drive-import-input")?.click();
+        }, 0);
       };
 
       function sortDocumentsByFolder(
@@ -612,6 +629,21 @@ export const workspaceGoogleDriveContentController = ng.controller(
         return 0;
       }
 
+      // Walk up from the drop target to find a content-grid tile's scope holding a GD folder.
+      // Mirrors googleDriveFolder.directive.ts's own findFolderScope() for the sidebar tree,
+      // except tile scopes expose "content" (ng-repeat="content in documents" in icons.html/
+      // list.html), not "folder" — that property name is a sidebar-tree-only convention.
+      function findTileFolderScope(target: Element): any {
+        let el: Element | null = target;
+        const contentEl = document.getElementById("google-drive-content");
+        while (el && el !== contentEl) {
+          const s: any = angular.element(el).scope();
+          if (s?.content instanceof GoogleDriveDocument && s.content.isFolder) return s;
+          el = el.parentElement;
+        }
+        return null;
+      }
+
       $scope.moveDocument = async function (
         element: any,
         document: GoogleDriveDocument,
@@ -620,27 +652,35 @@ export const workspaceGoogleDriveContentController = ng.controller(
           $scope.getGoogleDriveTreeController()?.["selectedFolder"];
         if (!selectedFolder) selectedFolder = $scope.parentDocument;
 
-        const folderContent: any = angular.element(element).scope();
-        if (folderContent?.folder instanceof GoogleDriveDocument && folderContent.folder.isFolder) {
+        const folderContent: any = findTileFolderScope(element);
+        if (folderContent?.content instanceof GoogleDriveDocument && folderContent.content.isFolder) {
+          const targetFolder: GoogleDriveDocument = folderContent.content;
           const filesToMove = new Set($scope.selectedDocuments);
           filesToMove.add(document);
           const promises = Array.from(filesToMove)
-            .filter((doc) => doc.id !== folderContent.folder.id)
+            .filter((doc) => doc.id !== targetFolder.id)
             .map((doc) =>
-              googleDriveService.moveDocument(model.me.userId, doc.id, folderContent.folder.id),
+              googleDriveService.moveDocument(model.me.userId, doc.id, targetFolder.id),
             );
+          $scope.isMoving = true;
+          safeApply($scope);
+          const done = (): void => {
+            $scope.isMoving = false;
+            safeApply($scope);
+          };
           Promise.all(promises)
             .then(() => refreshDocList(selectedFolder))
             .catch((err: AxiosError) => {
-              refreshDocList(selectedFolder);
               console.error("Error while moving document: " + err.message);
-            });
+              return refreshDocList(selectedFolder);
+            })
+            .then(done, done);
         }
       };
 
-      function refreshDocList(selectedFolder: GoogleDriveDocument): void {
+      function refreshDocList(selectedFolder: GoogleDriveDocument): Promise<void> {
         $scope.selectedDocuments = [];
-        googleDriveService
+        return googleDriveService
           .listDocument(model.me.userId, selectedFolder?.id || null)
           .then((docs) => {
             $scope.documents = docs

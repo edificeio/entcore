@@ -13,7 +13,7 @@ export interface DragDelegateScope {
     safeApply()
     selectedItems(): models.Element[];
     setMovingElements(elts: models.Element[])
-    moveSubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[])
+    moveSubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[]): Promise<any> | void
     copySubmit(dest: models.Element | GoogleDriveDocument | SyncDocument, elts?: models.Element[]):Promise<any>
     //
     //drag and drop
