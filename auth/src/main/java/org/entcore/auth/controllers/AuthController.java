@@ -19,7 +19,6 @@
 
 package org.entcore.auth.controllers;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -1863,9 +1862,9 @@ public class AuthController extends BaseController {
 						&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
 						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
 						|| !password.equals(confirmPassword)) {
-					getPasswordRegexPattern(request).map(p -> p.matcher(password).matches()).onComplete(acceptedPasword);
-				} else {
 					acceptedPasword.complete(false);
+				} else {
+					getPasswordRegexPattern(request).map(p -> p.matcher(password).matches()).onComplete(acceptedPasword);
 				}
 				acceptedPasword.future().onSuccess(accepted -> {
 					if (!accepted) {
