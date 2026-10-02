@@ -616,8 +616,8 @@ public class User {
 
 		// Nettoyage des références mergedWith orphelines avant suppression définitive
 		final String cleanupOrphanMergesQuery =
-				"MATCH (um:User) " +
-				"WHERE um.mergedWith IN {deleteUsers} " +
+				"MATCH (u:User)<-[:MERGED]-(um:User) " +
+				"WHERE u.id IN {deleteUsers} AND um.mergedWith = u.id " +
 				"REMOVE um.mergedWith";
 		transactionHelper.add(cleanupOrphanMergesQuery, params);
 
