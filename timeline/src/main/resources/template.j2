@@ -31,7 +31,7 @@
       "weekly-mailing-cron": "0 30 7 ? * 1 2099",
       "purge-messages-read-cron": "0 0 2  * * ? 2099",
     {% else %}
-      "daily-mailing-cron" : "{{ timelineDailyCron | default('0 30 4 * * ? *') }}",
+      "daily-mailing-cron" : "{{ timelineDailyCron | default('0 0 * * * ? *') }}",
       "weekly-mailing-cron": "{{ timelineWeeklyCron | default('0 30 7 ? * 1 *') }}",
       "purge-messages-read-cron": "{{ timelinePurgeFlashMessageReadCron | default('0 0 2  * * ? *') }}",
     {% endif %}
