@@ -8,7 +8,7 @@ import { Data } from '@angular/router';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 import { BibliocollegeFeed } from './bibliocollege-channels.types';
 import { Channel } from './bibliocollege-channels.types';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 
 const URL_PATTERN = /^https?:\/\/.+/i;
 
