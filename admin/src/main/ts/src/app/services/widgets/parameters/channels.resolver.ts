@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
 import { SpinnerService } from 'ngx-ode-ui';
 import { routing } from 'src/app/core/services/routing.service';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { Channel } from './bibliocollege-channels.types';
 
 @Injectable()
