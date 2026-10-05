@@ -1,10 +1,13 @@
+import { Flex, LinkPill } from '@edifice.io/react';
+import { HomeCard } from '@edifice.io/react/homepage';
+import { IconExternalLink } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
+import type { LinkItem } from '~/models';
 import imgTransport from './assets/avantage-transport.jpg';
 import imgRegion from './assets/region-nouvelle-aquitaine.png';
 import imgBooks from './assets/avantage-books.jpg';
 import imgPermis from './assets/avantage-permis.jpg';
 import imgTrain from './assets/avantage-train.jpg';
-import { ListWidget, ListWidgetItem } from '../ui/ListWidget';
 
 export function AvantagesWidget({
   onSeeMore = () =>
@@ -13,7 +16,7 @@ export function AvantagesWidget({
   onSeeMore?: () => void;
 }) {
   const { t } = useTranslation('timeline');
-  const items: ListWidgetItem[] = [
+  const items: LinkItem[] = [
     {
       id: '1',
       imageUrl: imgBooks,
@@ -75,12 +78,27 @@ export function AvantagesWidget({
     },
   ];
   return (
-    <ListWidget
-      title={t('homepage.crna.widget.avantages.title', 'Mes avantages')}
-      items={items}
-      onSeeMore={onSeeMore}
-      externalLink={true}
-      itemClassName="list-widget-item--highlight"
-    />
+    <HomeCard variant="user">
+      <HomeCard.Header
+        title={t('homepage.crna.widget.avantages.title', 'Mes avantages')}
+        actionLabel={t('homepage.crna.widget.see.more', 'Voir plus')}
+        actionRightIcon={<IconExternalLink />}
+        onActionClick={onSeeMore}
+      />
+      <HomeCard.Content>
+        <Flex direction="column" gap="8">
+          {items.map((item) => (
+            <LinkPill
+              key={item.id}
+              href={item.href}
+              label={item.label}
+              subtitle={item.sublabel}
+              illustrationType="img"
+              illustration={<img src={item.imageUrl} alt="" />}
+            />
+          ))}
+        </Flex>
+      </HomeCard.Content>
+    </HomeCard>
   );
 }
