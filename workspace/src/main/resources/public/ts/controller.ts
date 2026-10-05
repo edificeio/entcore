@@ -391,7 +391,11 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 	$scope.triggerGoogleDriveCreateDocument = function (docType: { type: string }): void {
 		$scope.isGoogleDriveCreateDocumentMenuOpen = false;
-		window.open(`/googledrive/files/create/${docType.type}`, "_blank");
+		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();
+		// parentDocument.id is null at Drive root (initParent()), so the backend keeps its default behavior there.
+		const parentId = gdContentScope?.parentDocument?.id;
+		const url = `/googledrive/files/create/${docType.type}` + (parentId ? `?parentId=${encodeURIComponent(parentId)}` : "");
+		window.open(url, "_blank");
 	};
 	// Closes the dropdown on outside click; clicks inside the wrapper are left to their own ng-click.
 	document.addEventListener("click", function (event: MouseEvent): void {

@@ -252,7 +252,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
       };
       $scope.triggerGoogleDriveCreateDocument = function (docType: { type: string }): void {
         $scope.isGoogleDriveCreateDocumentMenuOpen = false;
-        window.open(`/googledrive/files/create/${docType.type}`, "_blank");
+        // parentDocument.id is null at Drive root (initParent()), so the backend keeps its default behavior there.
+        const parentId = $scope.parentDocument?.id;
+        const url = `/googledrive/files/create/${docType.type}` + (parentId ? `?parentId=${encodeURIComponent(parentId)}` : "");
+        window.open(url, "_blank");
       };
       $scope.translate = function (key: string): string {
         return lang.translate(key);
