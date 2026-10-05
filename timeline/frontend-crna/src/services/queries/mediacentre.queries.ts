@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 import {
   fetchMediacentre,
   fetchMediacentreHasUniversalis,
+  fetchMediacentreOrientation,
   fetchMediacentrePins,
 } from '../api/mediacentre.api';
 
@@ -17,6 +18,14 @@ export const mediacentrePinsQueryOptions = (structureId: string) =>
     queryFn: () => fetchMediacentrePins(structureId),
     staleTime: 5 * 60 * 1000,
     enabled: !!structureId,
+  });
+
+export const mediacentreOrientationQueryOptions = (enabled: boolean) =>
+  queryOptions({
+    queryKey: ['mediacentre', 'orientation'],
+    queryFn: fetchMediacentreOrientation,
+    staleTime: 5 * 60 * 1000,
+    enabled,
   });
 
 export const mediacentreUniversalisQueryOptions = queryOptions({

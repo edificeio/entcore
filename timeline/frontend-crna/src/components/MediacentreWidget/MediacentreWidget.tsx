@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import {
   useMediacentre,
   useMediacentreHasUniversalis,
+  useMediacentreOrientation,
   useMediacentrePins,
 } from '~/hooks/useMediacentre';
 import { ListWidget } from '../ui/ListWidget';
@@ -19,7 +20,7 @@ import { MediacentreStateMessage } from './MediacentreStateMessage';
 import { UniversalisSearch } from './UniversalisSearch';
 import './MediacentreWidget.css';
 
-type MediacentreView = 'favorites' | 'pins';
+type MediacentreView = 'favorites' | 'pins' | 'orientation';
 
 export function MediacentreWidget({
   onSeeMore = () => window.open('/mediacentre', '_self'),
@@ -44,12 +45,44 @@ export function MediacentreWidget({
     isLoading: isPinsLoading,
     isError: isPinsError,
   } = useMediacentrePins(selectedSchool?.id);
+  const {
+    data: orientation = [],
+    isLoading: isOrientationLoading,
+    isError: isOrientationError,
+  } = useMediacentreOrientation(view === 'orientation');
 
   const hasUniversalis = useMediacentreHasUniversalis();
 
-  const items = view === 'favorites' ? favorites : pins;
-  const isLoading = view === 'favorites' ? isFavLoading : isPinsLoading;
-  const isError = view === 'favorites' ? isFavError : isPinsError;
+  const viewStates = {
+    favorites: {
+      items: favorites,
+      isLoading: isFavLoading,
+      isError: isFavError,
+      emptyText: t(
+        'homepage.crna.widget.mediacentre.empty',
+        'Vos ressources favorites seront affichées ici dès que vous les aurez sélectionnées. Allez dans le service Médiacentre (ou cliquez sur « voir plus ») et sélectionnez les ressources que vous souhaitez mettre en favoris.',
+      ),
+    },
+    pins: {
+      items: pins,
+      isLoading: isPinsLoading,
+      isError: isPinsError,
+      emptyText: t(
+        'homepage.crna.widget.mediacentre.empty-pins',
+        'Aucune ressource épinglée',
+      ),
+    },
+    orientation: {
+      items: orientation,
+      isLoading: isOrientationLoading,
+      isError: isOrientationError,
+      emptyText: t(
+        'homepage.crna.widget.mediacentre.empty-orientation',
+        "Aucune ressource d'orientation",
+      ),
+    },
+  };
+  const { items, isLoading, isError, emptyText } = viewStates[view];
 
   const filter = (
     <div className="d-flex flex-column gap-4">
@@ -67,6 +100,13 @@ export function MediacentreWidget({
           onClick={() => setView('pins')}
         >
           {t('homepage.crna.widget.mediacentre.pins', 'Ressources épinglées')}
+        </ButtonBeta>
+        <ButtonBeta
+          color={view === 'orientation' ? 'destructive' : 'default'}
+          variant={view === 'orientation' ? 'filled' : 'ghost'}
+          onClick={() => setView('orientation')}
+        >
+          {t('homepage.crna.widget.mediacentre.orientation', 'Orientation')}
         </ButtonBeta>
       </div>
       {view === 'pins' && schools.length > 1 && (
@@ -122,22 +162,7 @@ export function MediacentreWidget({
       externalLink
       filter={filter}
       itemClassName="list-widget-item--highlight"
-      emptyState={
-        <MediacentreStateMessage
-          variant="empty"
-          text={
-            view === 'favorites'
-              ? t(
-                  'homepage.crna.widget.mediacentre.empty',
-                  'Vos ressources favorites seront affichées ici dès que vous les aurez sélectionnées. Allez dans le service Médiacentre (ou cliquez sur « voir plus ») et sélectionnez les ressources que vous souhaitez mettre en favoris.',
-                )
-              : t(
-                  'homepage.crna.widget.mediacentre.empty-pins',
-                  'Aucune ressource épinglée',
-                )
-          }
-        />
-      }
+      emptyState={<MediacentreStateMessage variant="empty" text={emptyText} />}
       errorState={
         <MediacentreStateMessage
           variant="error"
