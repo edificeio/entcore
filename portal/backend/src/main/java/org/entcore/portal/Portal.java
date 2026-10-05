@@ -32,6 +32,7 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import java.io.File;
 import java.util.List;
 
+import org.entcore.common.i18n.I18nOverridesSupplierFactory;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.cache.CacheService;
@@ -61,7 +62,13 @@ public class Portal extends BaseServer {
                 final String assetPath = config.getString("assets-path", "../..") + "/assets";
                 final AddressParameter parameter = new AddressParameter("application", "portal");
                 final CacheService cacheService = CacheService.create(vertx);
-                BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
+                final I18nBrokerListenerImpl i18nBrokerListener = new I18nBrokerListenerImpl(vertx, assetPath, cacheService);
+                // Applications registering their translations through the broker get their overrides too
+                I18nOverridesSupplierFactory.createI18nOverridesSupplier(vertx, config)
+                        .onSuccess(i18nBrokerListener::setI18nOverridesSupplier)
+                        .onFailure(err -> log.error("Translation overrides of the registered applications are disabled: "
+                                + err.getMessage(), err));
+                BrokerProxyUtils.addBrokerProxy(i18nBrokerListener, vertx, parameter);
                 BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
                 addController(new PortalController(skins));
                 registerGlobalWidgets(config.getString("widgets-path", config.getString("assets-path", ".") + "/assets/widgets"));

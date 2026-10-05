@@ -1,5 +1,8 @@
 package org.entcore.portal.listeners;
 
+import org.entcore.common.i18n.I18nOverridesLoader;
+import org.entcore.common.i18n.I18nOverridesSupplier;
+import org.entcore.common.i18n.StaticI18nOverridesSupplier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -44,6 +47,9 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
     private static final int I18N_CACHE_TTL = 365 * 86400;
     private static final Logger log = LoggerFactory.getLogger(I18nBrokerListenerImpl.class);
     private final Map<String, I18n> i18nInstances = new HashMap<>();
+    /** Loaders of the translation overrides of the registered applications, by application */
+    private final Map<String, I18nOverridesLoader> overridesLoaders = new HashMap<>();
+    private I18nOverridesSupplier overridesSupplier = new StaticI18nOverridesSupplier();
     private final Vertx vertx;
     private final String assetsPath;
     private final CacheService cacheService;
@@ -634,6 +640,7 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
             if (ar.succeeded()) {
                 // Store the fully loaded instance
                 i18nInstances.put(application, ar.result());
+                startOverridesLoader(application, ar.result());
 
                 // Create and return response
                 final RegisterTranslationFilesResponseDTO response = new RegisterTranslationFilesResponseDTO(
@@ -652,6 +659,30 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
         });
         
         return promise.future();
+    }
+
+    /**
+     * Sets where the translation overrides of the registered applications come from: from now on,
+     * each registered application gets the overrides of its "&lt;application&gt;.i18n.overrides"
+     * properties, reloaded when they change.
+     */
+    public void setI18nOverridesSupplier(final I18nOverridesSupplier overridesSupplier) {
+        this.overridesSupplier = overridesSupplier;
+    }
+
+    /** Loads the overrides of a (re-)registered application into its new I18n instance. */
+    private void startOverridesLoader(final String application, final I18n i18n) {
+        final I18nOverridesLoader previous = overridesLoaders.remove(application);
+        if (previous != null) {
+            previous.stop();
+        }
+        if (overridesSupplier instanceof StaticI18nOverridesSupplier) {
+            return;
+        }
+        final I18nOverridesLoader loader = new I18nOverridesLoader(vertx, overridesSupplier, i18n,
+                Collections.singleton(application));
+        overridesLoaders.put(application, loader);
+        loader.start();
     }
 
     /**

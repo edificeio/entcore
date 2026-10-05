@@ -146,8 +146,10 @@ public final class TimelineLambda {
 								   final Map<String, JsonObject> lazyEventsI18n) {
 		JsonObject timelineI18n = getTimelineI18n(language, eventsI18n, lazyEventsI18n);
 
-		// #46383, translations from the theme takes precedence over those from the domain
-		String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
+		// #46383, translations from the theme takes precedence over those from the domain; the overrides
+		// of the tenant of the reader and of the domain take precedence over both
+		String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request),
+				I18n.getTenantId(request), I18n.getTheme(request), I18n.getLocale(language));
 		if (translatedContents.equals(key)) {
 			translatedContents = timelineI18n.getString(key, key);
 		}
