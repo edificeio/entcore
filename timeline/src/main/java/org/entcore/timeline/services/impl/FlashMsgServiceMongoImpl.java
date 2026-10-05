@@ -32,6 +32,7 @@ import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.timeline.services.FlashMsgService;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -148,6 +149,11 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 	@Override
 	public void setSubstructuresByMessageId(String messageId, String structureId, JsonObject subStructures, Handler<Either<String, JsonArray>> handler) {
 		// Not implemented
+	}
+
+	@Override
+	public Future<List<String>> listUsersToNotify(String structureId, JsonArray profiles, JsonArray userPositions) {
+		return Future.failedFuture("Not implemented");
 	}
 
 }

@@ -20,6 +20,8 @@ package org.entcore.timeline.services;
 
 import java.util.List;
 
+import io.vertx.core.Future;
+
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -42,6 +44,10 @@ public interface FlashMsgService {
 
 	public void listForUser(UserInfos user, String lang, String domain, boolean includeRead, Handler<Either<String, JsonArray>> handler);
 	public void markAsRead(UserInfos user, String id, Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Lists the ids of the users targeted by a structure flash message, with the same rules as {@link #listForUser}.
+	 */
+	public Future<List<String>> listUsersToNotify(String structureId, JsonArray profiles, JsonArray userPositions);
 
 	default public void purgeMessagesRead(Handler<Either<String, JsonObject>> handler){};
 
