@@ -47,16 +47,26 @@ export function ListWidget({
     <HomeCard variant="user" style={style}>
       <HomeCard.Header
         title={title}
-        actionLabel={onSeeMore ? t('homepage.crna.widget.see.more', 'Voir plus') : undefined}
+        actionLabel={
+          onSeeMore
+            ? t('homepage.crna.widget.see.more', 'Voir plus')
+            : undefined
+        }
         onActionClick={onSeeMore}
-        actionRightIcon={externalLink ? <IconExternalLink /> : <IconArrowRight />}
+        actionRightIcon={
+          externalLink ? <IconExternalLink /> : <IconArrowRight />
+        }
       />
       <HomeCard.Content>
         {filter}
         {isLoading ? (
           <WidgetSkeleton />
         ) : isError ? (
-          (errorState ?? <WidgetEmptyState text={t('homepage.crna.widget.error', 'Une erreur est survenue')} />)
+          (errorState ?? (
+            <WidgetEmptyState
+              text={t('homepage.crna.widget.error', 'Une erreur est survenue')}
+            />
+          ))
         ) : items.length === 0 ? (
           (emptyState ?? <WidgetEmptyState />)
         ) : (
@@ -87,13 +97,20 @@ export function ListWidget({
                   {item.href ? (
                     <a
                       href={item.href}
-                      className={clsx('list-widget-item link-discret', itemClassName)}
-                      {...(externalLink ? { target: '_blank', rel: 'noreferrer' } : {})}
+                      className={clsx(
+                        'list-widget-item link-discret',
+                        itemClassName,
+                      )}
+                      {...(externalLink
+                        ? { target: '_blank', rel: 'noreferrer' }
+                        : {})}
                     >
                       {content}
                     </a>
                   ) : (
-                    <div className={clsx('list-widget-item', itemClassName)}>{content}</div>
+                    <div className={clsx('list-widget-item', itemClassName)}>
+                      {content}
+                    </div>
                   )}
                 </li>
               );

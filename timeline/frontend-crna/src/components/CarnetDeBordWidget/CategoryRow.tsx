@@ -26,7 +26,10 @@ export function CategoryRow({
 }: CategoryRowProps) {
   const content = (
     <>
-      <div className="carnet-de-bord-entry-icon" data-color={CONTENT_COLORS[title]}>
+      <div
+        className="carnet-de-bord-entry-icon"
+        data-color={CONTENT_COLORS[title]}
+      >
         {CONTENT_ICONS[title]}
       </div>
       <div className="d-flex flex-column carnet-de-bord-entry-text">

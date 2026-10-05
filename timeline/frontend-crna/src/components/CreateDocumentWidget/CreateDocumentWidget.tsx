@@ -72,8 +72,9 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
   const hasVideoRight = useHasWorkflow(
     'com.opendigitaleducation.video.controllers.VideoController|capture',
   );
-  const [selectedDocTypeId, setSelectedDocTypeId] =
-    useState<DocTypeId | null>(null);
+  const [selectedDocTypeId, setSelectedDocTypeId] = useState<DocTypeId | null>(
+    null,
+  );
   const [mediaRecordType, setMediaRecordType] = useState<
     'video' | 'audio' | null
   >(null);
@@ -120,29 +121,37 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
                 ),
               )}
 
-            {displayMediaButtons &&APP_ACTIONS.map(
-              ({ labelKey, label, icon, colorVar, mediaType, workflowKey }) => {
-                if (workflowKey && hasVideoRight !== true) return null;
-                return (
-                  <IconButton
-                    key={labelKey}
-                    onClick={() => setMediaRecordType(mediaType)}
-                    title={t(labelKey, label)}
-                    className="create-document-btn"
-                    aria-label={t(labelKey, label)}
-                    style={
-                      {
-                        'background': `var(--edifice-${colorVar}-200)`,
-                        'color': `var(--edifice-${colorVar}-800)`,
-                        '--edifice-btn-border-color': `var(--edifice-${colorVar}-800)`,
-                        '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-800)`,
-                      } as React.CSSProperties
-                    }
-                    icon={icon}
-                  />
-                );
-              },
-            )}
+            {displayMediaButtons &&
+              APP_ACTIONS.map(
+                ({
+                  labelKey,
+                  label,
+                  icon,
+                  colorVar,
+                  mediaType,
+                  workflowKey,
+                }) => {
+                  if (workflowKey && hasVideoRight !== true) return null;
+                  return (
+                    <IconButton
+                      key={labelKey}
+                      onClick={() => setMediaRecordType(mediaType)}
+                      title={t(labelKey, label)}
+                      className="create-document-btn"
+                      aria-label={t(labelKey, label)}
+                      style={
+                        {
+                          'background': `var(--edifice-${colorVar}-200)`,
+                          'color': `var(--edifice-${colorVar}-800)`,
+                          '--edifice-btn-border-color': `var(--edifice-${colorVar}-800)`,
+                          '--edifice-btn-hover-border-color': `var(--edifice-${colorVar}-800)`,
+                        } as React.CSSProperties
+                      }
+                      icon={icon}
+                    />
+                  );
+                },
+              )}
           </Flex>
         </div>
 

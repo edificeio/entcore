@@ -53,9 +53,18 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
     <>
       <HomeCard variant="user">
         <HomeCard.Header
-          title={t('homepage.crna.widget.carnet-de-bord.title', 'Carnet de bord')}
-          actionLabel={address ? t('homepage.crna.widget.see.more', 'Voir plus') : undefined}
-          onActionClick={address ? () => window.open(address, '_blank') : undefined}
+          title={t(
+            'homepage.crna.widget.carnet-de-bord.title',
+            'Carnet de bord',
+          )}
+          actionLabel={
+            address
+              ? t('homepage.crna.widget.see.more', 'Voir plus')
+              : undefined
+          }
+          onActionClick={
+            address ? () => window.open(address, '_blank') : undefined
+          }
           actionRightIcon={<IconExternalLink />}
         />
         <HomeCard.Content>
@@ -65,7 +74,10 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
             <CarnetDeBordErrorState />
           ) : eleves.length === 0 ? (
             <WidgetEmptyState
-              text={t('homepage.crna.widget.carnet-de-bord.empty', 'Aucune donnée disponible')}
+              text={t(
+                'homepage.crna.widget.carnet-de-bord.empty',
+                'Aucune donnée disponible',
+              )}
             />
           ) : (
             <div className="carnet-de-bord-content">
@@ -101,7 +113,9 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
                       subtext={subtext}
                       subtextEmpty={isEmpty}
                       disabled={itemCount === 0}
-                      onClick={itemCount > 0 ? () => openModal(ct.title) : undefined}
+                      onClick={
+                        itemCount > 0 ? () => openModal(ct.title) : undefined
+                      }
                     />
                   );
                 })}

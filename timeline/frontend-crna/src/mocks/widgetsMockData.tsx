@@ -70,22 +70,92 @@ export const MOCK_LIENS_UTILES: ListWidgetItem[] = [
   },
 ];
 
-
 export const MOCK_EMPLOI_DU_TEMPS: EmploiDuTempsEntry[] = [
-  { id: 'e1', subject: 'Spé-SVT',           room: 'Bat A - Salle 202', teacher: 'M.DUCHEMIN',  startTime: '8h30',  color: 'green'  },
-  { id: 'e2', subject: 'Art-plastique',      room: 'Bat B - Salle 102', teacher: 'Mme.LIAM',    startTime: '9h40',  color: 'pink'   },
-  { id: 'e3', subject: 'Éducation sportive', room: 'Gymnase',           teacher: 'Mme.Oraiche', startTime: '10h40', color: 'orange' },
-  { id: 'e4', subject: 'Francais',           room: 'Bat A - Salle 202', teacher: 'M.DUBOIS',    startTime: '11h40', color: 'blue'   },
-  { id: 'e5', subject: 'Pause',                                                                  startTime: '12h35', color: 'grey'   },
-  { id: 'e6', subject: 'Éducation sportive', room: 'Gymnase',           teacher: 'Mme.Oraiche', startTime: '14h',   color: 'orange' },
+  {
+    id: 'e1',
+    subject: 'Spé-SVT',
+    room: 'Bat A - Salle 202',
+    teacher: 'M.DUCHEMIN',
+    startTime: '8h30',
+    color: 'green',
+  },
+  {
+    id: 'e2',
+    subject: 'Art-plastique',
+    room: 'Bat B - Salle 102',
+    teacher: 'Mme.LIAM',
+    startTime: '9h40',
+    color: 'pink',
+  },
+  {
+    id: 'e3',
+    subject: 'Éducation sportive',
+    room: 'Gymnase',
+    teacher: 'Mme.Oraiche',
+    startTime: '10h40',
+    color: 'orange',
+  },
+  {
+    id: 'e4',
+    subject: 'Francais',
+    room: 'Bat A - Salle 202',
+    teacher: 'M.DUBOIS',
+    startTime: '11h40',
+    color: 'blue',
+  },
+  { id: 'e5', subject: 'Pause', startTime: '12h35', color: 'grey' },
+  {
+    id: 'e6',
+    subject: 'Éducation sportive',
+    room: 'Gymnase',
+    teacher: 'Mme.Oraiche',
+    startTime: '14h',
+    color: 'orange',
+  },
 ];
 
 const RAW_LAST_INFOS = [
-  { id: 16, title: 'latest news with a very very VERY long title with no use other than testing !!', content: 'blah blah 1', username: 'Jean Aymar', modifiedDate: '2021-03-24T16:36:05.398+02', thread: { id: 1, icon: '', title: 'News collège A' } },
-  { id: 15, title: 'another info', content: 'blah blah plus ancien', username: 'Jean Aymar', modifiedDate: '2021-03-23T01:01:00.000+02', thread: { id: 2, icon: '', title: 'News Ecole B' } },
-  { id: 14, title: 'older info', content: 'blah blah encore plus ancien', username: 'Jean Aymar', modifiedDate: '2021-03-22T01:01:00.000+02', thread: { id: 1, icon: '', title: 'News collège A' } },
-  { id: 13, title: 'oldest info', content: 'blah blah périmé', username: 'Jean Aymar', modifiedDate: '2021-03-21T01:01:00.000+02', thread: { id: 1, icon: '', title: 'News collège A' } },
-  { id: 12, title: 'fresh news', content: 'not so fresh', username: 'Jean Aymar', modifiedDate: '2021-03-20T16:36:05.398+02', thread: { id: 3, icon: '', title: 'News école C' } },
+  {
+    id: 16,
+    title:
+      'latest news with a very very VERY long title with no use other than testing !!',
+    content: 'blah blah 1',
+    username: 'Jean Aymar',
+    modifiedDate: '2021-03-24T16:36:05.398+02',
+    thread: { id: 1, icon: '', title: 'News collège A' },
+  },
+  {
+    id: 15,
+    title: 'another info',
+    content: 'blah blah plus ancien',
+    username: 'Jean Aymar',
+    modifiedDate: '2021-03-23T01:01:00.000+02',
+    thread: { id: 2, icon: '', title: 'News Ecole B' },
+  },
+  {
+    id: 14,
+    title: 'older info',
+    content: 'blah blah encore plus ancien',
+    username: 'Jean Aymar',
+    modifiedDate: '2021-03-22T01:01:00.000+02',
+    thread: { id: 1, icon: '', title: 'News collège A' },
+  },
+  {
+    id: 13,
+    title: 'oldest info',
+    content: 'blah blah périmé',
+    username: 'Jean Aymar',
+    modifiedDate: '2021-03-21T01:01:00.000+02',
+    thread: { id: 1, icon: '', title: 'News collège A' },
+  },
+  {
+    id: 12,
+    title: 'fresh news',
+    content: 'not so fresh',
+    username: 'Jean Aymar',
+    modifiedDate: '2021-03-20T16:36:05.398+02',
+    thread: { id: 3, icon: '', title: 'News école C' },
+  },
 ];
 
 export const MOCK_LAST_INFOS: LastInfosProps[] = RAW_LAST_INFOS.map(

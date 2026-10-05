@@ -4,7 +4,11 @@ import { ButtonBeta, Dropdown, Modal, useBreakpoint } from '@edifice.io/react';
 import type { IconButtonProps } from '@edifice.io/react';
 import { IconArrowDown, IconExternalLink } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import type { ContentItem, ContentTitle, ContentType } from '~/models/carnetDeBord';
+import type {
+  ContentItem,
+  ContentTitle,
+  ContentType,
+} from '~/models/carnetDeBord';
 import { CategoryRow } from './CategoryRow';
 import {
   CONTENT_COLORS,
@@ -30,7 +34,9 @@ function RetardsAbsencesRow({ item }: { item: ContentItem }) {
     <li className="carnet-de-bord-row">
       <span className="carnet-de-bord-row-date">{item.value}</span>
       <strong className="carnet-de-bord-row-type">{typeLabel}</strong>
-      {item.motif && <span className="carnet-de-bord-row-motif">{item.motif}</span>}
+      {item.motif && (
+        <span className="carnet-de-bord-row-motif">{item.motif}</span>
+      )}
     </li>
   );
 }
@@ -76,7 +82,9 @@ function DiaryDayRow({ subject, date, content }: DiaryDayRowProps) {
   return (
     <li className="carnet-de-bord-row carnet-de-bord-row--cdt">
       <div className="d-flex flex-column flex-fill">
-        {fullDate && <span className="carnet-de-bord-row-date">Pour {fullDate}</span>}
+        {fullDate && (
+          <span className="carnet-de-bord-row-date">Pour {fullDate}</span>
+        )}
         <strong className="carnet-de-bord-row-type">{subject}</strong>
         <span className="carnet-de-bord-row-motif carnet-de-bord-row-motif--italic">
           {content || 'Pas de description'}
@@ -105,7 +113,9 @@ function SkillRow({ item }: { item: ContentItem }) {
     <li className="carnet-de-bord-row carnet-de-bord-row--cdt">
       <div className="d-flex flex-column flex-fill">
         {date && <span className="carnet-de-bord-row-date">{date}</span>}
-        {subject && <strong className="carnet-de-bord-row-type">{subject}</strong>}
+        {subject && (
+          <strong className="carnet-de-bord-row-type">{subject}</strong>
+        )}
         {item.subsections?.map(
           (sub, j) =>
             sub.content && (
@@ -150,7 +160,9 @@ export function CarnetDeBordModal({
   if (!isOpen) return null;
 
   const activeContentType = contentTypes.find((ct) => ct.title === activeTab);
-  const items = Array.isArray(activeContentType?.full) ? activeContentType.full : [];
+  const items = Array.isArray(activeContentType?.full)
+    ? activeContentType.full
+    : [];
 
   const diaryRows =
     activeTab === 'diary'
@@ -164,7 +176,8 @@ export function CarnetDeBordModal({
         })
       : [];
 
-  const hasContent = activeTab === 'diary' ? diaryRows.length > 0 : items.length > 0;
+  const hasContent =
+    activeTab === 'diary' ? diaryRows.length > 0 : items.length > 0;
 
   const pronoteLabel = t(
     'homepage.crna.widget.carnet-de-bord.open-pronote',
@@ -241,7 +254,13 @@ export function CarnetDeBordModal({
   ) : null;
 
   return (
-    <Modal id="carnet-de-bord-modal" isOpen={isOpen} onModalClose={onClose} size="lg" scrollable>
+    <Modal
+      id="carnet-de-bord-modal"
+      isOpen={isOpen}
+      onModalClose={onClose}
+      size="lg"
+      scrollable
+    >
       <Modal.Header onModalClose={onClose}>
         <span>
           {t(
@@ -278,7 +297,9 @@ export function CarnetDeBordModal({
               <>
                 <ul className="carnet-de-bord-row-list">
                   {activeTab === 'diary'
-                    ? diaryRows.map((row, i) => <DiaryDayRow key={i} {...row} />)
+                    ? diaryRows.map((row, i) => (
+                        <DiaryDayRow key={i} {...row} />
+                      ))
                     : items.map((item, i) => renderRow(activeTab, item, i))}
                 </ul>
                 {pronoteButton}
