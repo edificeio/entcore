@@ -32,3 +32,25 @@ export interface MediacentreFavoritesResponse {
   status: string;
   data: MediacentreSignet[];
 }
+
+export interface MediacentrePublishedSignet {
+  id: string;
+  title: string;
+  image: string;
+  link: string;
+  plain_text: string[];
+  /** Set by Mediacentre on publish: `["Orientation"]` when the signet is flagged orientation, `["Signet"]` otherwise. */
+  document_types: string[];
+}
+
+export interface MediacentrePublishedSignetsResponse {
+  event: string;
+  state: string;
+  status: string;
+  data: {
+    signets?: {
+      source: string;
+      resources: MediacentrePublishedSignet[];
+    };
+  };
+}

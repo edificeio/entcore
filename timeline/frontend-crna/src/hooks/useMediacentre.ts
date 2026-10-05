@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import {
+  mediacentreOrientationQueryOptions,
   mediacentrePinsQueryOptions,
   mediacentreQueryOptions,
   mediacentreUniversalisQueryOptions,
@@ -12,6 +13,11 @@ export function useMediacentre() {
 
 export function useMediacentrePins(structureId: string | undefined) {
   return useQuery(mediacentrePinsQueryOptions(structureId ?? ''));
+}
+
+/** Only fetched once the orientation tab is opened, to avoid an extra request on every homepage load. */
+export function useMediacentreOrientation(enabled: boolean) {
+  return useQuery(mediacentreOrientationQueryOptions(enabled));
 }
 
 export function useMediacentreHasUniversalis() {

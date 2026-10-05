@@ -2,8 +2,12 @@ import { odeServices } from '@edifice.io/client';
 import type { ListWidgetItem } from '~/models';
 import type {
   MediacentreFavoritesResponse,
+  MediacentrePublishedSignet,
+  MediacentrePublishedSignetsResponse,
   MediacentreSignet,
 } from '~/models/mediacentre';
+
+const ORIENTATION_DOCUMENT_TYPE = 'orientation';
 
 function mapSignetToItem(signet: MediacentreSignet): ListWidgetItem {
   return {
@@ -23,6 +27,25 @@ function mapPinToItem(signet: MediacentreSignet): ListWidgetItem {
     href: signet.link || signet.url,
     imageUrl: signet.image,
   };
+}
+
+function mapPublishedSignetToItem(
+  signet: MediacentrePublishedSignet,
+): ListWidgetItem {
+  return {
+    id: signet.id,
+    label: signet.title,
+    sublabel: signet.plain_text.join(', '),
+    href: signet.link,
+    imageUrl: signet.image,
+  };
+}
+
+// Same rule as the Mediacentre app's "Orientation" theme filter.
+function isOrientationSignet(signet: MediacentrePublishedSignet): boolean {
+  return signet.document_types.some((type) =>
+    type.toLowerCase().includes(ORIENTATION_DOCUMENT_TYPE),
+  );
 }
 
 export async function fetchMediacentre(): Promise<ListWidgetItem[]> {
@@ -58,6 +81,17 @@ export async function fetchMediacentrePins(
     return [];
   }
   return body.data.map(mapPinToItem);
+}
+
+export async function fetchMediacentreOrientation(): Promise<ListWidgetItem[]> {
+  const body = await odeServices
+    .http()
+    .get<MediacentrePublishedSignetsResponse>('/mediacentre/signets');
+  if (body.status !== 'ok') {
+    throw new Error('mediacentre.widget.orientation.fetch.error');
+  }
+  const signets = body.data?.signets?.resources ?? [];
+  return signets.filter(isOrientationSignet).map(mapPublishedSignetToItem);
 }
 
 export async function fetchMediacentreHasUniversalis(): Promise<boolean> {
