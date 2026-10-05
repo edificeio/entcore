@@ -1,5 +1,5 @@
 import type { LastInfosProps } from '@edifice.io/react/homepage';
-import type { EmploiDuTempsEntry, ListWidgetItem } from '~/models';
+import type { EmploiDuTempsEntry, LinkItem } from '~/models';
 
 function IconPlaceholder({ label, bg }: { label: string; bg: string }) {
   return (
@@ -22,7 +22,7 @@ function IconPlaceholder({ label, bg }: { label: string; bg: string }) {
   );
 }
 
-export const MOCK_MEDIACENTRE: ListWidgetItem[] = [
+export const MOCK_MEDIACENTRE: LinkItem[] = [
   {
     id: '1',
     icon: <IconPlaceholder label="M" bg="#4a90d9" />,
@@ -46,7 +46,7 @@ export const MOCK_MEDIACENTRE: ListWidgetItem[] = [
   },
 ];
 
-export const MOCK_LIENS_UTILES: ListWidgetItem[] = [
+export const MOCK_LIENS_UTILES: LinkItem[] = [
   {
     id: '1',
     icon: <IconPlaceholder label="C" bg="#7b61ff" />,
@@ -181,7 +181,7 @@ export const MOCK_LAST_INFOS: LastInfosProps[] = RAW_LAST_INFOS.map(
   }),
 );
 
-export const MOCK_MES_EMPRUNTS: ListWidgetItem[] = [
+export const MOCK_MES_EMPRUNTS: LinkItem[] = [
   {
     id: 'b1',
     icon: <IconPlaceholder label="J" bg="#e07a5f" />,

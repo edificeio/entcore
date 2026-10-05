@@ -1,5 +1,5 @@
 import { odeServices } from '@edifice.io/client';
-import type { ListWidgetItem } from '~/models';
+import type { LinkItem } from '~/models';
 import type {
   MediacentreFavoritesResponse,
   MediacentrePublishedSignet,
@@ -9,29 +9,31 @@ import type {
 
 const ORIENTATION_DOCUMENT_TYPE = 'orientation';
 
-function mapSignetToItem(signet: MediacentreSignet): ListWidgetItem {
+function mapSignetToItem(signet: MediacentreSignet): LinkItem {
   return {
     id: signet._id,
     label: signet.title,
     sublabel: signet.plain_text,
-    href: signet.link || signet.url,
+    // Mediacentre always returns one of them (`url` for personal signets).
+    href: signet.link || signet.url || '',
     imageUrl: signet.image,
   };
 }
 
-function mapPinToItem(signet: MediacentreSignet): ListWidgetItem {
+function mapPinToItem(signet: MediacentreSignet): LinkItem {
   return {
     id: signet._id,
     label: signet.pinned_title || signet.title,
     sublabel: signet.pinned_description || signet.plain_text,
-    href: signet.link || signet.url,
+    // Mediacentre always returns one of them (`url` for personal signets).
+    href: signet.link || signet.url || '',
     imageUrl: signet.image,
   };
 }
 
 function mapPublishedSignetToItem(
   signet: MediacentrePublishedSignet,
-): ListWidgetItem {
+): LinkItem {
   return {
     id: signet.id,
     label: signet.title,
@@ -48,7 +50,7 @@ function isOrientationSignet(signet: MediacentrePublishedSignet): boolean {
   );
 }
 
-export async function fetchMediacentre(): Promise<ListWidgetItem[]> {
+export async function fetchMediacentre(): Promise<LinkItem[]> {
   const body = await odeServices
     .http()
     .get<MediacentreFavoritesResponse>('/mediacentre/favorites');
@@ -65,7 +67,7 @@ export async function fetchMediacentre(): Promise<ListWidgetItem[]> {
 
 export async function fetchMediacentrePins(
   structureId: string,
-): Promise<ListWidgetItem[]> {
+): Promise<LinkItem[]> {
   const body = await odeServices
     .http()
     .get<
@@ -83,7 +85,7 @@ export async function fetchMediacentrePins(
   return body.data.map(mapPinToItem);
 }
 
-export async function fetchMediacentreOrientation(): Promise<ListWidgetItem[]> {
+export async function fetchMediacentreOrientation(): Promise<LinkItem[]> {
   const body = await odeServices
     .http()
     .get<MediacentrePublishedSignetsResponse>('/mediacentre/signets');

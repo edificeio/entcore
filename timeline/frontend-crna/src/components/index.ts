@@ -1,6 +1,5 @@
 export * from './ui/WidgetErrorBoundary';
 export * from './ui/WidgetSkeleton';
-export * from './ui/ListWidget';
 export * from './ui/WidgetMasonry';
 export * from './ui/WidgetEmptyState';
 export * from './CreateDocumentWidget';

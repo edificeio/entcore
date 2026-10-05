@@ -2,11 +2,14 @@ import { useState } from 'react';
 import {
   ButtonBeta,
   Dropdown,
+  Flex,
   IconButton,
+  LinkPill,
   useEdificeClient,
 } from '@edifice.io/react';
 import type { IconButtonProps } from '@edifice.io/react';
-import { IconFilter } from '@edifice.io/react/icons';
+import { HomeCard } from '@edifice.io/react/homepage';
+import { IconExternalLink, IconFilter } from '@edifice.io/react/icons';
 import type { JSX, RefAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,7 +18,7 @@ import {
   useMediacentreOrientation,
   useMediacentrePins,
 } from '~/hooks/useMediacentre';
-import { ListWidget } from '../ui/ListWidget';
+import { WidgetSkeleton } from '../ui/WidgetSkeleton';
 import { MediacentreStateMessage } from './MediacentreStateMessage';
 import { UniversalisSearch } from './UniversalisSearch';
 import './MediacentreWidget.css';
@@ -152,18 +155,10 @@ export function MediacentreWidget({
     </div>
   );
 
-  return (
-    <ListWidget
-      title={t('homepage.crna.widget.mediacentre.title', 'Médiacentre')}
-      items={items}
-      isLoading={isLoading}
-      isError={isError}
-      onSeeMore={onSeeMore}
-      externalLink
-      filter={filter}
-      itemClassName="list-widget-item--highlight"
-      emptyState={<MediacentreStateMessage variant="empty" text={emptyText} />}
-      errorState={
+  const renderContent = () => {
+    if (isLoading) return <WidgetSkeleton />;
+    if (isError) {
+      return (
         <MediacentreStateMessage
           variant="error"
           text={t(
@@ -171,12 +166,47 @@ export function MediacentreWidget({
             "Impossible d'établir une connexion avec Médiacentre. Si le problème persiste, ouvrez une demande d'aide sur le module Assistance ENT.",
           )}
         />
-      }
-      footer={
-        !isError && hasUniversalis ? (
+      );
+    }
+    if (items.length === 0) {
+      return <MediacentreStateMessage variant="empty" text={emptyText} />;
+    }
+    return (
+      <Flex direction="column" gap="8">
+        {items.map((item) => (
+          <LinkPill
+            key={item.id}
+            href={item.href}
+            label={item.label}
+            subtitle={item.sublabel}
+            // Some resources have no image: fall back to LinkPill's default icon.
+            {...(item.imageUrl
+              ? {
+                  illustrationType: 'img' as const,
+                  illustration: <img src={item.imageUrl} alt="" />,
+                }
+              : {})}
+          />
+        ))}
+      </Flex>
+    );
+  };
+
+  return (
+    <HomeCard variant="user">
+      <HomeCard.Header
+        title={t('homepage.crna.widget.mediacentre.title', 'Médiacentre')}
+        actionLabel={t('homepage.crna.widget.see.more', 'Voir plus')}
+        actionRightIcon={<IconExternalLink />}
+        onActionClick={onSeeMore}
+      />
+      <HomeCard.Content>
+        {filter}
+        {renderContent()}
+        {!isError && hasUniversalis && (
           <UniversalisSearch uai={selectedSchool?.UAI} />
-        ) : undefined
-      }
-    />
+        )}
+      </HomeCard.Content>
+    </HomeCard>
   );
 }
