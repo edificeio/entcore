@@ -18,12 +18,11 @@ import styles from './Root.module.css';
 import { MediacentreWidget, WidgetMasonry } from '~/components';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
 import { CarnetDeBordWidget } from '~/components/CarnetDeBordWidget';
-import { PersonnalisationPanel } from '~/components/ui/PersonnalisationPanel';
 import { WidgetErrorBoundary } from '~/components/ui/WidgetErrorBoundary';
 import { FlashMessageHistoryPanel } from '~/components/WelcomeWidget/FlashMessageHistoryPanel';
 import { WelcomeWidget } from '~/components/WelcomeWidget';
 
-type OverlayPanel = 'settings' | 'flash-history' | 'notifications' | null;
+type OverlayPanel = 'flash-history' | 'notifications' | null;
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -51,10 +50,6 @@ export const Root = () => {
   // of the slide-in overlay, so they don't need `overlayOpen` to be true.
   const isSidebarOpen = isNotificationsOpen && lg;
 
-  const openSettings = () => {
-    setActivePanel('settings');
-    updateOverlayOpen(true);
-  };
   const openHistory = () => {
     setActivePanel('flash-history');
     updateOverlayOpen(true);
@@ -137,7 +132,6 @@ export const Root = () => {
         <WidgetErrorBoundary>
           <WelcomeWidget
             onCreateDocumentSuccess={setSuccessMessage}
-            onOpenSettings={openSettings}
             onOpenHistory={openHistory}
           />
         </WidgetErrorBoundary>
@@ -169,7 +163,6 @@ export const Root = () => {
         closeButton={false}
         onClose={isNotificationsOpen ? closeNotifications : undefined}
       >
-        {activePanel === 'settings' && <PersonnalisationPanel />}
         {activePanel === 'flash-history' && <FlashMessageHistoryPanel />}
         {isNotificationsOpen && !isSidebarOpen && (
           <NotificationListContainer
