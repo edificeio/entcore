@@ -7,4 +7,5 @@ export const flashMessageHistoryQueryOptions = queryOptions({
   staleTime: 5 * 60 * 1000,
 });
 
-export const useFlashMessageHistory = () => useQuery(flashMessageHistoryQueryOptions);
+export const useFlashMessageHistory = () =>
+  useQuery(flashMessageHistoryQueryOptions);

@@ -19,7 +19,8 @@
   padding: var(--primitive-spacer-12) var(--primitive-spacer-16);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--primitive-border-radius-xl) var(--primitive-border-radius-xl) 0 0;
+  border-radius: var(--primitive-border-radius-xl)
+    var(--primitive-border-radius-xl) 0 0;
   cursor: pointer;
 }
 
@@ -215,7 +216,8 @@ button.carnet-de-bord-entry:hover {
   background-color: var(--primitive-white);
   border: 1px solid var(--color-primary-light);
   border-radius: var(--primitive-border-radius-xl);
-  padding: var(--primitive-spacer-8) var(--primitive-spacer-16) var(--primitive-spacer-16);
+  padding: var(--primitive-spacer-8) var(--primitive-spacer-16)
+    var(--primitive-spacer-16);
   min-width: 0;
 }
 

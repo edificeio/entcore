@@ -1,2 +1,6 @@
 export { CarnetDeBordWidget } from './CarnetDeBordWidget';
-export type { ContentItem, ContentTitle, ContentType } from '~/models/carnetDeBord';
+export type {
+  ContentItem,
+  ContentTitle,
+  ContentType,
+} from '~/models/carnetDeBord';

@@ -1,4 +1,9 @@
-import { EmptyScreen, Heading, IconButton, useOverlay } from '@edifice.io/react';
+import {
+  EmptyScreen,
+  Heading,
+  IconButton,
+  useOverlay,
+} from '@edifice.io/react';
 import { MessageFlash } from '@edifice.io/react/homepage';
 import { IconClose } from '@edifice.io/react/icons';
 import illuEmptyNotification from '@edifice.io/bootstrap/dist/images/homepage/illu-empty-notifications.png';
@@ -21,7 +26,10 @@ export function FlashMessageHistoryPanel() {
           headingStyle="h5"
           className="flash-message-history-panel-title"
         >
-          {t('homepage.crna.widget.welcome.history.title', 'Historique des message flash')}
+          {t(
+            'homepage.crna.widget.welcome.history.title',
+            'Historique des message flash',
+          )}
         </Heading>
         <IconButton
           icon={<IconClose />}

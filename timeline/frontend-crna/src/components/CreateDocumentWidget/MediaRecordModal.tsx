@@ -10,20 +10,42 @@ interface MediaRecordModalProps {
   onSuccess: () => void;
 }
 
-export function MediaRecordModal({ type, isOpen, onClose, onSuccess }: MediaRecordModalProps) {
+export function MediaRecordModal({
+  type,
+  isOpen,
+  onClose,
+  onSuccess,
+}: MediaRecordModalProps) {
   const { t } = useTranslation('timeline');
 
   if (!isOpen) return null;
 
-  const handleAudioSave = (_resource: WorkspaceElement) => { onSuccess(); onClose(); };
-  const handleVideoSuccess = (_resources: WorkspaceElement[]) => { onSuccess(); onClose(); };
+  const handleAudioSave = (_resource: WorkspaceElement) => {
+    onSuccess();
+    onClose();
+  };
+  const handleVideoSuccess = (_resources: WorkspaceElement[]) => {
+    onSuccess();
+    onClose();
+  };
 
   return (
-    <Modal id="media-record-modal" isOpen={isOpen} onModalClose={onClose} size="md">
+    <Modal
+      id="media-record-modal"
+      isOpen={isOpen}
+      onModalClose={onClose}
+      size="md"
+    >
       <Modal.Header onModalClose={onClose}>
         {type === 'video'
-          ? t('homepage.crna.widget.create.video.title', 'Enregistrer une vidéo')
-          : t('homepage.crna.widget.create.audio.title', 'Enregistrer un audio')}
+          ? t(
+              'homepage.crna.widget.create.video.title',
+              'Enregistrer une vidéo',
+            )
+          : t(
+              'homepage.crna.widget.create.audio.title',
+              'Enregistrer un audio',
+            )}
       </Modal.Header>
       <Modal.Body>
         {type === 'audio' ? (

@@ -7,7 +7,7 @@ interface WidgetEmptyStateProps {
 }
 
 export function WidgetEmptyState({ text }: WidgetEmptyStateProps) {
- const { t } = useTranslation('timeline');
+  const { t } = useTranslation('timeline');
   return (
     <EmptyScreen
       imageSrc={illuNoContent}
