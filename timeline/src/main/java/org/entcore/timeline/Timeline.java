@@ -24,11 +24,13 @@ import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.AsyncMap;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.i18n.I18nOverridesLoader;
 import org.entcore.common.notification.ws.OssFcm;
 import org.entcore.common.user.DefaultPreferenceHelper;
 import org.entcore.common.user.PreferenceHelper;
@@ -50,9 +52,12 @@ import org.entcore.timeline.services.impl.*;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Timeline extends BaseServer {
 
@@ -102,6 +107,11 @@ public class Timeline extends BaseServer {
 				eventsI18n,configService,
 				config.getBoolean("log-push-notifs", false),
 				config.getBoolean("remove-push-notifs-404-tokens", false));
+		for (TimelinePushNotifService pushNotifService : pushNotifServices) {
+			if (pushNotifService instanceof DefaultPushNotifService) {
+				((DefaultPushNotifService) pushNotifService).setLazyEventsI18n(lazyEventsI18n);
+			}
+		}
 		notificationHelper.setPushNotifServices(pushNotifServices);
 
 		PreferenceHelper preferenceService = new DefaultPreferenceHelper(getEventBus(vertx));
@@ -162,9 +172,34 @@ public class Timeline extends BaseServer {
 				.onSuccess(entries -> {
 					registeredNotificationsCache.clear();
 					registeredNotificationsCache.putAll(entries);
+					updateI18nOverridesApplications(entries.values());
 				})
 				.onFailure(ex -> log.error("Error when update registered notifications", ex));
 		});
+	}
+
+	/**
+	 * The texts of the notifications of each application are overridden with the translation
+	 * overrides of the application (e.g. "workspace.i18n.overrides"): those of every application
+	 * having registered notifications are loaded, on top of those of the timeline.
+	 */
+	private void updateI18nOverridesApplications(final Collection<String> registeredNotifications) {
+		final I18nOverridesLoader loader = getI18nOverridesLoader();
+		if (loader == null) {
+			return;
+		}
+		final Set<String> applications = new LinkedHashSet<>(getI18nOverridesApplications());
+		for (String registeredNotification : registeredNotifications) {
+			try {
+				final String type = new JsonObject(registeredNotification).getString("type");
+				if (type != null && !type.trim().isEmpty()) {
+					applications.add(type.trim().toLowerCase());
+				}
+			} catch (DecodeException e) {
+				log.warn("Invalid registered notification: " + registeredNotification);
+			}
+		}
+		loader.setApplications(applications);
 	}
 
 	private void updateEventsI18nCache(final Map<String, String> eventsI18n) {

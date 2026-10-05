@@ -20,10 +20,12 @@ package org.entcore.timeline.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
+import org.entcore.timeline.controllers.TimelineLambda;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelinePushNotifService;
 import org.entcore.common.notification.ws.OssFcm;
@@ -51,7 +53,8 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     private final EventBus eb;
     private final OssFcm ossFcm;
     private Map<String,String> eventsI18n;
-    private Map<String,JsonObject> cacheI18N = new HashMap<>();
+    /** Parsed eventsI18n per language, rebuilt when they change (see {@link TimelineLambda#getTimelineI18n}) */
+    private Map<String,JsonObject> lazyEventsI18n = new HashMap<>();
 
     public DefaultPushNotifService(Vertx vertx, JsonObject config, OssFcm ossFcm) {
         super(vertx, config);
@@ -138,7 +141,8 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                     !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
                             notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
                     userPref.getJsonArray("tokens") != null && userPref.getJsonArray("tokens").size() > 0){
-                processMessage(notification, this.getUserLanguage(userPref), typeNotification, typeData, message -> {
+                processMessage(notification, this.getUserLanguage(userPref),
+                        userPref.getString("lastDomain", I18n.DEFAULT_DOMAIN), typeNotification, typeData, message -> {
                     for(Object token : userPref.getJsonArray("tokens")){
                         if ("null".equals(token)) {
                             continue;
@@ -180,6 +184,14 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
 
     public void processMessage(final JsonObject notification, String language, final boolean typeNotification,final boolean typeData, final Handler<JsonObject> handler){
+        processMessage(notification, language, I18n.DEFAULT_DOMAIN, typeNotification, typeData, handler);
+    }
+
+    /**
+     * @param domain domain the recipient last reached the platform at, for the translation overrides of
+     *               the domain to apply to the title
+     */
+    public void processMessage(final JsonObject notification, String language, final String domain, final boolean typeNotification,final boolean typeData, final Handler<JsonObject> handler){
         final JsonObject message = new JsonObject();
 
         translateMessage(language, keys -> {
@@ -193,7 +205,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
             // Caution : Push-notif length can't exceed 4kb
             // @see https://firebase.google.com/docs/cloud-messaging/http-server-ref#downstream-http-messages-plain-text
 
-            notif.put("title", HtmlUtils.unescapeHtmlEntities(keys.getString(pushNotif.getString("title"), pushNotif.getString("title", ""))));
+            notif.put("title", HtmlUtils.unescapeHtmlEntities(translateTitle(pushNotif.getString("title", ""), language, domain, keys)));
             notif.put("body",HtmlUtils.unescapeHtmlEntities(body));
             if(typeData) {
                 if (notification.containsKey("type"))
@@ -226,19 +238,22 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
     public void translateMessage(final String language, final Handler<JsonObject> handler){
         final String key = language.split(",")[0].split("-")[0];
-        if(!this.cacheI18N.containsKey(key)){
-            //create cache
-            final JsonObject translations;
-            final String i18n = eventsI18n.get(key);
-            if (i18n == null || i18n.length() == 0) {
-                translations = new JsonObject();
-            } else {
-                translations = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-            }
-            this.cacheI18N.put(key, translations);
-        }
-        final JsonObject translations = this.cacheI18N.get(key);
-        handler.handle(translations);
+        handler.handle(TimelineLambda.getTimelineI18n(key, eventsI18n, lazyEventsI18n));
+    }
+
+    /**
+     * Like the other texts of notifications (see {@link TimelineLambda#translate}): its override for the
+     * domain or its translation in the files of the timeline if any, else its translation registered
+     * by its application.
+     */
+    private String translateTitle(final String title, final String language, final String domain,
+                                  final JsonObject eventsTranslations) {
+        final String translated = I18n.getInstance().translate(title, domain, null, null, I18n.getLocale(language));
+        return translated.equals(title) ? eventsTranslations.getString(title, title) : translated;
+    }
+
+    public void setLazyEventsI18n(Map<String, JsonObject> lazyEventsI18n) {
+        this.lazyEventsI18n = lazyEventsI18n;
     }
 
     public void setConfigService(TimelineConfigService configService) {

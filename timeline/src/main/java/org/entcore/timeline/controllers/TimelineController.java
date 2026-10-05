@@ -278,7 +278,10 @@ public class TimelineController extends BaseController {
 		if (!eventsI18n.containsKey(language)) {
 			language = "fr";
 		}
-		final JsonObject i18Notif = TimelineLambda.getTimelineI18n(language, eventsI18n, lazyEventsI18n).copy();
+		// With the overrides of the tenant of the user and of the domain on top (a copy, in any case)
+		final JsonObject i18Notif = this.i18n.getOverrides().applyTo(
+				TimelineLambda.getTimelineI18n(language, eventsI18n, lazyEventsI18n), I18n.getTenantId(request),
+				Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
 		if("true".equals(request.params().get("mergeall"))){
 			final JsonObject original = this.i18n.load(request);
 			renderJson(request, i18Notif.mergeIn(original));
