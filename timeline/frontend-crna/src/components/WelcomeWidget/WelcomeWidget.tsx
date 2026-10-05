@@ -6,7 +6,7 @@ import {
   useBreakpoint,
   useUser,
 } from '@edifice.io/react';
-import { IconClock, IconSettings } from '@edifice.io/react/icons';
+import { IconClock } from '@edifice.io/react/icons';
 import { FavoritesContainer, HomeCard } from '@edifice.io/react/homepage';
 import { useTranslation } from 'react-i18next';
 import { CreateDocumentWidget } from '~/components/CreateDocumentWidget';
@@ -22,13 +22,11 @@ const PROFILE_LABELS: Record<string, string> = {
 
 interface WelcomeWidgetProps {
   onCreateDocumentSuccess?: (message: string) => void;
-  onOpenSettings?: () => void;
   onOpenHistory?: () => void;
 }
 
 export function WelcomeWidget({
   onCreateDocumentSuccess,
-  onOpenSettings,
   onOpenHistory,
 }: WelcomeWidgetProps) {
   const { t } = useTranslation('timeline');
@@ -69,14 +67,6 @@ export function WelcomeWidget({
               'homepage.crna.widget.welcome.history',
               'Historique des message flash',
             )}
-          </ButtonBeta>
-          <ButtonBeta
-            color="default"
-            variant="ghost"
-            leftIcon={<IconSettings width={20} height={20} />}
-            onClick={onOpenSettings}
-          >
-            {t('homepage.crna.widget.welcome.settings', 'Paramètres')}
           </ButtonBeta>
         </div>
       </div>
