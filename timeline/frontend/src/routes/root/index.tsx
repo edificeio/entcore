@@ -5,6 +5,7 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import {
+  AgendaContainer,
   CommunitiesContainer,
   FavoritesContainer,
   LastInfosContainer,
@@ -17,6 +18,7 @@ import {
 import { useState } from 'react';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { WidgetsPersonalizationPanelContainer } from '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer';
+import { useWidgetPreferences } from '~/hooks/useWidgetPreferences';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
 import { useWidgetsPanelLayout } from './hooks/useWidgetsPanelLayout';
 
@@ -27,6 +29,7 @@ export const loader = async () => {
 
 export const Root = () => {
   const { init } = useEdificeClient();
+  const { isVisible } = useWidgetPreferences();
   // Lifted here because both layout hooks depend on it (overlay sync lives in
   // useNotificationsLayout)
   const [isWidgetsPanelOpen, setIsWidgetsPanelOpen] = useState(false);
@@ -72,6 +75,7 @@ export const Root = () => {
             <FavoritesContainer />
           </UserSpaceContainer>
           <CommunitiesContainer />
+          {isVisible('agenda-widget') && <AgendaContainer />}
           {/* TODO: gate on isVisible('<widget-name>') once "Liens utiles"
               is registered as a widget in the catalog */}
           <UsefulLinksContainer />
