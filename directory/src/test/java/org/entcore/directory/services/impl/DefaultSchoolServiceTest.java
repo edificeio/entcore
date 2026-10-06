@@ -15,13 +15,19 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.dto.TimezonePreference;
 import org.entcore.test.TestHelper;
 import org.entcore.test.preparation.*;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultSchoolServiceTest {
@@ -56,6 +62,13 @@ public class DefaultSchoolServiceTest {
             .firstName("Adée").lastName("Émelle")
             .profile(Profile.Personnel)
             .userBook(new UserBookTest("user.adml", "ine.user.adml", 1000, 0)).build();
+
+    static final UserTest ubPersonnel = UserTestBuilder.anUserTest().id("ub.personnel")
+            .login("ub-personnel")
+            .firstName("Ub").lastName("Personnel")
+            .displayName("Ub Personnel")
+            .profile(Profile.Personnel)
+            .userBook(new UserBookTest("ub.personnel", "ine.ub.personnel", 1000, 0)).build();
 
     @BeforeClass
     public static void setUp(TestContext context) {
@@ -92,6 +105,70 @@ public class DefaultSchoolServiceTest {
         });
     }
 
+    @Test
+    public void testListUserbookStructureCandidates(final TestContext context) {
+        final Async async = context.async();
+        final String linkClassManualGroup =
+                "MATCH (c:Class {id: 'ub-class'}) " +
+                "MERGE (g:Group:ManualGroup:Visible {id: 'ub-class-manual'}) SET g.name = 'A manual of class' " +
+                "MERGE (g)-[:DEPENDS]->(c)";
+        neo4j.execute(linkClassManualGroup, new JsonObject(), e -> defaultSchoolService
+                .listUserbookStructureCandidates("ub-structure")
+                .onComplete(context.asyncAssertSuccess(candidates -> {
+                    final JsonArray users = candidates.getJsonArray("users");
+                    context.assertEquals(1, users.size(), "Only the personnel of the structure is a candidate");
+                    context.assertEquals("ub.personnel", users.getJsonObject(0).getString("id"));
+                    context.assertEquals("Personnel", users.getJsonObject(0).getString("type"));
+
+                    final Set<String> classGroupIds = candidates.getJsonArray("classGroups").stream()
+                            .map(o -> ((JsonObject) o).getString("id")).collect(Collectors.toSet());
+                    context.assertEquals(new HashSet<>(Arrays.asList("ub-class-parent", "ub-class-teacher",
+                            "ub-class-personnel", "ub-class-guest", "ub-class-student", "ub-class-manual")), classGroupIds,
+                            "Every group attached to a class of the structure, and only those, is a candidate");
+                    candidates.getJsonArray("classGroups").forEach(o ->
+                            context.assertEquals("ub-class", ((JsonObject) o).getString("classId")));
+
+                    final JsonArray manualGroups = candidates.getJsonArray("manualGroups");
+                    context.assertEquals(2, manualGroups.size(), "Manual groups of the structure and of its classes");
+                    context.assertEquals("ub-class-manual", manualGroups.getJsonObject(0).getString("id"), "Sorted by name");
+                    context.assertEquals("ub-structure-manual", manualGroups.getJsonObject(1).getString("id"));
+                    async.complete();
+                })));
+    }
+
+    @Test
+    public void testKeepVisibles() {
+        final JsonObject candidates = new JsonObject()
+                .put("users", new JsonArray()
+                        .add(new JsonObject().put("id", "u1"))
+                        .add(new JsonObject().put("id", "u2")))
+                .put("classGroups", new JsonArray()
+                        .add(classGroup("g1", "c1"))
+                        .add(classGroup("g1", "c2"))
+                        .add(classGroup("g2", "c1"))
+                        .add(classGroup("g3", "c3")))
+                .put("manualGroups", new JsonArray()
+                        .add(new JsonObject().put("id", "m1"))
+                        .add(new JsonObject().put("id", "m2")));
+
+        final JsonObject result = DefaultSchoolService.keepVisibles(candidates,
+                new HashSet<>(Arrays.asList("u2", "g1", "g2", "m1")));
+
+        Assert.assertEquals(new JsonArray().add(new JsonObject().put("id", "u2")), result.getJsonArray("users"));
+        Assert.assertEquals(new JsonArray()
+                        .add(new JsonObject().put("id", "c1").put("name", "class c1").put("level", null))
+                        .add(new JsonObject().put("id", "c2").put("name", "class c2").put("level", null)),
+                result.getJsonArray("classes"));
+        Assert.assertEquals(Arrays.asList("g1", "g2"), result.getJsonArray("profileGroups").stream()
+                .map(o -> ((JsonObject) o).getString("id")).collect(Collectors.toList()));
+        Assert.assertEquals(new JsonArray().add(new JsonObject().put("id", "m1")), result.getJsonArray("manualGroups"));
+    }
+
+    private static JsonObject classGroup(String id, String classId) {
+        return new JsonObject().put("id", id).put("name", "group " + id).put("groupDisplayName", null)
+                .put("classId", classId).put("className", "class " + classId).put("classLevel", null);
+    }
+
     private static Future<Void> prepareData() {
         return dataHelper.start()
                 .withStructure(new StructureTest("my-structure-01", "my structure 01"))
@@ -105,6 +182,12 @@ public class DefaultSchoolServiceTest {
                 .withUser(parent)
                 .withUser(adml)
                     .adml(adml.getId(), "my-structure-01")
+                // Structure dedicated to the userbook structure tests.
+                .withStructure(new StructureTest("ub-structure", "userbook structure"))
+                    .withClass(new ClassTest("ub-class", "userbook class"), "ub-structure")
+                .withUser(ubPersonnel)
+                    .adml(ubPersonnel.getId(), "ub-structure")
+                .withManualGroup(new GroupTest("ub-structure-manual", "B manual of structure"), "ub-structure", null, Collections.emptyList())
                 // Structures dedicated to the defaultAuth duplication tests.
                 // Sources are matched by id, targets by UAI.
                 .withStructure(new StructureTest("auth-src-fed", "auth source federated", true))

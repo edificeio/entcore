@@ -444,6 +444,7 @@ public class CommunicationController extends BaseController {
 
 		switch (searchQuery.getAction()) {
 			case "visibleUsers":
+				log.warn("DEPRECATED: This method visibleUsers should not be used anymore " + searchQuery.getCustomReturn());
 				boolean myGroup = communicationService instanceof DefaultCommunicationService || searchQuery.isMyGroup();
 				//FIXME: we can't define a DTO  until we remove customeReturn from query
 				future = communicationService.visibleUsers(userId, schoolId, expectedTypes,
@@ -487,11 +488,13 @@ public class CommunicationController extends BaseController {
 						.map(arr -> serializeForBus(arr, BusUserDtoMapper::map));
 				break;
 			case "visibleProfilsGroups":
+				log.warn("DEPRECATED: This method visibleProfilsGroups should not be used anymore " + searchQuery.getCustomReturn());
 				//FIXME: we can't define a DTO  until we remove customeReturn from query
 				future = communicationService.visibleProfilsGroups(userId, searchQuery.getCustomReturn(),
 						new JsonObject(searchQuery.getAdditionnalParams()), searchQuery.getPreFilter());
 				break;
 			case "visibleManualGroups":
+				log.warn("DEPRECATED: This method visibleManualGroups should not be used anymore " + searchQuery.getCustomReturn());
 				//FIXME: we can't define a DTO  until we remove customeReturn from query
 				future = communicationService.visibleManualGroups(userId, searchQuery.getCustomReturn(),
 						new JsonObject(searchQuery.getAdditionnalParams()));
