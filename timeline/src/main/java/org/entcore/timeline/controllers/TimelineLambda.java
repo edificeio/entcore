@@ -27,12 +27,12 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.template.TemplateProcessor;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.notification.TimelineHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -100,17 +100,10 @@ public final class TimelineLambda {
 
 	private static JsonObject computeTimeLineI18n(String language, Map<String, String> eventsI18n, Map<String, JsonObject> lazyEventsI18n) {
 		String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-		String i18n = eventI18n != null ? eventI18n : "}";
-		JsonObject timelineI18n;
-		try {
-			timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-			lazyEventsI18n.put(language, timelineI18n);
-			if(eventI18n != null) {
-				i18nEventsHash.put(language, eventI18n.hashCode());
-			}
-		} catch (DecodeException de) {
-			timelineI18n = new JsonObject();
-			log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
+		JsonObject timelineI18n = TimelineHelper.parseEventsI18n(eventI18n);
+		lazyEventsI18n.put(language, timelineI18n);
+		if (eventI18n != null) {
+			i18nEventsHash.put(language, eventI18n.hashCode());
 		}
 		return timelineI18n;
 	}

@@ -18,28 +18,27 @@
 
 package org.entcore.timeline.services.impl;
 
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.logging.LoggerFactory;
+import static fr.wseduc.webutils.Utils.getOrElse;
+
+import java.util.Map;
+
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
-import org.entcore.timeline.services.TimelineConfigService;
-import org.entcore.timeline.services.TimelinePushNotifService;
 import org.entcore.common.notification.ws.OssFcm;
 import org.entcore.common.utils.HtmlUtils;
+import org.entcore.timeline.controllers.TimelineLambda;
+import org.entcore.timeline.services.TimelineConfigService;
+import org.entcore.timeline.services.TimelinePushNotifService;
 
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
+import io.vertx.core.logging.LoggerFactory;
 
 
 public class DefaultPushNotifService extends Renders implements TimelinePushNotifService {
@@ -51,7 +50,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     private final EventBus eb;
     private final OssFcm ossFcm;
     private Map<String,String> eventsI18n;
-    private Map<String,JsonObject> cacheI18N = new HashMap<>();
+    private Map<String,JsonObject> lazyEventsI18n;
 
     public DefaultPushNotifService(Vertx vertx, JsonObject config, OssFcm ossFcm) {
         super(vertx, config);
@@ -225,20 +224,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     }
 
     public void translateMessage(final String language, final Handler<JsonObject> handler){
-        final String key = language.split(",")[0].split("-")[0];
-        if(!this.cacheI18N.containsKey(key)){
-            //create cache
-            final JsonObject translations;
-            final String i18n = eventsI18n.get(key);
-            if (i18n == null || i18n.length() == 0) {
-                translations = new JsonObject();
-            } else {
-                translations = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-            }
-            this.cacheI18N.put(key, translations);
-        }
-        final JsonObject translations = this.cacheI18N.get(key);
-        handler.handle(translations);
+        handler.handle(TimelineLambda.getTimelineI18n(language, eventsI18n, lazyEventsI18n));
     }
 
     public void setConfigService(TimelineConfigService configService) {
@@ -247,6 +233,10 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
     public void setEventsI18n(Map<String,String> eventsI18n) {
         this.eventsI18n = eventsI18n;
+    }
+
+    public void setLazyEventsI18n(Map<String,JsonObject> lazyEventsI18n) {
+        this.lazyEventsI18n = lazyEventsI18n;
     }
 
     public String getUserLanguage(JsonObject userPref) {
