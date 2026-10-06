@@ -119,6 +119,11 @@
     {% if carbonioDomainKey is defined %}
       "carbonio-domain-key": "{{ carbonioDomainKey }}",
     {% endif %}
+    {% if carbonioCommunicationUrl is defined %}
+      "carbonio-communication-url": "{{ carbonioCommunicationUrl }}",
+      "carbonio-communication-username": "{{ carbonioCommunicationUsername }}",
+      "carbonio-communication-password": "{{ carbonioCommunicationPassword }}",
+    {% endif %}
     {% if authIdruideEmail is defined %}
       "idruide-email-domain-by-host": "{{ authIdruideEmail | default('{}') }}",
     {% endif %}
