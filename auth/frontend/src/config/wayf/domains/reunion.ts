@@ -1,24 +1,27 @@
 import type { WayfDomainConfig } from '~/models/wayf';
 
+const ARENA_ACS =
+  'https://portail.ac-reunion.fr/sso/SSO?SPEntityID=sso.ac-reunion.fr&TARGET=https%3A%2F%2Fsso.ac-reunion.fr%2Fsaml%3Fsp_ident%3Durn%3Afi%3Aone%3Aprod-reunion%3A1.0%26RelayState%3Dhttps%3A%2F%2Fent1d.ac-reunion.fr';
+
 export const reunionConfig: WayfDomainConfig = {
   providers: [
     {
       i18n: 'wayf.student',
       color: 'student',
       icon: 'student',
-      acs: '/auth/saml/authn/student',
+      acs: '/auth/login',
     },
     {
       i18n: 'wayf.relative',
       color: 'relative',
       icon: 'relative',
-      acs: '/auth/saml/authn/relative',
+      acs: '/auth/login',
     },
     {
       i18n: 'wayf.teacher',
       color: 'teacher',
       icon: 'teacher',
-      acs: '/auth/saml/teacher-reunion',
+      acs: ARENA_ACS,
     },
     {
       i18n: 'wayf.perseducnat',
@@ -26,14 +29,14 @@ export const reunionConfig: WayfDomainConfig = {
       icon: 'perseducnat',
       children: [
         {
-          i18n: 'wayf.perseducnat.collectivite',
+          i18n: 'wayf.perseducnat.academy',
           color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-collectivite',
+          acs: ARENA_ACS,
         },
         {
-          i18n: 'wayf.perseducnat.academie',
+          i18n: 'wayf.perseducnat.collectivite',
           color: 'perseducnat',
-          acs: '/auth/saml/perseducnat-academie',
+          acs: '/auth/login',
         },
       ],
     },
@@ -41,8 +44,7 @@ export const reunionConfig: WayfDomainConfig = {
       i18n: 'wayf.other',
       color: 'other',
       icon: 'other',
-      acs: '/auth/saml/other',
+      acs: '/auth/login',
     },
   ],
-  partners: [],
 };
