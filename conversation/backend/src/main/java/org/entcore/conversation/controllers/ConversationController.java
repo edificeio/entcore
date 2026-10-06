@@ -102,9 +102,8 @@ public class ConversationController extends BaseController {
 	public static final String RESOURCE_NAME = "message";
 	private final static String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
 
-	/** Profiles allowed to set an absence message for themselves. */
-	private static final Set<String> ABSENCE_ALLOWED_PROFILES =
-			Collections.unmodifiableSet(new HashSet<>(Arrays.asList("Teacher", "Personnel")));
+	/** Workflow right granting access to the absence message settings. */
+	private static final String ABSENCE_WORKFLOW_RIGHT = "conversation.absence";
 
 	/** Where a sent message hands its absence replies over, for processing away from the request. */
 	private static final String ABSENCE_REPLIES_ADDRESS = "conversation.absence.replies";
@@ -2029,15 +2028,11 @@ public class ConversationController extends BaseController {
 	/* Message d'absence */
 
 	@Get("absence")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "conversation.absenceMessage", right = ABSENCE_WORKFLOW_RIGHT)
 	public void getAbsence(final HttpServerRequest request) {
 		getUserInfos(eb, request, user -> {
 			if (user == null) {
 				unauthorized(request);
-				return;
-			}
-			if (!ABSENCE_ALLOWED_PROFILES.contains(user.getType())) {
-				forbidden(request, "conversation.absence.forbidden.profile");
 				return;
 			}
 			conversationService.getAbsence(user)
@@ -2050,15 +2045,11 @@ public class ConversationController extends BaseController {
 	}
 
 	@Put("absence")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "conversation.absenceMessage", right = ABSENCE_WORKFLOW_RIGHT)
 	public void upsertAbsence(final HttpServerRequest request) {
 		getUserInfos(eb, request, user -> {
 			if (user == null) {
 				unauthorized(request);
-				return;
-			}
-			if (!ABSENCE_ALLOWED_PROFILES.contains(user.getType())) {
-				forbidden(request, "conversation.absence.forbidden.profile");
 				return;
 			}
 			RequestUtils.bodyToJson(request, body -> {

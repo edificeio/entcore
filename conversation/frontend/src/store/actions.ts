@@ -34,6 +34,7 @@ export const useActionsStore = createSelectors(
       'org.entcore.conversation.controllers.ConversationController|createDraft': false,
       'org.entcore.conversation.controllers.ApiController|recallMessage': false,
       'org.entcore.conversation.controllers.ConversationController|noReply': false,
+      'conversation.absence': false,
     } as Record<string, boolean>,
     config: { maxDepth: 3, recallDelayMinutes: 60 } as Config,
     selectedMessageIds: [],
