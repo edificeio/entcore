@@ -152,8 +152,8 @@ public class SplitTimelineEventStore implements TimelineEventStore {
 
     @Override
     public void get(UserInfos recipient, List<String> types, int offset, int limit, JsonObject restrictionFilter,
-            boolean mine, boolean both, String version, Handler<JsonObject> result) {
-        original.get(recipient, types, offset, limit, restrictionFilter, mine, both, version, result);
+            boolean mine, boolean both, boolean receivedOnly, String version, Handler<JsonObject> result) {
+        original.get(recipient, types, offset, limit, restrictionFilter, mine, both, receivedOnly, version, result);
     }
 
     @Override

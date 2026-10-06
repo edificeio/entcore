@@ -22,10 +22,13 @@
 package org.entcore.timeline;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.SplitTimelineEventStore;
@@ -35,6 +38,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.MongoDBContainer;
 
+import fr.wseduc.mongodb.MongoDb;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -44,6 +50,8 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @RunWith(VertxUnitRunner.class)
 public class TimelineEventTest {
     private static final TestHelper test = TestHelper.helper();
+    private static final String ME = "receivedOnlyMe";
+    private static final String OTHER = "receivedOnlyOther";
     @ClassRule
     public static MongoDBContainer mongoContainer = test.database().createMongoContainer();
     static SplitTimelineEventStore splitStore;
@@ -193,5 +201,72 @@ public class TimelineEventTest {
             context.assertEquals(3, _ids.size());
             async.complete();
         });
+    }
+
+    private JsonObject eventFrom(String type, String resource, String sender, JsonArray recipients, boolean preview) {
+        final JsonObject event = event(type, "TEST", recipients).put("resource", resource)
+                .put("date", MongoDb.offsetFromNow(-60));
+        if (sender != null) {
+            event.put("sender", sender);
+        }
+        if (preview) {
+            event.put("preview", new JsonObject().put("text", "preview"));
+        }
+        return event;
+    }
+
+    private List<JsonObject> receivedOnlyDataset(String type) {
+        return Arrays.asList(
+                eventFrom(type, "A", OTHER, new JsonArray().add(recipient(ME)), true),
+                eventFrom(type, "B", ME, new JsonArray().add(recipient(OTHER)), true),
+                eventFrom(type, "C", ME, new JsonArray().add(recipient(ME)).add(recipient(OTHER)), true),
+                eventFrom(type, "D", null, new JsonArray().add(recipient(ME)), false));
+    }
+
+    private Future<Void> addAll(List<JsonObject> events) {
+        final List<Future<?>> futures = new ArrayList<>();
+        for (JsonObject event : events) {
+            final Promise<Void> promise = Promise.promise();
+            store.add(event, res -> {
+                if ("ok".equals(res.getString("status"))) {
+                    promise.complete();
+                } else {
+                    promise.fail(res.encode());
+                }
+            });
+            futures.add(promise.future());
+        }
+        return Future.all(futures).mapEmpty();
+    }
+
+    private Future<List<String>> getResources(String type, boolean receivedOnly) {
+        final Promise<List<String>> promise = Promise.promise();
+        final UserInfos user = new UserInfos();
+        user.setUserId(ME);
+        store.get(user, Collections.singletonList(type), 0, 25, null, false, false, receivedOnly, "3.0", res -> {
+            if (!"ok".equals(res.getString("status"))) {
+                promise.fail(res.encode());
+                return;
+            }
+            promise.complete(res.getJsonArray("results").stream().map(JsonObject.class::cast)
+                    .map(notif -> notif.getString("resource")).sorted().collect(Collectors.toList()));
+        });
+        return promise.future();
+    }
+
+    @Test
+    public void testGetV3ShouldReturnReceivedAndSentWithPreview(TestContext context) {
+        addAll(receivedOnlyDataset("RECEIVEDONLY_DEFAULT"))
+                .compose(v -> getResources("RECEIVEDONLY_DEFAULT", false))
+                .onComplete(context.asyncAssertSuccess(resources ->
+                        context.assertEquals(Arrays.asList("A", "B", "C", "D"), resources)));
+    }
+
+    @Test
+    public void testGetV3ReceivedOnlyShouldReturnOnlyReceived(TestContext context) {
+        addAll(receivedOnlyDataset("RECEIVEDONLY_FILTER"))
+                .compose(v -> getResources("RECEIVEDONLY_FILTER", true))
+                .onComplete(context.asyncAssertSuccess(resources ->
+                        context.assertEquals(Arrays.asList("A", "C", "D"), resources)));
     }
 }
