@@ -1,13 +1,14 @@
 import type { WayfDomainConfig } from '~/models/wayf';
 
-// NOTE: URLs ARENA/EduConnect extraites de /auth/login (pas de /auth/saml/wayf
-// fonctionnel pour ce domaine, fédération SAML pas encore activée côté
-// académie — cf. ENABLING-1218). Probablement provisoires, à corriger une fois
-// la fédération réellement en place ; posées ainsi pour permettre un premier
-// test en recette.
+// NOTE: URLs extraites de /auth/login (pas de /auth/saml/wayf fonctionnel pour
+// ce domaine — cf. ENABLING-1218). ARENA_ACS vérifiée le 2026-10-06 (corrigée
+// depuis la version initiale du 2026-09-30, qui était un simple lien de
+// portail non fonctionnel) : redirige bien vers une vraie page de connexion
+// ARENA.
 const EDUCONNECT_ACS =
   'https://educonnect.education.gouv.fr/idp/profile/SAML2/Unsolicited/SSO?providerId=urn%3Afi%3Aent%3Aprod-ent57-edu%3A1.0';
-const ARENA_ACS = 'https://login.ac-nancy-metz.fr/';
+const ARENA_ACS =
+  'https://portail.ac-nancy-metz.fr/sso/SSO?SPEntityID=urn:fi:ent:prod-ent57-aaa:1.0&TARGET=https://ariane57.moselle-education.fr';
 
 export const moselleConfig: WayfDomainConfig = {
   providers: [
