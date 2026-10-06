@@ -30,6 +30,8 @@ import java.util.Map;
 public class CarbonioPreauthController extends BaseController {
 	private static final Logger log = LoggerFactory.getLogger(CarbonioPreauthController.class);
 	private static final String CARBONIO_AUTH_COOKIE_NAME = "ZM_AUTH_TOKEN";
+	/** Default timeout (ms) of the unread count call, made on every ENT page load. */
+	private static final long CARBONIO_UNREAD_DEFAULT_TIMEOUT = 5000L;
 
 	CarbonioPreauthService carbonioPreauthService;
 	String carbonioBaseUrl;
@@ -56,9 +58,13 @@ public class CarbonioPreauthController extends BaseController {
 		carbonioRedirectUrl = config.getString("carbonio-redirect-url");
 		carbonioDomainKey = config.getString("carbonio-domain-key");
 
-		carbonioPreauthService = new CarbonioPreauthService(carbonioRedirectUrl, carbonioDomainKey);
-
 		httpClient = vertx.createHttpClient(new HttpClientOptions());
+
+		carbonioPreauthService = new CarbonioPreauthService(carbonioRedirectUrl, carbonioDomainKey, httpClient,
+				config.getString("carbonio-communication-url"),
+				config.getString("carbonio-communication-username"),
+				config.getString("carbonio-communication-password"),
+				config.getLong("carbonio-communication-timeout", CARBONIO_UNREAD_DEFAULT_TIMEOUT));
 	}
 
 	/**
@@ -121,6 +127,33 @@ public class CarbonioPreauthController extends BaseController {
 				request.response().setStatusCode(400);
 				request.response().end();
 			}
+		});
+	}
+
+	/**
+	 * Returns the number of unread messages in the Carbonio Inbox of the authenticated user.
+	 * The user id is always taken from the session, never from the request.
+	 *
+	 * @param request The HTTP request containing the user session
+	 * @return HTTP 200 with {"count": n} (0 when the user has no Carbonio account
+	 *         or the communication API is not configured),
+	 *         HTTP 401 if user not found in session,
+	 *         HTTP 502 if the communication API call fails
+	 */
+	@Get("/carbonio/unread")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getUnreadCount(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, userInfos -> {
+			if (userInfos == null) {
+				unauthorized(request, "User not found");
+				return;
+			}
+			carbonioPreauthService.getUnreadCount(userInfos.getUserId())
+				.onSuccess(count -> renderJson(request, new JsonObject().put("count", count)))
+				.onFailure(err -> {
+					log.error("Failed to fetch Carbonio unread count for user " + userInfos.getUserId(), err);
+					renderJson(request, new JsonObject().put("error", "carbonio.unread.error"), 502);
+				});
 		});
 	}
 
