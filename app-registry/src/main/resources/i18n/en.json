@@ -77,6 +77,7 @@
     "blog.list": "Blog : lister les blogs",
     "blog.print": "Blog : imprimer des blogs",
     "blog.view": "Blog : accéder au module",
+    "conversation.absenceMessage": "Mail: set an out-of-office message",
     "conversation.create.draft": "Mail: create a draft",
     "conversation.stimulation.exercise" : "Messagerie : suggestion de création d'exercice",
     "conversation.send": "Mail : Send a message",

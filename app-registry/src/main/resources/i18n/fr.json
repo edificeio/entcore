@@ -160,6 +160,7 @@
   "blog.view": "Blog : accéder au module",
   "cancel": "Annuler",
   "confirm": "Confirmer",
+  "conversation.absenceMessage": "Pouvoir définir un message d'absence",
   "conversation.create.draft": "Messagerie : créer un brouillon",
   "conversation.send": "Messagerie : envoyer un message",
   "conversation.stimulation.exercise": "Messagerie : suggestion de création d'exercice",
