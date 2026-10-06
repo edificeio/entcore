@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
@@ -73,6 +76,8 @@ public class DefaultUserBookService implements UserBookService {
 	private final WorkspaceHelper wsHelper;
 	private final Neo4j neo = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserBookService.class);
+	/** Birth dates are stored as yyyy-MM-dd ; the month is filled in before the query. */
+	private static final String BIRTHDAY_REGEX = "^[0-9]{4}-%02d-(3[01]|[12][0-9]|0[1-9])$";
 
 	public DefaultUserBookService(Vertx vertx, EventBus eb, Storage avatarStorage, WorkspaceHelper wsHelper, JsonObject userBookData) {
 		super();
@@ -652,5 +657,47 @@ public class DefaultUserBookService implements UserBookService {
 		UserUtils.removeSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, null);
 		neo.execute(query.toString(), params, validUniqueResultHandler(handler));
 
+	}
+
+	@Override
+	public Future<JsonArray> listVisibleBirthdays(String userId, int month) {
+		return listBirthdayCandidates(userId, month).compose(candidates -> {
+			final JsonArray candidateIds = new JsonArray(candidates.stream()
+					.map(o -> ((JsonObject) o).getString("id"))
+					.collect(Collectors.toList()));
+			return UserUtils.filterFewOrGetAllVisibles(eb, userId, candidateIds, true).map(visibles -> {
+				final Set<String> visibleIds = visibles.stream()
+						.map(o -> ((JsonObject) o).getString("id"))
+						.collect(Collectors.toSet());
+				return candidates.stream()
+						.filter(o -> visibleIds.contains(((JsonObject) o).getString("id")))
+						.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll));
+			});
+		});
+	}
+
+	/**
+	 * Students of the classes of the user born in the given month, without any visibility filter.
+	 * @return [{id, username, birthDate, classes: [[classId, className]]}]
+	 */
+	Future<JsonArray> listBirthdayCandidates(String userId, int month) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final String query =
+				"MATCH (u:User {id: {userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)" +
+				"<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(m:User) " +
+				"WHERE HEAD(m.profiles) = 'Student' AND m.birthDate =~ {regex} " +
+				"RETURN m.id as id, m.displayName as username, m.birthDate as birthDate, " +
+				"COLLECT(DISTINCT [c.id, c.name]) as classes ";
+		final JsonObject params = new JsonObject()
+				.put("userId", userId)
+				.put("regex", String.format(BIRTHDAY_REGEX, month));
+		neo.execute(query, params, validResultHandler(result -> {
+			if (result.isRight()) {
+				promise.complete(result.right().getValue());
+			} else {
+				promise.fail(result.left().getValue());
+			}
+		}));
+		return promise.future();
 	}
 }
