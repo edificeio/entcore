@@ -161,6 +161,7 @@
   "compare": "Comparer",
   "confirm": "Confirmer",
   "connectors": "Connecteurs",
+  "conversation.absenceMessage": "Pouvoir définir un message d'absence",
   "conversation.create.draft": "Messagerie : créer un brouillon",
   "conversation.print": "Messagerie : imprimer un message",
   "conversation.recall": "Messagerie : rappeler un message",

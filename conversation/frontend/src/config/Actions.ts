@@ -16,4 +16,8 @@ export const existingActions: IAction[] = [
     workflow:
       'org.entcore.conversation.controllers.ConversationController|noReply',
   },
+  {
+    id: 'absence' as ActionType,
+    workflow: 'conversation.absence',
+  },
 ];

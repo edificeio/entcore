@@ -1,18 +1,11 @@
-import { useEdificeClient } from '@edifice.io/react';
 import { useActionsStore } from '~/store/actions';
 
-/** Only these profiles can have an absence message: teachers and non-teaching staff. */
-const ABSENCE_ALLOWED_PROFILES = ['ENSEIGNANT', 'PERSEDUCNAT'];
-
 /**
- * This hook checks the rights the current user may have. Most are workflow
- * rights, always loaded by the root loader, keyed by backend
- * `controller|action`. `canManageAbsence` is not one of those: it's a
- * client-side heuristic based on the user's profile (`user.type`), not a
- * backend-granted workflow right.
+ * This hook checks the workflow rights the current user may have, always
+ * loaded by the root loader. They are keyed by backend `controller|action`,
+ * or by the right's name when the backend overrides it (`conversation.absence`).
  */
 export function useRights() {
-  const { user } = useEdificeClient();
   const actions = useActionsStore.use.workflows();
   const canCreateDraft =
     actions?.[
@@ -28,8 +21,7 @@ export function useRights() {
       'org.entcore.conversation.controllers.ConversationController|noReply'
     ] ?? false;
 
-  const canManageAbsence =
-    !!user?.type && ABSENCE_ALLOWED_PROFILES.includes(user.type);
+  const canManageAbsence = actions?.['conversation.absence'] ?? false;
 
   return { canCreateDraft, canRecallMessages, canSetNoReply, canManageAbsence };
 }
