@@ -34,6 +34,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.dto.ManagedBy;
 import org.entcore.common.user.dto.QuietHoursPreference;
 import org.entcore.common.user.dto.TimezonePreference;
@@ -43,10 +44,14 @@ import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.structure.DefaultAuthModeConfig;
 import org.entcore.directory.services.SchoolService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -842,6 +847,92 @@ public class DefaultSchoolService implements SchoolService {
 			}
 		}));
 		return promise.future();
+	}
+
+	@Override
+	public Future<JsonObject> getVisibleUserbookStructure(String userId, String structureId) {
+		return listUserbookStructureCandidates(structureId).compose(candidates -> {
+			final Set<String> candidateIds = new LinkedHashSet<>();
+			for (String key : Arrays.asList("users", "classGroups", "manualGroups")) {
+				candidates.getJsonArray(key).forEach(o -> candidateIds.add(((JsonObject) o).getString("id")));
+			}
+			return UserUtils.filterFewOrGetAllVisibles(eventBus, userId, new JsonArray(new ArrayList<>(candidateIds)), false)
+					.map(visibles -> keepVisibles(candidates, visibles.stream()
+							.map(o -> ((JsonObject) o).getString("id"))
+							.collect(Collectors.toSet())));
+		});
+	}
+
+	/**
+	 * Every user and group the userbook page of a structure may show, without any visibility filter.
+	 * The class groups are not restricted to profile groups : like the query this replaces, any group
+	 * attached to a class counts. A group attached to several classes gives one row per class.
+	 * @return { users: [{type, id, displayName, mood, photo}],
+	 * classGroups: [{id, name, groupDisplayName, classId, className, classLevel}],
+	 * manualGroups: [{id, name, groupDisplayName}] }
+	 */
+	Future<JsonObject> listUserbookStructureCandidates(String structureId) {
+		final Promise<JsonObject> promise = Promise.promise();
+		final JsonObject params = new JsonObject().put("structureId", structureId);
+		final StatementsBuilder statements = new StatementsBuilder()
+				.add("MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
+						"-[:HAS_PROFILE]->(p:Profile {name: 'Personnel'}), (u:User)-[:IN]->pg " +
+						"OPTIONAL MATCH (u)-[:USERBOOK]->(ub:UserBook) " +
+						"RETURN DISTINCT p.name as type, u.id as id, u.displayName as displayName, " +
+						"ub.mood as mood, ub.picture as photo " +
+						"ORDER BY type DESC, displayName ", params)
+				.add("MATCH (s:Structure {id: {structureId}})<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g:Group) " +
+						"RETURN DISTINCT g.id as id, g.name as name, g.groupDisplayName as groupDisplayName, " +
+						"c.id as classId, c.name as className, c.level as classLevel ", params)
+				.add("MATCH (s:Structure {id: {structureId}})<-[:BELONGS*0..1]-(c)<-[:DEPENDS]-(g:ManualGroup) " +
+						"WHERE ALL(label IN labels(c) WHERE label IN ['Structure', 'Class']) " +
+						"RETURN DISTINCT g.id as id, g.name as name, g.groupDisplayName as groupDisplayName " +
+						"ORDER BY name ASC ", params);
+		neo.executeTransaction(statements.build(), null, true, validResultsHandler(results -> {
+			if (results.isRight()) {
+				final JsonArray r = results.right().getValue();
+				promise.complete(new JsonObject()
+						.put("users", r.getJsonArray(0))
+						.put("classGroups", r.getJsonArray(1))
+						.put("manualGroups", r.getJsonArray(2)));
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
+	/**
+	 * Keep the candidates whose id is visible, and shape them as the userbook structure response :
+	 * a class is listed as soon as one of its groups is visible.
+	 */
+	static JsonObject keepVisibles(JsonObject candidates, Set<String> visibleIds) {
+		final Map<String, JsonObject> classes = new LinkedHashMap<>();
+		final Map<String, JsonObject> classGroups = new LinkedHashMap<>();
+		candidates.getJsonArray("classGroups").stream()
+				.map(JsonObject.class::cast)
+				.filter(row -> visibleIds.contains(row.getString("id")))
+				.forEach(row -> {
+					classes.putIfAbsent(row.getString("classId"), new JsonObject()
+							.put("id", row.getString("classId"))
+							.put("name", row.getString("className"))
+							.put("level", row.getValue("classLevel")));
+					classGroups.putIfAbsent(row.getString("id"), new JsonObject()
+							.put("id", row.getString("id"))
+							.put("name", row.getString("name"))
+							.put("groupDisplayName", row.getValue("groupDisplayName")));
+				});
+		return new JsonObject()
+				.put("users", filterByIds(candidates.getJsonArray("users"), visibleIds))
+				.put("classes", new JsonArray(new ArrayList<>(classes.values())))
+				.put("profileGroups", new JsonArray(new ArrayList<>(classGroups.values())))
+				.put("manualGroups", filterByIds(candidates.getJsonArray("manualGroups"), visibleIds));
+	}
+
+	private static JsonArray filterByIds(JsonArray rows, Set<String> ids) {
+		return rows.stream()
+				.filter(o -> ids.contains(((JsonObject) o).getString("id")))
+				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll));
 	}
 
 	@Override

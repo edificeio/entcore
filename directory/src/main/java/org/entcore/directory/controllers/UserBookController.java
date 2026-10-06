@@ -36,31 +36,27 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.http.response.DefaultResponseHandler;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.notification.ConversationNotification;
-import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.dto.UserPreferenceDto;
+import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.user.position.UserPosition;
 import org.entcore.common.user.position.UserPositionService;
-import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.PreferenceService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserBookService;
@@ -68,7 +64,6 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -83,6 +78,7 @@ public class UserBookController extends BaseController {
 	private JsonObject userBookData;
 	private HttpClient client;
 	private SchoolService schoolService;
+	private ClassService classService;
 	private UserBookService userBookService;
 	private UserPositionService userPositionService;
 	private EventStore eventStore;
@@ -92,6 +88,14 @@ public class UserBookController extends BaseController {
 	private Map<String, Map<String, String>> activationWelcomeMessage;
 	private PreferenceService preferenceService;
 	private final Map<String, Object> serverMap;
+	private static final List<String> USER_FIELD_LIST = Lists.newArrayList("id", "displayName", "type");
+	private static final Comparator<JsonObject> BY_TYPE_AND_NAME = (u1, u2) -> {
+		 int result = u1.getString("type", "").compareTo(u2.getString("type", ""));
+		 if( result != 0) {
+			 return result;
+		 }
+		 return u1.getString("displayName", "").compareTo(u2.getString("displayName", ""));
+	};
 
 	private static final String THEME_VERSION = "themeVersion";
 
@@ -190,43 +194,6 @@ public class UserBookController extends BaseController {
 		eventStore.createAndStoreEvent(DirectoryEvent.ACCESS.name(), request);
 	}
 
-	@Get("/api/search")
-	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
-	public void search(final HttpServerRequest request) {
-		String name = request.params().get("name");
-		String structure = request.params().get("structure");
-		String profile = request.params().get("profile");
-		String filter = "";
-		JsonObject params = new JsonObject();
-		if (name == null || name.trim().isEmpty()) {
-			badRequest(request, "empty.name");
-			return;
-		}
-		if(profile != null && !profile.trim().isEmpty()){
-			filter += "AND HEAD(m.profiles) = {profile} ";
-			params.put("profile", profile);
-		}
-		if(structure != null && !structure.trim().isEmpty()){
-			filter += "AND (m)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Structure {id: {structureId}}) ";
-			params.put("structureId", structure);
-		}
-		String preFilter = "AND m.displayNameSearchField CONTAINS {search} " + filter;
-		params.put("search", StringValidation.sanitize(name));
-		//FIXME should be optimized by removing unecessary optionals
-		String customReturn =
-				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
-				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
-				"u.mood as mood, u.userid as userId, u.picture as photo, " +
-				"HEAD(visibles.profiles) as type " +
-				"ORDER BY displayName";
-		UserUtils.findVisibleUsers(eb, request, false, false, preFilter, customReturn, params, new Handler<JsonArray>() {
-			@Override
-			public void handle(JsonArray users) {
-				renderJson(request, users);
-			}
-		});
-	}
-
 	@Get("/api/person")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void person(final HttpServerRequest request) {
@@ -269,117 +236,74 @@ public class UserBookController extends BaseController {
 	@Get("/structure/:structId")
 	@SecuredAction(value = "userbook.structure.classes.personnel", type = ActionType.AUTHENTICATED)
 	public void showStructure(final HttpServerRequest request) {
-		String structureId = request.params().get("structId");
-		String customReturn =
-				"MATCH (s:Structure { id : {structId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
-				"-[:HAS_PROFILE]->(p:Profile {name : 'Personnel'}), visibles-[:IN]->pg " +
-				"OPTIONAL MATCH visibles-[:USERBOOK]->(u:UserBook) " +
-				"RETURN DISTINCT p.name as type, visibles.id as id, " +
-				"visibles.displayName as displayName, u.mood as mood, " +
-				"u.picture as photo " +
-				"ORDER BY type DESC, displayName ";
-		final JsonObject params = new JsonObject().put("structId", structureId);
-		UserUtils.findVisibleUsers(eb, request, true, customReturn, params, new Handler<JsonArray>() {
-
-			@Override
-			public void handle(final JsonArray personnel) {
-				String customReturn =
-						"MATCH profileGroup-[:DEPENDS]->(c:Class)-[:BELONGS]->(s:Structure { id : {structId}}) " +
-						"RETURN collect(distinct {id: c.id, name: c.name, level: c.level}) as classes, " +
-						"collect(distinct {id: profileGroup.id, name: profileGroup.name, groupDisplayName: profileGroup.groupDisplayName }) as profileGroups";
-				UserUtils.findVisibleProfilsGroups(eb, request, customReturn, params, new Handler<JsonArray>() {
-					@Override
-					public void handle(final JsonArray classesAndProfileGroups) {
-						String customReturn =
-								"MATCH manualGroup-[:DEPENDS]->(c)-[:BELONGS*0..1]->(s:Structure { id : {structId}}) " +
-								"WHERE ALL(label IN labels(c) WHERE label IN [\"Structure\", \"Class\"]) " +
-								"RETURN DISTINCT manualGroup.id as id, manualGroup.name as name, manualGroup.groupDisplayName as groupDisplayName " +
-								"ORDER BY name ASC ";
-						UserUtils.findVisibleManualGroups(eb, request, customReturn, params, new Handler<JsonArray>() {
-							@Override
-							public void handle(JsonArray manualGroups) {
-								JsonObject result = new JsonObject()
-									.put("users", personnel)
-									.put("classes", classesAndProfileGroups.getJsonObject(0).getJsonArray("classes", new JsonArray()))
-									.put("profileGroups", classesAndProfileGroups.getJsonObject(0).getJsonArray("profileGroups", new JsonArray()))
-									.put("manualGroups", manualGroups);
-								renderJson(request, result);
-							}
-						});
-
-					}
-				});
+		final String structureId = request.params().get("structId");
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user == null) {
+				unauthorized(request);
+				return;
 			}
+			schoolService.getVisibleUserbookStructure(user.getUserId(), structureId)
+					.onSuccess(result -> renderJson(request, result))
+					.onFailure(e -> {
+						log.error("[UserBookController.showStructure] failed to load structure " + structureId, e);
+						renderError(request);
+					});
 		});
 	}
 
+	/**
+	 * Use by the old version of community, must be removed
+	 * @param request
+	 */
 	@Get("/visible/users/:groupId")
 	@SecuredAction(value = "userbook.visible.users.group", type = ActionType.AUTHENTICATED)
+	@Deprecated
 	public void visibleUsersGroup(final HttpServerRequest request) {
 		String groupId = request.params().get("groupId");
-		if (groupId == null || groupId.trim().isEmpty()) {
-			badRequest(request, "invalid.groupId");
-			return;
-		}
-		String customReturn =
-				"MATCH (s:Group { id : {groupId}})<-[:IN]-(visibles) " +
-				"RETURN DISTINCT HEAD(visibles.profiles) as type, visibles.id as id, " +
-				"visibles.displayName as displayName " +
-				"ORDER BY type DESC, displayName ";
-		final JsonObject params = new JsonObject().put("groupId", groupId);
-		UserUtils.findVisibleUsers(eb, request, true, false, customReturn, params, new Handler<JsonArray>() {
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.onSuccess( ui -> {
+					VisibleIdentityRequest request1 = new VisibleIdentityRequest()
+							.setExpectedVisiblesIds(Lists.newArrayList(groupId))
+							.setUserId(ui.getUserId())
+							.setPublicDetails(true)
+							.setItSelf(true)
+							.setVisibleIdFilter(VisibleIdentityRequest.VisibleIdFilter.USERS_OF_GROUPS);
 
-			@Override
-			public void handle(final JsonArray users) {
-				renderJson(request, users);
-			}
+					UserUtils.findVisibleIdentities(eb, request1)
+							.onSuccess( visibles -> {
+								List<JsonObject> users = visibles.getList();
+								toCommunityUsers(users);
+								renderJson(request, new JsonArray(users));
+							}).onFailure(t -> {
+								log.error("error while retrieving visible ", t );
+								renderError(request, new JsonObject().put("error", t.getMessage()));});
+				})
+				.onFailure(t -> {log.error("error while retrieving userInfo " + t.getMessage()); unauthorized(request);});
+	}
+
+	private static void toCommunityUsers(List<JsonObject> users) {
+		users.forEach( user -> {
+			user.put("type", user.getString("profile"));
+			keepOnly(user, USER_FIELD_LIST);
 		});
+		users.sort(BY_TYPE_AND_NAME);
+	}
+
+	private static void keepOnly(JsonObject visible, List<String> fields) {
+		visible.getMap().entrySet().removeIf(entry -> !fields.contains(entry.getKey()));
 	}
 
 	@Get("/api/class")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void myClass(final HttpServerRequest request) {
-		String classId = request.params().get("id");
+		final String classId = request.params().get("id");
 		UserUtils.getAuthenticatedUserInfos(eb, request)
-				.onSuccess(userInfos -> {
-					//FIXME should be optimized by removing unecessary optionals
-					String queryVisibleUsers = "RETURN DISTINCT visibles.id as user ";
-					UserUtils.findVisibleUsers(eb, request, true, true, queryVisibleUsers, new JsonObject(), visibles -> {
-						String matchClass;
-						JsonObject params = new JsonObject();
-						if (classId == null || classId.trim().isEmpty()) {
-							matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) ";
-							params.put("userId", userInfos.getUserId());
-						} else {
-							matchClass = "(c:Class {id : {classId}}) ";
-							params.put("classId", classId);
-						}
-
-						List<String> ids = visibles
-								.stream()
-								.map(v -> ((JsonObject)v).getString("user"))
-								.collect(Collectors.toList());
-						params.put("visibles", ids);
-
-						String queryClassUsers = "MATCH " + matchClass +
-								"WITH c " +
-								"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)<-[:IN]-(m:User) " +
-								"WHERE head(m.profiles) IN ['Student','Teacher'] " +
-								"OPTIONAL MATCH m-[:USERBOOK]->u " +
-								"RETURN distinct head(m.profiles) as type, m.id as id, " +
-								"m.displayName as displayName, u.mood as mood, " +
-								"u.userid as userId, u.picture as photo, (m.id IN {visibles}) as isVisible " +
-								"ORDER BY type DESC, displayName ";
-
-						Neo4j.getInstance().execute(
-								queryClassUsers,
-								params,
-								Neo4jResult.validResultHandler(
-										DefaultResponseHandler.arrayResponseHandler(request)
-								)
-						);
-					});
-				});
+				.onSuccess(userInfos -> classService.listUserbookClassMembers(userInfos.getUserId(), classId)
+						.onSuccess(members -> renderJson(request, members))
+						.onFailure(e -> {
+							log.error("[UserBookController.myClass] failed to load class " + classId, e);
+							renderError(request);
+						}));
 	}
 
 	@Get("/api/edit-userbook-info")
@@ -678,28 +602,16 @@ public class UserBookController extends BaseController {
 						return;
 					}
 
-					Calendar c = Calendar.getInstance();
-					int month = c.get(Calendar.MONTH);
-					String[] monthRegex = {"01", "02", "03", "04", "05", "06",
-							"07", "08", "09", "10", "11", "12"};
-
-					final String preFilter = "AND HEAD(m.profiles) = 'Student' AND m.birthDate=~{regex} ";
-
-					String query =
-							"MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-									"WITH DISTINCT c, profile, visibles " +
-									"MATCH visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
-									"RETURN distinct visibles.id as id, visibles.displayName as username, " +
-									"visibles.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
-					JsonObject params = new JsonObject();
-					params.put("regex", "^[0-9]{4}-" + monthRegex[month] + "-(3[01]|[12][0-9]|0[1-9])$");
-					UserUtils.findVisibleUsers(eb, request, true, true, preFilter, query, params, new Handler<JsonArray>() {
-						@Override
-						public void handle(JsonArray users) {
-							UserUtils.addSessionAttribute(eb, user.getUserId(), BIRTHDAYS_ATTRIBUTE, users.encode(), null);
-							renderJson(request, users);
-						}
-					});
+					final int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
+					userBookService.listVisibleBirthdays(user.getUserId(), month)
+							.onSuccess(users -> {
+								UserUtils.addSessionAttribute(eb, user.getUserId(), BIRTHDAYS_ATTRIBUTE, users.encode(), null);
+								renderJson(request, users);
+							})
+							.onFailure(e -> {
+								log.error("[UserBookController.personBirthday] failed to load birthdays", e);
+								renderError(request);
+							});
 				} else {
 					unauthorized(request);
 				}
@@ -970,6 +882,10 @@ public class UserBookController extends BaseController {
 
 	public void setSchoolService(SchoolService schoolService) {
 		this.schoolService = schoolService;
+	}
+
+	public void setClassService(ClassService classService) {
+		this.classService = classService;
 	}
 
 	public void setConversationNotification(ConversationNotification conversationNotification) {
