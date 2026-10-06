@@ -68,6 +68,16 @@ public interface UserBookService {
 
 	void setInfosVisibility(final UserInfos user, final String state, final String info, final Handler<Either<String, JsonObject>> handler);
 
+	/**
+	 * Students of the classes of the user born in the given month, restricted to the ones the user can see.
+	 * The user is included when he/she matches.
+	 * @param userId id of the user doing the request
+	 * @param month month of birth, from 1 (January) to 12 (December)
+	 * @return [{id, username, birthDate, classes: [[classId, className]]}], classes being the classes of the user
+	 * the student is in
+	 */
+	Future<JsonArray> listVisibleBirthdays(String userId, int month);
+
 	static String selectHobbies(JsonObject userBookData,String prefix) {
 		final List<String> selectClauses = new ArrayList<>();
 		final JsonArray listOfHobbies = userBookData.getJsonArray("hobbies", new JsonArray());
