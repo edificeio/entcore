@@ -169,6 +169,8 @@ public class DefaultCommunicationService implements CommunicationService {
 		List<String> includeVisibleIds = visibleIdentityRequest.getIncludedVisibleIds();
 		boolean itself = visibleIdentityRequest.isItSelf();
 		boolean includeHiddenCommunityGroups = visibleIdentityRequest.isIncludeHiddenCommunity();
+		final boolean includeEmptyGroups = visibleIdentityRequest.isIncludeEmptyGroups();
+		final boolean groupsOnly = visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.GROUPS;
 		String userId = visibleIdentityRequest.getUserId();
 		boolean restrictToExpectedIds = expectedVisiblesIds != null && !expectedVisiblesIds.isEmpty();
 		if (restrictToExpectedIds) {
@@ -203,8 +205,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				"          AND (visibles)<-[:IN]-(:User {profiles: {profileFilterAsList}}))) "
 				: "";
 
-		String query =
-				// u->G1->G2->visible + u->G1->visible
+		// u->G1->G2->visible + u->G1->visible
+		final String usersOfGroupsBranch =
 				"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
 						"WHERE\n" +
 						"    g.users IN ['BOTH', 'INCOMING']\n" +
@@ -254,7 +256,8 @@ public class DefaultCommunicationService implements CommunicationService {
 						" OPTIONAL MATCH (g2)<-[:DEPENDS]-(g3:Group) \n" +
 						" UNWIND [g2, g3] AS visibles \n" +
 						" WITH DISTINCT visibles \n" +
-						" WHERE visibles IS NOT NULL AND COALESCE(visibles.nbUsers, 1) > 0 " +
+						" WHERE visibles IS NOT NULL " +
+						(includeEmptyGroups ? " " : " AND COALESCE(visibles.nbUsers, 1) > 0 ") +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
 						expectIdVisiblesFilter +
 						groupProfileFilter +
@@ -281,7 +284,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
 						"WHERE \n" +
 						"    g.users IN ['BOTH', 'INCOMING'] \n" +
-						"    AND (NOT(HAS(visibles.nbUsers)) OR visibles.nbUsers > 0) \n" +
+						(includeEmptyGroups ? "" : "    AND (NOT(HAS(visibles.nbUsers)) OR visibles.nbUsers > 0) \n") +
 						expectIdVisiblesFilter +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
 						groupProfileFilter +
@@ -391,7 +394,8 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visiblesIdentities(VisibleIdentityRequest visibleIdentityRequest, Handler<Either<String, JsonArray>> responseHandler) {
-		if(visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.BOTH) {
+		if(visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.BOTH
+				|| visibleIdentityRequest.getVisibleIdFilter() == VisibleIdentityRequest.VisibleIdFilter.GROUPS) {
 			visiblesIdentitiesBothFilter(visibleIdentityRequest, responseHandler);
 		} else {
 			visiblesIdentitiesGroupFilter(visibleIdentityRequest, responseHandler);

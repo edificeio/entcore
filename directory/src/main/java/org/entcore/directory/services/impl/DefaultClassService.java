@@ -22,18 +22,25 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.ClassService;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -43,6 +50,7 @@ import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultClassService implements ClassService {
 
+	private static final Logger log = LoggerFactory.getLogger(DefaultClassService.class);
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EventBus eb;
 
@@ -114,22 +122,40 @@ public class DefaultClassService implements ClassService {
 	}
 
 	@Override
-	public void findVisibles(UserInfos user, String classId, boolean collectRelative, Handler<JsonArray> handler) {
-		JsonObject params = new JsonObject().put("classId", classId);
+	public Future<JsonArray> findVisibles(UserInfos user, String classId, boolean collectRelative) {
+		return listClassUsers(classId, collectRelative).compose(users -> keepVisibles(user.getUserId(), users));
+	}
+
+	/**
+	 * Users of a class, whatever their profile, without any visibility filter. The relatives are not filtered
+	 * either : they are given as soon as the user they are related to is.
+	 * @return [{displayName, lastName, firstName, id, type, relativeList: [{relatedName, relatedId, relatedType}]}],
+	 * relativeList being empty unless collectRelative is true
+	 */
+	Future<JsonArray> listClassUsers(String classId, boolean collectRelative) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonObject params = new JsonObject().put("classId", classId);
 		//=== Collect relative
-		String collectPart = " WITH visibles, p, [] as relativeList ";
+		String collectPart = " WITH m, p, [] as relativeList ";
 		if(collectRelative){
-			collectPart = " WITH visibles, p OPTIONAL MATCH (visibles)-[:RELATED]->(relative) WITH visibles, p, "+
+			collectPart = " WITH m, p OPTIONAL MATCH (m)-[:RELATED]->(relative) WITH m, p, "+
 					"CASE WHEN relative IS NOT NULL THEN COLLECT(distinct {relatedName: relative.displayName, relatedId: relative.id, relatedType: relative.profiles}) ELSE [] END as relativeList ";
 		}
 		//=== Make query
-		String customReturn =
-				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (cpg)<-[:IN]-(visibles:User) " +
+		final String query =
+				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (cpg)<-[:IN]-(m:User) " +
 					collectPart +
-					"RETURN distinct visibles.displayName as displayName, visibles.lastName as lastName, visibles.firstName as firstName, " +
-					"visibles.id as id, p.name as type, relativeList " +
+					"RETURN distinct m.displayName as displayName, m.lastName as lastName, m.firstName as firstName, " +
+					"m.id as id, p.name as type, relativeList " +
 					"ORDER BY type, lastName ";
-		UserUtils.findVisibleUsers(eb, user.getUserId(), false, customReturn, params, handler);
+		neo.execute(query, params, validResultHandler(result -> {
+			if (result.isRight()) {
+				promise.complete(result.right().getValue());
+			} else {
+				promise.fail(result.left().getValue());
+			}
+		}));
+		return promise.future();
 	}
 
 	@Override
@@ -165,57 +191,68 @@ public class DefaultClassService implements ClassService {
 						JsonArray res = r.body().getJsonArray("result");
 						if ("ok".equals(r.body().getString("status")) && res != null && res.size() == 1) {
 							final String t = (res.getJsonObject(0)).getString("type");
-							String customReturn =
-									"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
-									"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {name : {profile}}), " +
-									"c-[:BELONGS]->(s:Structure) " +
-									"WHERE visibles.id = {uId} " +
-									"CREATE UNIQUE visibles-[:IN {source:'MANUAL'}]->cpg " +
-									"RETURN DISTINCT visibles.id as id, s.id as schoolId";
-							JsonObject params = new JsonObject()
-									.put("classId", classId)
-									.put("uId", userId)
-									.put("profile", t);
-							UserUtils.findVisibleUsers(eb, user.getUserId(), self, false, customReturn, params,
-									new Handler<JsonArray>() {
-
-								@Override
-								public void handle(final JsonArray users) {
-									if (users != null && users.size() == 1) {
-										if ("Student".equals(t)) {
-											String query =
-													"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)" +
-													"-[:HAS_PROFILE]->(p:Profile {name : 'Relative'}), " +
-													"(u:User {id: {uId}})-[:RELATED]->(relative: User) " +
-													"CREATE UNIQUE relative-[:IN {source:'MANUAL'}]->cpg " +
-													"RETURN count(relative) as relativeNb";
-
-											JsonObject params = new JsonObject()
-												.put("classId", classId)
-												.put("uId", userId);
-
-											neo.execute(query, params, Neo4jResult.validEmptyHandler(new Handler<Either<String,JsonObject>>() {
-												public void handle(Either<String, JsonObject> event) {
-													if(event.isLeft()){
-														result.handle(new Either.Left<String, JsonObject>("error.while.attaching.relatives"));
-													} else {
-														result.handle(new Either.Right<String, JsonObject>(users.getJsonObject(0)));
-													}
-												}
-											}));
+							UserUtils.filterFewOrGetAllVisibles(eb, user.getUserId(), new JsonArray().add(userId), self)
+									.onSuccess(visibles -> {
+										final boolean visible = visibles.stream()
+												.anyMatch(o -> userId.equals(((JsonObject) o).getString("id")));
+										if (visible) {
+											attachToClass(classId, userId, t, result);
 										} else {
-											result.handle(new Either.Right<String, JsonObject>(users.getJsonObject(0)));
+											result.handle(new Either.Left<String, JsonObject>("user.not.visible"));
 										}
-									} else {
+									})
+									.onFailure(e -> {
+										log.error("[DefaultClassService.addUser] failed to check the visibility of " + userId, e);
 										result.handle(new Either.Left<String, JsonObject>("user.not.visible"));
-									}
-								}
-							});
+									});
 						} else {
 							result.handle(new Either.Left<String, JsonObject>("invalid.user"));
 						}
+					}
+				});
+	}
+
+	/**
+	 * Attach the user to the profile group of the class matching his/her profile and, for a student, attach
+	 * his/her relatives to the relative group of the class, in a single transaction. No visibility check : the
+	 * caller is expected to have checked it.
+	 * @return {id, schoolId} through the handler, schoolId being the structure of the class ; user.not.visible
+	 * when the class has no group for this profile, as the query this replaces did
+	 */
+	void attachToClass(final String classId, final String userId, final String profile,
+			final Handler<Either<String, JsonObject>> result) {
+		final JsonObject params = new JsonObject()
+				.put("classId", classId)
+				.put("uId", userId)
+				.put("profile", profile);
+		final StatementsBuilder statements = new StatementsBuilder()
+				.add("MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
+						"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {name : {profile}}), " +
+						"c-[:BELONGS]->(s:Structure), (u:User {id: {uId}}) " +
+						"CREATE UNIQUE u-[:IN {source:'MANUAL'}]->cpg " +
+						"RETURN DISTINCT u.id as id, s.id as schoolId", params);
+		if ("Student".equals(profile)) {
+			statements.add("MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)" +
+					"-[:HAS_PROFILE]->(p:Profile {name : 'Relative'}), " +
+					"(u:User {id: {uId}})-[:RELATED]->(relative: User), " +
+					"(u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->c " +
+					"CREATE UNIQUE relative-[:IN {source:'MANUAL'}]->cpg " +
+					"RETURN count(relative) as relativeNb", params);
+		}
+		neo.executeTransaction(statements.build(), null, true, validResultsHandler(results -> {
+			if (results.isLeft()) {
+				log.error("[DefaultClassService.attachToClass] failed to attach " + userId + " to " + classId + " : " +
+						results.left().getValue());
+				result.handle(new Either.Left<String, JsonObject>("error.while.attaching.user"));
+				return;
 			}
-		});
+			final JsonArray attached = results.right().getValue().getJsonArray(0);
+			if (attached != null && attached.size() == 1) {
+				result.handle(new Either.Right<String, JsonObject>(attached.getJsonObject(0)));
+			} else {
+				result.handle(new Either.Left<String, JsonObject>("user.not.visible"));
+			}
+		}));
 	}
 
 	@Override
@@ -305,18 +342,120 @@ public class DefaultClassService implements ClassService {
 		return false;
 	}
 
-	public void listDetachedUsers(JsonArray structureIds, UserInfos user, Handler<JsonArray> handler){
-		JsonObject params = new JsonObject();
-		params.put("structureIds",structureIds);
-		//=== Make query
-		String customReturn =
-				"MATCH (visibles:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure), (pg)-[:HAS_PROFILE]->(p:Profile) " +
-						"WHERE s.id IN {structureIds} AND NOT (visibles)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Class) "+
-						" WITH visibles, p, s " +
-						"OPTIONAL MATCH (visibles)-[:RELATED]->(relative) WITH visibles, p, s, relative "+
-						"RETURN distinct visibles.displayName as displayName, visibles.lastName as lastName, visibles.firstName as firstName, visibles.login as login, " +
-						"CASE WHEN relative IS NOT NULL THEN COLLECT(distinct {relatedName: relative.displayName, relatedId: relative.id, relatedType: relative.profiles}) ELSE [] END as relativeList, "+
-						"visibles.id as id, p.name as type, s.id as structureId, s.name as structureName ";
-		UserUtils.findVisibleUsers(eb, user.getUserId(), false, customReturn, params, handler);
+	@Override
+	public Future<JsonArray> listDetachedUsers(JsonArray structureIds, UserInfos user) {
+		return listDetachedCandidates(structureIds).compose(users -> keepVisibles(user.getUserId(), users));
+	}
+
+	/**
+	 * Users of the structures attached to none of their classes, without any visibility filter. The relatives
+	 * are not filtered either. A user of several of the structures gives one row per structure.
+	 * @return [{displayName, lastName, firstName, relativeList, id, type, structureId, structureName}]
+	 */
+	Future<JsonArray> listDetachedCandidates(JsonArray structureIds) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonObject params = new JsonObject().put("structureIds", structureIds);
+		final String query =
+				"MATCH (m:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure), (pg)-[:HAS_PROFILE]->(p:Profile) " +
+						"WHERE s.id IN {structureIds} AND NOT (m)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Class) " +
+						" WITH m, p, s " +
+						"OPTIONAL MATCH (m)-[:RELATED]->(relative) WITH m, p, s, relative " +
+						"RETURN distinct m.displayName as displayName, m.lastName as lastName, m.firstName as firstName, " +
+						"CASE WHEN relative IS NOT NULL THEN COLLECT(distinct {relatedName: relative.displayName, relatedId: relative.id, relatedType: relative.profiles}) ELSE [] END as relativeList, " +
+						"m.id as id, p.name as type, s.id as structureId, s.name as structureName ";
+		neo.execute(query, params, validResultHandler(result -> {
+			if (result.isRight()) {
+				promise.complete(result.right().getValue());
+			} else {
+				promise.fail(result.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
+	/**
+	 * Keep the rows whose user is visible to userId, the user himself/herself excluded.
+	 */
+	private Future<JsonArray> keepVisibles(String userId, JsonArray users) {
+		final JsonArray userIds = new JsonArray(users.stream()
+				.map(o -> ((JsonObject) o).getString("id"))
+				.distinct()
+				.collect(Collectors.toList()));
+		return UserUtils.filterFewOrGetAllVisibles(eb, userId, userIds, false).map(visibles -> {
+			final Set<String> visibleIds = visibles.stream()
+					.map(o -> ((JsonObject) o).getString("id"))
+					.collect(Collectors.toSet());
+			return users.stream()
+					.filter(o -> visibleIds.contains(((JsonObject) o).getString("id")))
+					.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll));
+		});
+	}
+
+	@Override
+	public Future<JsonArray> listUserbookClassMembers(String userId, String classId) {
+		return listClassMembers(userId, classId).compose(members -> {
+			final JsonArray memberIds = new JsonArray(members.stream()
+					.map(o -> ((JsonObject) o).getString("id"))
+					.distinct()
+					.collect(Collectors.toList()));
+			return UserUtils.filterFewOrGetAllVisibles(eb, userId, memberIds, true)
+					.map(visibles -> markVisibles(members, visibles.stream()
+							.map(o -> ((JsonObject) o).getString("id"))
+							.collect(Collectors.toSet())));
+		});
+	}
+
+	/**
+	 * Students and teachers of a class, or of the classes of the user when classId is null or empty,
+	 * without any visibility filter.
+	 * @return [{type, id, displayName, mood, userId, photo}]
+	 */
+	Future<JsonArray> listClassMembers(String userId, String classId) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final String matchClass;
+		final JsonObject params = new JsonObject();
+		if (classId == null || classId.trim().isEmpty()) {
+			matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) ";
+			params.put("userId", userId);
+		} else {
+			matchClass = "(c:Class {id : {classId}}) ";
+			params.put("classId", classId);
+		}
+		final String query = "MATCH " + matchClass +
+				"WITH c " +
+				"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)<-[:IN]-(m:User) " +
+				"WHERE head(m.profiles) IN ['Student','Teacher'] " +
+				"OPTIONAL MATCH m-[:USERBOOK]->u " +
+				"RETURN distinct head(m.profiles) as type, m.id as id, " +
+				"m.displayName as displayName, u.mood as mood, " +
+				"u.userid as userId, u.picture as photo " +
+				"ORDER BY type DESC, displayName ";
+		neo.execute(query, params, validResultHandler(result -> {
+			if (result.isRight()) {
+				promise.complete(result.right().getValue());
+			} else {
+				promise.fail(result.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
+	/**
+	 * Flag each member with its visibility, and drop the userbook details of the members the user cannot see.
+	 */
+	static JsonArray markVisibles(JsonArray members, Set<String> visibleIds) {
+		final JsonArray marked = new JsonArray();
+		members.forEach(o -> {
+			final JsonObject member = ((JsonObject) o).copy();
+			final boolean visible = visibleIds.contains(member.getString("id"));
+			member.put("isVisible", visible);
+			if (!visible) {
+				member.remove("mood");
+				member.remove("userId");
+				member.remove("photo");
+			}
+			marked.add(member);
+		});
+		return marked;
 	}
 }

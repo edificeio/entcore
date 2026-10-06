@@ -455,9 +455,12 @@ public class ClassController extends BaseController {
 		getUserInfos(eb, request, user -> {
 			if (user != null) {
 				List<String> structureIds = request.params().getAll("structureId");
-				classService.listDetachedUsers(new JsonArray(structureIds), user, res -> {
-					renderJson(request, res);
-				});
+				classService.listDetachedUsers(new JsonArray(structureIds), user)
+						.onSuccess(res -> renderJson(request, res))
+						.onFailure(e -> {
+							log.error("[ClassController.listDetachedUsers] failed to load detached users", e);
+							renderError(request);
+						});
 			} else {
 				unauthorized(request);
 			}
@@ -471,9 +474,12 @@ public class ClassController extends BaseController {
 			if (user != null) {
 				String classId = request.params().get("classId");
 				boolean collectRelative = "true".equals(request.params().get("collectRelative"));
-				classService.findVisibles(user, classId, collectRelative, res->{
-					renderJson(request,res);
-				});
+				classService.findVisibles(user, classId, collectRelative)
+						.onSuccess(res -> renderJson(request, res))
+						.onFailure(e -> {
+							log.error("[ClassController.visibleUsers] failed to load class " + classId, e);
+							renderError(request);
+						});
 			} else {
 				unauthorized(request);
 			}

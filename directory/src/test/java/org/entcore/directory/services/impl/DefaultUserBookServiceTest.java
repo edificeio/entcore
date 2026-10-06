@@ -206,6 +206,49 @@ public class DefaultUserBookServiceTest {
         return promise.future();
     }
 
+    /**
+     * <h1>Goal</h1>
+     * <p>Ensures that the birthday candidates are the students of the classes of the user born in the requested
+     * month, each with the classes of the user he/she is in.</p>
+     */
+    @Test
+    public void testListBirthdayCandidates(final TestContext testContext) {
+        final UserTest teacher = UserTestBuilder.anUserTest().id("bd.teacher").login("bd-teacher")
+                .displayName("Bd Teacher").profile(Profile.Teacher).build();
+        final UserTest bornInMarch = UserTestBuilder.anUserTest().id("bd.march").login("bd-march")
+                .displayName("Bd March").birthdate("2015-03-12").profile(Profile.Student).build();
+        final UserTest bornInApril = UserTestBuilder.anUserTest().id("bd.april").login("bd-april")
+                .displayName("Bd April").birthdate("2015-04-02").profile(Profile.Student).build();
+        final UserTest otherClass = UserTestBuilder.anUserTest().id("bd.other").login("bd-other")
+                .displayName("Bd Other").birthdate("2015-03-20").profile(Profile.Student).build();
+        dataHelper.start()
+                .withStructure(new StructureTest("bd-structure", "birthday structure"))
+                    .withClass(new ClassTest("bd-class-1", "birthday class 1"), "bd-structure")
+                    .withClass(new ClassTest("bd-class-2", "birthday class 2"), "bd-structure")
+                    .withClass(new ClassTest("bd-other-class", "birthday other class"), "bd-structure")
+                .withUser(teacher)
+                    .teacherInClass(teacher.getId(), "bd-class-1")
+                    .teacherInClass(teacher.getId(), "bd-class-2")
+                .withUser(bornInMarch)
+                    .studentInClass(bornInMarch.getId(), "bd-class-1")
+                .withUser(bornInApril)
+                    .studentInClass(bornInApril.getId(), "bd-class-1")
+                .withUser(otherClass)
+                    .studentInClass(otherClass.getId(), "bd-other-class")
+                .execute()
+                .compose(v -> defaultUserBookService.listBirthdayCandidates(teacher.getId(), 3))
+                .onComplete(testContext.asyncAssertSuccess(candidates -> {
+                    testContext.assertEquals(1, candidates.size(),
+                            "Only the student of the classes of the user born in March, got " + candidates.encode());
+                    final JsonObject candidate = candidates.getJsonObject(0);
+                    testContext.assertEquals(bornInMarch.getId(), candidate.getString("id"));
+                    testContext.assertEquals("Bd March", candidate.getString("username"));
+                    testContext.assertEquals("2015-03-12", candidate.getString("birthDate"));
+                    testContext.assertEquals(new JsonArray().add(new JsonArray().add("bd-class-1").add("birthday class 1")),
+                            candidate.getJsonArray("classes"));
+                }));
+    }
+
     public static Future<Void> prepareData() {
         dataHelper
                 .start()
