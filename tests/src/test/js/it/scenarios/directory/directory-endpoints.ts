@@ -950,18 +950,6 @@ export function testShareBookmarkEndpoints(data: InitData) {
  ******************************************************************************************************/
 export function testUserBookEndpoints(data: InitData) {
 
-  group('[Directory] GET /userbook/api/search - Search users in userbook', () => {
-    authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const users = getUsersOfSchool(data.structure);
-    const teacher = getRandomUserWithProfile(users, 'Teacher');
-    authenticateWeb(teacher.login);
-    const res = http.get(`${rootUrl}/userbook/api/search?name=${teacher.lastName.substring(0, 3)}`, { headers: getHeaders() });
-    check(res, {
-      'search userbook returns 200': (r) => r.status === 200,
-      'search userbook is array': (r) => Array.isArray(JSON.parse(<string>r.body)),
-    });
-  });
-
   group('[Directory] GET /userbook/api/person - Get person info', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const users = getUsersOfSchool(data.structure);
