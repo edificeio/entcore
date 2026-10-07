@@ -77,8 +77,8 @@ export const normandieConfig: WayfDomainConfig = {
     },
     {
       i18n: 'wayf.perseducnat',
-      color: 'perseducnat',
-      icon: 'perseducnat',
+      color: 'teacher',
+      icon: 'teacher',
       acs: ARENA_ACS,
     },
     {
@@ -95,8 +95,14 @@ export const normandieConfig: WayfDomainConfig = {
     },
   ],
   partners: [
-    { logo: '/img/partners/logo-normandie.png', url: 'https://www.normandie.fr/' },
-    { logo: '/img/partners/logo-calvados.png', url: 'https://www.calvados.fr/accueil.html' },
+    {
+      logo: '/img/partners/logo-normandie.png',
+      url: 'https://www.normandie.fr/',
+    },
+    {
+      logo: '/img/partners/logo-calvados.png',
+      url: 'https://www.calvados.fr/accueil.html',
+    },
     { logo: '/img/partners/logo-manche.png', url: 'https://www.manche.fr/' },
     { logo: '/img/partners/logo-orne.png', url: 'https://www.orne.fr/' },
     {
