@@ -255,7 +255,11 @@ public class SamlController extends AbstractFederateController {
 			final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
 			final boolean isWayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
 
-			if(isWayfBeta || isSpecificWayfV2Host ) {
+			// Let the mobile app opt into the WAYF v2 for testing via a marker in the
+			// User-Agent, same convention as X-APP=mobile above (ENABLING-1318).
+			final boolean isWayfV2ForcedByMobile = userAgent != null && userAgent.contains("X-APP-WAYF=2");
+
+			if(isWayfBeta || isSpecificWayfV2Host || isWayfV2ForcedByMobile) {
 				renderView(request, swmf, "wayfv2.html", null);
 			} else {
 				if (isMobile) {
