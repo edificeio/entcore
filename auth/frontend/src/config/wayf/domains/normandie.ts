@@ -83,14 +83,14 @@ export const normandieConfig: WayfDomainConfig = {
     },
     {
       i18n: 'wayf.other',
-      color: 'other',
-      icon: 'other',
+      color: 'perseducnat',
+      icon: 'perseducnat',
       acs: '/auth/login',
     },
     {
       i18n: 'wayf.agri',
-      color: 'perseducnat',
-      icon: 'perseducnat',
+      color: 'other',
+      icon: 'other',
       acs: AGRI_ACS,
     },
   ],
