@@ -49,4 +49,8 @@ export const ent04Config: WayfDomainConfig = {
       acs: '/auth/login',
     },
   ],
+  partners: [
+    { logo: '/img/partners/logo-departement-04.png', url: 'https://www.mondepartement04.fr/accueil' },
+    { logo: '/img/partners/logo-region-academique-paca.png' },
+  ],
 };
