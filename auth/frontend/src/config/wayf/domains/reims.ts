@@ -59,5 +59,5 @@ export const reimsConfig: WayfDomainConfig = {
       acs: '/auth/login',
     },
   ],
-  partners: [{ logo: '/img/partners/logo-ac-reims.png' }],
+  partners: [{ logo: '/img/partners/logo-ac-reims.png', url: 'https://www.ac-reims.fr/' }],
 };
