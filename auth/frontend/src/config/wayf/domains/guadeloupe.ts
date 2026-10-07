@@ -44,4 +44,9 @@ export const guadeloupeConfig: WayfDomainConfig = {
       acs: '/auth/login',
     },
   ],
+  partners: [
+    { logo: '/img/partners/logo-region-guadeloupe.png', url: 'https://www.regionguadeloupe.fr/' },
+    { logo: '/img/partners/logo-departement-guadeloupe.png', url: 'https://www.cg971.fr/' },
+    { logo: '/img/partners/logo-ac-guadeloupe.png', url: 'https://www.ac-guadeloupe.fr/' },
+  ],
 };
