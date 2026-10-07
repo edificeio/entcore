@@ -352,9 +352,15 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 
 	// Header button rendered here, not in the GD component, to stay aligned across every tree; reaches into the GD scopes directly since they have no relation to this one.
+	// Importing into "Partagé avec moi" itself (the flat top-level list) makes no sense — there's no
+	// real folder there — but a specific shared SUBfolder with editor access is a legitimate upload
+	// target: Drive's upload API has no ownership check, only the (here, satisfied) access check.
 	$scope.isGoogleDriveImportableFolder = function (): boolean {
 		const gdTreeScope: any = angular.element(document.getElementById("google-drive-folder-tree")).scope();
-		return !gdTreeScope?.isTrashbinOpen && !gdTreeScope?.isSharedViewOpen;
+		if (gdTreeScope?.isTrashbinOpen) return false;
+		if (!gdTreeScope?.isSharedViewOpen) return true;
+		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();
+		return !gdContentScope?.parentDocument?.isStaticFolder && gdContentScope?.parentDocument?.permissionRole !== "reader";
 	};
 	$scope.triggerGoogleDriveImport = function (): void {
 		const gdContentScope: any = angular.element(document.getElementById("google-drive-content")).scope();

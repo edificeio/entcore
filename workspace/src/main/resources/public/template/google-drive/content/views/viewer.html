@@ -31,7 +31,7 @@
         <img ng-if="viewFile.role === 'image'" class="render" ng-src="[[getFile(viewFile)]]" />
         <audio ng-if="viewFile.role === 'audio'" controls class="render" ng-src="[[getFile(viewFile)]]"></audio>
         <video ng-if="viewFile.role === 'video'" controls class="render" ng-src="[[getFile(viewFile)]]"></video>
-        <pdf-viewer ng-if="viewFile.role === 'pdf'" ng-src="[[getFile(viewFile)]]"></pdf-viewer>
+        <pdf-viewer ng-if="viewFile.role === 'pdf'" ng-src="[[getFilePreview(viewFile)]]"></pdf-viewer>
         <div ng-if="viewFile.editable" class="default-viewer">
             <button ng-click="openEditor(viewFile)"><i18n>workspace.external.open</i18n></button>
         </div>

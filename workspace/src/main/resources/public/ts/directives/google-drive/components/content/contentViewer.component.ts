@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import { angular, idiom as lang, Me, model, ng, template } from "entcore";
+import { angular, idiom as lang, Me, model, ng, template, toasts } from "entcore";
 import { Subscription } from "rxjs";
 import { ViewMode } from "../../enums/viewMode.enum";
 import { Draggable } from "../../models/googleDriveDraggable.model";
@@ -28,6 +28,7 @@ export interface IWorkspaceGoogleDriveContent {
   onOpenContent(document: GoogleDriveDocument): void;
   viewFile: GoogleDriveDocument | null;
   getFile(document: GoogleDriveDocument): string;
+  getFilePreview(document: GoogleDriveDocument): string;
   openEditor(document: GoogleDriveDocument): void;
   openLocation(document: GoogleDriveDocument): void;
   draggable: Draggable;
@@ -54,7 +55,8 @@ export interface IWorkspaceGoogleDriveContent {
   getGoogleDriveTreeController(): any;
   isTrashMode(): boolean;
   isSharedMode(): boolean;
-  canShowOwner(): boolean;
+  canShowOwner(content?: GoogleDriveDocument): boolean;
+  canShowOwnerColumn(): boolean;
   isImportableFolder(): boolean;
   isTrashEmptyable(): boolean;
   triggerCreateFolder(): void;
@@ -83,6 +85,7 @@ export interface IWorkspaceGoogleDriveContent {
   onTileRename(content: GoogleDriveDocument): void;
   onTileMove(content: GoogleDriveDocument): void;
   onTileCopy(content: GoogleDriveDocument): void;
+  onTileDuplicate(content: GoogleDriveDocument): void;
   onTileShare(content: GoogleDriveDocument): void;
   onTileDelete(content: GoogleDriveDocument): void;
   onTileRestore(content: GoogleDriveDocument): void;
@@ -222,13 +225,27 @@ export const workspaceGoogleDriveContentController = ng.controller(
         return $scope.getGoogleDriveTreeController()?.isSharedViewOpen ?? false;
       };
 
-      $scope.canShowOwner = function (): boolean {
-        return $scope.isSharedMode();
+      // Always shown in "Partagé avec moi" (whoever shared it with you); outside it, only shown for a
+      // file you don't own (e.g. added by an editor on a folder you shared) — explains at a glance why
+      // actions like "Placer dans la corbeille" are unavailable for it.
+      $scope.canShowOwner = function (content?: GoogleDriveDocument): boolean {
+        return $scope.isSharedMode() || (content != null && !content.ownedByMe);
+      };
+
+      // List view's owner column can't appear per-row (breaks table alignment) — show the whole
+      // column as soon as it'd be relevant for at least one row.
+      $scope.canShowOwnerColumn = function (): boolean {
+        return $scope.isSharedMode() || ($scope.documents ?? []).some((doc) => !doc.ownedByMe);
       };
 
       // Mobile-only mirror of the header's "Créer un dossier"/"Vider la corbeille" actions.
+      // Importing into "Partagé avec moi" itself (the flat top-level list) makes no sense — there's no
+      // real folder there — but a specific shared SUBfolder with editor access is a legitimate upload
+      // target: Drive's upload API has no ownership check, only the (here, satisfied) access check.
       $scope.isImportableFolder = function (): boolean {
-        return !$scope.isTrashMode() && !$scope.isSharedMode();
+        if ($scope.isTrashMode()) return false;
+        if (!$scope.isSharedMode()) return true;
+        return !$scope.parentDocument?.isStaticFolder && $scope.parentDocument?.permissionRole !== "reader";
       };
 
       $scope.isTrashEmptyable = function (): boolean {
@@ -326,6 +343,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
       $scope.onTileCopy = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
         $scope.toolbar.toggleCopyView(true, [content]);
+      };
+      $scope.onTileDuplicate = function (content: GoogleDriveDocument): void {
+        $scope.openTileMenuFor = null;
+        $scope.toolbar.toggleDuplicateView(true, [content]);
       };
       $scope.onTileShare = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
@@ -528,6 +549,12 @@ export const workspaceGoogleDriveContentController = ng.controller(
             safeApply($scope);
           },
           dragStartHandler(event: DragEvent, content?: any): void {
+            // "Partagé avec moi" items have no "Exporter" action either (not owned, can't be copied
+            // to another drive) — dragging onto the sidebar tree's other drives must be blocked too.
+            if (viewModel.isSharedMode()) {
+              event.preventDefault();
+              return;
+            }
             viewModel.lockDropzone = true;
             dropTarget = null;
             document.addEventListener("drop", onNativeDrop);
@@ -558,7 +585,21 @@ export const workspaceGoogleDriveContentController = ng.controller(
           e.preventDefault();
           if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
         };
-        const uploadFilesToCurrentFolder = (files: Array<File>): void => {
+        const uploadFilesToCurrentFolder = (allFiles: Array<File>): void => {
+          if (allFiles.length === 0) return;
+          // Same limit/message as the classic workspace's own import dialog (external entcore
+          // package, "max.file.size" i18n key) — checked there only AFTER the server has received
+          // the whole file (413), which is also how the 499 memory-exhaustion crash happens for a
+          // huge upload: checking client-side first means we never even attempt sending it.
+          const maxFileSize = parseInt(lang.translate("max.file.size"), 10);
+          const files = allFiles.filter((f) => !maxFileSize || f.size <= maxFileSize);
+          if (files.length < allFiles.length) {
+            toasts.warning(
+              lang.translate("file.too.large.limit") +
+                Math.round(maxFileSize / 1024 / 1024) +
+                lang.translate("mb"),
+            );
+          }
           if (files.length === 0) return;
           // Setting lockDropzone=true removes <dropzone-overlay> from the DOM via ng-if.
           // When it re-enters the DOM (lockDropzone=false), the directive re-links and
@@ -579,8 +620,16 @@ export const workspaceGoogleDriveContentController = ng.controller(
                 targetFolder ?? new GoogleDriveDocument().initParent(),
               );
             })
-            .catch((err: Error) => {
+            .catch((err: AxiosError) => {
               console.error("Error uploading local files to Google Drive: " + err.message);
+              // 499 ("client closed request"): the whole file is buffered in memory server-side
+              // (see DefaultDocumentsService's storage.readFile/.getBytes()), so a very large upload
+              // can exhaust the JVM heap and drop the connection well before any real size cap.
+              if (err.response?.status === 499) {
+                toasts.warning("google-drive.upload.too.large");
+              } else {
+                toasts.warning("google-drive.upload.error");
+              }
             })
             .then(done, done);
         };
@@ -748,6 +797,11 @@ export const workspaceGoogleDriveContentController = ng.controller(
       $scope.getFile = function (document: GoogleDriveDocument): string {
         if (!document) return "";
         return googleDriveService.getFile(model.me.userId, document.id, document.isFolder);
+      };
+
+      $scope.getFilePreview = function (document: GoogleDriveDocument): string {
+        if (!document) return "";
+        return googleDriveService.getFilePreview(model.me.userId, document.id);
       };
 
       $scope.openEditor = function (document: GoogleDriveDocument): void {

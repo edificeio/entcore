@@ -18,14 +18,15 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.2" fill="#4bafd5"/><circle cx="12" cy="12" r="2.2" fill="#4bafd5"/><circle cx="12" cy="19" r="2.2" fill="#4bafd5"/></svg>
                 </button>
                 <ul class="tile-menu" ng-class="{show: isTileMenuOpen(content)}" ng-style="isTileMenuOpen(content) ? tileMenuPosition : {}">
-                    <li ng-if="!isSharedMode() && !isTrashMode()"><a ng-click="onTileOpen(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg><i18n>workspace.open</i18n></a></li>
+                    <li ng-if="!isTrashMode()"><a ng-click="onTileOpen(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg><i18n>workspace.open</i18n></a></li>
                     <li ng-if="content.editable && (!isSharedMode() || content.permissionRole !== 'reader')"><a ng-click="onTileEdit(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><i18n>workspace.external.open</i18n></a></li>
                     <li ng-if="!isTrashMode()"><a ng-click="onTileDownload(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg><i18n>workspace.download</i18n></a></li>
                     <li ng-if="!isSharedMode() && !isTrashMode()"><a ng-click="onTileRename(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg><i18n>workspace.rename</i18n></a></li>
                     <li ng-if="!isSharedMode() && !isTrashMode()"><a ng-click="onTileMove(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><i18n>workspace.move</i18n></a></li>
-                    <li ng-if="!isSharedMode() && !isTrashMode()"><a ng-click="onTileCopy(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/><rect x="3" y="8" width="12" height="12" rx="2"/></svg><i18n>google-drive.export</i18n></a></li>
+                    <li ng-if="!isSharedMode() && !isTrashMode() && content.isExportableToWorkspace()"><a ng-click="onTileCopy(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3"/><rect x="3" y="8" width="12" height="12" rx="2"/></svg><i18n>google-drive.export</i18n></a></li>
+                    <li ng-if="!content.isFolder && !isSharedMode() && !isTrashMode()"><a ng-click="onTileDuplicate(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/></svg><i18n>google-drive.duplicate</i18n></a></li>
                     <li ng-if="!isSharedMode() && !isTrashMode()"><a ng-click="onTileShare(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg><i18n>workspace.share</i18n></a></li>
-                    <li ng-if="!isTrashMode()"><a ng-click="onTileDelete(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></svg><i18n ng-if="!isSharedMode()">google-drive.documents.trash</i18n><i18n ng-if="isSharedMode()">google-drive.documents.remove.shared</i18n></a></li>
+                    <li ng-if="!isTrashMode() && (isSharedMode() ? (content.permissionRole !== 'reader' && content.isDirectlyShared) : content.ownedByMe)"><a ng-click="onTileDelete(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></svg><i18n ng-if="!isSharedMode()">google-drive.documents.trash</i18n><i18n ng-if="isSharedMode()">google-drive.documents.remove.shared</i18n></a></li>
                     <li ng-if="isTrashMode()"><a ng-click="onTileRestore(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg><i18n>workspace.trash.restore</i18n></a></li>
                     <li ng-if="isTrashMode()"><a ng-click="onTileDelete(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></svg><i18n>workspace.delete</i18n></a></li>
                 </ul>
@@ -33,7 +34,7 @@
             <legend class="no-1d">
                 <a>
                     <svg
-                        ng-if="content.isShared"
+                        ng-if="content.isShared && !isSharedMode()"
                         width="13" height="13" viewBox="0 0 24 24" fill="#4bafd5"
                         style="display: inline-block; vertical-align: middle; margin-right: 3px;"
                     >
@@ -41,14 +42,16 @@
                         <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
                     </svg>
                     <svg
+                        class="outline-icon"
                         ng-if="isSharedMode() && content.permissionRole === 'reader'"
-                        width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                        style="display: inline-block; vertical-align: middle; margin-right: 3px;"
+                        width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+                        style="display: inline-block; vertical-align: middle; margin-right: 3px; color: #8c939e;"
                     >
                         <title>[[translate('google-drive.role.' + content.permissionRole)]]</title>
                         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>
                     </svg>
                     <svg
+                        class="outline-icon"
                         ng-if="isSharedMode() && content.permissionRole !== 'reader'"
                         width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
                         style="display: inline-block; vertical-align: middle; margin-right: 3px;"
@@ -58,7 +61,7 @@
                     </svg>
                     <span tooltip-on-ellipsis="[[content.name]]">[[content.name]]</span>
                 </a>
-                <a class="author" ng-if="canShowOwner()"><strong>[[content.ownerDisplayName]]</strong></a>
+                <a class="author" ng-if="canShowOwner(content)"><strong>[[content.ownerDisplayName]]</strong></a>
             </legend>
 
             <a class="container [[content.role]]" ng-switch="content.role">

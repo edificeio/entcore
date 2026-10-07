@@ -136,8 +136,8 @@
             <i18n>empty.workspace</i18n>
         </p>
 
-        <!-- Not the classic 2-column grid wrapper (sized for an Import+LOOL pair) — this single button is centered via the parent's align-items:center. -->
-        <button ng-click="triggerImportFiles()">
+        <!-- Not the classic 2-column grid wrapper (sized for an Import+LOOL pair) — this single button is centered via the parent's align-items:center. Hidden in "Partagé avec moi": importing there makes no sense, it's not the user's own space. -->
+        <button ng-if="!isSharedMode()" ng-click="triggerImportFiles()">
             <i18n>workspace.create.workspace</i18n>
         </button>
     </div>

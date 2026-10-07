@@ -582,7 +582,9 @@ export const workspaceGoogleDriveFolderController = ng.controller(
         }
 
         $scope.isTrashbinOpen = false;
-        $scope.isSharedViewOpen = false;
+        // A folder shared with the user (carries permissionRole) stays in "shared" context when
+        // navigated into — otherwise its read-only children would be treated as normally-owned.
+        $scope.isSharedViewOpen = !!document.permissionRole;
         $rootScope.isGDTrashbinOpen = true;
         $rootScope.isNextcloudTrashbinOpen = false;
         template.close('lightbox');
@@ -594,6 +596,12 @@ export const workspaceGoogleDriveFolderController = ng.controller(
             console.error("Error fetching folder documents: " + err.message);
             return [];
           });
+
+        // Children of a shared folder aren't fetched via the shared-listing API (plain .build(), no
+        // role of their own) — inherit the parent's role so deeper navigation keeps propagating it.
+        if (document.permissionRole) {
+          docs.forEach((d) => { d.permissionRole = d.permissionRole || document.permissionRole; });
+        }
 
         document.children = docs
           .filter(GoogleDriveDocumentsUtils.filterRemoveOwnDocument(document))

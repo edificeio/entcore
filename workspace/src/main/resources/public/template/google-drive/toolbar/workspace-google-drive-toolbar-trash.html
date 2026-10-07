@@ -5,11 +5,13 @@
 >
     <div class="horizontal-spacing-twice">
         <h2>
-            <i18n>google-drive.documents.trash</i18n>
+            <i18n ng-if="!isSharedMode()">google-drive.documents.trash</i18n>
+            <i18n ng-if="isSharedMode()">google-drive.documents.remove.shared</i18n>
         </h2>
 
         <div class="row">
-            <i18n>google-drive.documents.confirm.trash</i18n>
+            <i18n ng-if="!isSharedMode()">google-drive.documents.confirm.trash</i18n>
+            <i18n ng-if="isSharedMode()">google-drive.documents.confirm.remove.shared</i18n>
             <hr />
         </div>
 
@@ -23,7 +25,8 @@
                 ng-click="toolbar.deleteDocuments()"
             >
                 <i class="google-drive-import-spinner" ng-if="isDeleting" style="margin-right: 6px; vertical-align: middle;"></i>
-                <i18n>google-drive.documents.confirm.trash.action</i18n>
+                <i18n ng-if="!isSharedMode()">google-drive.documents.confirm.trash.action</i18n>
+                <i18n ng-if="isSharedMode()">google-drive.documents.confirm.remove.shared.action</i18n>
             </button>
 
             <button

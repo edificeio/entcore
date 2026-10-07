@@ -15,6 +15,9 @@ export interface IGoogleDriveDocumentResponse {
   size: number;
   modifiedTime: string;
   shared?: boolean;
+  ownedByMe?: boolean;
+  ownerUserId?: string;
+  ownerDisplayName?: string;
 }
 
 export interface IGoogleDriveSharedOwner {
@@ -67,6 +70,20 @@ export class GoogleDriveDocument {
   permissionRole?: "reader" | "commenter" | "writer";
   sharedOwners?: Array<IGoogleDriveSharedOwner>;
 
+  // True only for a top-level "Shared with me" item (buildFromShared()) — it alone holds a direct
+  // Drive permission entry for the current user. Children of a shared folder only inherit
+  // permissionRole (propagated in googleDriveFolder.directive.ts) for display/gating purposes, not
+  // this flag: Drive gives them no permission entry of their own, so "remove from shared list"
+  // (which looks up and deletes that entry) can't work on them — see removeFromSharedList's backend.
+  isDirectlyShared?: boolean;
+
+  // A file inside your own folder isn't necessarily yours: whoever created it (e.g. an editor you
+  // shared the folder with) remains its owner. Defaults true (own root/static nodes never go through
+  // build(), and absence of the field — e.g. from buildFromShared's own owners check — shouldn't
+  // wrongly hide actions), set from the real Drive owners list for documents fetched via listFiles.
+  ownedByMe: boolean = true;
+  ownerUserId?: string;
+
   build(data: IGoogleDriveDocumentResponse): GoogleDriveDocument {
     this.id = data.id;
     this.name = data.name;
@@ -74,8 +91,10 @@ export class GoogleDriveDocument {
     this.size = data.size;
     this.modifiedTime = data.modifiedTime;
     this.isShared = !!data.shared;
+    if (data.ownedByMe !== undefined) this.ownedByMe = data.ownedByMe;
+    this.ownerUserId = data.ownerUserId;
     this.isFolder = this.mimeType === GOOGLE_FOLDER_MIME;
-    this.ownerDisplayName = model.me.login;
+    this.ownerDisplayName = data.ownerDisplayName || model.me.login;
     this.type = this.isFolder ? DocumentsType.FOLDER : DocumentsType.FILE;
     this.role = this.determineRole();
     this.editable = this.isEditable();
@@ -87,6 +106,17 @@ export class GoogleDriveDocument {
     this.cacheDocument.setData([]);
     this.cacheDocument.disableCache();
     return this;
+  }
+
+  // Exporting to the personal workspace needs an actual downloadable file: a non-Google mimetype
+  // downloads as-is, but a Google-native one must be converted first (files().export), and the Drive
+  // API only supports that conversion for Docs/Sheets/Slides — not Forms, Vids, Drawings, Apps Script,
+  // etc. Exporting one of those silently drops the file today (see DefaultDocumentsService.getFile's
+  // resolveExportMimeType falling back to a PDF export that Drive itself then rejects).
+  isExportableToWorkspace(): boolean {
+    if (this.isFolder) return true;
+    if (!this.mimeType.startsWith("application/vnd.google-apps.")) return true;
+    return [GOOGLE_DOC_MIME, GOOGLE_SHEET_MIME, GOOGLE_SLIDE_MIME].includes(this.mimeType);
   }
 
   determineRole(): DocumentRole {
@@ -120,6 +150,7 @@ export class GoogleDriveDocument {
     });
     this.sharedWithMeTime = data.sharedWithMeTime;
     this.permissionRole = data.role;
+    this.isDirectlyShared = true;
     this.sharedOwners = data.owners || [];
     const owner: IGoogleDriveSharedOwner = this.sharedOwners[0];
     this.ownerDisplayName = owner ? owner.displayName : this.ownerDisplayName;

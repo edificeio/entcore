@@ -65,9 +65,13 @@ export interface IGoogleDriveService {
 
   moveDocument(userid: string, fileId: string, parentId: string): Promise<AxiosResponse>;
 
+  copyDocumentWithinDrive(userid: string, fileId: string, parentId: string): Promise<AxiosResponse>;
+
   renameDocument(userid: string, fileId: string, newName: string): Promise<AxiosResponse>;
 
   deleteDocuments(userid: string, ids: Array<string>): Promise<AxiosResponse>;
+
+  removeFromSharedList(userid: string, ids: Array<string>): Promise<AxiosResponse>;
 
   deleteTrashDocuments(userid: string, ids: Array<string>): Promise<AxiosResponse>;
 
@@ -100,6 +104,8 @@ export interface IGoogleDriveService {
   ): Promise<AxiosResponse>;
 
   getFile(userid: string, fileId: string, isFolder?: boolean): string;
+
+  getFilePreview(userid: string, fileId: string): string;
 
   getFiles(userid: string, ids: Array<string>): string;
 
@@ -137,7 +143,8 @@ export const googleDriveService: IGoogleDriveService = {
         res.data.data.map((doc: IGoogleDriveDocumentResponse) =>
           new GoogleDriveDocument().build(doc),
         ),
-      );
+      )
+      .then((documents: Array<GoogleDriveDocument>) => resolveOwnerDisplayNames(documents));
   },
 
   listTrash: async (userid: string): Promise<Array<GoogleDriveDocument>> => {
@@ -231,6 +238,17 @@ export const googleDriveService: IGoogleDriveService = {
     );
   },
 
+  copyDocumentWithinDrive: (
+    userid: string,
+    fileId: string,
+    parentId: string,
+  ): Promise<AxiosResponse> => {
+    // @ts-ignore
+    return http.put(
+      `/googledrive/files/user/${userid}/copy-drive?fileId=${fileId}&parentId=${parentId}`,
+    );
+  },
+
   renameDocument: (
     userid: string,
     fileId: string,
@@ -251,6 +269,16 @@ export const googleDriveService: IGoogleDriveService = {
     ids.forEach((id) => urlParams.append("id", id));
     // @ts-ignore
     return http.delete(`/googledrive/files/user/${userid}/delete?${urlParams}`);
+  },
+
+  removeFromSharedList: (
+    userid: string,
+    ids: Array<string>,
+  ): Promise<AxiosResponse> => {
+    const urlParams = new URLSearchParams();
+    ids.forEach((id) => urlParams.append("id", id));
+    // @ts-ignore
+    return http.delete(`/googledrive/files/user/${userid}/shared/remove?${urlParams}`);
   },
 
   deleteTrashDocuments: (
@@ -352,6 +380,12 @@ export const googleDriveService: IGoogleDriveService = {
     return `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/download?isFolder=${isFolder}`;
   },
 
+  getFilePreview: (userid: string, fileId: string): string => {
+    // No query string here: pdfViewer.ts's directive appends its own "?inline=true" to whatever src
+    // it's given — adding ours too would produce a second "?", corrupting the query string server-side.
+    return `/googledrive/files/user/${userid}/file/${encodeURIComponent(fileId)}/download`;
+  },
+
   getFiles: (userid: string, ids: Array<string>): string => {
     const urlParams = new URLSearchParams();
     ids.forEach((id) => urlParams.append("id", id));
@@ -411,7 +445,7 @@ function resolveOwnerDisplayNames(
   const userIds = Array.from(
     new Set(
       documents
-        .map((doc) => doc.sharedOwners?.[0]?.userId)
+        .map((doc) => doc.sharedOwners?.[0]?.userId ?? doc.ownerUserId)
         .filter((id): id is string => !!id),
     ),
   );
@@ -429,7 +463,7 @@ function resolveOwnerDisplayNames(
       resolved.filter(([, name]) => !!name) as Array<[string, string]>,
     );
     documents.forEach((doc) => {
-      const ownerUserId = doc.sharedOwners?.[0]?.userId;
+      const ownerUserId = doc.sharedOwners?.[0]?.userId ?? doc.ownerUserId;
       const resolvedName = ownerUserId && displayNameByUserId.get(ownerUserId);
       if (resolvedName) doc.ownerDisplayName = resolvedName;
     });

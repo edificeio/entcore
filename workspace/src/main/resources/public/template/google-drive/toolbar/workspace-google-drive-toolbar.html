@@ -45,20 +45,53 @@
                 <i18n>workspace.move</i18n>
             </button>
 
-            <!-- copy (labeled "Exporter" for Google Drive sources) -->
-            <button ng-click="toolbar.toggleCopyView(true, selectedDocuments)">
-                <i18n>google-drive.export</i18n>
-            </button>
+            <!-- copy (labeled "Exporter" for Google Drive sources) — a Google Form/Vids/etc. has no
+                 export format Drive can convert it to, so exporting it to the workspace silently
+                 fails today (see GoogleDriveDocument.isExportableToWorkspace). -->
+            <div
+                id="google-drive-toolbar-export"
+                ng-if="toolbar.isSelectedExportable(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleCopyView(true, selectedDocuments)">
+                    <i18n>google-drive.export</i18n>
+                </button>
+            </div>
 
-            <!-- share document(s) -->
-            <button ng-click="toolbar.share.toggleShareView(true, selectedDocuments)">
-                <i18n>workspace.share</i18n>
-            </button>
+            <!-- duplicate within Google Drive (Drive's native copy() has no folder support) -->
+            <div
+                id="google-drive-toolbar-duplicate"
+                ng-if="toolbar.isSelectedDuplicatable(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleDuplicateView(true, selectedDocuments)">
+                    <i18n>google-drive.duplicate</i18n>
+                </button>
+            </div>
 
-            <!-- delete document(s) — moves to trash -->
-            <button ng-click="toolbar.toggleDeleteView(true)">
-                <i18n>google-drive.documents.trash</i18n>
-            </button>
+            <!-- share document(s) — hidden for a multi-selection where any file is already shared:
+                 the dialog's "current shares" list only supports a single document (see
+                 toolbarShare.component.ts's loadCurrentShares), so there'd be no way to see/manage
+                 those existing shares in that case. -->
+            <div
+                id="google-drive-toolbar-share"
+                ng-if="toolbar.share.canOpenShareView(selectedDocuments)"
+            >
+                <button ng-click="toolbar.share.toggleShareView(true, selectedDocuments)">
+                    <i18n>workspace.share</i18n>
+                </button>
+            </div>
+
+            <!-- delete document(s) — moves to trash. A file inside your own folder can still belong
+                 to whoever created it (e.g. an editor on a folder you shared) — only its owner can
+                 trash it (Drive 403s "insufficientFilePermissions" otherwise), so hide this when any
+                 selected item isn't yours. -->
+            <div
+                id="google-drive-toolbar-trash"
+                ng-if="toolbar.isSelectedOwnedByMe(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleDeleteView(true)">
+                    <i18n>google-drive.documents.trash</i18n>
+                </button>
+            </div>
         </div>
 
         <!-- Toolbar when IN trashbin -->
@@ -100,6 +133,17 @@
             <button ng-click="toolbar.downloadFiles(selectedDocuments)">
                 <i18n>workspace.download</i18n>
             </button>
+
+            <!-- remove from "shared with me" (revokes own access only) — hidden when any selected
+                 item is read-only, same gating as the per-tile "..." menu. -->
+            <div
+                id="google-drive-toolbar-remove-shared"
+                ng-if="toolbar.isSelectedRemovableFromSharedList(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleDeleteView(true)">
+                    <i18n>google-drive.documents.remove.shared</i18n>
+                </button>
+            </div>
         </div>
     </div>
 </section>

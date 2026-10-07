@@ -30,6 +30,10 @@ export interface IToolbarViewModel {
 
   hasOneDocumentSelected(selectedDocuments: Array<GoogleDriveDocument>): boolean;
   isSelectedEditable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
+  isSelectedRemovableFromSharedList(selectedDocuments: Array<GoogleDriveDocument>): boolean;
+  isSelectedDuplicatable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
+  isSelectedOwnedByMe(selectedDocuments: Array<GoogleDriveDocument>): boolean;
+  isSelectedExportable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
 
   downloadFiles(selectedDocuments: Array<GoogleDriveDocument>): void;
   openDocument(): void;
@@ -45,6 +49,7 @@ export interface IToolbarViewModel {
 
   toggleCopyView(state: boolean, selectedDocuments?: Array<GoogleDriveDocument>): void;
   toggleMoveView(state: boolean, selectedDocuments?: Array<GoogleDriveDocument>): void;
+  toggleDuplicateView(state: boolean, selectedDocuments?: Array<GoogleDriveDocument>): void;
 }
 
 export class ToolbarSnipletViewModel implements IToolbarViewModel {
@@ -93,13 +98,50 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     );
   }
 
+  // Matches the per-tile "..." menu's own gating — removing a read-only shared item isn't supported
+  // by the Drive API under this app's auth model (see removeFromSharedList's backend comment).
+  // A Google Form/Vids/etc. has no export format Drive can convert it to — see
+  // GoogleDriveDocument.isExportableToWorkspace.
+  public isSelectedExportable(selectedDocuments: Array<GoogleDriveDocument>): boolean {
+    return (
+      selectedDocuments.length > 0 &&
+      selectedDocuments.every((doc) => doc.isExportableToWorkspace())
+    );
+  }
+
+  // A file inside your own folder isn't necessarily yours (e.g. created there by someone you shared
+  // the folder with as editor) — only the actual owner can trash it via the Drive API.
+  public isSelectedOwnedByMe(selectedDocuments: Array<GoogleDriveDocument>): boolean {
+    return (
+      selectedDocuments.length > 0 &&
+      selectedDocuments.every((doc) => doc.ownedByMe)
+    );
+  }
+
+  // Drive's native files().copy() can't duplicate a folder (no recursive copy in a single call).
+  public isSelectedDuplicatable(selectedDocuments: Array<GoogleDriveDocument>): boolean {
+    return (
+      selectedDocuments.length > 0 &&
+      selectedDocuments.every((doc) => !doc.isFolder)
+    );
+  }
+
+  public isSelectedRemovableFromSharedList(selectedDocuments: Array<GoogleDriveDocument>): boolean {
+    return (
+      selectedDocuments.length > 0 &&
+      selectedDocuments.every((doc) => doc.permissionRole !== "reader" && doc.isDirectlyShared)
+    );
+  }
+
   public hasOneDocumentSelected(selectedDocuments: Array<GoogleDriveDocument>): boolean {
     return selectedDocuments ? selectedDocuments.length === 1 : false;
   }
 
   public openDocument(): void {
     if (this.vm.selectedDocuments.length === 0) return;
-    this.vm.openDocument();
+    // Branches to folder navigation vs file preview — this.vm.openDocument() always opened the
+    // preview, even for a folder (e.g. a folder shared with the user, from "Partagé avec moi").
+    this.vm.onOpenContent(this.vm.selectedDocuments[0]);
   }
 
   public editDocument(): void {
@@ -165,11 +207,22 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     const ids = this.vm.selectedDocuments.map((doc: GoogleDriveDocument) => doc.id);
     this.vm.isDeleting = true;
     safeApply(this.vm);
-    googleDriveService
-      .deleteDocuments(model.me.userId, ids)
+    // In shared mode this trashes the owner's file (files().update trashed=true) and 500s when the
+    // caller only has read/comment access — removing a shared item should only revoke our own access.
+    const isSharedMode = this.vm.isSharedMode();
+    const deleteCall = isSharedMode
+      ? googleDriveService.removeFromSharedList(model.me.userId, ids)
+      : googleDriveService.deleteDocuments(model.me.userId, ids);
+    deleteCall
       .then(() => {
-        toasts.info("google-drive.documents.trash.confirmation");
-        return this.refreshDocuments();
+        toasts.info(
+          isSharedMode
+            ? "google-drive.documents.remove.shared.confirmation"
+            : "google-drive.documents.trash.confirmation",
+        );
+        // refreshDocuments() assumes a real Drive folder id — in shared mode, parentDocument can be
+        // the "__static__/shared" synthetic node, which isn't a real id and 500s the generic listing.
+        return isSharedMode ? this.refreshSharedFiles() : this.refreshDocuments();
       })
       .then(() => {
         this.toggleDeleteView(false);
@@ -251,39 +304,68 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     this.lightbox.copy = state;
   }
 
+  // Duplicates file(s) into a different folder, staying within Google Drive — unlike "copy" (export
+  // to the personal workspace) and "move" (relocates, no duplicate, can also target the workspace).
+  public toggleDuplicateView(state: boolean, selectedDocuments?: Array<GoogleDriveDocument>): void {
+    if (state && selectedDocuments) {
+      this.setupCopyProps(selectedDocuments, "duplicate");
+    }
+    this.lightbox.copy = state;
+  }
+
   private setupCopyProps(
     selectedDocuments: Array<GoogleDriveDocument>,
-    type: "move" | "copy",
+    type: "move" | "copy" | "duplicate",
   ): void {
-    this.copyProps = {
-      i18: {
-        title: type === "copy" ? "google-drive.export.window.title" : "workspace.move.window.title",
-        actionTitle: type === "copy" ? "google-drive.export.window.action" : "workspace.move.window.action",
-        actionProcessing: type === "copy" ? "google-drive.exporting" : "workspace.moving",
-        actionFinished: type === "copy" ? "google-drive.export.window.finished" : "workspace.move.finished",
-        info: type === "copy" ? "google-drive.export.window.info" : "workspace.move.window.info",
+    const i18 = {
+      move: {
+        title: "workspace.move.window.title",
+        actionTitle: "workspace.move.window.action",
+        actionProcessing: "workspace.moving",
+        actionFinished: "workspace.move.finished",
+        info: "workspace.move.window.info",
       },
+      copy: {
+        title: "google-drive.export.window.title",
+        actionTitle: "google-drive.export.window.action",
+        actionProcessing: "google-drive.exporting",
+        actionFinished: "google-drive.export.window.finished",
+        info: "google-drive.export.window.info",
+      },
+      duplicate: {
+        title: "google-drive.duplicate.window.title",
+        actionTitle: "google-drive.duplicate.window.action",
+        actionProcessing: "google-drive.duplicating",
+        actionFinished: "google-drive.duplicate.window.finished",
+        info: "google-drive.duplicate.window.info",
+      },
+    }[type];
+    this.copyProps = {
+      i18,
       sources: selectedDocuments.map(
         (doc: GoogleDriveDocument) =>
           ({
-            action: type === "copy" ? "copy-from-file" : "move-from-file",
+            action: type === "copy" || type === "duplicate" ? "copy-from-file" : "move-from-file",
             fileId: doc.id,
           }) as FolderPickerSourceFile,
       ),
-      treeProvider: async () => {
-        const ownerTrees = this.workspaceScope && this.workspaceScope.trees
-          ? this.workspaceScope.trees.filter((tree) => tree.filter === "owner")
-          : [];
-        // Mirrors classic space's own copy/move picker: wraps "Mes documents" under a labeled
-        // "Espace personnel" root instead of showing it bare (and lets folderTree2.ts render the
-        // home icon for it via isPersonalSpaceWrapper).
-        const ownerWrapper = {
-          name: lang.translate("workspace.personal.space"),
-          children: ownerTrees,
-          isPersonalSpaceWrapper: true,
-        };
-        return [ownerWrapper] as any;
-      },
+      // "duplicate" must stay within Google Drive only — no personal-workspace destination offered.
+      treeProvider: type === "duplicate"
+        ? async () => []
+        : async () => {
+            const ownerTrees = this.workspaceScope && this.workspaceScope.trees
+              ? this.workspaceScope.trees.filter((tree) => tree.filter === "owner")
+              : [];
+            // Mirrors classic space's own copy/move picker: wraps "Mes documents" under a labeled
+            // "Espace personnel" root instead of showing it bare (and lets folderTree2.ts render the
+            // home icon for it via isPersonalSpaceWrapper).
+            const ownerWrapper = {
+              name: lang.translate("workspace.personal.space"),
+              children: ownerTrees,
+              isPersonalSpaceWrapper: true,
+            };
+            return [ownerWrapper] as any;
+          },
       nextcloudTreeProvider: type === "copy"
         ? null
         : async () => {
@@ -299,9 +381,9 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
           },
       submit: (selectedFolder: models.Element | GoogleDriveDocument) => {
         if (selectedFolder instanceof models.Element) {
-          return this.handleSubmitToWorkspace(selectedFolder, selectedDocuments, type);
+          return this.handleSubmitToWorkspace(selectedFolder, selectedDocuments, type as "copy" | "move");
         } else if (selectedFolder instanceof GoogleDriveDocument) {
-          return this.handleSubmitToGoogleDrive(selectedFolder, selectedDocuments);
+          return this.handleSubmitToGoogleDrive(selectedFolder, selectedDocuments, type as "move" | "duplicate");
         }
       },
       onCancel: () => this.closeCopyView(),
@@ -329,6 +411,13 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
         this.workspaceScope.reloadFolderContent();
       }
 
+      // The backend copies/moves each document independently and only reports the ones that
+      // succeeded (e.g. a Google Form/Vids has no export format Drive can convert it to) — without
+      // this, a partial failure looks identical to full success: no error, but the file never appears.
+      if (results && results.length < sourceDocuments.length) {
+        toasts.warning(`workspace.${type}.partial.error`);
+      }
+
       this.vm.selectedDocuments = [];
       await this.refreshDocuments();
       this.closeCopyView();
@@ -342,23 +431,28 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     }
   }
 
-  // Only ever reached for "move": a Google Drive destination is never offered when exporting/copying
-  // (setupCopyProps leaves the picker's Google Drive tree unset for type "copy").
+  // Reached for "move" and "duplicate" — a Google Drive destination is never offered when
+  // exporting/copying to the workspace (setupCopyProps leaves the picker's Drive tree unset for "copy").
   private async handleSubmitToGoogleDrive(
     destFolder: GoogleDriveDocument,
     sourceDocuments: Array<GoogleDriveDocument>,
+    type: "move" | "duplicate",
   ): Promise<void> {
     try {
       for (const doc of sourceDocuments) {
-        await googleDriveService.moveDocument(model.me.userId, doc.id, destFolder.id);
+        if (type === "duplicate") {
+          await googleDriveService.copyDocumentWithinDrive(model.me.userId, doc.id, destFolder.id);
+        } else {
+          await googleDriveService.moveDocument(model.me.userId, doc.id, destFolder.id);
+        }
       }
       await this.refreshDocuments();
       this.closeCopyView();
       safeApply(this.vm);
     } catch (err) {
       const e = err as AxiosError;
-      console.error("Error moving within Google Drive: " + e.message);
-      toasts.warning("google-drive.move.error");
+      console.error(`Error ${type === "duplicate" ? "duplicating" : "moving"} within Google Drive: ` + e.message);
+      toasts.warning(type === "duplicate" ? "google-drive.duplicate.error" : "google-drive.move.error");
       this.closeCopyView();
       safeApply(this.vm);
     }
@@ -387,5 +481,16 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
 
   private async refreshTrashbin(): Promise<void> {
     this.vm.documents = await googleDriveService.listTrash(model.me.userId);
+  }
+
+  private async refreshSharedFiles(): Promise<Array<GoogleDriveDocument>> {
+    // Top-level "Partagé avec moi" (synthetic "__static__/shared" node): flat shared-files listing.
+    // A real shared folder navigated into (own Drive id, see googleDriveFolder.directive.ts's
+    // permissionRole propagation): the generic listing works fine via its real id.
+    const docs = this.vm.parentDocument?.isStaticFolder
+      ? await googleDriveService.listSharedFiles(model.me.userId)
+      : await googleDriveService.listDocument(model.me.userId, this.vm.parentDocument?.id || null);
+    this.vm.documents = docs;
+    return docs;
   }
 }

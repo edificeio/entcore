@@ -55,6 +55,13 @@ export class ToolbarShareGoogleDriveViewModel {
     return this.selectedDocuments.length === 1;
   }
 
+  // The "current shares" list only ever loads for a single document (see loadCurrentShares) — with
+  // several files selected, if any of them is already shared, there's no way to show/manage its
+  // existing shares, so the action is hidden entirely rather than silently omitting that info.
+  canOpenShareView(selectedDocuments: Array<GoogleDriveDocument>): boolean {
+    return selectedDocuments.length <= 1 || selectedDocuments.every((doc) => !doc.isShared);
+  }
+
   toggleShareView(state: boolean, selectedDocuments?: Array<GoogleDriveDocument>): void {
     this.lightbox.share = state;
     if (state && selectedDocuments) {

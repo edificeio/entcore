@@ -581,6 +581,15 @@
 		.icons-view .element .selected legend svg{
 			fill: #fff !important;
 		}
+		/* The above targets any legend svg for the (filled) share icon, but it also caught the
+		   stroke-based permission-role icons (read-only/edit), inheriting "fill" down into their
+		   unfilled rect/path children and turning them into solid black blobs. Opt them back out. */
+		.icons-view explorer legend svg.outline-icon,
+		.icons-view .element legend svg.outline-icon,
+		.icons-view explorer .selected legend svg.outline-icon,
+		.icons-view .element .selected legend svg.outline-icon{
+			fill: none !important;
+		}
 		/* The visible legend ("no-1d") sits BEFORE the thumbnail in the DOM (a second "no-2d" copy
 		   after it is hidden by the theme) — flex+order puts it after visually without touching
 		   the 3 separate icons.html templates that share this <explorer> markup. */
