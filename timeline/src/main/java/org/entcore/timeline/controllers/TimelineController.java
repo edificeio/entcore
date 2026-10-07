@@ -316,6 +316,7 @@ public class TimelineController extends BaseController {
 		final boolean mine = request.params().contains("mine");
 		final boolean both = request.params().contains("both");
 		final String version = RequestUtils.acceptVersion(request);
+		final boolean receivedOnly = "3.0".equals(version) && request.params().contains("receivedOnly");
 
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
@@ -336,7 +337,7 @@ public class TimelineController extends BaseController {
 								offset = PAGELIMIT * Integer.parseInt(page);
 							} catch (NumberFormatException e) {}
 
-							store.get(user, types, offset, PAGELIMIT, notifs.right().getValue(), mine, both, version, new Handler<JsonObject>() {
+							store.get(user, types, offset, PAGELIMIT, notifs.right().getValue(), mine, both, receivedOnly, version, new Handler<JsonObject>() {
 								public void handle(final JsonObject res) {
 									if (res != null && "ok".equals(res.getString("status"))) {
 										if ("2.0".equals(version)) {
@@ -936,7 +937,7 @@ public class TimelineController extends BaseController {
 			u.setUserId(json.getString("recipient"));
 			u.setExternalId(json.getString("externalId"));
 			store.get(u, null, json.getInteger("offset", 0),
-					json.getInteger("limit", PAGELIMIT), null, false, false, "", handler);
+					json.getInteger("limit", PAGELIMIT), null, false, false, false, "", handler);
 			break;
 		case "delete":
 			store.delete(json.getString("resource"), handler);
