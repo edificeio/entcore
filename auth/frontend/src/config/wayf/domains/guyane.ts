@@ -71,7 +71,7 @@ export const guyaneConfig: WayfDomainConfig = {
     },
   ],
   partners: [
-    { logo: '/img/partners/logo-collectivite-guyane.png' },
-    { logo: '/img/partners/logo-region-academique-guyane.png' },
+    { logo: '/img/partners/logo-collectivite-guyane.png', url: 'https://www.ctguyane.fr/' },
+    { logo: '/img/partners/logo-region-academique-guyane.png', url: 'https://www.ac-guyane.fr/' },
   ],
 };
