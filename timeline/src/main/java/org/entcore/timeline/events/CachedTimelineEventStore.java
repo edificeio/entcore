@@ -199,7 +199,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     @Override
-    public void get(UserInfos recipient, List<String> types, int offset, int limit, JsonObject restrictionFilter, boolean mine, boolean both, String version, Handler<JsonObject> result) {
+    public void get(UserInfos recipient, List<String> types, int offset, int limit, JsonObject restrictionFilter, boolean mine, boolean both, boolean receivedOnly, String version, Handler<JsonObject> result) {
         //offset 0 and not mobile not mine
         final boolean fromCache =  !"2.0".equals(version) && !both && !mine;
         if (fromCache) {
@@ -215,7 +215,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                         result.handle(payload);
                     } else {
                         logger.error("Failed to get events:", resJson.cause());
-                        original.get(recipient, types, offset, limit, restrictionFilter, mine, both, version, result);
+                        original.get(recipient, types, offset, limit, restrictionFilter, mine, both, receivedOnly, version, result);
                     }
                 });
             } else if(offset <= this.pageSize){
@@ -228,16 +228,16 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                             newOffset = length;
                             newLimit = (pageSize - length) + offset;
                         }
-                        original.get(recipient, types, newOffset, newLimit, restrictionFilter, mine, both, version, result);
+                        original.get(recipient, types, newOffset, newLimit, restrictionFilter, mine, both, receivedOnly, version, result);
                     }else{
-                        original.get(recipient, types, offset, limit, restrictionFilter, mine, both, version, result);
+                        original.get(recipient, types, offset, limit, restrictionFilter, mine, both, receivedOnly, version, result);
                     }
                 });
             } else {
-                original.get(recipient, types, offset, limit, restrictionFilter, mine, both, version, result);
+                original.get(recipient, types, offset, limit, restrictionFilter, mine, both, receivedOnly, version, result);
             }
         } else {
-            original.get(recipient, types, offset, limit, restrictionFilter, mine, both, version, result);
+            original.get(recipient, types, offset, limit, restrictionFilter, mine, both, receivedOnly, version, result);
         }
     }
 
