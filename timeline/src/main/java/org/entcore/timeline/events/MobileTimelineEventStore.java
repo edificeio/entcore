@@ -55,10 +55,10 @@ public class MobileTimelineEventStore extends DefaultTimelineEventStore {
 
     @Override
     public void get(final UserInfos user, final List<String> types, final int offset, final int limit,
-            final JsonObject restrictionFilter, final boolean mine, final boolean both, final String version,
-            final Handler<JsonObject> result) {
+            final JsonObject restrictionFilter, final boolean mine, final boolean both, final boolean receivedOnly,
+            final String version, final Handler<JsonObject> result) {
         if (!"2.0".equals(version)) {
-            this.original.get(user, types, offset, limit, restrictionFilter, mine, both, version, result);
+            this.original.get(user, types, offset, limit, restrictionFilter, mine, both, receivedOnly, version, result);
             return;
         }
         //
