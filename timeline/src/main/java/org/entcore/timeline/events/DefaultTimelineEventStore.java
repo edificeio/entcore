@@ -79,7 +79,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
 	@Override
 	public void get(final UserInfos user, List<String> types, int offset, int limit, JsonObject restrictionFilter,
-					boolean mine, boolean both, String version, final Handler<JsonObject> result) {
+					boolean mine, boolean both, boolean receivedOnly, String version, final Handler<JsonObject> result) {
 		final String recipient = user.getUserId();
 		if (recipient != null && !recipient.trim().isEmpty()) {
 			// 1. Common trunk (literally)
@@ -156,14 +156,20 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
 			// 4. Include all received and sent ones that have a preview
 			if ("3.0".equals(version)) {
-				filtersQuery.put("$or", new JsonArray()
-					.add(new JsonObject().put("recipients", new JsonObject()
+				if (receivedOnly) {
+					filtersQuery.put("recipients", new JsonObject()
 							.put("$elemMatch", new JsonObject()
-									.put("userId", user.getUserId()))))
-					.add(new JsonObject().put("$and", new JsonArray()
-						.add(new JsonObject().put("sender", recipient))
-						.add(new JsonObject().put("preview", new JsonObject().put("$exists", true)))))
-				);
+									.put("userId", user.getUserId())));
+				} else {
+					filtersQuery.put("$or", new JsonArray()
+						.add(new JsonObject().put("recipients", new JsonObject()
+								.put("$elemMatch", new JsonObject()
+										.put("userId", user.getUserId()))))
+						.add(new JsonObject().put("$and", new JsonArray()
+							.add(new JsonObject().put("sender", recipient))
+							.add(new JsonObject().put("preview", new JsonObject().put("$exists", true)))))
+					);
+				}
 				keys.put("recipients", new JsonObject()
 						.put("$elemMatch", new JsonObject()
 								.put("userId", user.getUserId())));
