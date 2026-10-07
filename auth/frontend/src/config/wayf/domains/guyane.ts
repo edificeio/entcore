@@ -70,4 +70,8 @@ export const guyaneConfig: WayfDomainConfig = {
       acs: '/auth/login',
     },
   ],
+  partners: [
+    { logo: '/img/partners/logo-collectivite-guyane.png' },
+    { logo: '/img/partners/logo-region-academique-guyane.png' },
+  ],
 };
