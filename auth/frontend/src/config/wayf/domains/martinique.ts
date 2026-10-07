@@ -95,7 +95,7 @@ export const martiniqueConfig: WayfDomainConfig = {
     },
   ],
   partners: [
-    { logo: '/img/partners/logo-collectivite-martinique.png' },
-    { logo: '/img/partners/logo-ac-martinique.png' },
+    { logo: '/img/partners/logo-collectivite-martinique.png', url: 'https://mandature21-28.collectivitedemartinique.mq/' },
+    { logo: '/img/partners/logo-ac-martinique.png', url: 'https://www.ac-martinique.fr/' },
   ],
 };
