@@ -94,4 +94,8 @@ export const martiniqueConfig: WayfDomainConfig = {
       acs: '/auth/login',
     },
   ],
+  partners: [
+    { logo: '/img/partners/logo-collectivite-martinique.png' },
+    { logo: '/img/partners/logo-ac-martinique.png' },
+  ],
 };
