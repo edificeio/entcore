@@ -715,6 +715,7 @@
   "homepage.last-infos-list.title": "Dernières actualités",
   "homepage.notifications-list.close": "Fermer les notifications",
   "homepage.notifications-list.empty.description": "Suivez les nouveautés sur votre réseau social éducatif ici. Vous serez informé des nouveaux partages, des mises à jour de contenus, des nouveaux commentaires, et bien plus !",
+  "homepage.notifications-list.loading": "Chargement des notifications",
   "homepage.notifications-list.title": "Notifications",
   "homepage.notifications.app-icon.placeholder": "Icône de l'application",
   "homepage.notifications.avatar.placeholder": "Image de l'utilisateur",
