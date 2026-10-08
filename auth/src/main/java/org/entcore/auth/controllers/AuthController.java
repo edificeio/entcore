@@ -781,7 +781,7 @@ public class AuthController extends BaseController {
 				} else {
 					checkAndAppendCookieCallback(callBackBuilder, request);
 				}
-				final String login = request.formAttributes().get("email");
+				final String login = StringUtils.trimToBlank(request.formAttributes().get("email"));
 				final String password = request.formAttributes().get("password");
 				final String callBack = callBackBuilder.toString();
 				logInWithPasswordThenRedirect(login, password, request, callBack)
