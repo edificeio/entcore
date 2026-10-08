@@ -187,11 +187,13 @@ public class DefaultCaptionService implements CaptionService {
                 return Future.succeededFuture(document.getString(taskField));
             }
 
-            if (!DocumentHelper.isImage(document)) {
+            if (!DocumentHelper.isImage(document) && !isDocumentWebp(document)) {
                 return Future.failedFuture(new IllegalArgumentException("Document " + documentId + " is not an image"));
             }
 
-            return generator.apply(document).compose(fresh -> storeResult(documentId, taskField, fresh));
+            return generator
+                    .apply(document)
+                    .compose(fresh -> storeResult(documentId, taskField, fresh));
         }).onFailure(err -> log.error("Failed to get or generate " + taskField + " for document ID " + documentId, err));
     }
 
@@ -385,5 +387,10 @@ public class DefaultCaptionService implements CaptionService {
                 .put("s3Path", s3Path)
                 .put("pfId", platformId)
                 .put("size", DEFAULT_SIZE);
+    }
+
+    private boolean isDocumentWebp(JsonObject document) {
+        final JsonObject metadata = document.getJsonObject("metadata");
+        return metadata != null && ("image/webp".equals(metadata.getString("content-type")));
     }
 }
