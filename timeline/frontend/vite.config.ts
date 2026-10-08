@@ -110,13 +110,15 @@ export default ({ mode }: { mode: string }) => {
         name: 'rewrite-customize',
         configureServer(server) {
           server.middlewares.use((req, res, next) => {
-            if (req.url === '/timeline/customize') {
-              res.writeHead(302, { Location: '/customize' });
+            const [pathname, query] = (req.url ?? '').split('?');
+            const search = query ? `?${query}` : '';
+            if (pathname === '/timeline/customize') {
+              res.writeHead(302, { Location: `/customize${search}` });
               res.end();
               return;
             }
-            if (req.url === '/customize') {
-              req.url = '/homepage.html';
+            if (pathname === '/customize') {
+              req.url = `/homepage.html${search}`;
             }
             next();
           });

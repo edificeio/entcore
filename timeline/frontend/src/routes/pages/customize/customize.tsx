@@ -2,6 +2,7 @@ import {
   ButtonBeta as Button,
   Flex,
   LoadingScreen,
+  ModalBeta as Modal,
   PageLayout,
   useBackground,
   useBreakpoint,
@@ -10,6 +11,7 @@ import {
 
 import { IconArrowLeft } from '@edifice.io/react/icons';
 
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CustomizationForm } from '~/components/CustomizationForm';
 import { CustomizationPreview } from '~/components/CustomizationPreview/CustomizationPreview';
@@ -27,11 +29,11 @@ export const Component = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { md, lg } = useBreakpoint();
-  const { common_t } = useI18n();
+  const { t, common_t } = useI18n();
   const { background, productOverride } = useBackground();
 
-  const { resetChanges, saveChanges, isSaving, ...form } =
-    useCustomizationForm();
+  const { isDirty, saveChanges, isSaving, ...form } = useCustomizationForm();
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const { selectedBackground, selectedFont, selectedLanguage } = form;
 
   if (!init) return <LoadingScreen position={false} />;
@@ -41,6 +43,14 @@ export const Component = () => {
   };
 
   const handleBackClick = () => {
+    if (isDirty) {
+      setIsLeaveModalOpen(true);
+      return;
+    }
+    goBack();
+  };
+
+  const goBack = () => {
     // Go back to URL in the callback query param, if any.
     const callback = searchParams.get('callback');
 
@@ -103,13 +113,10 @@ export const Component = () => {
                 align="center"
                 className="w-100"
               >
-                <Button variant="ghost" onClick={resetChanges}>
-                  {common_t('cancel')}
-                </Button>
                 <Button
                   variant="filled"
                   onClick={handleSaveClick}
-                  disabled={isSaving}
+                  disabled={!isDirty || isSaving}
                   isLoading={isSaving}
                 >
                   {common_t('save')}
@@ -126,6 +133,33 @@ export const Component = () => {
           </Flex>
         </div>
       </PageLayout.Content>
+      <Modal
+        id="customize-leave-modal"
+        size="m"
+        isOpen={isLeaveModalOpen}
+        onModalClose={() => setIsLeaveModalOpen(false)}
+      >
+        <Modal.Header onModalClose={() => setIsLeaveModalOpen(false)}>
+          {t('homepage.customize.leave.title')}
+        </Modal.Header>
+        <Modal.Body>{t('homepage.customize.leave.body')}</Modal.Body>
+        <Modal.Footer>
+          <Button
+            data-testid="customize-leave-cancel-button"
+            variant="ghost"
+            onClick={goBack}
+          >
+            {common_t('cancel')}
+          </Button>
+          <Button
+            data-testid="customize-leave-back-button"
+            variant="filled"
+            onClick={() => setIsLeaveModalOpen(false)}
+          >
+            {t('homepage.customize.leave.back')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </PageLayout>
   );
 };
