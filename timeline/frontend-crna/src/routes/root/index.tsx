@@ -13,7 +13,6 @@ import {
   SchoolSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { useEffect, useState } from 'react';
-import backgroundImage from '~/assets/background.png';
 import styles from './Root.module.css';
 import { MediacentreWidget, WidgetMasonry } from '~/components';
 import { AvantagesWidget } from '~/components/AvantagesWidget/AvantagesWidget';
@@ -95,12 +94,6 @@ export const Root = () => {
     <PageLayout
       className={styles.layout}
       variant="fullpage"
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
       scrollMode="columns"
       noPadding={{ sidebarRight: true }}
     >
