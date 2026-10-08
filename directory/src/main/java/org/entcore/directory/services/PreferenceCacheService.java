@@ -1,5 +1,6 @@
 package org.entcore.directory.services;
 
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.dto.UserPreferenceDto;
@@ -22,6 +23,8 @@ public interface PreferenceCacheService {
       * @param userInfos
      * @param session
      * @param preference
+     * @return a future completed once the session store has acknowledged the update.
+     * It never fails : a session update failure is only logged, since preferences are already persisted.
      */
-    void addPreferences(UserInfos userInfos, JsonObject session, UserPreferenceDto preference);
+    Future<Void> addPreferences(UserInfos userInfos, JsonObject session, UserPreferenceDto preference);
 }

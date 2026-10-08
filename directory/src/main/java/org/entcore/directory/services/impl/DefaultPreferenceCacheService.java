@@ -1,5 +1,7 @@
 package org.entcore.directory.services.impl;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -41,19 +43,23 @@ public class DefaultPreferenceCacheService implements PreferenceCacheService {
 
 
     @Override
-    public void addPreferences(UserInfos userInfos, JsonObject session, UserPreferenceDto preference) {
+    public Future<Void> addPreferences(UserInfos userInfos, JsonObject session, UserPreferenceDto preference) {
         final JsonObject cache = session.getJsonObject("cache");
-        if (cache.containsKey(PREFERENCES_ATTRIBUTE_NAME)) {
-            JsonObject prefs = cache.getJsonObject(PREFERENCES_ATTRIBUTE_NAME);
-            for (UserPreferenceDto.Application app : preference.getPreferences()) {
-                prefs.put(app.getMappingName(), preference.getPreference(app).encode());
-            }
-            UserUtils.addSessionAttribute(eb, userInfos.getUserId(), PREFERENCES_ATTRIBUTE_NAME, prefs, event -> {
-                if (!event) {
-                    LOGGER.error("Could not add preferences attribute to session.");
-                }
-            });
+        if (!cache.containsKey(PREFERENCES_ATTRIBUTE_NAME)) {
+            return Future.succeededFuture();
         }
+        JsonObject prefs = cache.getJsonObject(PREFERENCES_ATTRIBUTE_NAME);
+        for (UserPreferenceDto.Application app : preference.getPreferences()) {
+            prefs.put(app.getMappingName(), preference.getPreference(app).encode());
+        }
+        Promise<Void> promise = Promise.promise();
+        UserUtils.addSessionAttribute(eb, userInfos.getUserId(), PREFERENCES_ATTRIBUTE_NAME, prefs, event -> {
+            if (!event) {
+                LOGGER.error("Could not add preferences attribute to session.");
+            }
+            promise.complete();
+        });
+        return promise.future();
     }
 
 }
