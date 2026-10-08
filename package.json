@@ -1,6 +1,6 @@
 {
   "name": "ent-core",
-  "version": "6.17.0-dev.0",
+  "version": "6.17.0-develop-pedago.0",
   "description": "",
   "main": "gulpfile.js",
   "directories": {
@@ -30,7 +30,7 @@
     "core-js": "^2.4.1",
     "entcore": "develop-pedago",
     "entcore-generic-icons": "https://github.com/edificeio/generic-icons.git",
-    "entcore-toolkit": "^1.0.1",
+    "entcore-toolkit": "dev",
     "humane-js": "^3.2.2",
     "jquery": "^3.2.1",
     "moment": "^2.29.1",
