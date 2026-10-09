@@ -8,6 +8,7 @@ import { Root } from './index';
 const mocks = vi.hoisted(() => ({
   useBreakpoint: vi.fn(),
   updateOverlayOpen: vi.fn(),
+  useWidgetPreferences: vi.fn(),
 }));
 
 vi.mock('@edifice.io/react', async () => {
@@ -61,10 +62,15 @@ vi.mock('@edifice.io/react', async () => {
   };
 });
 
+vi.mock('~/hooks/useWidgetPreferences', () => ({
+  useWidgetPreferences: mocks.useWidgetPreferences,
+}));
+
 vi.mock('@edifice.io/react/homepage', () => ({
   MessageFlashListContainer: () => (
     <div data-testid="message-flash-list-container" />
   ),
+  AgendaContainer: () => <div data-testid="agenda-container" />,
   FavoritesContainer: () => <div data-testid="favorites-container" />,
   LastInfosContainer: () => <div data-testid="last-infos-container" />,
   NotificationListContainer: () => (
@@ -109,6 +115,10 @@ vi.mock(
     ),
   }),
 );
+
+beforeEach(() => {
+  mocks.useWidgetPreferences.mockReturnValue({ isVisible: () => true });
+});
 
 describe('Root - MessageFlashListContainer responsive placement', () => {
   afterEach(() => {
@@ -245,5 +255,40 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
     expect(
       within(overlay).getByTestId('notification-list-container'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Root - Agenda widget', () => {
+  beforeEach(() => {
+    mocks.useBreakpoint.mockReturnValue({ sm: true, md: true });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders AgendaContainer when the widget is visible', () => {
+    mocks.useWidgetPreferences.mockReturnValue({ isVisible: () => true });
+
+    render(<Root />);
+
+    expect(screen.getByTestId('agenda-container')).toBeInTheDocument();
+  });
+
+  it('hides AgendaContainer when the user turned the widget off', () => {
+    mocks.useWidgetPreferences.mockReturnValue({ isVisible: () => false });
+
+    render(<Root />);
+
+    expect(screen.queryByTestId('agenda-container')).not.toBeInTheDocument();
+  });
+
+  it('checks visibility by the catalog widget name', () => {
+    const isVisible = vi.fn().mockReturnValue(true);
+    mocks.useWidgetPreferences.mockReturnValue({ isVisible });
+
+    render(<Root />);
+
+    expect(isVisible).toHaveBeenCalledWith('agenda-widget');
   });
 });
