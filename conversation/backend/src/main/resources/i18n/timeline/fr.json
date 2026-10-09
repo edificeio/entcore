@@ -1,7 +1,7 @@
 {
   "messagerie": "Messagerie",
   "messagerie.send-message": "Réception d'un message",
-  "messagerie.send-message-external": "Réception d'un message",
+  "messagerie.send-message-external": "Réception d'un message externe",
   "messagerie.storage": "Espace de stockage bientôt plein",
   "push.notif.new.message": "Nouveau message",
   "timeline.conversation.sent.message": "vous a envoyé un message ",
