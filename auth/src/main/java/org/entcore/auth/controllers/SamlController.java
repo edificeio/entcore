@@ -259,15 +259,21 @@ public class SamlController extends AbstractFederateController {
 			// User-Agent, same convention as X-APP=mobile above (ENABLING-1318).
 			final boolean isWayfV2ForcedByMobile = userAgent != null && userAgent.contains("X-APP-WAYF=2");
 
-			if(isWayfBeta || isSpecificWayfV2Host || isWayfV2ForcedByMobile) {
+			if(isMobile && isWayfV2ForcedByMobile) {
 				renderView(request, swmf, "wayfv2.html", null);
 			} else {
 				if (isMobile) {
 					renderView(request, swmf, "wayf-mobile.html", null);
 				} else {
-					renderView(request, swmf, "wayf.html", null);
+					if(isWayfBeta || isSpecificWayfV2Host) {
+						renderView(request, swmf, "wayfv2.html", null);
+					} else {
+						renderView(request, swmf, "wayf.html", null);
+					}
 				}
 			}
+
+
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
 					.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
