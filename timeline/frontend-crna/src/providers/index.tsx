@@ -36,7 +36,12 @@ export const Providers = ({ children }: { children: ReactNode }) => {
       >
         {children}
       </EdificeClientProvider>
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      {import.meta.env.DEV && (
+        <ReactQueryDevtools
+          initialIsOpen={false}
+          buttonPosition={'bottom-left'}
+        />
+      )}
     </QueryClientProvider>
   );
 };
