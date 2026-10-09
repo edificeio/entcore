@@ -29,9 +29,11 @@
     {% if (platform_name is defined and not(platform_name.startswith('prod'))) or (ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs') %}
       "daily-mailing-cron" : "0 30 4 * * ? 2099",
       "weekly-mailing-cron": "0 30 7 ? * 1 2099",
+      "purge-messages-read-cron": "0 0 2  * * ? 2099",
     {% else %}
       "daily-mailing-cron" : "{{ timelineDailyCron | default('0 30 4 * * ? *') }}",
       "weekly-mailing-cron": "{{ timelineWeeklyCron | default('0 30 7 ? * 1 *') }}",
+      "purge-messages-read-cron": "{{ timelinePurgeFlashMessageReadCron | default('0 0 2  * * ? *') }}",
     {% endif %}
     "mode": "prod",
     "use-optimized" : {{ timelineUseOptimizedPeriodicMailer|default('true') }},

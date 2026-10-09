@@ -80,7 +80,7 @@
         "udt": {{ udtAutoImport }},
       {% endif %}
       "reinit-login-cron": "{{ feederReinitLoginCron | default('0 0 0,6,13 * * ? *') }}",
-      "timetable-report-erase-cron": "0 45 0 * * ? *",
+      "timetable-report-erase-cron": {{ feederTimetableReportEraseCron | default('0 45 0 * * ? 2099') }},
       "timetable-report-erase-after-seconds": 7776000,
       "log-details": {{ feederLogDetails | default('false') }},
       {% if feederPreDeleteByProfile is defined %}
