@@ -34,6 +34,7 @@ export interface IWorkspaceGoogleDriveContent {
   draggable: Draggable;
   lockDropzone: boolean;
   isImporting: boolean;
+  importProgress: number;
   isMoving: boolean;
   isDeleting: boolean;
   isRestoring: boolean;
@@ -354,8 +355,14 @@ export const workspaceGoogleDriveContentController = ng.controller(
       };
       $scope.onTileDelete = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
-        $scope.selectedDocuments = [content];
-        $scope.toolbar.toggleDeleteView(true);
+        // Checked before touching selectedDocuments (which also drives the bottom toolbar's own
+        // visibility) — otherwise a blocked deletion would flash that toolbar on and immediately back
+        // off, for no apparent reason to the user.
+        $scope.toolbar.canDeleteSelection([content]).then((canDelete: boolean) => {
+          if (!canDelete) return;
+          $scope.selectedDocuments = [content];
+          $scope.toolbar.toggleDeleteView(true);
+        });
       };
       $scope.onTileRestore = function (content: GoogleDriveDocument): void {
         $scope.openTileMenuFor = null;
@@ -387,6 +394,17 @@ export const workspaceGoogleDriveContentController = ng.controller(
           $scope.isLoaded = true;
           safeApply($scope);
         });
+
+      // Shows the centered loader for the whole time between "a folder was asked to open" (sent from
+      // here, the sidebar tree, drag-and-drop, etc.) and "its content arrived" (getDocumentsState
+      // below) — subscribing to the request itself, rather than setting isLoaded=false at every single
+      // call site that can trigger navigation, catches all of them uniformly.
+      subscription.add(
+        googleDriveEventService.getOpenedFolderDocument().subscribe(() => {
+          $scope.isLoaded = false;
+          safeApply($scope);
+        }),
+      );
 
       subscription.add(
         googleDriveEventService
@@ -551,7 +569,9 @@ export const workspaceGoogleDriveContentController = ng.controller(
           dragStartHandler(event: DragEvent, content?: any): void {
             // "Partagé avec moi" items have no "Exporter" action either (not owned, can't be copied
             // to another drive) — dragging onto the sidebar tree's other drives must be blocked too.
-            if (viewModel.isSharedMode()) {
+            // Trashed items have no move/export action either — moving them out of the trash by
+            // drag-and-drop would bypass the restore flow entirely.
+            if (viewModel.isSharedMode() || viewModel.isTrashMode()) {
               event.preventDefault();
               return;
             }
@@ -585,36 +605,43 @@ export const workspaceGoogleDriveContentController = ng.controller(
           e.preventDefault();
           if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
         };
-        const uploadFilesToCurrentFolder = (allFiles: Array<File>): void => {
+        const uploadFilesToCurrentFolder = async (allFiles: Array<File>): Promise<void> => {
           if (allFiles.length === 0) return;
-          // Same limit/message as the classic workspace's own import dialog (external entcore
-          // package, "max.file.size" i18n key) — checked there only AFTER the server has received
-          // the whole file (413), which is also how the 499 memory-exhaustion crash happens for a
-          // huge upload: checking client-side first means we never even attempt sending it.
-          const maxFileSize = parseInt(lang.translate("max.file.size"), 10);
-          const files = allFiles.filter((f) => !maxFileSize || f.size <= maxFileSize);
-          if (files.length < allFiles.length) {
-            toasts.warning(
-              lang.translate("file.too.large.limit") +
-                Math.round(maxFileSize / 1024 / 1024) +
-                lang.translate("mb"),
-            );
+          // Checked before anything else — no point locking the dropzone/showing the import spinner
+          // for an upload that's already known to overflow the Drive quota. Fails open on a check
+          // error (logged, not surfaced): Drive still rejects a genuinely over-quota upload on its own,
+          // this is only meant to catch the common case proactively.
+          try {
+            const quota = await googleDriveService.getStorageQuota(model.me.userId);
+            if (!quota.unlimited) {
+              const totalUploadSize = allFiles.reduce((sum, f) => sum + f.size, 0);
+              if (quota.usedBytes + totalUploadSize > quota.totalBytes) {
+                toasts.warning("google-drive.upload.quota.exceeded");
+                return;
+              }
+            }
+          } catch (err) {
+            console.error("Error checking Google Drive quota before upload: " + (err as AxiosError).message);
           }
-          if (files.length === 0) return;
           // Setting lockDropzone=true removes <dropzone-overlay> from the DOM via ng-if.
           // When it re-enters the DOM (lockDropzone=false), the directive re-links and
           // calls scope.hide() so it starts invisible.
           viewModel.lockDropzone = true;
           viewModel.isImporting = true;
+          viewModel.importProgress = 0;
           safeApply($scope);
           const targetFolder = viewModel.parentDocument ?? null;
           const done = (): void => {
             viewModel.lockDropzone = false;
             viewModel.isImporting = false;
+            viewModel.importProgress = 0;
             safeApply($scope);
           };
           googleDriveService
-            .uploadLocalFilesToCloud(model.me.userId, files, targetFolder?.id ?? undefined)
+            .uploadLocalFilesToCloud(model.me.userId, allFiles, targetFolder?.id ?? undefined, (ratio) => {
+              viewModel.importProgress = Math.round(ratio * 100);
+              safeApply($scope);
+            })
             .then(() => {
               googleDriveEventService.sendOpenFolderDocument(
                 targetFolder ?? new GoogleDriveDocument().initParent(),
@@ -622,14 +649,7 @@ export const workspaceGoogleDriveContentController = ng.controller(
             })
             .catch((err: AxiosError) => {
               console.error("Error uploading local files to Google Drive: " + err.message);
-              // 499 ("client closed request"): the whole file is buffered in memory server-side
-              // (see DefaultDocumentsService's storage.readFile/.getBytes()), so a very large upload
-              // can exhaust the JVM heap and drop the connection well before any real size cap.
-              if (err.response?.status === 499) {
-                toasts.warning("google-drive.upload.too.large");
-              } else {
-                toasts.warning("google-drive.upload.error");
-              }
+              toasts.warning("google-drive.upload.error");
             })
             .then(done, done);
         };

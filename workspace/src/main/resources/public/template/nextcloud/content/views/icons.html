@@ -29,7 +29,10 @@
                     <li ng-if="isTrashMode()"><a ng-click="onTileDelete(content)"><svg class="tile-menu-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></svg><i18n>workspace.delete</i18n></a></li>
                 </ul>
             </div>
-            <legend class="no-1d">
+            <!-- No "no-1d" class: some theme skins hide it unconditionally (bare
+                 ".no-1d{display:none!important}", meant for classic workspace's own two-legend
+                 view-mode toggle), and none of our own CSS targets it here either. -->
+            <legend>
                 <a>
                     <span tooltip-on-ellipsis="[[content.name]]">[[content.name]]</span>
                 </a>

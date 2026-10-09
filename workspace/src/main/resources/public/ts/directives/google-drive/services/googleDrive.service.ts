@@ -19,7 +19,9 @@ export type GoogleDriveShareRole = "reader" | "commenter" | "writer";
 export interface IGoogleDriveShareEntry {
   id: string;
   userId: string | null;
-  role: GoogleDriveShareRole;
+  // Unlike GoogleDriveShareRole (valid roles to grant via this app's own sharing UI), an EXISTING
+  // permission entry can also be "owner" — Drive includes the file's owner in its permissions list.
+  role: GoogleDriveShareRole | "owner";
   emailAddress: string;
 }
 
@@ -119,6 +121,7 @@ export interface IGoogleDriveService {
     userid: string,
     files: File[],
     parentId?: string,
+    onProgress?: (ratio: number) => void,
   ): Promise<void>;
 }
 
@@ -416,14 +419,27 @@ export const googleDriveService: IGoogleDriveService = {
     userid: string,
     files: File[],
     parentId?: string,
+    onProgress?: (ratio: number) => void,
   ): Promise<void> => {
+    // Only the browser → ENT storage leg (below) reports real byte-level progress — the
+    // subsequent ENT → Drive move is a lightweight server-side PUT with no body to track.
+    // Weighting each file by its own size keeps the bar proportional across a mixed-size batch.
+    const totalSize = files.reduce((sum, f) => sum + f.size, 0) || 1;
+    let completedSize = 0;
     for (const file of files) {
       const formData = new FormData();
       formData.append("file", file, file.name);
       const uploadRes = await http.post(
         `/workspace/document?name=${encodeURIComponent(file.name)}`,
         formData,
+        {
+          onUploadProgress: (event: ProgressEvent) => {
+            if (!onProgress) return;
+            onProgress((completedSize + event.loaded) / totalSize);
+          },
+        },
       );
+      completedSize += file.size;
       const docId: string | undefined = uploadRes.data?._id;
       if (!docId) throw new Error(`Upload failed: no _id returned for ${file.name}`);
       const urlParams = new URLSearchParams();

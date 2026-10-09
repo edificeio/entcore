@@ -12,6 +12,7 @@ import { models } from "../../../../services";
 import { GoogleDriveDocument } from "../../models/googleDriveDocument.model";
 import { googleDriveEventService } from "../../services/googleDriveEvent.service";
 import { googleDriveService } from "../../services/googleDrive.service";
+import { GoogleDriveDocumentsUtils } from "../../utils/googleDriveDocuments.utils";
 import { safeApply } from "../../utils/safeApply.utils";
 import { ToolbarShareGoogleDriveViewModel } from "./toolbarShare.component";
 
@@ -31,6 +32,7 @@ export interface IToolbarViewModel {
   hasOneDocumentSelected(selectedDocuments: Array<GoogleDriveDocument>): boolean;
   isSelectedEditable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
   isSelectedRemovableFromSharedList(selectedDocuments: Array<GoogleDriveDocument>): boolean;
+  isSelectedDeletable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
   isSelectedDuplicatable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
   isSelectedOwnedByMe(selectedDocuments: Array<GoogleDriveDocument>): boolean;
   isSelectedExportable(selectedDocuments: Array<GoogleDriveDocument>): boolean;
@@ -43,6 +45,7 @@ export interface IToolbarViewModel {
   renameDocument(): void;
 
   toggleDeleteView(state: boolean): void;
+  canDeleteSelection(selectedDocuments: Array<GoogleDriveDocument>): Promise<boolean>;
   deleteDocuments(): void;
   deleteDocumentsPermanently(): void;
   restoreDocuments(): void;
@@ -98,19 +101,28 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     );
   }
 
-  // Matches the per-tile "..." menu's own gating — removing a read-only shared item isn't supported
-  // by the Drive API under this app's auth model (see removeFromSharedList's backend comment).
   // A Google Form/Vids/etc. has no export format Drive can convert it to — see
-  // GoogleDriveDocument.isExportableToWorkspace.
+  // GoogleDriveDocument.isExportableToWorkspace. In shared mode, restricted to editor-permission
+  // items: Drive lets an owner flag a file "copyRequiresWriterPermission", which 403s the export for
+  // a reader/commenter share — editor access is always exempt from that flag, so it's the only role
+  // that's safe to allow unconditionally.
   public isSelectedExportable(selectedDocuments: Array<GoogleDriveDocument>): boolean {
+    const isSharedMode = this.vm.isSharedMode();
     return (
       selectedDocuments.length > 0 &&
-      selectedDocuments.every((doc) => doc.isExportableToWorkspace())
+      selectedDocuments.every((doc) =>
+        doc.isExportableToWorkspace() && (!isSharedMode || doc.permissionRole === "writer"),
+      )
     );
   }
 
   // A file inside your own folder isn't necessarily yours (e.g. created there by someone you shared
-  // the folder with as editor) — only the actual owner can trash it via the Drive API.
+  // the folder with as editor) — only the actual owner can trash it via the Drive API (403
+  // insufficientFilePermissions otherwise), so "Placer dans la corbeille" stays hidden for it. There's
+  // no "Retirer de ma liste" alternative here either: your access to it is inherited from the parent
+  // folder you own, not a direct permission on the file itself, and Drive refuses to delete an
+  // inherited permission (403 cannotDeletePermission) — only the real owner, or an action on the
+  // parent folder, can change that.
   public isSelectedOwnedByMe(selectedDocuments: Array<GoogleDriveDocument>): boolean {
     return (
       selectedDocuments.length > 0 &&
@@ -130,6 +142,20 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
     return (
       selectedDocuments.length > 0 &&
       selectedDocuments.every((doc) => doc.permissionRole !== "reader" && doc.isDirectlyShared)
+    );
+  }
+
+  // Gates the delete/remove button in both toolbar blocks (normal and "Partagé avec moi"): a file you
+  // own can always be trashed — including one you created yourself inside a folder someone else shared
+  // with you, reached via shared-mode navigation — and a directly-shared, non-read-only file you don't
+  // own can be removed from your own shared list instead. isSelectedOwnedByMe still decides which of
+  // the two labels/actions actually applies.
+  public isSelectedDeletable(selectedDocuments: Array<GoogleDriveDocument>): boolean {
+    return (
+      selectedDocuments.length > 0 &&
+      selectedDocuments.every(
+        (doc) => doc.ownedByMe || (doc.permissionRole !== "reader" && doc.isDirectlyShared),
+      )
     );
   }
 
@@ -199,24 +225,70 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
       });
   }
 
+  // Trashing a folder you own orphans any file a collaborator created inside it (at any depth): Drive
+  // removes the folder from view for everyone but the collaborator's own file isn't trashed itself, so
+  // they lose their only path to it (and can't delete it themselves either). Checked here — rather than
+  // hiding the action from the menu — so the owner gets an explicit explanation instead of a silent
+  // trap. Pure (doesn't mutate state) so it can also be called from onTileDelete() *before* it sets
+  // selectedDocuments, to decide whether to show the bottom toolbar at all instead of flashing it on
+  // and straight back off.
+  public async canDeleteSelection(selectedDocuments: Array<GoogleDriveDocument>): Promise<boolean> {
+    const ownedFoldersBeingDeleted = selectedDocuments.filter(
+      (doc: GoogleDriveDocument) => doc.isFolder && doc.ownedByMe,
+    );
+    if (ownedFoldersBeingDeleted.length === 0) return true;
+    try {
+      const results = await Promise.all(
+        ownedFoldersBeingDeleted.map((folder: GoogleDriveDocument) =>
+          GoogleDriveDocumentsUtils.hasForeignOwnedDescendant(model.me.userId, folder.id),
+        ),
+      );
+      if (results.some((hasForeignOwnedChild) => hasForeignOwnedChild)) {
+        toasts.warning("google-drive.documents.trash.foreign.owner.warning");
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error("Error while checking folder contents before delete: " + (err as AxiosError).message);
+      toasts.warning("google-drive.documents.trash.foreign.owner.check.error");
+      return false;
+    }
+  }
+
   public toggleDeleteView(state: boolean): void {
-    this.lightbox.delete = state;
+    if (!state) {
+      this.lightbox.delete = false;
+      return;
+    }
+    this.canDeleteSelection(this.vm.selectedDocuments).then((canDelete) => {
+      if (!canDelete) {
+        // The confirmation lightbox never opens in this case, which would otherwise hide the bottom
+        // selection toolbar — clear the selection too, or the toolbar is left showing over an
+        // apparently empty one.
+        this.vm.selectedDocuments = [];
+        safeApply(this.vm);
+        return;
+      }
+      this.lightbox.delete = true;
+      safeApply(this.vm);
+    });
   }
 
   public deleteDocuments(): void {
-    const ids = this.vm.selectedDocuments.map((doc: GoogleDriveDocument) => doc.id);
     this.vm.isDeleting = true;
     safeApply(this.vm);
-    // In shared mode this trashes the owner's file (files().update trashed=true) and 500s when the
-    // caller only has read/comment access — removing a shared item should only revoke our own access.
+    // Trashing a file you don't own (files().update trashed=true) 403s — for one merely shared with you
+    // (read/comment access), "Retirer de ma liste" (revoking just your own access) is used instead.
+    const ownedIds = this.vm.selectedDocuments.filter((doc: GoogleDriveDocument) => doc.ownedByMe).map((doc: GoogleDriveDocument) => doc.id);
+    const notOwnedIds = this.vm.selectedDocuments.filter((doc: GoogleDriveDocument) => !doc.ownedByMe).map((doc: GoogleDriveDocument) => doc.id);
     const isSharedMode = this.vm.isSharedMode();
-    const deleteCall = isSharedMode
-      ? googleDriveService.removeFromSharedList(model.me.userId, ids)
-      : googleDriveService.deleteDocuments(model.me.userId, ids);
-    deleteCall
+    Promise.all([
+      ownedIds.length ? googleDriveService.deleteDocuments(model.me.userId, ownedIds) : Promise.resolve(),
+      notOwnedIds.length ? googleDriveService.removeFromSharedList(model.me.userId, notOwnedIds) : Promise.resolve(),
+    ])
       .then(() => {
         toasts.info(
-          isSharedMode
+          notOwnedIds.length
             ? "google-drive.documents.remove.shared.confirmation"
             : "google-drive.documents.trash.confirmation",
         );
@@ -419,7 +491,9 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
       }
 
       this.vm.selectedDocuments = [];
-      await this.refreshDocuments();
+      // refreshDocuments() assumes a real Drive folder id — in shared mode, parentDocument can be
+      // the "__static__/shared" synthetic node, which isn't a real id and 500s the generic listing.
+      await (this.vm.isSharedMode() ? this.refreshSharedFiles() : this.refreshDocuments());
       this.closeCopyView();
       safeApply(this.vm);
     } catch (err) {

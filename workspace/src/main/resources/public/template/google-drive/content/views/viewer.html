@@ -4,7 +4,8 @@
             <h2><i class="back" ng-click="closeViewFile()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></i></h2>
             <div class="flex-row f-column left-spacing-twice">
                 <h2 class="no-margin">[[viewFile.name]]</h2>
-                <small><span class="no-1d"><i18n>owner</i18n>:&nbsp;</span><strong>[[viewFile.ownerDisplayName]]</strong></small>
+                <!-- No "no-1d" class: see icons.html's own legend for why. -->
+                <small><span><i18n>owner</i18n>:&nbsp;</span><strong>[[viewFile.ownerDisplayName]]</strong></small>
             </div>
         </div>
         <div class="flex-row align-center justify-between">
@@ -28,7 +29,7 @@
         </div>
     </div>
     <div class="file">
-        <img ng-if="viewFile.role === 'image'" class="render" ng-src="[[getFile(viewFile)]]" />
+        <img ng-if="viewFile.role === 'img'" class="render" ng-src="[[getFile(viewFile)]]" />
         <audio ng-if="viewFile.role === 'audio'" controls class="render" ng-src="[[getFile(viewFile)]]"></audio>
         <video ng-if="viewFile.role === 'video'" controls class="render" ng-src="[[getFile(viewFile)]]"></video>
         <pdf-viewer ng-if="viewFile.role === 'pdf'" ng-src="[[getFilePreview(viewFile)]]"></pdf-viewer>

@@ -151,6 +151,8 @@ export class GoogleDriveDocument {
     this.sharedWithMeTime = data.sharedWithMeTime;
     this.permissionRole = data.role;
     this.isDirectlyShared = true;
+    // build() defaults this true (an own, normally-listed document) — a shared-with-me item never is.
+    this.ownedByMe = false;
     this.sharedOwners = data.owners || [];
     const owner: IGoogleDriveSharedOwner = this.sharedOwners[0];
     this.ownerDisplayName = owner ? owner.displayName : this.ownerDisplayName;

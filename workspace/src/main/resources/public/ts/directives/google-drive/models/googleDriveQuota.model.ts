@@ -12,11 +12,18 @@ export class GoogleDriveQuota {
   unlimited!: boolean;
   usedDisplay!: string;
   usedRatio!: number;
+  // Raw byte values, kept alongside the rounded/unit-converted ones above (used/total are Mo or Go,
+  // rounded for display) — needed for anything that must compare an exact file size against remaining
+  // capacity (e.g. a pre-upload quota check) without reintroducing rounding error.
+  usedBytes!: number;
+  totalBytes!: number;
 
   build(data: IGoogleDriveQuotaResponse): GoogleDriveQuota {
     this.unlimited = data.limit === null || data.limit === 0;
     const usedBytes = data.usageInDrive || data.usage || 0;
     const totalBytes = data.limit || 0;
+    this.usedBytes = usedBytes;
+    this.totalBytes = totalBytes;
 
     const usedMo = usedBytes / (1024 * 1024);
     const totalMo = totalBytes / (1024 * 1024);

@@ -80,13 +80,13 @@
                 </button>
             </div>
 
-            <!-- delete document(s) — moves to trash. A file inside your own folder can still belong
-                 to whoever created it (e.g. an editor on a folder you shared) — only its owner can
-                 trash it (Drive 403s "insufficientFilePermissions" otherwise), so hide this when any
-                 selected item isn't yours. -->
+            <!-- delete document(s) — moves to trash. Hidden for a file you don't own (e.g. created by
+                 an editor inside a folder you shared): only the real owner can trash it via the Drive
+                 API, and there's no "Retirer de ma liste" alternative either, since your access to it
+                 is inherited from the parent folder, not a removable direct permission. -->
             <div
                 id="google-drive-toolbar-trash"
-                ng-if="toolbar.isSelectedOwnedByMe(selectedDocuments)"
+                ng-if="toolbar.isSelectedDeletable(selectedDocuments)"
             >
                 <button ng-click="toolbar.toggleDeleteView(true)">
                     <i18n>google-drive.documents.trash</i18n>
@@ -134,14 +134,29 @@
                 <i18n>workspace.download</i18n>
             </button>
 
-            <!-- remove from "shared with me" (revokes own access only) — hidden when any selected
-                 item is read-only, same gating as the per-tile "..." menu. -->
+            <!-- export to the personal workspace — editor-permission shares only (see
+                 isSelectedExportable's own comment). -->
+            <div
+                id="google-drive-toolbar-export"
+                ng-if="toolbar.isSelectedExportable(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleCopyView(true, selectedDocuments)">
+                    <i18n>google-drive.export</i18n>
+                </button>
+            </div>
+
+            <!-- delete/remove — "Placer dans la corbeille" for a file you own even while browsing in
+                 shared mode (e.g. one you created yourself inside a folder someone else shared with
+                 you), otherwise "Retirer de ma liste" (revokes just your own access), hidden when any
+                 selected item is read-only or not a direct top-level share — same gating as the
+                 per-tile "..." menu. -->
             <div
                 id="google-drive-toolbar-remove-shared"
-                ng-if="toolbar.isSelectedRemovableFromSharedList(selectedDocuments)"
+                ng-if="toolbar.isSelectedDeletable(selectedDocuments)"
             >
                 <button ng-click="toolbar.toggleDeleteView(true)">
-                    <i18n>google-drive.documents.remove.shared</i18n>
+                    <i18n ng-if="toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.trash</i18n>
+                    <i18n ng-if="!toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.remove.shared</i18n>
                 </button>
             </div>
         </div>

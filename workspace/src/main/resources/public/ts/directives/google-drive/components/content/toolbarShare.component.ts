@@ -264,7 +264,8 @@ export class ToolbarShareGoogleDriveViewModel {
   }
 
   onRemoveShare(entry: IGoogleDriveShareEntry): void {
-    if (!this.isSingleDocument || !entry.userId) return;
+    // Defensive: the template already hides this action for the owner's own entry.
+    if (!this.isSingleDocument || !entry.userId || entry.role === "owner") return;
     googleDriveService
       .unshareDocument(model.me.userId, this.selectedDocuments[0].id, entry.userId)
       .then(() => {

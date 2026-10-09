@@ -4,14 +4,19 @@
     on-close="toolbar.toggleDeleteView(false)"
 >
     <div class="horizontal-spacing-twice">
+        <!-- Labeled by ownership of the actual selection, not the folder-level mode: a file you own
+             is always "trashed" even if you're browsing it in shared mode (e.g. one you created
+             yourself inside a folder someone else shared with you) — isSelectedDeletable (gating the
+             button that opens this dialog) guarantees every selected item is either owned by you or
+             a valid "remove from shared list" candidate, so this is never ambiguous. -->
         <h2>
-            <i18n ng-if="!isSharedMode()">google-drive.documents.trash</i18n>
-            <i18n ng-if="isSharedMode()">google-drive.documents.remove.shared</i18n>
+            <i18n ng-if="toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.trash</i18n>
+            <i18n ng-if="!toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.remove.shared</i18n>
         </h2>
 
         <div class="row">
-            <i18n ng-if="!isSharedMode()">google-drive.documents.confirm.trash</i18n>
-            <i18n ng-if="isSharedMode()">google-drive.documents.confirm.remove.shared</i18n>
+            <i18n ng-if="toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.confirm.trash</i18n>
+            <i18n ng-if="!toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.confirm.remove.shared</i18n>
             <hr />
         </div>
 
@@ -25,8 +30,8 @@
                 ng-click="toolbar.deleteDocuments()"
             >
                 <i class="google-drive-import-spinner" ng-if="isDeleting" style="margin-right: 6px; vertical-align: middle;"></i>
-                <i18n ng-if="!isSharedMode()">google-drive.documents.confirm.trash.action</i18n>
-                <i18n ng-if="isSharedMode()">google-drive.documents.confirm.remove.shared.action</i18n>
+                <i18n ng-if="toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.confirm.trash.action</i18n>
+                <i18n ng-if="!toolbar.isSelectedOwnedByMe(selectedDocuments)">google-drive.documents.confirm.remove.shared.action</i18n>
             </button>
 
             <button

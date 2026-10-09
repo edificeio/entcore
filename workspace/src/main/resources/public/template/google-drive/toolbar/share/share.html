@@ -20,7 +20,7 @@
                     <em class="low-importance cell">[[translate('google-drive.role.' + entry.role)]]</em>
                 </span>
                 <a
-                    ng-if="entry.userId"
+                    ng-if="entry.userId && entry.role !== 'owner'"
                     ng-click="toolbar.share.onRemoveShare(entry)"
                     class="current-share-remove"
                     aria-label="[[translate('google-drive.unshare')]]"

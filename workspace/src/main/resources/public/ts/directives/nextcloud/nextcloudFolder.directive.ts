@@ -567,18 +567,32 @@ export const workspaceNextcloudFolderController = ng.controller(
           const stale = link.querySelector("." + cls);
           if (stale) stale.remove();
         });
-        if (link.querySelector("." + markerClass)) return;
-        const icon = document.createElement("span");
-        icon.className = markerClass;
-        icon.style.cssText =
-          "display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;flex-shrink:0;color:#8c939e;";
-        icon.innerHTML =
-          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' +
-          viewBox +
-          '" width="16" height="16">' +
-          innerSvg +
-          "</svg>";
-        link.prepend(icon);
+        let icon = link.querySelector("." + markerClass) as HTMLElement | null;
+        if (!icon) {
+          icon = document.createElement("span");
+          icon.className = markerClass;
+          icon.style.cssText =
+            "display:inline-block;width:16px;height:16px;margin-right:6px;vertical-align:middle;flex-shrink:0;color:#8c939e;";
+          icon.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' +
+            viewBox +
+            '" width="16" height="16">' +
+            innerSvg +
+            "</svg>";
+        }
+        // Re-anchored on every call, not just on first insertion: the arrow can go from absent to
+        // fake to real across re-renders, and a theme that lays the row out strictly by DOM order
+        // (rather than overriding the arrow's position via its own CSS) needs the icon to always sit
+        // right after whichever arrow is currently there, never ahead of it. Same fix as
+        // googleDriveFolder.directive.ts's own prependIcon, for the same underlying bug.
+        const existingArrow = link.querySelector("i.arrow");
+        if (existingArrow) {
+          if (icon.previousElementSibling !== existingArrow) {
+            existingArrow.insertAdjacentElement("afterend", icon);
+          }
+        } else if (link.firstElementChild !== icon) {
+          link.prepend(icon);
+        }
       }
 
       function injectNextcloudRootGroupIcon(): void {
