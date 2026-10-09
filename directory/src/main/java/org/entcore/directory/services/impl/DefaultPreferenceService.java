@@ -56,8 +56,9 @@ public class DefaultPreferenceService implements PreferenceService {
                 JsonObject prefs = result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject());
                 prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
                 UserPreferenceDto userPreferenceDto = UserPreferenceDtoMapper.map(prefs);
-                promise.complete(userPreferenceDto);
-                preferenceCacheService.addPreferences(userInfos, session, userPreferenceDto);
+                // Wait for the session update : subsequent requests (e.g. /i18n) read the language from the session.
+                preferenceCacheService.addPreferences(userInfos, session, userPreferenceDto)
+                        .onComplete(ar -> promise.complete(userPreferenceDto));
             } else {
                 promise.fail(result.left().getValue());
             }
