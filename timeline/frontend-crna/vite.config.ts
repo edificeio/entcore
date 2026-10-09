@@ -13,7 +13,7 @@ export default ({ mode }: { mode: string }) => {
       '^/(?=applications-list)',
       '^/(?=assets)',
       '^/(?=theme|locale|i18n|skin)',
-      '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
+      '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra|zendeskGuide)',
       '^/calendar/(?!public/)',
       '/sso/pronote',
       '/mediacentre',
