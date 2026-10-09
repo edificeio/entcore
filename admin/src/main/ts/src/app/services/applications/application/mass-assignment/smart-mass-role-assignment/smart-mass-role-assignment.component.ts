@@ -33,7 +33,7 @@ export class SmartMassRoleAssignmentComponent extends OdeComponent implements On
         this.structure = {id: this.servicesStore.structure.id, name: this.servicesStore.structure.name};
         this.subscriptions.add(this.route.data.subscribe(async (data: {roles: Array<RoleModel>}) => {
             if (data.roles) {
-                let roles: Array<RoleModel> = data.roles.filter(r => r.transverse == false);
+                let roles: Array<RoleModel> = data.roles;
 
                 const session: Session = await SessionModel.getSession();
                 if (session.isADMC()) {
