@@ -11,6 +11,8 @@ import { customizeService } from '~/services';
 import { useCustomization } from './useCustomization';
 import { useI18n } from './useI18n';
 
+const SAVE_SUCCESS_KEY = 'homepage.customize.save.success';
+
 export function useCustomizationForm() {
   const {
     languages,
@@ -50,11 +52,21 @@ export function useCustomizationForm() {
     setSelectedBackground(background);
   }, [background]);
 
-  const resetChanges = useCallback(() => {
-    if (theme) setSelectedFont(theme.skinName);
-    if (currentLanguage) setSelectedLanguage(currentLanguage);
-    if (background) setSelectedBackground(background);
-  }, [theme, currentLanguage, background]);
+  /** Show the success toast once the page has been reloaded after a save. */
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem(SAVE_SUCCESS_KEY)) return;
+      sessionStorage.removeItem(SAVE_SUCCESS_KEY);
+      toast.success(t('homepage.customize.form.save.success'));
+    } catch {
+      // Storage unavailable: the toast is not essential.
+    }
+  }, [toast, t]);
+
+  const isDirty =
+    selectedLanguage !== currentLanguage ||
+    selectedBackground !== background ||
+    selectedFont !== theme?.skinName;
 
   const saveChanges = useCallback(async () => {
     if (!selectedFont || !selectedLanguage || !selectedBackground || !theme) {
@@ -69,10 +81,15 @@ export function useCustomizationForm() {
       await i18n.changeLanguage(selectedLanguage);
       await sessionQuery.refetch();
       await customizeService.saveSkin(theme.themeName, selectedFont);
-      toast.success(t('homepage.customize.form.save.success'));
+      try {
+        sessionStorage.setItem(SAVE_SUCCESS_KEY, 'true');
+      } catch {
+        // Storage unavailable: the toast is not essential.
+      }
+      // Reload to apply the new preferences (skin, language, background) everywhere.
+      window.location.reload();
     } catch {
       toast.error(t('homepage.customize.form.save.error'));
-    } finally {
       setIsSaving(false);
     }
   }, [
@@ -98,7 +115,7 @@ export function useCustomizationForm() {
     fonts,
     selectedFont,
     handleFontChange: (font: string) => setSelectedFont(font),
-    resetChanges,
+    isDirty,
     saveChanges,
     isSaving,
   };

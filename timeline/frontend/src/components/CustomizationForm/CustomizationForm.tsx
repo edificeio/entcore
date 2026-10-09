@@ -9,7 +9,7 @@ import './CustomizationForm.css';
 type CustomizationFormProps = {
   form: Omit<
     ReturnType<typeof useCustomizationForm>,
-    'resetChanges' | 'saveChanges' | 'isSaving'
+    'isDirty' | 'saveChanges' | 'isSaving'
   >;
 };
 
