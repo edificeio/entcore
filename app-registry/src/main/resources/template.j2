@@ -77,6 +77,15 @@
         }
       },
     {% endif %}
+    {% if esidocClientId is defined %}
+      "esidoc-config": {
+        "auth-url": "{{ esidocAuthUrl | default('https://api.esidoc.fr/auth/token') }}",
+        "api-url": "{{ esidocApiUrl | default('https://api-utilisateurs.esidoc.fr') }}",
+        "client-id": "{{ esidocClientId }}",
+        "client-secret": "{{ esidoc_pf_clientSecret }}",
+        "loans-cache-ttl": {{ esidocLoansCacheTtl | default(300) }}
+      },
+    {% endif %}
     {% if libraryEnabled is defined %}
       "library-enabled": true,
       "library-api-url": "{{ libraryUrl }}",

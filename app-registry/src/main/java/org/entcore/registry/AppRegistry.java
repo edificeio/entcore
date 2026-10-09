@@ -68,7 +68,11 @@ public class AppRegistry extends BaseServer {
 		if(screenTimeEnabled != null) {
       futures.add(addController(new ScreenTimeController()));
 		}
-		
+		JsonObject esidocConf = config.getJsonObject("esidoc-config");
+		if (esidocConf != null) {
+      futures.add(addController(new EsidocController()));
+		}
+
 		JsonObject ptitObservatoireConf = config.getJsonObject("ptit-observatoire-widget-config");
 		if (ptitObservatoireConf != null) {
 			addController(new PtitObservatoireController());
