@@ -45,5 +45,5 @@
 	"ENTEleveQualitePersRelEleve2" : { "attribute" : "deprecated", "type" : "string" },
 	"ENTEleveEnseignementsEtablissementsAccueil" : { "attribute" : "deprecated", "type" : "array-string" },
 	"ENTEleveClassesOrgaPedagoEtabDate" : { "attribute" : "classesMembershipPeriod", "type" : "array-string" },
-	"ENTEleveGroupesOrgaPedagoEtabDate" : { "attribute" : "groupsMembershipPeriod", "type" : "array-string" }
+	"ENTEleveGroupesOrgaPedagoEtabDate" : { "attribute" : "groupsMembershipPeriod", "type" : "array-orga-pedago-group", "prefix" : true }
 }
