@@ -95,7 +95,7 @@ Format JSON validé dans l'US1 :
 ```
 
 ### Theme assets
-- Logo : `/assets/themes/${childTheme}/img/logo.png`
+- Logo : `/assets/themes/${childTheme}/img/logo-wayf.png`
 - Background : `/assets/themes/${childTheme}/img/background.png`
 - `childTheme` injecté par le backend dans `<script id="saml-wayf">` (Mustache)
 

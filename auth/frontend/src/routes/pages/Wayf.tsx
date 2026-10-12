@@ -24,7 +24,7 @@ export const WayfPage = () => {
   const [breadcrumb, setBreadcrumb] = useState<WayfParentProvider[]>([]);
   const dirRef = useRef<1 | -1>(1);
 
-  const { providers, partners } = useWayfConfig();
+  const { providers, partners, edificeLogoClickable = true } = useWayfConfig();
   const welcomeState = useWelcomeMessage();
 
   useMobileLinkRedirect();
@@ -83,7 +83,7 @@ export const WayfPage = () => {
 
   const backgroundStyle = childTheme
     ? {
-        backgroundImage: `url(/assets/themes/${childTheme}/img/background.png), var(--wayf-editorial-fallback)`,
+        backgroundImage: `url(/assets/themes/${childTheme}/img/background-wayf.png), var(--wayf-editorial-fallback)`,
       }
     : undefined;
 
@@ -102,7 +102,7 @@ export const WayfPage = () => {
           {childTheme && (
             <img
               className="wayf-logo"
-              src={`/assets/themes/${childTheme}/img/logo.png`}
+              src={`/assets/themes/${childTheme}/img/logo-wayf.png`}
               alt="logo"
             />
           )}
@@ -110,7 +110,9 @@ export const WayfPage = () => {
 
         {/* Espace authentification */}
         <div className="wayf-selection__auth">
-          <h1 className="wayf-title" data-testid="wayf-label-choice">{t('wayf.choice')}</h1>
+          <h1 className="wayf-title" data-testid="wayf-label-choice">
+            {t('wayf.choice')}
+          </h1>
           <div className="wayf-view-container">
             {transitions((style, item) => (
               <animated.div style={style} className="wayf-view-slide">
@@ -148,18 +150,28 @@ export const WayfPage = () => {
               <IconExternalLink />
             </a>
           </div>
-          <a
-            href="https://edifice.io/"
-            target="_blank"
-            className="wayf-edifice-badge"
-            data-testid="wayf-link-edifice"
-          >
-            <img
-              src={edificeLogoUrl}
-              alt="Édifice"
-              className="wayf-edifice-badge__logo"
-            />
-          </a>
+          {edificeLogoClickable ? (
+            <a
+              href="https://edifice.io/"
+              target="_blank"
+              className="wayf-edifice-badge"
+              data-testid="wayf-link-edifice"
+            >
+              <img
+                src={edificeLogoUrl}
+                alt="Édifice"
+                className="wayf-edifice-badge__logo"
+              />
+            </a>
+          ) : (
+            <div className="wayf-edifice-badge" data-testid="wayf-link-edifice">
+              <img
+                src={edificeLogoUrl}
+                alt="Édifice"
+                className="wayf-edifice-badge__logo"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

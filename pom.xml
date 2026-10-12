@@ -53,15 +53,15 @@
     </modules>
 
     <properties>
-        <revision>6.17-SNAPSHOT</revision>
-        <entCoreLibsVersion>6.16-SNAPSHOT</entCoreLibsVersion>
+        <revision>6.17-develop-enabling-SNAPSHOT</revision>
+        <entCoreLibsVersion>6.16-develop-enabling-SNAPSHOT</entCoreLibsVersion>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
         <modSmsProxyVersion>2.2-SNAPSHOT</modSmsProxyVersion>
-        <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
         <imageResizerVersion>3.3-SNAPSHOT</imageResizerVersion>
+        <webUtilsVersion>3.4-develop-enabling-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
@@ -77,6 +77,17 @@
         <postgres-driver.version>42.2.26</postgres-driver.version>
         <hikari.version>2.4.2</hikari.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-codegen</artifactId>
+                <version>${vertxVersion}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -208,6 +219,38 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-compile</id>
+                            <configuration>
+                                <useIncrementalCompilation>false</useIncrementalCompilation>
+
+                                <annotationProcessors>
+                                    <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                                    <annotationProcessor>org.entcore.common.processor.ControllerAnnotationProcessor</annotationProcessor>
+                                </annotationProcessors>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>io.vertx</groupId><artifactId>vertx-codegen</artifactId><version>${vertxVersion}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>org.entcore</groupId><artifactId>common</artifactId><version>${entCoreLibsVersion}</version>
+                                    </path>
+                                </annotationProcessorPaths>
+                                <compilerArgs>
+                                    <arg>-s</arg>
+                                    <arg>${project.build.directory}/generated-sources/annotations</arg>
+                                </compilerArgs>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin> <!-- Plugin enabling parent pom version to be resolved when building any submodule alone -->
                 <groupId>org.codehaus.mojo</groupId>
