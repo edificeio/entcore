@@ -80,11 +80,13 @@ public class DefaultUserService implements UserService {
 	private Logger logger = LoggerFactory.getLogger(DefaultUserService.class);
 
 
-	private static final List<Pair<ClassIncludeField, String>> NEO4J_STRUCTURE_INCLUDE_FIELD_MAPPING = newArrayList(
-			of(ClassIncludeField.STRUCTURE_ACADEMY, "academy"),
-			of(ClassIncludeField.STRUCTURE_ADDRESS, "address"),
-			of(ClassIncludeField.STRUCTURE_CITY, "city"),
-			of(ClassIncludeField.STRUCTURE_ZIP_CODE, "zipCode")
+
+	private static final List<QueryFieldBaseFieldMapping> NEO4J_STRUCTURE_INCLUDE_FIELD_MAPPING = newArrayList(
+			new QueryFieldBaseFieldMapping(ClassIncludeField.STRUCTURE_ACADEMY, "academy"),
+			new QueryFieldBaseFieldMapping(ClassIncludeField.STRUCTURE_ADDRESS, "address"),
+			new QueryFieldBaseFieldMapping(ClassIncludeField.STRUCTURE_CITY, "city"),
+			new QueryFieldBaseFieldMapping(ClassIncludeField.STRUCTURE_ZIP_CODE, "zipCode"),
+			new QueryFieldBaseFieldMapping(ClassIncludeField.STRUCTURE_UAI, "UAI", "uai")
 	);
 
 
@@ -1294,9 +1296,8 @@ public class DefaultUserService implements UserService {
 		}
 		final StringBuffer sbuffer = new StringBuffer();
 		 NEO4J_STRUCTURE_INCLUDE_FIELD_MAPPING.stream()
-			 .filter(e -> fields.contains(e.getKey()))
-			 .map(Pair::getValue)
-			 .forEach(field -> sbuffer.append(", ").append(field).append(": s.").append(field));
+			 .filter(e -> fields.contains(e.queryFieldName))
+			 .forEach(field -> sbuffer.append(", ").append(field.dbResultName).append(": s.").append(field.dbFieldName));
 		return sbuffer.toString();
 	}
 
@@ -1740,5 +1741,22 @@ public class DefaultUserService implements UserService {
 		}));
 		
 		return promise.future();
+	}
+
+
+	private static class QueryFieldBaseFieldMapping {
+		private final ClassIncludeField queryFieldName;
+		private final String dbFieldName;
+		private final String dbResultName;
+
+		private QueryFieldBaseFieldMapping(ClassIncludeField queryFieldName, String dbFieldName, String dbResultName) {
+			this.queryFieldName = queryFieldName;
+			this.dbFieldName = dbFieldName;
+			this.dbResultName = dbResultName;
+		}
+
+		private QueryFieldBaseFieldMapping(ClassIncludeField queryFieldName, String fieldName) {
+			this(queryFieldName, fieldName, fieldName);
+		}
 	}
 }
