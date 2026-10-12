@@ -37,7 +37,7 @@ export class SmartApplicationComponent extends OdeComponent implements OnInit, O
             if (data.roles) {
                 this.servicesStore.application.roles = data.roles;
                 this.servicesStore.application.roles = filterRolesByDistributions(
-                    this.servicesStore.application.roles.filter(r => r.transverse == false),
+                    this.servicesStore.application.roles,
                     this.servicesStore.structure.distributions);
             }
         }));
@@ -63,7 +63,7 @@ export class SmartApplicationComponent extends OdeComponent implements OnInit, O
     public onMassAssignment(): void {
         this.servicesStore.application.syncRoles(this.servicesStore.structure.id)
             .then(async () => {
-                let roles: Array<RoleModel> = this.servicesStore.application.roles.filter(r => r.transverse == false);
+                let roles: Array<RoleModel> = this.servicesStore.application.roles;
 
                 const session: Session = await SessionModel.getSession();
                 if (session.isADMC()) {
