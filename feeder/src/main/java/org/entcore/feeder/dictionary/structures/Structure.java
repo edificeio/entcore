@@ -401,7 +401,7 @@ public class Structure {
 		return externalId;
 	}
 
-	public void transition(boolean onlyRemoveShare, final Handler<Message<JsonObject>> handler) {
+	public void transition(boolean onlyRemoveShare, boolean purgeCsvPositions, final Handler<Message<JsonObject>> handler) {
 		final TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
 		String query =
 				"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
@@ -427,7 +427,9 @@ public class Structure {
 									}
 									transitionClassGroup();
 									transitionReattachUsers();
-									transitionPositions();
+									if (purgeCsvPositions) {
+										transitionPositions();
+									}
 								}
 								handler.handle(event);
 							} else {

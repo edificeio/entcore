@@ -474,7 +474,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
             case "manual-update-group-linked-positions":
                 manual.updateManualGroupsByUserPositions(message);
                 break;
-			case "transition" : launchTransition(message, null);
+			case "transition" : launchTransition(message, false, null);
 				break;
 			case "import" : launchImport(message);
 				break;
@@ -768,12 +768,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 	}
 
-	private void launchTransition(final Message<JsonObject> message, final Handler<Message<JsonObject>> handler) {
+	private void launchTransition(final Message<JsonObject> message, final boolean purgeCsvPositions, final Handler<Message<JsonObject>> handler) {
 		if (GraphData.isReady()) {
 			final String structureExternalId = message.body().getString("structureExternalId");
 			Transition transition = new Transition(vertx,
 					getOrElse(config.getLong("delayBetweenStructure"), 5000l),
-					getOrElse(message.body().getBoolean("onlyRemoveShare"), false));
+					getOrElse(message.body().getBoolean("onlyRemoveShare"), false),
+					purgeCsvPositions);
 			transition.launch(structureExternalId, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> m) {
@@ -823,7 +824,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 		if (message.body().getBoolean("transition", false)) {
 			logger.error(e -> "START transition");
-			launchTransition(message, new Handler<Message<JsonObject>>() {
+			launchTransition(message, "CSV".equals(source), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {

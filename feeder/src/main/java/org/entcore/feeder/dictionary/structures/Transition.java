@@ -44,11 +44,13 @@ public class Transition {
 	private final Vertx vertx;
 	private final long delayBetweenStructure;
 	private final boolean onlyRemoveShare;
+	private final boolean purgeCsvPositions;
 
-	public Transition(Vertx vertx, long delayBetweenStructure, boolean onlyRemoveShare) {
+	public Transition(Vertx vertx, long delayBetweenStructure, boolean onlyRemoveShare, boolean purgeCsvPositions) {
 		this.vertx = vertx;
 		this.delayBetweenStructure = delayBetweenStructure;
 		this.onlyRemoveShare = onlyRemoveShare;
+		this.purgeCsvPositions = purgeCsvPositions;
 	}
 
 	public void launch(final String structureExternalId, final Handler<Message<JsonObject>> handler) {
@@ -90,7 +92,7 @@ public class Transition {
 			}
 			return;
 		}
-		structure.transition(onlyRemoveShare, commitHandler(handler, null, structure.getStruct()));
+		structure.transition(onlyRemoveShare, purgeCsvPositions, commitHandler(handler, null, structure.getStruct()));
 	}
 
 	private void transitionStructures(final Handler<Message<JsonObject>> handler) {
@@ -118,7 +120,7 @@ public class Transition {
 							}
 							return;
 						}
-						s.transition(onlyRemoveShare, commitHandler(handler, handlers[j+1], s.getStruct()));
+						s.transition(onlyRemoveShare, purgeCsvPositions, commitHandler(handler, handlers[j+1], s.getStruct()));
 					} else {
 						TransactionManager.getInstance().rollback(GRAPH_DATA_UPDATE);
 						log.error("Transition error");
