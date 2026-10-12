@@ -78,6 +78,12 @@ public final class JsonUtil {
 						res = value;
 					}
 					break;
+				case "orga-pedago-group":
+					res = OrgaPedagoGroups.toStudentGroup(value);
+					break;
+				case "orga-pedago-group-fieldOfStudy":
+					res = OrgaPedagoGroups.toTeacherGroup(value, prefix);
+					break;
 				case "structure-name" :
 					if (value != null) {
 						res = value.replaceAll("\\$", "-");

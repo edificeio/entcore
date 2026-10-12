@@ -27,6 +27,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.position.UserPosition;
 import org.entcore.common.user.position.UserPositionSource;
 import org.entcore.feeder.dictionary.structures.ImporterStructure;
+import org.entcore.feeder.utils.OrgaPedagoGroups;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -61,6 +62,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
+		OrgaPedagoGroups.applyTo(object, OrgaPedagoGroups.TEACHER_GROUP_SEGMENTS);
 		List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<>();
 		createGroups(object.getJsonArray("groups"), c, null);
 		createClasses(new JsonArray(c));

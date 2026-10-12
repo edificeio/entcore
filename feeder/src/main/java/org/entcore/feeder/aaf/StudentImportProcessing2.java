@@ -20,6 +20,7 @@
 package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
+import org.entcore.feeder.utils.OrgaPedagoGroups;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -45,6 +46,7 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
+		OrgaPedagoGroups.applyTo(object, OrgaPedagoGroups.STUDENT_GROUP_SEGMENTS);
 		String[][] classes = createClasses(object.getJsonArray("classes"));
 		String[][] groups = createGroups(object.getJsonArray("groups"));
 		JsonArray relative = parseRelativeField(object.getJsonArray("relative"));

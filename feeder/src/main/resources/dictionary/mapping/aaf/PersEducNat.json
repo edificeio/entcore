@@ -32,5 +32,5 @@
 	"ENTPersonFonctionsDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
 	"ENTPersonCategorieEnseignantDate" : { "attribute" : "deprecated", "type" : "string" },
 	"ENTAuxEnsClassesMatieresOrgaPedagoEtabDate" : { "attribute" : "classesMembershipPeriod", "type" : "array-string" },
-	"ENTAuxEnsGroupesMatieresOrgaPedagoEtabDate" : { "attribute" : "groupsMembershipPeriod", "type" : "array-string" }
+	"ENTAuxEnsGroupesMatieresOrgaPedagoEtabDate" : { "attribute" : "groupsMembershipPeriod", "type" : "array-orga-pedago-group-fieldOfStudy", "prefix" : true }
 }

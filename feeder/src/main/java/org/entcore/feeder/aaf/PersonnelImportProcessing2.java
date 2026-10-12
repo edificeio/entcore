@@ -24,6 +24,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.feeder.utils.OrgaPedagoGroups;
 
 import java.util.*;
 
@@ -55,6 +56,7 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
+		OrgaPedagoGroups.applyTo(object, OrgaPedagoGroups.TEACHER_GROUP_SEGMENTS);
 		List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<String>();
 		final List<String[]> groups = new ArrayList<>();
 		createGroups(object.getJsonArray("groups"), c, groups);
