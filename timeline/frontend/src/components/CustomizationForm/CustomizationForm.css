@@ -12,3 +12,10 @@
   font-weight: var(--font-weight-bold);
   line-height: var(--primitive-font-lineheight-xs);
 }
+.customization-form-background-preview {
+  display: block;
+  --background-size: 180%;
+  --background-attachment: scroll;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+}

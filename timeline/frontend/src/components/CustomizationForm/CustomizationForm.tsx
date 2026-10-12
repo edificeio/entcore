@@ -1,8 +1,7 @@
-import { Flex } from '@edifice.io/react';
-import { useCustomizationForm } from '~/hooks/useCustomizationForm';
-import { useI18n } from '~/hooks/useI18n';
+import { Flex, RadioTile } from '@edifice.io/react';
 import corsica from '../../assets/Corsica.png';
-import { ChoiceButton } from './ChoiceButton';
+import { useCustomizationForm } from '../../hooks/useCustomizationForm';
+import { useI18n } from '../../hooks/useI18n';
 import { ChoiceSkeleton } from './ChoiceSkeleton';
 import './CustomizationForm.css';
 
@@ -60,15 +59,12 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         <Flex gap="8" wrap="wrap">
           {fonts && selectedFont ? (
             fonts.map(({ _id, displayName }) => (
-              <ChoiceButton
+              <RadioTile
                 key={_id}
-                choice={{
-                  variant: 'font',
-                  _id,
-                  label: common_t(displayName),
-                  onClick: handleFontChange,
-                }}
-                isSelected={_id === selectedFont}
+                label={common_t(displayName)}
+                value={_id}
+                checked={_id === selectedFont}
+                onClick={() => handleFontChange(_id)}
               />
             ))
           ) : (
@@ -89,15 +85,20 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         <Flex gap="12" wrap="wrap">
           {backgrounds ? (
             backgrounds.map((background) => (
-              <ChoiceButton
+              <RadioTile
                 key={background}
-                isSelected={background === selectedBackground}
-                choice={{
-                  variant: 'background',
-                  background,
-                  label: background,
-                  onClick: handleBackgroundChange,
-                }}
+                value={background}
+                checked={background === selectedBackground}
+                image={
+                  <span
+                    data-background={background}
+                    className="customization-form-background-preview"
+                    aria-hidden="true"
+                  />
+                }
+                hideLabel={true}
+                label={background}
+                onClick={() => handleBackgroundChange(background)}
               />
             ))
           ) : (
@@ -118,16 +119,14 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         <Flex gap="12" wrap="wrap">
           {languages ? (
             languages.map((lang) => (
-              <ChoiceButton
+              <RadioTile
                 key={lang}
-                isSelected={lang === selectedLanguage}
-                choice={{
-                  variant: 'language',
-                  lang,
-                  label: t(`language.${lang}`),
-                  imgSrc: getFlagUrl(lang),
-                  onClick: handleLanguageChange,
-                }}
+                checked={lang === selectedLanguage}
+                value={lang}
+                label={t(`language.${lang}`)}
+                image={getFlagUrl(lang)}
+                orientation="vertical"
+                onClick={() => handleLanguageChange(lang)}
               />
             ))
           ) : (
