@@ -1,6 +1,6 @@
 {
   "name": "admin-app",
-  "version": "6.17-SNAPSHOT",
+  "version": "6.17.0-%branch%.%generateVersion%",
   "scripts": {
     "ng": "ng",
     "dev": "ng serve --host 0.0.0.0",
@@ -29,7 +29,7 @@
     "chardet": "^1.4.0",
     "dayjs": "^1.11.13",
     "entcore-generic-icons": "https://github.com/opendigitaleducation/generic-icons.git",
-    "entcore-toolkit": "dev",
+    "entcore-toolkit": "develop-enabling",
     "flatpickr": "2.6.1",
     "font-awesome": "4.7.0",
     "jquery": "^3.4.1",
