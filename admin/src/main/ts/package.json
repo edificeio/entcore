@@ -29,7 +29,7 @@
     "chardet": "^1.4.0",
     "dayjs": "^1.11.13",
     "entcore-generic-icons": "https://github.com/opendigitaleducation/generic-icons.git",
-    "entcore-toolkit": "dev",
+    "entcore-toolkit": "develop-enabling",
     "flatpickr": "2.6.1",
     "font-awesome": "4.7.0",
     "jquery": "^3.4.1",
