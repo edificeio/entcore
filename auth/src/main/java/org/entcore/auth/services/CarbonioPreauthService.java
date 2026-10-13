@@ -166,7 +166,7 @@ public class CarbonioPreauthService {
 					return Future.failedFuture("Invalid Carbonio unread response: " + body);
 				}
 			case 404:
-				log.debug("No Carbonio account for user " + userId);
+				log.warn("Carbonio unread: 404 from " + unreadUrl + " for user " + userId + ", counted as no account: " + body);
 				return Future.succeededFuture(0);
 			default:
 				return Future.failedFuture("Unexpected Carbonio unread response status " + response.statusCode() + ": " + body);
