@@ -23,8 +23,9 @@ public class SearchVisibleBusDTO {
     private Map<String, Object> additionnalParams;
     // fields from the former SearchVisibleRequestDTO parent
     private String search;
-    private boolean itSelf;
-    private boolean myGroup;
+    // lowercase names match the keys sent on the bus by UserUtils ("itself", "mygroup")
+    private boolean itself;
+    private boolean mygroup;
     private boolean profile = true;
 
     public SearchVisibleBusDTO() {}
@@ -76,11 +77,11 @@ public class SearchVisibleBusDTO {
     public String getSearch() { return search; }
     public SearchVisibleBusDTO setSearch(String search) { this.search = search; return this; }
 
-    public boolean isItSelf() { return itSelf; }
-    public SearchVisibleBusDTO setItSelf(boolean itSelf) { this.itSelf = itSelf; return this; }
+    public boolean isItself() { return itself; }
+    public SearchVisibleBusDTO setItself(boolean itself) { this.itself = itself; return this; }
 
-    public boolean isMyGroup() { return myGroup; }
-    public SearchVisibleBusDTO setMyGroup(boolean myGroup) { this.myGroup = myGroup; return this; }
+    public boolean isMygroup() { return mygroup; }
+    public SearchVisibleBusDTO setMygroup(boolean mygroup) { this.mygroup = mygroup; return this; }
 
     /** Defaults to {@code true} when absent from the JSON payload. */
     public boolean isProfile() { return profile; }
