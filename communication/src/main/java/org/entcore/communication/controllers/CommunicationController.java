@@ -445,10 +445,10 @@ public class CommunicationController extends BaseController {
 		switch (searchQuery.getAction()) {
 			case "visibleUsers":
 				log.warn("DEPRECATED: This method visibleUsers should not be used anymore " + searchQuery.getCustomReturn());
-				boolean myGroup = communicationService instanceof DefaultCommunicationService || searchQuery.isMyGroup();
+				boolean myGroup = communicationService instanceof DefaultCommunicationService || searchQuery.isMygroup();
 				//FIXME: we can't define a DTO  until we remove customeReturn from query
 				future = communicationService.visibleUsers(userId, schoolId, expectedTypes,
-						searchQuery.isItSelf(), myGroup, searchQuery.isProfile(),
+						searchQuery.isItself(), myGroup, searchQuery.isProfile(),
 						searchQuery.getPreFilter(), searchQuery.getCustomReturn(),
 						new JsonObject(searchQuery.getAdditionnalParams()),
 						searchQuery.getUserProfile(), searchQuery.isReverseUnion());
