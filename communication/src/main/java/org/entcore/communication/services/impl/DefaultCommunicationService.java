@@ -183,6 +183,15 @@ public class DefaultCommunicationService implements CommunicationService {
 				" visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName," +
 				" HEAD(visibles.profiles) as profile, visibles.structureName as structureName, visibles.filter as groupProfile, visibles.lastName as lastName "
 				: "";
+		// Group details are only read in the group branches : reading labels on every visible user would cost about one db hit
+		// per label and per user. groupType is the most specific group label (ProfileGroup, ManualGroup...).
+		final String groupExtraField = visibleIdentityRequest.isPublicDetails() ?
+				" , HEAD(FILTER(l IN labels(visibles) WHERE l <> 'Group' AND l ENDS WITH 'Group')) as groupType, " +
+				" visibles.subType as subType, visibles.nbUsers as nbUsers "
+				: "";
+		final String userExtraField = visibleIdentityRequest.isPublicDetails() ?
+				" , null as groupType, null as subType, null as nbUsers "
+				: "";
 		String actionFilter = visibleIdentityRequest.getWorkflowRightFilter() != null ?
 				" MATCH visibles-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action) WHERE has(a.name) AND a.name={action} "
 				: "" ;
@@ -223,7 +232,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						userProfileFilter +
 						" WITH DISTINCT m as visibles " +
 						actionFilter +
-						"return DISTINCT visibles.id as id, true as isUser \n" + extraField;
+						"return DISTINCT visibles.id as id, true as isUser \n" + extraField + userExtraField;
 		// u->G->G2<-0..1DEPENDS-G3 => visible group list G + G2 + G3
 		final String communicatingGroupsBranch =
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group) \n" +
@@ -245,7 +254,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden ") +
 						expectIdVisiblesFilter +
 						groupProfileFilter +
-						" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField;
+						" return DISTINCT visibles.id as `id`, false as isUser \n" + extraField + groupExtraField;
 		// u->u2 => direct communication
 		final String directBranch =
 						"MATCH (n:User)-[:COMMUNIQUE_DIRECT]->m \n" +
@@ -262,7 +271,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						userProfileFilter +
 						"WITH DISTINCT m as visibles " +
 						actionFilter +
-						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField;
+						"RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField + userExtraField;
 		// u->G<-[DEPENDS]-G2 group include into another group list G2
 		final String includedGroupsBranch =
 						"MATCH (n:User { id: {userId} })-[:IN]->(g:Group)<-[:DEPENDS]-(visibles:Group) \n" +
@@ -272,7 +281,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						expectIdVisiblesFilter +
 						(includeHiddenCommunityGroups ? " " : " AND NOT visibles:Hidden " ) +
 						groupProfileFilter +
-						"return DISTINCT visibles.id as id, false as isUser " + extraField;
+						"return DISTINCT visibles.id as id, false as isUser " + extraField + groupExtraField;
 		String query = groupsOnly
 				? communicatingGroupsBranch + "UNION \n" + includedGroupsBranch
 				: usersOfGroupsBranch + "UNION \n" + communicatingGroupsBranch + "UNION \n" +
@@ -280,12 +289,13 @@ public class DefaultCommunicationService implements CommunicationService {
 		JsonObject queryParams = new JsonObject()
 				.put("userId", userId)
 				.put("search", visibleIdentityRequest.getSearch());
-		if (!groupsOnly && includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
-			//adding extended vision when replying to a message for example
+		if (includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
+			// Identities forced into the response (already shared, already recipients...) : no search, no visibility
+			// filter, users and groups alike, except that GROUPS only keeps the groups
 			query += " UNION " +
-					"  MATCH(visibles:User) WHERE visibles.id IN {includeVisibleIds} " +
-					searchQuery +
-					"  RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField;
+					"  MATCH (visibles) WHERE visibles.id IN {includeVisibleIds} " +
+					(groupsOnly ? "AND visibles:Group " : "AND (visibles:User OR visibles:Group) ") +
+					"  RETURN DISTINCT visibles.id as id, visibles:User as isUser \n" + extraField + groupExtraField;
 			queryParams.put("includeVisibleIds", visibleIdentityRequest.getIncludedVisibleIds());
 		}
 		if (restrictToExpectedIds) {
@@ -359,10 +369,9 @@ public class DefaultCommunicationService implements CommunicationService {
 				.put("userId", userId)
 				.put("search", visibleIdentityRequest.getSearch());
 		if (includeVisibleIds != null && !includeVisibleIds.isEmpty()) {
-			//adding extended vision when replying to a message for example
+			// Users forced into the response (already shared, already recipients...) : no search, no visibility filter
 			query += " UNION " +
 					"  MATCH(visibles:User) WHERE visibles.id IN {includeVisibleIds} " +
-					searchQuery +
 					"  RETURN DISTINCT visibles.id as id, true as isUser \n" + extraField;
 			queryParams.put("includeVisibleIds", visibleIdentityRequest.getIncludedVisibleIds());
 		}
