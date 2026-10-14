@@ -1,4 +1,9 @@
-import { Background, useToast, useUserPreferences } from '@edifice.io/react';
+import {
+  Background,
+  useToast,
+  useUiOverride,
+  useUserPreferences,
+} from '@edifice.io/react';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { customizeQueryOptions } from '~/services/queries/customize';
@@ -21,9 +26,20 @@ export const useCustomization = () => {
   const { data: fonts, isError: isFontsError } = useQuery(
     customizeQueryOptions.getFonts(),
   );
-  const { data: backgrounds, isError: isBackgroundsError } = useQuery(
-    customizeQueryOptions.getBackgrounds(),
-  );
+  // theme-conf variants are untyped strings: the platform config is trusted to set a Background.
+  const platformBackground = useUiOverride('background.default')?.variant as
+    | Background
+    | undefined;
+  const { data: backgrounds, isError: isBackgroundsError } = useQuery({
+    ...customizeQueryOptions.getBackgrounds(),
+    // Without a saved preference, the homepage shows the platform default: its tile must match.
+    select: (list) =>
+      platformBackground
+        ? list.map((background) =>
+            background === 'default' ? platformBackground : background,
+          )
+        : list,
+  });
 
   /** Display error toasts. */
   useEffect(() => {
