@@ -53,7 +53,6 @@ import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.dto.UserPreferenceDto;
-import org.entcore.common.user.dto.VisibleIdentityRequest;
 import org.entcore.common.user.position.UserPosition;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.directory.services.ClassService;
@@ -64,6 +63,7 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -262,16 +262,16 @@ public class UserBookController extends BaseController {
 		String groupId = request.params().get("groupId");
 		UserUtils.getAuthenticatedUserInfos(eb, request)
 				.onSuccess( ui -> {
-					VisibleIdentityRequest request1 = new VisibleIdentityRequest()
-							.setExpectedVisiblesIds(Lists.newArrayList(groupId))
-							.setUserId(ui.getUserId())
-							.setPublicDetails(true)
-							.setItSelf(true)
-							.setVisibleIdFilter(VisibleIdentityRequest.VisibleIdFilter.USERS_OF_GROUPS);
-
-					UserUtils.findVisibleIdentities(eb, request1)
-							.onSuccess( visibles -> {
-								List<JsonObject> users = visibles.getList();
+					// The group is a set : its visible members, whatever the path they are visible through
+					UserUtils.findVisibleMembersOfGroups(eb, ui.getUserId(), Lists.newArrayList(groupId), true)
+							.onSuccess( members -> {
+								List<JsonObject> users = members.stream()
+										.map(JsonObject.class::cast)
+										.collect(Collectors.toList());
+								users.forEach(member -> {
+									final JsonArray profiles = member.getJsonArray("profiles", new JsonArray());
+									member.put("profile", profiles.isEmpty() ? null : profiles.getString(0));
+								});
 								toCommunityUsers(users);
 								renderJson(request, new JsonArray(users));
 							}).onFailure(t -> {
