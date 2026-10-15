@@ -812,6 +812,10 @@ export const workspaceGoogleDriveContentController = ng.controller(
       };
 
       $scope.onOpenContent = function (document: GoogleDriveDocument): void {
+        // A trashed folder is only restorable/deletable as a whole now (see listTrash's backend
+        // filtering) — navigating into it would show its (also trashed) contents as if browsable,
+        // which they're not: nothing in there can be acted on individually.
+        if (document.isFolder && $scope.isTrashMode()) return;
         if (document.isFolder) {
           googleDriveEventService.sendOpenFolderDocument(document);
           $scope.selectedDocuments = [];
