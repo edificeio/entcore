@@ -407,6 +407,38 @@ public class MergeUsersINETest {
     }
 
     /**
+     * <h2>Goal</h2>
+     * <p>Test that when we merge 2 users with the same INE, the surviving user takes the old user's email
+     * and emailSearchField along with its login and password, so that the email search stays consistent
+     * with the displayed email.</p>
+     */
+    @Test
+    public void testMergeSameINECopiesOldEmailAndEmailSearchField(final TestContext testContext) {
+        final String ine = "my-duplicated-ine-10";
+        final Async async = testContext.async();
+        prepareSameINEUsersWithDifferentEmails(ine).onComplete(testContext.asyncAssertSuccess(h -> {
+            duplicateUsers.mergeSameINE(true, testContext.asyncAssertSuccess(e -> {
+                neo4j.execute(
+                        "MATCH (u:User{ine:{ine}, tag: 'unitTest10'}) return u.id as id, u.email as email, u.emailSearchField as emailSearchField",
+                        new JsonObject().put("ine", ine),
+                        result -> {
+                            if ("ok".equals(result.body().getString("status"))) {
+                                final JsonArray users = result.body().getJsonArray("result");
+                                testContext.assertEquals(1, users.size(), "There should be only one user left");
+                                final JsonObject principalUser = users.getJsonObject(0);
+                                testContext.assertEquals("userToRemove10", principalUser.getString("id"), "The remaining user is not the expected one. Have source priorities changed ?");
+                                testContext.assertEquals("Old.User@Example.com", principalUser.getString("email"), "The old user's email should have been copied");
+                                testContext.assertEquals("old.user@example.com", principalUser.getString("emailSearchField"), "The old user's emailSearchField should have been copied");
+                                async.complete();
+                            } else {
+                                testContext.fail("Could not fetch users with the same ine");
+                            }
+                        });
+            }));
+        }));
+    }
+
+    /**
      * Creates 2 users as follows :
      * <ol>
      *     <li>(:User{id: 'userToKeep', source: 'AAF', ine: ine, activationCode: 'toto'})-[:USERBOOK]->(:UserBook{tag: 'unitTest', userid: 'userToKeep'})</li>
@@ -660,6 +692,36 @@ public class MergeUsersINETest {
                     "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-b', owner: 'principal-quiet-hours-b', quietHours: 'quiet-hours-principal-b', timezone: 'Europe/Madrid'}) " +
                     "create (u1)-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-principal-c', owner: 'principal-quiet-hours-c', quietHours: 'quiet-hours-principal-c', timezone: 'Europe/Rome'})", params);
             txl.add("create (u2:User{id: 'userToRemove9', source: 'MANUAL', ine: {ine}, tag: 'unitTest9'})-[:PREFERS]->(:UserAppConf{tag: 'unitTest9-rich', owner: 'old-rich-multiple', language: 'fr', timeline: 'timeline-old-multiple'})", params);
+            txl.commit(event -> {
+                if ("ok".equals(event.body().getString("status"))) {
+                    promise.complete();
+                } else {
+                    promise.fail(event.body().encodePrettily());
+                }
+            });
+        } catch (TransactionException e) {
+            promise.fail(e);
+        }
+        return promise.future();
+    }
+
+    /**
+     * Creates 2 users as follows :
+     * <ol>
+     *     <li>(:User{id: 'userToKeep10', source: 'AAF', ine: ine, activationCode: 'toto', email: 'New.User@Example.com', emailSearchField: 'new.user@example.com'})</li>
+     *     <li>(:User{id: 'userToRemove10', source: 'MANUAL', ine: ine, email: 'Old.User@Example.com', emailSearchField: 'old.user@example.com'})</li>
+     * </ol>
+     * @param ine The ine to use for both users
+     */
+    public static Future<Void> prepareSameINEUsersWithDifferentEmails(final String ine) {
+        final JsonObject params = new JsonObject().put("ine", ine);
+        final Promise<Void> promise = Promise.promise();
+        TransactionHelper txl = null;
+        try {
+            txl = TransactionManager.getTransaction();
+            txl.add("match (u) detach delete u", new JsonObject());
+            txl.add("create (u1:User{id: 'userToKeep10', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest10', email: 'New.User@Example.com', emailSearchField: 'new.user@example.com'})", params);
+            txl.add("create (u2:User{id: 'userToRemove10', source: 'MANUAL', ine: {ine}, tag: 'unitTest10', email: 'Old.User@Example.com', emailSearchField: 'old.user@example.com'})", params);
             txl.commit(event -> {
                 if ("ok".equals(event.body().getString("status"))) {
                     promise.complete();
