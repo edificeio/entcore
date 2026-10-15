@@ -215,10 +215,18 @@ public class DefaultCommunicationService implements CommunicationService {
 						"            WHEN g.users = 'BOTH' THEN g.id\n" +
 						"        END\n" +
 						"    )) as comGroups \n" +
-						"UNWIND comGroups as gid \n" +
-						"WITH DISTINCT gid \n" +
-						"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
-						"WHERE\n" +
+						// With expected ids, start from them : filtering the members of every group with "m.id IN {list}"
+						// reads m.id once per list item and row, which times out for a user seeing a whole structure.
+						(restrictToExpectedIds ?
+								"UNWIND {" + EXPECTED_IDS_USERS_GROUPS + "} AS eid \n" +
+								"MATCH (m:User { id: eid })-[:IN]-(g:Group) \n" +
+								"WITH m, g, g.id AS gid, comGroups \n" +
+								"WHERE gid IN comGroups AND\n"
+								:
+								"UNWIND comGroups as gid \n" +
+								"WITH DISTINCT gid \n" +
+								"MATCH (g:Group { id :gid })-[:IN]-(m:User) \n" +
+								"WHERE\n") +
 						// discover group are in BOTH but doesn't allow communication between member by default
 						"     NOT g:CommunityGroup AND (\n" +
 						"        NOT(HAS(m.blocked))\n" +
@@ -226,7 +234,6 @@ public class DefaultCommunicationService implements CommunicationService {
 						"    )\n" +
 						"    AND g.users IN ['BOTH', 'OUTGOING'] " +
 						searchQuery +
-						expectIdUserFilter +
 						(itself ? " " : " AND m.id <> {userId} ") +
 						(visibleIdentityRequest.isOnlyActivatedUsers() ? " AND NOT has(m.activationCode) " : "") +
 						userProfileFilter +

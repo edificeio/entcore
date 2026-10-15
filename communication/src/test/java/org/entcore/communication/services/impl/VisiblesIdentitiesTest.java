@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 /**
  * The user vi.user is in vi.own (BOTH), which communicates with vi.profile. vi.profile has a member vi.member
  * and an empty manual group vi.empty depending on it. vi.own also has an empty manual group vi.own-empty
- * depending on it. vi.outsider and vi.outsider-group are not visible at all.
+ * depending on it. vi.outsider and vi.outsider-group (BOTH, vi.outsider being its member) are not visible at all.
  */
 @RunWith(VertxUnitRunner.class)
 public class VisiblesIdentitiesTest {
@@ -43,13 +43,13 @@ public class VisiblesIdentitiesTest {
         final String fixture =
                 "CREATE (u:User {id: 'vi.user', displayName: 'Vi User'}), " +
                 "(m:User {id: 'vi.member', displayName: 'Vi Member', displayNameSearchField: 'vimember'}), " +
-                "(:User {id: 'vi.outsider', displayName: 'Vi Outsider', displayNameSearchField: 'vioutsider'}), " +
-                "(:Group:ManualGroup {id: 'vi.outsider-group', name: 'outsider group', nbUsers: 1}), " +
+                "(o:User {id: 'vi.outsider', displayName: 'Vi Outsider', displayNameSearchField: 'vioutsider'}), " +
+                "(og:Group:ManualGroup {id: 'vi.outsider-group', name: 'outsider group', users: 'BOTH', nbUsers: 1}), " +
                 "(own:Group:ProfileGroup {id: 'vi.own', name: 'own', users: 'BOTH', nbUsers: 1, communiqueWith: ['vi.profile']}), " +
                 "(p:Group:ProfileGroup {id: 'vi.profile', name: 'profile', users: 'BOTH', nbUsers: 1}), " +
                 "(e:Group:ManualGroup {id: 'vi.empty', name: 'empty', nbUsers: 0}), " +
                 "(oe:Group:ManualGroup {id: 'vi.own-empty', name: 'own empty', nbUsers: 0}), " +
-                "(u)-[:IN]->(own), (m)-[:IN]->(p), (e)-[:DEPENDS]->(p), (oe)-[:DEPENDS]->(own)";
+                "(u)-[:IN]->(own), (m)-[:IN]->(p), (o)-[:IN]->(og), (e)-[:DEPENDS]->(p), (oe)-[:DEPENDS]->(own)";
         final Promise<Void> promise = Promise.promise();
         Neo4j.getInstance().execute(fixture, new JsonObject(), e -> {
             if ("ok".equals(e.body().getString("status"))) {
@@ -93,6 +93,22 @@ public class VisiblesIdentitiesTest {
                 .setExpectedVisiblesIds(Arrays.asList("vi.empty", "vi.member")))
                 .onComplete(context.asyncAssertSuccess(ids -> context.assertEquals(
                         new HashSet<>(Arrays.asList("vi.empty")), ids)));
+    }
+
+    @Test
+    public void testBothRestrictedToExpectedIds(TestContext context) {
+        visibleIds(new VisibleIdentityRequest().setUserId("vi.user")
+                .setExpectedVisiblesIds(Arrays.asList("vi.member", "vi.outsider", "vi.profile", "vi.outsider-group")))
+                .onComplete(context.asyncAssertSuccess(ids -> context.assertEquals(
+                        new HashSet<>(Arrays.asList("vi.member", "vi.profile")), ids)));
+    }
+
+    @Test
+    public void testBothRestrictedToExpectedIdsKeepsSearch(TestContext context) {
+        visibleIds(new VisibleIdentityRequest().setUserId("vi.user")
+                .setSearch("outsider")
+                .setExpectedVisiblesIds(Arrays.asList("vi.member", "vi.outsider")))
+                .onComplete(context.asyncAssertSuccess(ids -> context.assertEquals(new HashSet<>(), ids)));
     }
 
     @Test
