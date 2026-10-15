@@ -1162,6 +1162,7 @@
   "presences.absence.statements.view": "Parents : voir l'historique des déclarations",
   "presences.action.create": "Liste des événements : création des actions pour chaque événements",
   "presences.alerts.students.number": "Carnet oublié : récupération du nombre d'oublis",
+  "presences.beta": "Accès à la bêta de Présences",
   "presences.calendar.view": "Vue calendaire : accès",
   "presences.children.read": "Parents : récupération de la liste des enfants rattachés",
   "presences.event.create": "Appels : création de tout type d'événements dans un appel : absences, retard, départ, observation",
