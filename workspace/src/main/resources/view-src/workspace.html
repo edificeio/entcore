@@ -403,7 +403,14 @@
 			gap: 12px;
 			margin-bottom: 8px;
 		}
-		.nextcloud-create-document-card{
+		/* These cards are <button> elements (native keyboard/click semantics), which makes them inherit
+		   the theme's generic orange-CTA button styling. A plain class beats the theme's bare "button"
+		   selector on specificity, which is why the resting state already looked right — but
+		   "button:hover" (element + pseudo-class) outweighs a bare class, so hovering reverted to the
+		   theme's orange-CTA hover (solid dark-orange fill, white forced text) despite the rule below.
+		   Re-declared with :hover and !important throughout so neither state can be re-overridden. */
+		.nextcloud-create-document-card,
+		.nextcloud-create-document-card:hover{
 			position: relative;
 			flex: 1 1 0;
 			display: flex;
@@ -411,17 +418,24 @@
 			align-items: flex-start;
 			gap: 8px;
 			min-width: 0;
-			padding: 16px;
-			background: #fff;
-			color: inherit;
-			text-align: left;
+			padding: 16px !important;
+			margin: 0 !important;
+			background: #fff !important;
+			color: inherit !important;
+			text-align: left !important;
+			text-transform: none !important;
+			box-shadow: none !important;
 			border: 1px solid #e4e4e4;
-			border-radius: 8px;
+			border-radius: 8px !important;
 			cursor: pointer;
 		}
-		.nextcloud-create-document-card.selected{
+		.nextcloud-create-document-card::before{
+			content: none !important;
+		}
+		.nextcloud-create-document-card.selected,
+		.nextcloud-create-document-card.selected:hover{
 			border-color: #ff8500;
-			background: rgba(255,133,0,0.05);
+			background: rgba(255,133,0,0.05) !important;
 		}
 		.nextcloud-create-document-card img{
 			width: 32px;
@@ -429,6 +443,9 @@
 		}
 		.nextcloud-create-document-card strong{
 			font-size: 14px;
+			color: inherit !important;
+			text-transform: none !important;
+			font-weight: 600;
 		}
 		.nextcloud-create-document-card-description{
 			font-size: 12.5px;
