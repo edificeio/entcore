@@ -9,6 +9,7 @@ import {
   BriefMeContainer,
   CommunitiesContainer,
   FavoritesContainer,
+  GenerationHdfContainer,
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
@@ -85,6 +86,7 @@ export const Root = () => {
           <BriefMeContainer />
           <QwantContainer />
           <UniversalisContainer />
+          <GenerationHdfContainer />
         </div>
       </PageLayout.Content>
 
