@@ -82,6 +82,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   AlloRegionContainer: () => <div data-testid="allo-region-container" />,
   BriefMeContainer: () => <div data-testid="briefme-container" />,
   QwantContainer: () => <div data-testid="qwant-container" />,
+  UniversalisContainer: () => <div data-testid="universalis-container" />,
   UserSpaceContainer: ({
     children,
     onCustomizeWidgetsClick,

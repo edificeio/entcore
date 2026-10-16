@@ -15,6 +15,7 @@ import {
   NotificationListContainer,
   QwantContainer,
   SchoolSpaceContainer,
+  UniversalisContainer,
   UsefulLinksContainer,
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
@@ -85,6 +86,7 @@ export const Root = () => {
           <AlloRegionContainer />
           <BriefMeContainer />
           <QwantContainer />
+          <UniversalisContainer />
         </div>
       </PageLayout.Content>
 
