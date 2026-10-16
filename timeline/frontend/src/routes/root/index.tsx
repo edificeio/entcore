@@ -7,6 +7,7 @@ import {
 import {
   AgendaContainer,
   AlloRegionContainer,
+  BriefMeContainer,
   CommunitiesContainer,
   FavoritesContainer,
   LastInfosContainer,
@@ -81,6 +82,7 @@ export const Root = () => {
               is registered as a widget in the catalog */}
           <UsefulLinksContainer />
           <AlloRegionContainer />
+          <BriefMeContainer />
         </div>
       </PageLayout.Content>
 
