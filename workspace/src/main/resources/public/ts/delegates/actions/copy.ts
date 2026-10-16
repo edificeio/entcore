@@ -342,6 +342,14 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
                 toMove.map(elt => elt._id),
                 dest.id,
             );
+            // Moved items leave the personal workspace entirely (unlike a within-ENT move, _moveElements
+            // above never runs, so neither the sidebar tree's caches nor the current folder's content
+            // view refresh on their own) — same fix as lool.ts's own tree-change broadcast after it
+            // creates a document outside the normal workspace flow. elements must be included: tree.ts's
+            // own "tree-change" handler only calls refreshAll() when event.elements contains at least
+            // one folder — omitting it (as a bare {action:"tree-change"}, matching lool.ts's own call,
+            // which never moves folders) silently skips the sidebar tree refresh for a moved folder.
+            workspaceService.onChange.next({ action: "tree-change", elements: toMove });
             setState("finished")
             setTimeout(() => {
                 closeCopyView(null);
@@ -361,6 +369,8 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
                 toMove.map(elt => elt._id),
                 nextcloudDestName(dest),
             );
+            // Same reasoning as _moveElementsToGoogleDrive above.
+            workspaceService.onChange.next({ action: "tree-change", elements: toMove });
             setState("finished")
             setTimeout(() => {
                 closeCopyView(null);
