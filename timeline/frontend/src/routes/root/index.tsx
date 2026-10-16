@@ -13,6 +13,7 @@ import {
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
+  QwantContainer,
   SchoolSpaceContainer,
   UsefulLinksContainer,
   UserSpaceContainer,
@@ -83,6 +84,7 @@ export const Root = () => {
           <UsefulLinksContainer />
           <AlloRegionContainer />
           <BriefMeContainer />
+          <QwantContainer />
         </div>
       </PageLayout.Content>
 
