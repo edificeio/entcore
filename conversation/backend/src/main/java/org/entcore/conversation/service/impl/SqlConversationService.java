@@ -1251,7 +1251,7 @@ public class SqlConversationService implements ConversationService{
 				}
 			  }
 			  promise.complete(visible);
-			});
+			}).onFailure(promise::fail);
 		return promise.future();
 	}
 
