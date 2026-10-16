@@ -15,7 +15,8 @@ const PROXY_CONFIG = [
       "/i18n",
       "/languages",
       "/zendeskGuide",
-      "/theme"
+      "/theme",
+      "/assets/theme-conf.js"
     ],
     target: "http://localhost:8090",
     secure: false,

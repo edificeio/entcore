@@ -3021,3 +3021,9 @@ ode-message-flash-form {
 .settings > form > .settings-bloc ode-form-field > div > label {
   flex-basis: 250px !important;
 }
+
+// Hides the native Zendesk launcher while the Edifice help zone is rendered
+// instead (`layout.helpzone` uiOverride, see ZendeskGuideService).
+body.help-zone-active iframe#launcher {
+  display: none !important;
+}
