@@ -8,6 +8,7 @@ import {
   AgendaContainer,
   AlloRegionContainer,
   BriefMeContainer,
+  CantineContainer,
   CommunitiesContainer,
   FavoritesContainer,
   GenerationHdfContainer,
@@ -89,6 +90,7 @@ export const Root = () => {
           <QwantContainer />
           <UniversalisContainer />
           <GenerationHdfContainer />
+          <CantineContainer />
         </div>
       </PageLayout.Content>
 
