@@ -140,6 +140,18 @@
                 <i18n>workspace.download</i18n>
             </button>
 
+            <!-- rename (single selection only) — only for a file genuinely owned by the current user
+                 even while browsing in shared mode (e.g. created inside a folder someone else shared
+                 with them, see isSelectedOwnedByMe below), same gating as the per-tile "..." menu. -->
+            <div
+                id="google-drive-toolbar-rename-shared"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments) && toolbar.isSelectedOwnedByMe(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleRenameView(true, selectedDocuments)">
+                    <i18n>workspace.rename</i18n>
+                </button>
+            </div>
+
             <!-- export to the personal workspace — editor-permission shares only (see
                  isSelectedExportable's own comment). -->
             <div
