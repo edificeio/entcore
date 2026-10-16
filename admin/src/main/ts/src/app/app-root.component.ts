@@ -37,7 +37,7 @@ import { StructureModel } from './core/store/models/structure.model';
         <ode-help-zone
             *ngIf="zendeskGuideService.isEdificeHelpZone$ | async"
             [isOpen]="zendeskGuideService.isOpen$ | async"
-            (toggle)="zendeskGuideService.toggle()"
+            (widgetToggle)="zendeskGuideService.toggle()"
         >
         </ode-help-zone>
     `,

@@ -22,17 +22,17 @@ export class UiOverrideService {
 
     public async getUiOverride(key: string): Promise<string | undefined> {
         const [conf, skin] = await Promise.all([this.getThemeConf(), this.getSkin()]);
-        const currentTheme = conf && conf.overriding && conf.overriding.find(t => t.child === skin);
-        const raw = currentTheme && currentTheme.uiOverrides && currentTheme.uiOverrides[key];
+        const currentTheme = conf?.overriding?.find(t => t.child === skin);
+        const raw = currentTheme?.uiOverrides?.[key];
         const override = typeof raw === 'string' ? { variant: raw } : raw;
-        return override && override.variant;
+        return override?.variant;
     }
 
     // Skin name from the theme path, e.g. "/assets/themes/<skin>/skins/default/"
     private async getSkin(): Promise<string | undefined> {
         const theme = await SessionModel.getTheme();
-        const path = theme && theme.skin ? theme.skin.split('/assets/themes/')[1] : undefined;
-        return path ? path.split('/')[0] : undefined;
+        const path = theme?.skin?.split('/assets/themes/')[1];
+        return path?.split('/')[0];
     }
 
     // theme-conf.js is a CommonJS script (`exports.conf = {...}`), not JSON
@@ -41,7 +41,7 @@ export class UiOverrideService {
             this.themeConf = http.get('/assets/theme-conf.js', { responseType: 'text' })
                 .then(response => {
                     const exports: { conf?: ThemeConf } = {};
-                    new Function('exports', response.data)(exports);
+                    new Function('exports', '"use strict";' + response.data)(exports);
                     return exports.conf;
                 })
                 .catch(e => {

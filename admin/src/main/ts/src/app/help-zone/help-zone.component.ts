@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, In
 export class HelpZoneComponent implements OnInit, OnDestroy {
     /** True while the widget panel is open. */
     @Input() isOpen = false;
-    @Output() toggle = new EventEmitter<void>();
+    @Output() widgetToggle = new EventEmitter<void>();
 
     public isCompact = false;
 
