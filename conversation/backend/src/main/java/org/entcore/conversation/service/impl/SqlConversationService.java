@@ -838,6 +838,23 @@ public class SqlConversationService implements ConversationService{
 
 		query.append(generateInVars(messagesId, values));
 
+		// DeleteOrphan removes a thread once every participant has trashed it, while its messages stay in the trashes.
+		// Recreate it from its last sent message, as sending does, before linking the user back to it : otherwise
+		// the userthreads row would point to a missing thread (an empty entry, or a foreign key error that rolls
+		// back the whole restore).
+		final String insertMissingThreads =
+				"INSERT INTO conversation.threads (id, date, subject, \"from\", \"to\", cc, cci, \"displayNames\") " +
+				"SELECT DISTINCT ON (m.thread_id) m.thread_id, m.date, m.subject, m.\"from\", m.\"to\", m.cc, m.cci, m.\"displayNames\" " +
+				"FROM conversation.messages m " +
+				"WHERE m.state = 'SENT' AND m.thread_id IN (" +
+					"SELECT r.thread_id FROM conversation.messages r " +
+					"JOIN conversation.usermessages um ON um.message_id = r.id " +
+					"WHERE r.id IN " + Sql.listPrepared(messagesId.toArray()) + " AND um.user_id = ? AND r.state = 'SENT') " +
+				"ORDER BY m.thread_id, m.date DESC " +
+				"ON CONFLICT (id) DO NOTHING";
+		// A copy : JsonArray wraps the list it is given, and the add would also land in messagesId, read again below.
+		final JsonArray values3 = new JsonArray(new ArrayList<>(messagesId)).add(user.getUserId());
+
 		final String insertUserThread =
 				"INSERT INTO conversation.userthreads ( " +
 				"SELECT um.user_id as user_id, m.thread_id as thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
@@ -849,6 +866,7 @@ public class SqlConversationService implements ConversationService{
 
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 		builder.prepared(query.toString(), values);
+		builder.prepared(insertMissingThreads, values3);
 		builder.prepared(insertUserThread, values2);
 		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 	}
