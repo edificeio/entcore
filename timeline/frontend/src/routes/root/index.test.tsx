@@ -82,6 +82,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   BriefMeContainer: () => <div data-testid="briefme-container" />,
   QwantContainer: () => <div data-testid="qwant-container" />,
   UniversalisContainer: () => <div data-testid="universalis-container" />,
+  GenerationHdfContainer: () => <div data-testid="generation-hdf-container" />,
   UserSpaceContainer: ({
     children,
     onCustomizeWidgetsClick,
