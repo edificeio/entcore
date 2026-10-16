@@ -94,6 +94,7 @@ export function MediacentreWidget({
           color={view === 'favorites' ? 'destructive' : 'default'}
           variant={view === 'favorites' ? 'filled' : 'ghost'}
           onClick={() => setView('favorites')}
+          data-testid="mediacentre-favorites-tab-button"
         >
           {t('homepage.crna.widget.mediacentre.favorites', 'Mes favoris')}
         </ButtonBeta>
@@ -101,6 +102,7 @@ export function MediacentreWidget({
           color={view === 'pins' ? 'destructive' : 'default'}
           variant={view === 'pins' ? 'filled' : 'ghost'}
           onClick={() => setView('pins')}
+          data-testid="mediacentre-pins-tab-button"
         >
           {t('homepage.crna.widget.mediacentre.pins', 'Ressources épinglées')}
         </ButtonBeta>
@@ -108,6 +110,7 @@ export function MediacentreWidget({
           color={view === 'orientation' ? 'destructive' : 'default'}
           variant={view === 'orientation' ? 'filled' : 'ghost'}
           onClick={() => setView('orientation')}
+          data-testid="mediacentre-orientation-tab-button"
         >
           {t('homepage.crna.widget.mediacentre.orientation', 'Orientation')}
         </ButtonBeta>
@@ -134,6 +137,7 @@ export function MediacentreWidget({
                   color="tertiary"
                   variant="ghost"
                   icon={<IconFilter />}
+                  data-testid="mediacentre-school-select-button"
                 />
                 <Dropdown.Menu>
                   {schools.map((school, i) => (
@@ -179,6 +183,7 @@ export function MediacentreWidget({
             href={item.href}
             label={item.label}
             subtitle={item.sublabel}
+            data-testid="mediacentre-resource-link"
             // Some resources have no image: fall back to LinkPill's default icon.
             {...(item.imageUrl
               ? {
@@ -199,6 +204,7 @@ export function MediacentreWidget({
         actionLabel={t('homepage.crna.widget.see.more', 'Voir plus')}
         actionRightIcon={<IconExternalLink />}
         onActionClick={onSeeMore}
+        actionProps={{ 'data-testid': 'mediacentre-see-more-button' }}
       />
       <HomeCard.Content>
         {filter}

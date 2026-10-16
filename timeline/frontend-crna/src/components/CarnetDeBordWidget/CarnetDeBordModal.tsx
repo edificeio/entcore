@@ -212,6 +212,7 @@ export function CarnetDeBordModal({
             type="button"
             {...triggerProps}
             className="carnet-de-bord-rail-select"
+            data-testid="carnet-de-bord-modal-category-select-button"
           >
             <div
               className="carnet-de-bord-entry-icon"
@@ -248,6 +249,7 @@ export function CarnetDeBordModal({
       rightIcon={<IconExternalLink width={14} height={14} />}
       className="carnet-de-bord-pronote-btn"
       onClick={() => window.open(address, '_blank')}
+      data-testid="carnet-de-bord-modal-pronote-button"
     >
       {pronoteLabel}
     </ButtonBeta>

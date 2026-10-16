@@ -37,6 +37,7 @@ export function FlashMessageHistoryPanel() {
           color="tertiary"
           aria-label={t('close', 'Fermer')}
           onClick={closeOverlay}
+          data-testid="flash-history-close-button"
         />
       </div>
 

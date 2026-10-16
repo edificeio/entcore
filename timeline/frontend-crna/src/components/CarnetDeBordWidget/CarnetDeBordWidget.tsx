@@ -66,6 +66,7 @@ export function CarnetDeBordWidget({ onError }: CarnetDeBordWidgetProps) {
             address ? () => window.open(address, '_blank') : undefined
           }
           actionRightIcon={<IconExternalLink />}
+          actionProps={{ 'data-testid': 'carnet-de-bord-see-more-button' }}
         />
         <HomeCard.Content>
           {isLoading ? (

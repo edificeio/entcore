@@ -18,7 +18,7 @@ export function AvantagesWidget({
   const { t } = useTranslation('timeline');
   const items: LinkItem[] = [
     {
-      id: '1',
+      id: 'manuels',
       imageUrl: imgBooks,
       label: t(
         'homepage.crna.widget.avantages.manuels',
@@ -31,7 +31,7 @@ export function AvantagesWidget({
       href: 'https://jeunes.nouvelle-aquitaine.fr/formation/accompagnement-scolaire/gratuite-des-manuels-scolaires-pour-les-lyceens',
     },
     {
-      id: '2',
+      id: 'transport',
       imageUrl: imgTransport,
       label: t(
         'homepage.crna.widget.avantages.transport',
@@ -44,7 +44,7 @@ export function AvantagesWidget({
       href: 'https://jeunes.nouvelle-aquitaine.fr/vie-quotidienne/se-deplacer/transport-et-abonnements-scolaires',
     },
     {
-      id: '3',
+      id: 'soutien',
       imageUrl: imgRegion,
       label: t(
         'homepage.crna.widget.avantages.soutien',
@@ -57,7 +57,7 @@ export function AvantagesWidget({
       href: 'https://jeunes.nouvelle-aquitaine.fr/formation/accompagnement-scolaire/aide-aux-devoirs-et-soutien-scolaire-gratuits',
     },
     {
-      id: '4',
+      id: 'permis',
       imageUrl: imgPermis,
       label: t('homepage.crna.widget.avantages.permis', 'Aide au permis B'),
       sublabel: t(
@@ -67,7 +67,7 @@ export function AvantagesWidget({
       href: 'https://jeunes.nouvelle-aquitaine.fr/vie-quotidienne/se-deplacer/aide-au-financement-du-permis-b',
     },
     {
-      id: '5',
+      id: 'ter',
       imageUrl: imgTrain,
       label: t('homepage.crna.widget.avantages.ter', 'TER à prix réduits'),
       sublabel: t(
@@ -84,6 +84,7 @@ export function AvantagesWidget({
         actionLabel={t('homepage.crna.widget.see.more', 'Voir plus')}
         actionRightIcon={<IconExternalLink />}
         onActionClick={onSeeMore}
+        actionProps={{ 'data-testid': 'avantages-see-more-button' }}
       />
       <HomeCard.Content>
         <Flex direction="column" gap="8">
@@ -95,6 +96,7 @@ export function AvantagesWidget({
               subtitle={item.sublabel}
               illustrationType="img"
               illustration={<img src={item.imageUrl} alt="" />}
+              data-testid={`avantages-${item.id}-link`}
             />
           ))}
         </Flex>

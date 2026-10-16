@@ -59,7 +59,16 @@ export function CategoryRow({
   }
 
   return (
-    <button type="button" className={className} onClick={onClick}>
+    <button
+      type="button"
+      className={className}
+      onClick={onClick}
+      data-testid={
+        variant === 'rail'
+          ? `carnet-de-bord-modal-${title}-button`
+          : `carnet-de-bord-${title}-button`
+      }
+    >
       {content}
     </button>
   );

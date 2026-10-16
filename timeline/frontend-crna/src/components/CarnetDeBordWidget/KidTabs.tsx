@@ -43,6 +43,7 @@ export function KidTabs({ eleves, currentEleveIndex, onSelect }: KidTabsProps) {
             type="button"
             className={`carnet-de-bord-tab${isActive ? ' carnet-de-bord-tab--active' : ''}`}
             onClick={() => onSelect(i)}
+            data-testid="carnet-de-bord-kid-tab-button"
           >
             <Avatar
               alt={eleve.name}
@@ -75,6 +76,7 @@ export function KidTabs({ eleves, currentEleveIndex, onSelect }: KidTabsProps) {
                 color="tertiary"
                 variant="ghost"
                 icon={<IconAddUser />}
+                data-testid="carnet-de-bord-kid-select-button"
               />
               <Dropdown.Menu>
                 {overflowIndexes.map((i) => (

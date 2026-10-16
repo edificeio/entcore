@@ -62,6 +62,7 @@ export function WelcomeWidget({
             variant="ghost"
             leftIcon={<IconClock width={20} height={20} />}
             onClick={onOpenHistory}
+            data-testid="welcome-flash-history-button"
           >
             {t(
               'homepage.crna.widget.welcome.history',

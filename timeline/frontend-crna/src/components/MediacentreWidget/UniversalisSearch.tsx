@@ -23,7 +23,12 @@ export function UniversalisSearch({ uai }: UniversalisSearchProps) {
 
   return (
     <div className="mediacentre-universalis-search">
-      <a href={UNIVERSALIS_HOME_URL} target="_blank" rel="noopener noreferrer">
+      <a
+        href={UNIVERSALIS_HOME_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-testid="mediacentre-universalis-link"
+      >
         <img
           src={universalisLogo}
           alt="Universalis"
@@ -59,6 +64,7 @@ export function UniversalisSearch({ uai }: UniversalisSearchProps) {
             type="submit"
             className="border-start-0"
             disabled={disabled}
+            data-testid="mediacentre-universalis-search-button"
           />
         </FormControl>
       </form>

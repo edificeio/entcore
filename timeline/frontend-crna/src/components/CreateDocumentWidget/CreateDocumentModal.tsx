@@ -97,13 +97,19 @@ export function CreateDocumentModal({
       </Modal.Body>
 
       <Modal.Footer>
-        <ButtonBeta color="tertiary" variant="ghost" onClick={onClose}>
+        <ButtonBeta
+          color="tertiary"
+          variant="ghost"
+          onClick={onClose}
+          data-testid="create-document-modal-cancel-button"
+        >
           {t('homepage.crna.widget.create.modal.cancel', 'Annuler')}
         </ButtonBeta>
         <ButtonBeta
           color="default"
           disabled={!filename.trim() || !nextcloudAddress}
           onClick={handleCreate}
+          data-testid="create-document-modal-create-button"
         >
           {t('homepage.crna.widget.create.modal.create', 'Créer')}
         </ButtonBeta>

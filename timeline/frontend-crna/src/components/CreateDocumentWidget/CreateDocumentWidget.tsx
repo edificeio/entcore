@@ -95,6 +95,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
           window.open(nextcloudConnector.address, '_blank')
         }
         actionRightIcon={<IconExternalLink />}
+        actionProps={{ 'data-testid': 'create-document-see-all-button' }}
       />
       <HomeCard.Content>
         <div className="create-document-apps-card">
@@ -108,6 +109,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
                     title={t(labelKey, label)}
                     className="create-document-btn"
                     aria-label={t(labelKey, label)}
+                    data-testid={`create-document-${docTypeId}-button`}
                     style={
                       {
                         'background': `var(--edifice-${colorVar}-200)`,
@@ -139,6 +141,7 @@ export function CreateDocumentWidget({ onSuccess }: CreateDocumentWidgetProps) {
                       title={t(labelKey, label)}
                       className="create-document-btn"
                       aria-label={t(labelKey, label)}
+                      data-testid={`create-document-${mediaType}-button`}
                       style={
                         {
                           'background': `var(--edifice-${colorVar}-200)`,
