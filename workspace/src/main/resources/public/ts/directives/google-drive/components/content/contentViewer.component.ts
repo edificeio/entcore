@@ -175,13 +175,24 @@ export const workspaceGoogleDriveContentController = ng.controller(
         } else if (previousParent?.id === nextParent.id) {
           // keep existing breadcrumb as-is
         } else {
-          // Unknown jump — can't reconstruct full ancestry, fall back to a shallow path.
-          const myDrive: GoogleDriveDocument =
-            $scope.getGoogleDriveTreeController()?.documents?.[0] ?? nextParent;
-          breadcrumbState = [
-            { name: lang.translate("google-drive.mydrive"), folder: myDrive },
-            { name: nextParent.name, folder: nextParent },
-          ];
+          // Clicking an ancestor already shown in the breadcrumb (going back via a breadcrumb link,
+          // e.g. "Partagés avec moi" > sharedFolder > subFolder, then clicking "sharedFolder") — neither
+          // of the two cases above matches this (it's not a child of the folder just left, nor the same
+          // folder), so without this it fell through to the "unknown jump" reset below, discarding
+          // context like "Partagés avec moi" entirely and replacing it with "Mes documents". Truncate to
+          // that ancestor instead.
+          const ancestorIndex = breadcrumbState.findIndex((entry) => entry.folder.id === nextParent.id);
+          if (ancestorIndex !== -1) {
+            breadcrumbState = breadcrumbState.slice(0, ancestorIndex + 1);
+          } else {
+            // Unknown jump — can't reconstruct full ancestry, fall back to a shallow path.
+            const myDrive: GoogleDriveDocument =
+              $scope.getGoogleDriveTreeController()?.documents?.[0] ?? nextParent;
+            breadcrumbState = [
+              { name: lang.translate("google-drive.mydrive"), folder: myDrive },
+              { name: nextParent.name, folder: nextParent },
+            ];
+          }
         }
         return breadcrumbState;
       };
