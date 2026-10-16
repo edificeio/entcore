@@ -8,7 +8,8 @@ $help-zone-tooltip-bg: rgba(0, 0, 0, 0.8);
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 8000;
+  // Below ode-lightbox (100, ngx-ode-ui) so modals cover it
+  z-index: 90;
   display: flex;
   align-items: center;
   gap: 8px;
