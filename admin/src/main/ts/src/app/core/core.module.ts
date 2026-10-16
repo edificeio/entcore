@@ -15,8 +15,10 @@ import { ScreebService } from './services/screeb.service';
 import { SijilLabelsService } from './services/sijil.labels.service';
 import { TimezoneService } from './services/timezone.service';
 import { UserPositionService } from './services/user-position.service';
+import { UiOverrideService } from './services/ui-override.service';
 import { UserService } from './services/user.service';
 import { WidgetService } from './services/widgets.service';
+import { ZendeskGuideService } from './services/zendesk-guide.service';
 
 @NgModule({
     imports: [
@@ -42,7 +44,9 @@ import { WidgetService } from './services/widgets.service';
         UserPositionService,
         TimezoneService,
         FavIconResolver,
-        ScreebService
+        ScreebService,
+        UiOverrideService,
+        ZendeskGuideService
     ],
 })
 export class CoreModule {

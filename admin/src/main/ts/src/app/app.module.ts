@@ -9,6 +9,7 @@ import {AppComponent} from './app.component';
 import {AdmlHomeComponent} from './adml-home.component';
 import { NavbarComponent } from "./navbar/navbar.component";
 import { AppRootComponent } from "./app-root.component";
+import { HelpZoneComponent } from "./help-zone/help-zone.component";
 import {HttpClientModule} from '@angular/common/http';
 import { COMPONENT_LIFECYCLE_DEBUG_MODE } from 'ngx-ode-core';
 
@@ -52,7 +53,8 @@ registerLocaleData(localePt);
         AppComponent,
         AdmlHomeComponent,
         NavbarComponent,
-        AppRootComponent
+        AppRootComponent,
+        HelpZoneComponent
     ],
     bootstrap: [AppComponent],
     providers: [
