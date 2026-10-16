@@ -12,6 +12,7 @@ import {
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
+  QwantContainer,
   SchoolSpaceContainer,
   UsefulLinksContainer,
   UserSpaceContainer,
@@ -81,6 +82,7 @@ export const Root = () => {
               is registered as a widget in the catalog */}
           <UsefulLinksContainer />
           <BriefMeContainer />
+          <QwantContainer />
         </div>
       </PageLayout.Content>
 
