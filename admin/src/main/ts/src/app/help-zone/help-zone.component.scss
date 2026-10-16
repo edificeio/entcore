@@ -1,0 +1,150 @@
+// Mirrors @edifice.io/bootstrap's _help-zone.scss (px values, since the admin
+// doesn't share the 10px root font-size) plus a CSS-only tooltip mimicking
+// the Bootstrap one.
+$help-zone-bg: #3030d1;
+$help-zone-tooltip-bg: rgba(0, 0, 0, 0.8);
+
+.help-zone {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 8000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  background-color: $help-zone-bg;
+  border-radius: 999px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.18);
+  opacity: 1;
+  transform: translateY(0);
+  transition: box-shadow 300ms ease, opacity 300ms ease, transform 300ms ease;
+
+  &--open {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+  }
+}
+
+// Tooltips are siblings of the controls (not children), so that global
+// button styles (e.g. overflow: hidden) can't clip them.
+.help-zone-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover .help-zone-tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.help-zone-badge,
+.help-zone-question {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  height: auto;
+  color: #fff;
+  line-height: 0;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+
+  &:focus-visible + .help-zone-tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+}
+
+// Both controls lift on hover
+.help-zone-badge,
+.help-zone-question {
+  transition: transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+  }
+}
+
+// Override the global `button:hover:not(:disabled)` style of admin.scss
+// (accent background), more specific than a single class
+.help-zone-question:hover:not(:disabled),
+.help-zone-question:focus-visible:not(:disabled) {
+  color: #fff;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.help-zone-logo {
+  // `width` can't transition on an inline element: inline-flex makes it apply
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  height: 18px;
+  width: 81px;
+  transition: width 250ms ease;
+
+  &--compact {
+    width: 18px;
+  }
+}
+
+.help-zone-divider {
+  align-self: stretch;
+  width: 1px;
+  background-color: #fff;
+}
+
+.help-zone-tooltip {
+  position: absolute;
+  bottom: calc(100% + 20px);
+  left: 50%;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: nowrap;
+  background-color: $help-zone-tooltip-bg;
+  border-radius: 8px;
+  transform: translateX(-50%);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms linear, visibility 150ms linear;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border: 8px solid transparent;
+    border-bottom-width: 0;
+    border-top-color: $help-zone-tooltip-bg;
+  }
+}
+
+// The "?" sits close to the viewport's right edge: right-align its tooltip
+.help-zone-question + .help-zone-tooltip {
+  left: auto;
+  right: -8px;
+  transform: none;
+
+  &::after {
+    left: auto;
+    right: 12px;
+    margin-left: 0;
+  }
+}
