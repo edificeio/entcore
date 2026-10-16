@@ -6,6 +6,7 @@ import {
 } from '@edifice.io/react';
 import {
   AgendaContainer,
+  BriefMeContainer,
   CommunitiesContainer,
   FavoritesContainer,
   LastInfosContainer,
@@ -79,6 +80,7 @@ export const Root = () => {
           {/* TODO: gate on isVisible('<widget-name>') once "Liens utiles"
               is registered as a widget in the catalog */}
           <UsefulLinksContainer />
+          <BriefMeContainer />
         </div>
       </PageLayout.Content>
 
