@@ -1,5 +1,6 @@
 import { WidgetsPersonalizationPanel } from '@edifice.io/react/homepage';
 import { useI18n } from '~/hooks/useI18n';
+import { useHomepageWidgets } from '~/hooks/useHomepageWidgets';
 import { useWidgetPreferences } from '~/hooks/useWidgetPreferences';
 import { getWidgetIcon } from './widgetIcons';
 
@@ -28,8 +29,13 @@ function widgetLabel(
   widget: { name: string },
   t: (key: string, options?: Record<string, unknown>) => string,
 ): string {
-  return t(`timeline.settings.${widget.name}`, {
-    defaultValue: fallbackLabel(widget.name),
+  // `timeline.widgets.<name>` holds the labels written for this panel; the
+  // legacy `timeline.settings.<name>` ones are only a fallback, as they are
+  // shared with the old homepage and cannot be changed for the new one alone.
+  return t(`timeline.widgets.${widget.name}`, {
+    defaultValue: t(`timeline.settings.${widget.name}`, {
+      defaultValue: fallbackLabel(widget.name),
+    }),
   });
 }
 
@@ -37,10 +43,11 @@ export function WidgetsPersonalizationPanelContainer({
   onClose,
 }: WidgetsPersonalizationPanelContainerProps) {
   const { t } = useI18n();
-  const { widgets, isLoading, isVisible, isLocked, toggleWidget } =
+  const { isLoading, isVisible, isLocked, toggleWidget } =
     useWidgetPreferences();
+  const { available } = useHomepageWidgets();
 
-  const items = widgets.map((widget) => ({
+  const items = available.map((widget) => ({
     id: widget.name,
     label: widgetLabel({ name: widget.name }, t),
     icon: getWidgetIcon(widget.name),
