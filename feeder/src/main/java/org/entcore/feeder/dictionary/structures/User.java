@@ -52,6 +52,7 @@ import org.entcore.feeder.utils.Validator;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -116,11 +117,16 @@ public class User {
 						if ("ok".equals(m.body().getString("status")) && results != null) {
 							final JsonArray r = results.getJsonArray(1);
 							if (r != null && r.size() > 0) {
-								final JsonArray deleteUsers = new JsonArray();
+								final Set<String> idOfUniqUsersToDelete = new HashSet<>();
 								for (Object o : r) {
 									if (!(o instanceof JsonObject)) continue;
-									deleteUsers.add(((JsonObject) o).getString("id"));
+									idOfUniqUsersToDelete.add(((JsonObject) o).getString("id"));
 								}
+								final JsonArray deleteUsers = new JsonArray();
+								for(String uniqId : idOfUniqUsersToDelete) {
+									deleteUsers.add(uniqId);
+								}
+								idOfUniqUsersToDelete.clear();
 								try {
 									TransactionHelper tx = TransactionManager.getInstance().begin();
 									User.delete(deleteUsers, tx);
@@ -129,7 +135,7 @@ public class User {
 										public void handle(Message<JsonObject> m2) {
 											if ("ok".equals(m2.body().getString("status"))) {
 												publishDeleteUsers(eb, eventStore, r);
-												if (r.size() == LIMIT) {
+												if (deleteUsers.size() >= LIMIT) {
 													vertx.setTimer(LIMIT * deleteDelay, new Handler<Long>() {
 														@Override
 														public void handle(Long event) {
