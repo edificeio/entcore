@@ -3,23 +3,27 @@ package org.entcore.workspace.listeners;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.broker.api.dto.shares.*;
 import org.entcore.broker.proxy.ShareBrokerListener;
+import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.share.ShareRoles;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
 
 /**
@@ -35,21 +39,25 @@ public class WorkspaceShareBrokerListener implements ShareBrokerListener {
 
     private static final Logger log = LoggerFactory.getLogger(WorkspaceShareBrokerListener.class);
 
+    private final Vertx vertx;
     private final ShareService shareService;
     private final FolderManager folderManager;
     private final Map<String, SecuredAction> securedActions;
 
     /**
      * Creates a new WorkspaceShareBrokerListener.
-     * 
+     *
+     * @param vertx The Vert.x instance
      * @param securedActions Map of secured actions for role-to-action conversion
      * @param shareService Service for share operations
      * @param folderManager Folder manager for document operations and inherited shares
      */
     public WorkspaceShareBrokerListener(
+            final Vertx vertx,
             final Map<String, SecuredAction> securedActions,
             final ShareService shareService,
             final FolderManager folderManager) {
+        this.vertx = vertx;
         this.securedActions = securedActions;
         this.shareService = shareService;
         this.folderManager = folderManager;
@@ -131,6 +139,47 @@ public class WorkspaceShareBrokerListener implements ShareBrokerListener {
             });
         });
 
+        return promise.future();
+    }
+
+    /**
+     * Checks whether a user holds a share role on a document or folder, directly or through one of his groups.
+     * Same check as WorkspaceResourcesProvider: the owner is granted, otherwise inherited shares
+     * (including parent folders shares) must contain an action of the role.
+     */
+    @Override
+    public Future<CheckResourceRightResponseDTO> checkResourceRight(CheckResourceRightRequestDTO request) {
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for checkResourceRight: {}", request);
+            return Future.failedFuture("request.parameters.invalid");
+        }
+        // All actions of a role are granted together: checking one of them is enough
+        final Optional<String> roleAction = ShareRoles.getSecuredActionNameByRole(request.getRole(), securedActions)
+                .stream().sorted().findFirst();
+        if (!roleAction.isPresent()) {
+            log.error("No secured action found for role in checkResourceRight: {}", request);
+            return Future.failedFuture("role.invalid");
+        }
+        final Promise<CheckResourceRightResponseDTO> promise = Promise.promise();
+        // Load user's groups (same source as HTTP resource filters)
+        UserUtils.getUserInfos(vertx.eventBus(), request.getUserId(), user -> {
+            if (user == null) {
+                promise.complete(new CheckResourceRightResponseDTO(false));
+                return;
+            }
+            // Matches the element if the user is owner or has the action in its inherited shares
+            final ElementQuery query = new ElementQuery(true);
+            query.setId(request.getResourceId());
+            query.setActionExistsInInheritedShares(roleAction.get());
+            folderManager.countByQuery(query, user, countEvent -> {
+                if (countEvent.failed()) {
+                    log.error("Error checking right on document " + request.getResourceId(), countEvent.cause());
+                    promise.fail(countEvent.cause());
+                    return;
+                }
+                promise.complete(new CheckResourceRightResponseDTO(countEvent.result() == 1));
+            });
+        });
         return promise.future();
     }
 

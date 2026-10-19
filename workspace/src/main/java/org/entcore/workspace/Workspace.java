@@ -156,7 +156,7 @@ public class Workspace extends BaseServer {
 		}
 		// add broker listener for workspace resources with share support
 		WorkspaceShareBrokerListener shareBrokerListener = new WorkspaceShareBrokerListener(
-				securedActions, shareService, folderManager);
+				vertx, securedActions, shareService, folderManager);
 		BrokerProxyUtils.addBrokerProxy(shareBrokerListener, vertx, new AddressParameter("application", "workspace"));
 		// add broker listener for workspace resources (for resource info queries)
 		BrokerProxyUtils.addBrokerProxy(new ResourceBrokerListenerImpl(), vertx, new AddressParameter("application", "workspace"));
