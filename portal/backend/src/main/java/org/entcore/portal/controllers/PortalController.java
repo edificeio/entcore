@@ -22,47 +22,49 @@ package org.entcore.portal.controllers;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystemException;
-
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.portal.Portal;
+import org.entcore.portal.utils.MyAppsUtils;
 import org.entcore.portal.utils.ThemeUtils;
-import fr.wseduc.security.ActionType;
-import fr.wseduc.security.SecuredAction;
+import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.NoSuchFileException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.vertx.java.core.http.RouteMatcher;
-
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static io.vertx.core.Future.succeededFuture;
-import static org.entcore.common.user.SessionAttributes.*;
+import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
 public class PortalController extends BaseController {
 
@@ -167,62 +169,6 @@ public class PortalController extends BaseController {
 		});
 	}
 
-	@Get("/applications-list")
-	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
-	public void applicationsList(final HttpServerRequest request) {
-		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
-
-			@Override
-			public void handle(JsonObject session) {
-				JsonArray myAppsForceAsApplication = config.getJsonArray("my-apps-force-as-application", new JsonArray());
-				JsonArray myAppsForceAsConnector = config.getJsonArray("my-apps-force-as-connector", new JsonArray());
-				JsonArray apps = session.getJsonArray("apps", new JsonArray());
-				for (Object o : apps) {
-					if (!(o instanceof JsonObject)) continue;
-					JsonObject j = (JsonObject) o;
-					String d = j.getString("displayName");
-					if (d == null || d.trim().isEmpty()) {
-						d = j.getString("name");
-					}
-					if (d != null) {
-						j.put("displayName", d);
-					}
-					myAppsForceExternal(j, myAppsForceAsApplication, false);
-					myAppsForceExternal(j, myAppsForceAsConnector, true);
-				}
-				JsonObject json = new JsonObject()
-						.put("apps", apps);
-				renderJson(request, json);
-			}
-		});
-	}
-
-	private void myAppsForceExternal(JsonObject app, JsonArray rules, boolean forceIsExternalTo) {
-		for (int i = 0; i < rules.size(); i++) {
-			JsonObject jo = rules.getJsonObject(i);
-			String field = jo.getString("field");
-			Boolean fullMatch = jo.getBoolean("fullMatch", false);
-			Boolean caseSensitive = jo.getBoolean("caseSensitive", true);
-			String pattern = jo.getString("pattern");
-			if (field == null || pattern == null) continue;
-			if (fullMatch.booleanValue()) {
-				pattern = "^" + pattern + "$";
-			}
-			Pattern p;
-			if (caseSensitive.booleanValue()) {
-				p = Pattern.compile(pattern);
-			} else {
-				p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-			}
-			String fieldValue = app.getString(field);
-			if (fieldValue == null) continue;
-			Matcher m = p.matcher(fieldValue);
-			if (m.find()) {
-				app.put("isExternal", forceIsExternalTo);
-				return;
-			}
-		}
-	}
 
 	@Get("/adapter")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
@@ -662,6 +608,77 @@ public class PortalController extends BaseController {
 	public void myAppsConfig(HttpServerRequest request) {
 		JsonArray myAppsConfig = config.getJsonArray("my-apps-config", new JsonArray());
 		renderJson(request, myAppsConfig);
+	}
+
+
+	@Get("/applications-list")
+	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
+	public void applicationsList(final HttpServerRequest request) {
+		UserUtils.getSession(eb, request, session -> {
+
+			JsonObject json = new JsonObject()
+					.put("apps", getMyApplicationList(session));
+			renderJson(request, json);
+		});
+	}
+
+	private JsonArray getMyApplicationList(JsonObject session) {
+		JsonArray myAppsForceAsApplication = config.getJsonArray("my-apps-force-as-application", new JsonArray());
+		JsonArray myAppsForceAsConnector = config.getJsonArray("my-apps-force-as-connector", new JsonArray());
+		JsonArray apps = session.getJsonArray("apps", new JsonArray());
+		for (Object o : apps) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			String d = j.getString("displayName");
+			if (d == null || d.trim().isEmpty()) {
+				d = j.getString("name");
+			}
+			if (d != null) {
+				j.put("displayName", d);
+			}
+			myAppsForceExternal(j, myAppsForceAsApplication, false);
+			myAppsForceExternal(j, myAppsForceAsConnector, true);
+		}
+		return apps.copy();
+	}
+
+	private void myAppsForceExternal(JsonObject app, JsonArray rules, boolean forceIsExternalTo) {
+		for (int i = 0; i < rules.size(); i++) {
+			JsonObject jo = rules.getJsonObject(i);
+			String field = jo.getString("field");
+			Boolean fullMatch = jo.getBoolean("fullMatch", false);
+			Boolean caseSensitive = jo.getBoolean("caseSensitive", true);
+			String pattern = jo.getString("pattern");
+			if (field == null || pattern == null) continue;
+			if (fullMatch.booleanValue()) {
+				pattern = "^" + pattern + "$";
+			}
+			Pattern p;
+			if (caseSensitive.booleanValue()) {
+				p = Pattern.compile(pattern);
+			} else {
+				p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+			}
+			String fieldValue = app.getString(field);
+			if (fieldValue == null) continue;
+			Matcher m = p.matcher(fieldValue);
+			if (m.find()) {
+				app.put("isExternal", forceIsExternalTo);
+				return;
+			}
+		}
+	}
+
+	@Get("api/me/applications")
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void myApplications(HttpServerRequest request) {
+		UserUtils.getSession(eb, request, session  -> {
+			final JsonArray myAppsConfig = config.getJsonArray("my-apps-config", new JsonArray());
+			final String host = getHost(request);
+			final String lang = I18n.acceptLanguage(request);
+			renderJson(request, MyAppsUtils.buildMyApplications(getMyApplicationList(session), myAppsConfig,
+					key -> I18n.getInstance().translate(key, host, lang)));
+		});
 	}
 
 }
