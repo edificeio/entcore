@@ -5,6 +5,18 @@ import { Root } from './index';
  * Mock window.matchMedia used in useBreakpoint hook, and isolate Root's
  * layout logic from the real PageLayout / homepage containers implementation.
  */
+const deployedWidgets = [
+  'communities-widget',
+  'agenda-widget',
+  'bookmark-widget',
+  'briefme-widget',
+  'qwant',
+  'universalis-widget',
+  'cursus-widget',
+  'cantine-widget',
+  'rss-widget',
+].map((name) => ({ name }));
+
 const mocks = vi.hoisted(() => ({
   useBreakpoint: vi.fn(),
   updateOverlayOpen: vi.fn(),
@@ -47,8 +59,25 @@ vi.mock('@edifice.io/react', async () => {
   );
   PageLayoutMock.HelpZone = () => <div data-testid="help-zone" />;
 
+  // Real Masonry measures the DOM: Root only needs it to render its children
+  const MasonryMock = Object.assign(
+    ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="masonry">{children}</div>
+    ),
+    {
+      Item: ({
+        children,
+        span,
+      }: {
+        children: React.ReactNode;
+        span?: number;
+      }) => <div data-span={span}>{children}</div>,
+    },
+  );
+
   return {
     ...actual,
+    Masonry: MasonryMock,
     useBreakpoint: mocks.useBreakpoint,
     useEdificeClient: () => ({ init: true }),
     useOverlay: () => ({ updateOverlayOpen: mocks.updateOverlayOpen }),
@@ -122,8 +151,15 @@ vi.mock(
   }),
 );
 
+const preferences = (overrides: Record<string, unknown> = {}) => ({
+  widgets: deployedWidgets,
+  isVisible: () => true,
+  isLocked: () => false,
+  ...overrides,
+});
+
 beforeEach(() => {
-  mocks.useWidgetPreferences.mockReturnValue({ isVisible: () => true });
+  mocks.useWidgetPreferences.mockReturnValue(preferences());
 });
 
 describe('Root - MessageFlashListContainer responsive placement', () => {
@@ -264,7 +300,7 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
   });
 });
 
-describe('Root - Agenda widget', () => {
+describe('Root - widgets', () => {
   beforeEach(() => {
     mocks.useBreakpoint.mockReturnValue({ sm: true, md: true });
   });
@@ -273,28 +309,71 @@ describe('Root - Agenda widget', () => {
     vi.clearAllMocks();
   });
 
-  it('renders AgendaContainer when the widget is visible', () => {
-    mocks.useWidgetPreferences.mockReturnValue({ isVisible: () => true });
+  const renderedWidgetIds = () =>
+    within(screen.getByTestId('masonry'))
+      .getAllByTestId(/-container$/)
+      .map((el) => el.dataset.testid);
 
+  it('renders the widgets in the configured order', () => {
     render(<Root />);
 
-    expect(screen.getByTestId('agenda-container')).toBeInTheDocument();
+    expect(renderedWidgetIds()).toEqual([
+      'communities-container',
+      'agenda-container',
+      'useful-links-container',
+      'briefme-container',
+      'qwant-container',
+      'universalis-container',
+      'generation-hdf-container',
+      'cantine-container',
+      'rss-container',
+    ]);
   });
 
-  it('hides AgendaContainer when the user turned the widget off', () => {
-    mocks.useWidgetPreferences.mockReturnValue({ isVisible: () => false });
+  it('makes Communities span both columns on desktop and the others one', () => {
+    render(<Root />);
+
+    const spanOf = (testId: string) =>
+      screen.getByTestId(testId).parentElement?.dataset.span;
+    expect(spanOf('communities-container')).toBe('2');
+    expect(spanOf('agenda-container')).toBe('1');
+  });
+
+  it('hides a widget the user turned off', () => {
+    mocks.useWidgetPreferences.mockReturnValue(
+      preferences({ isVisible: (name: string) => name !== 'agenda-widget' }),
+    );
 
     render(<Root />);
 
     expect(screen.queryByTestId('agenda-container')).not.toBeInTheDocument();
+    expect(screen.getByTestId('universalis-container')).toBeInTheDocument();
   });
 
-  it('checks visibility by the catalog widget name', () => {
-    const isVisible = vi.fn().mockReturnValue(true);
-    mocks.useWidgetPreferences.mockReturnValue({ isVisible });
+  it('keeps a locked widget displayed even if its preference is off', () => {
+    mocks.useWidgetPreferences.mockReturnValue(
+      preferences({
+        isVisible: () => false,
+        isLocked: (name: string) => name === 'agenda-widget',
+      }),
+    );
 
     render(<Root />);
 
-    expect(isVisible).toHaveBeenCalledWith('agenda-widget');
+    expect(screen.getByTestId('agenda-container')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('universalis-container'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('hides a widget that is not deployed for the user', () => {
+    mocks.useWidgetPreferences.mockReturnValue(
+      preferences({ widgets: [{ name: 'communities-widget' }] }),
+    );
+
+    render(<Root />);
+
+    expect(screen.queryByTestId('agenda-container')).not.toBeInTheDocument();
+    expect(screen.getByTestId('communities-container')).toBeInTheDocument();
   });
 });
