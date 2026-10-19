@@ -1,29 +1,22 @@
 import {
   LoadingScreen,
+  Masonry,
   PageLayout,
   useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
-  AgendaContainer,
-  BriefMeContainer,
-  CantineContainer,
-  CommunitiesContainer,
   FavoritesContainer,
-  GenerationHdfContainer,
   LastInfosContainer,
   MessageFlashListContainer,
   NotificationListContainer,
-  QwantContainer,
   SchoolSpaceContainer,
-  UniversalisContainer,
-  UsefulLinksContainer,
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { useState } from 'react';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { WidgetsPersonalizationPanelContainer } from '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer';
-import { useWidgetPreferences } from '~/hooks/useWidgetPreferences';
+import { useHomepageWidgets } from '~/hooks/useHomepageWidgets';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
 import { useWidgetsPanelLayout } from './hooks/useWidgetsPanelLayout';
 
@@ -34,13 +27,14 @@ export const loader = async () => {
 
 export const Root = () => {
   const { init } = useEdificeClient();
-  const { isVisible } = useWidgetPreferences();
+  const { displayed: displayedWidgets } = useHomepageWidgets();
   // Lifted here because both layout hooks depend on it (overlay sync lives in
   // useNotificationsLayout)
   const [isWidgetsPanelOpen, setIsWidgetsPanelOpen] = useState(false);
   const { isSidebarOpen, toggleNotifications, closeNotifications } =
     useNotificationsLayout({ isWidgetsPanelOpen });
   const { md } = useBreakpoint();
+  const columns = md ? 2 : 1;
   const {
     isWidgetsPanelMounted,
     openWidgetsPanel,
@@ -79,16 +73,13 @@ export const Root = () => {
           <UserSpaceContainer onCustomizeWidgetsClick={openWidgetsPanel}>
             <FavoritesContainer />
           </UserSpaceContainer>
-          <CommunitiesContainer />
-          {isVisible('agenda-widget') && <AgendaContainer />}
-          {/* TODO: gate on isVisible('<widget-name>') once "Liens utiles"
-              is registered as a widget in the catalog */}
-          <UsefulLinksContainer />
-          <BriefMeContainer />
-          <QwantContainer />
-          <UniversalisContainer />
-          <GenerationHdfContainer />
-          <CantineContainer />
+          <Masonry columns={columns} gap="16">
+            {displayedWidgets.map(({ name, fullWidth, Component }) => (
+              <Masonry.Item key={name} span={fullWidth ? columns : 1}>
+                <Component />
+              </Masonry.Item>
+            ))}
+          </Masonry>
         </div>
       </PageLayout.Content>
 

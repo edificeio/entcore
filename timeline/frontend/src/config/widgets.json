@@ -1,0 +1,10 @@
+[
+  { "name": "communities-widget", "fullWidth": true },
+  { "name": "agenda-widget" },
+  { "name": "bookmark-widget" },
+  { "name": "briefme-widget" },
+  { "name": "qwant" },
+  { "name": "universalis-widget" },
+  { "name": "cursus-widget" },
+  { "name": "cantine-widget" }
+]
