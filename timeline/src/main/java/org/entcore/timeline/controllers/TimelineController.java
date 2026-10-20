@@ -34,6 +34,7 @@ import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -63,6 +64,8 @@ import org.entcore.timeline.events.*;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
+import org.entcore.timeline.util.EleaNotificationAdapter;
+import org.entcore.timeline.util.EleaNotificationAdapter.EleaError;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.StringReader;
@@ -1115,57 +1118,150 @@ public class TimelineController extends BaseController {
 							return;
 						}
 
-						final String senderId = json.getString("senderId", "");
-						final boolean pushMobile = json.getBoolean("pushMobile", false);
-						final String mobileTitle = json.getString("mobileTitle", "");
-						final String mobileBody = json.getString("mobileBody", "");
-
-						JsonObject params = new JsonObject().put("body", body);
-
-						final String username = json.getString("username", "");
-						if(senderId != null && !senderId.isEmpty() && !username.isEmpty()) {
-							params.put("username", username);
-							params.put("uri", "/userbook/annuaire#" + senderId + "#");
-						}
-						final String resourceUri = json.getString("resourceUri", "");
-						if (resourceUri != null && !resourceUri.isEmpty()) {
-							params.put("resourceUri", resourceUri);
-						}
-						final String subject = json.getString("subject", "");
-						if(subject != null && !subject.isEmpty()) {
-							params.put("subject", subject);
-						}
-						if (pushMobile && !mobileTitle.isEmpty()) {
-							JsonObject pushNotif = new JsonObject()
-									.put("title", mobileTitle)
-									.put("body", mobileBody);
-
-							params.put("pushNotif", pushNotif);
-						}
-
-					// Ajouter le projectId dans les params pour utilisation dans le template
-					params.put("projectId", projectId);
-
-					final String resource = json.getString("resource", "external_notification");
-					final String resourceId = String.valueOf(System.currentTimeMillis()) + resource;
-					final List<String> recipientsList = recipientsId.getList();
-					// Utiliser le projectId comme nom d'application
-					// Construire le nom de la notification : {projectId}.external_notification
-					// Exemple: "elea.external_notification" ou "monapp.external_notification"
-					final String notificationName = (projectId + "." + resource).toLowerCase();
-
-					// Récupérer la notification directement sans passer par le bus
-					TimelineNotificationsLoader.getInstance(vertx).getNotification(notificationName, notification -> {
-						if (notification == null || notification.isEmpty()) {
-							badRequest(request, "Invalid notification name: " + notificationName);
-							return;
-						}
-						log.info("Using notification template: " + notificationName);
-						processNotificationWithTemplate(notification, notificationName, request,
-								recipientsList, resourceId, senderId, params);
-					});
+						sendExternalNotification(projectId, json, request, result -> {
+							if (result.isLeft()) {
+								badRequest(request, result.left().getValue());
+							} else {
+								ok(request);
+							}
+						});
 					}
 				});
+	}
+
+	/**
+	 * Notification envoyée par ELEA, dans le format imposé par ELEA (voir {@link EleaNotificationAdapter}).
+	 * Réservée aux clients OAuth2 client_credentials dont le scope contient cette méthode :
+	 * sans ResourceFilter, une session utilisateur est refusée.
+	 */
+	@Post("/external/elea/notification")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void eleaNotification(final HttpServerRequest request) {
+		// Corps lu à la main : RequestUtils.bodyToJson répondrait à un JSON invalide hors de l'enveloppe ELEA
+		request.bodyHandler(buffer -> {
+			final JsonObject payload = EleaNotificationAdapter.parse(buffer.toString("UTF-8"));
+			final EleaError invalidPayload = EleaNotificationAdapter.validate(payload);
+			if (invalidPayload != null) {
+				renderEleaError(request, invalidPayload);
+				return;
+			}
+			final String recipientExternalId = EleaNotificationAdapter.getRecipient(payload);
+			final String senderExternalId = EleaNotificationAdapter.getSender(payload);
+			final String clientId = request instanceof SecureHttpServerRequest
+					? ((SecureHttpServerRequest) request).getAttribute("client_id") : null;
+			log.info(String.format("[Timeline.elea] Notification from client %s for recipient %s (sender %s, school %s, context %s)",
+					clientId, recipientExternalId, senderExternalId, payload.getValue("school"), payload.getValue("context")));
+
+			// Destinataire et émetteur sont des externalId AAF, résolus en une seule requête
+			final Set<String> externalIds = new HashSet<>();
+			externalIds.add(recipientExternalId);
+			if (senderExternalId != null) {
+				externalIds.add(senderExternalId);
+			}
+			notificationHelper.findUsersByExternalIds(externalIds).onComplete(lookup -> {
+				if (lookup.failed()) {
+					log.error("[Timeline.elea] Failed to resolve users " + externalIds, lookup.cause());
+					renderEleaError(request, EleaError.SERVICE_UNAVAILABLE);
+					return;
+				}
+				final JsonObject recipient = lookup.result().get(recipientExternalId);
+				if (recipient == null || isEmpty(recipient.getString("id"))) {
+					renderEleaError(request, EleaError.INVALID_RECIPIENT);
+					return;
+				}
+				final String recipientId = recipient.getString("id");
+				// Émetteur facultatif : inconnu, la notification part sans nom ni lien vers son profil
+				final JsonObject sender = senderExternalId != null ? lookup.result().get(senderExternalId) : null;
+				if (senderExternalId != null && sender == null) {
+					log.warn("[Timeline.elea] Unknown sender " + senderExternalId + ", notification sent without sender");
+				}
+				sendExternalNotification(EleaNotificationAdapter.ELEA_PROJECT_ID,
+						EleaNotificationAdapter.toExternalNotification(payload, recipientId, sender), request, result -> {
+							if (result.isRight() && "ok".equals(result.right().getValue().getString("status"))) {
+								renderJson(request, EleaNotificationAdapter.success());
+							} else {
+								log.error("[Timeline.elea] Failed to send notification to " + recipientId + " : "
+										+ (result.isLeft() ? result.left().getValue() : result.right().getValue().encode()));
+								renderEleaError(request, EleaError.INTERNAL_ERROR);
+							}
+						});
+			});
+		});
+		try {
+			// Reprise du corps s'il a été mis en pause par les filtres de sécurité
+			request.resume();
+		} catch (Exception e) {
+			// Corps déjà en lecture
+		}
+	}
+
+	private void renderEleaError(final HttpServerRequest request, final EleaError error) {
+		renderJson(request, error.toJson(), error.getStatus());
+	}
+
+	/**
+	 * Cœur commun aux routes de notification externe : construit les paramètres du template
+	 * {projectId}.{resource} à partir du payload générique, puis publie la notification.
+	 *
+	 * @param projectId Le dossier du template, utilisé comme nom d'application
+	 * @param json Le payload générique (recipients, body, subject, senderId, username, pushMobile...)
+	 * @param request La requête HTTP, dont les en-têtes servent au rendu des mails
+	 * @param handler Left si le template est introuvable, sinon Right avec le résultat du stockage
+	 */
+	private void sendExternalNotification(final String projectId, final JsonObject json,
+			final HttpServerRequest request, final Handler<Either<String, JsonObject>> handler) {
+		final JsonArray recipientsId = json.getJsonArray("recipients", new JsonArray());
+		final String body = json.getString("body", "");
+		final String senderId = json.getString("senderId", "");
+		final boolean pushMobile = json.getBoolean("pushMobile", false);
+		final String mobileTitle = json.getString("mobileTitle", "");
+		final String mobileBody = json.getString("mobileBody", "");
+
+		JsonObject params = new JsonObject().put("body", body);
+
+		final String username = json.getString("username", "");
+		if(senderId != null && !senderId.isEmpty() && !username.isEmpty()) {
+			params.put("username", username);
+			params.put("uri", "/userbook/annuaire#" + senderId + "#");
+		}
+		final String resourceUri = json.getString("resourceUri", "");
+		if (resourceUri != null && !resourceUri.isEmpty()) {
+			params.put("resourceUri", resourceUri);
+		}
+		final String subject = json.getString("subject", "");
+		if(subject != null && !subject.isEmpty()) {
+			params.put("subject", subject);
+		}
+		if (pushMobile && !mobileTitle.isEmpty()) {
+			JsonObject pushNotif = new JsonObject()
+					.put("title", mobileTitle)
+					.put("body", mobileBody);
+
+			params.put("pushNotif", pushNotif);
+		}
+
+		// Ajouter le projectId dans les params pour utilisation dans le template
+		params.put("projectId", projectId);
+
+		final String resource = json.getString("resource", "external_notification");
+		final String resourceId = String.valueOf(System.currentTimeMillis()) + resource;
+		final List<String> recipientsList = recipientsId.getList();
+		// Utiliser le projectId comme nom d'application
+		// Construire le nom de la notification : {projectId}.external_notification
+		// Exemple: "elea.external_notification" ou "monapp.external_notification"
+		final String notificationName = (projectId + "." + resource).toLowerCase();
+
+		// Récupérer la notification directement sans passer par le bus
+		TimelineNotificationsLoader.getInstance(vertx).getNotification(notificationName, notification -> {
+			if (notification == null || notification.isEmpty()) {
+				handler.handle(new Either.Left<String, JsonObject>("Invalid notification name: " + notificationName));
+				return;
+			}
+			log.info("Using notification template: " + notificationName);
+			processNotificationWithTemplate(notification, notificationName, request,
+					recipientsList, resourceId, senderId, params,
+					stored -> handler.handle(new Either.Right<String, JsonObject>(stored)));
+		});
 	}
 
 	/**
@@ -1173,16 +1269,17 @@ public class TimelineController extends BaseController {
 	 * Cette méthode exécute directement la logique du case "add" sans passer par le bus.
 	 *
 	 * @param notification Le JsonObject de la notification chargée
-	 * @param notificationName Le nom complet de la notification (ex: "timeline.external_notification_elea")
+	 * @param notificationName Le nom complet de la notification (ex: "elea.external_notification")
 	 * @param request La requête HTTP
 	 * @param recipientsList La liste des IDs des destinataires
 	 * @param resourceId L'ID de la ressource
 	 * @param senderId L'ID de l'expéditeur
 	 * @param params Les paramètres à passer au template (incluant projectId)
+	 * @param onStored Reçoit le résultat du stockage de la notification
 	 */
 	private void processNotificationWithTemplate(final JsonObject notification, final String notificationName,
 		final HttpServerRequest request, final List<String> recipientsList, final String resourceId,
-		final String senderId, final JsonObject params) {
+		final String senderId, final JsonObject params, final Handler<JsonObject> onStored) {
 
 		// Construire le JsonObject event comme le fait notifyTimeline
 		JsonArray recipients = new JsonArray();
@@ -1216,12 +1313,10 @@ public class TimelineController extends BaseController {
 			final JsonObject notificationToAdd = notificationResult.succeeded() ? notificationResult.result() : event;
 			final JsonArray recipientsIds = notificationToAdd.getJsonArray("recipientsIds", new JsonArray());
 			if (recipientsIds.isEmpty()) {
-				store.add(notificationToAdd, result -> {
-					ok(request);
-				});
+				store.add(notificationToAdd, onStored);
 			} else {
 				notificationHelper.resolveUsersAndMarkDeferredRecipients(recipientsIds, notificationToAdd, userList ->
-					storeAndSendImmediate(notificationToAdd, recipientsIds, userList, result -> ok(request))
+					storeAndSendImmediate(notificationToAdd, recipientsIds, userList, onStored)
 				);
 			}
 		});
