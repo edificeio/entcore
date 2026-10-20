@@ -56,6 +56,13 @@ public class ResourceBrokerListenerImpl extends MongoResourceBrokerListenerImpl 
                     final String contentType = metadata.getString("content-type", "");
                     if (contentType.startsWith("image/")) {
                         thumbnail = ResourceUtils.WORKSPACE_DOCUMENT_PATH + "/" + id;
+                    } else {
+                        // Other documents (videos) cannot get new thumbnails generated: use the first existing one, if any
+                        final JsonObject thumbnails = resource.getJsonObject("thumbnails");
+                        if (thumbnails != null && !thumbnails.isEmpty()) {
+                            thumbnail = ResourceUtils.WORKSPACE_DOCUMENT_PATH + "/" + id
+                                    + "?thumbnail=" + thumbnails.fieldNames().iterator().next();
+                        }
                     }
                 }
             }
