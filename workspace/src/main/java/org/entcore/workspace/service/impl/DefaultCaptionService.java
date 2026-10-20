@@ -85,7 +85,8 @@ public class DefaultCaptionService implements CaptionService {
                         s3caption.getInteger("timeout", 10000),
                         s3caption.getInteger("threshold", 100),
                         s3caption.getLong("openDelay", 10000L),
-                        s3caption.getInteger("poolSize", 16)
+                        s3caption.getInteger("poolSize", 16),
+                        true
                 );
             }
 
