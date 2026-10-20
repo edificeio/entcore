@@ -20,7 +20,9 @@ package org.entcore.timeline.controllers.helper;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
@@ -29,6 +31,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.dto.QuietHoursPreference;
 import org.entcore.common.user.dto.TimezonePreference;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -37,6 +41,8 @@ import org.entcore.timeline.services.TimelinePushNotifService;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 
 import java.time.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +64,31 @@ public class NotificationHelper {
     public NotificationHelper(Vertx vertx, TimelineConfigService configService) {
         this.configService = configService;
         this.eb = Server.getEventBus(vertx);
+    }
+
+    /**
+     * Resolves users from their AAF externalId (unique constraint on User.externalId).
+     * Completes with the users found, keyed by externalId, as {id, displayName}: an unknown externalId
+     * is simply absent from the map. Fails when Neo4j is unavailable.
+     */
+    public Future<Map<String, JsonObject>> findUsersByExternalIds(Collection<String> externalIds) {
+        final Promise<Map<String, JsonObject>> promise = Promise.promise();
+        Neo4j.getInstance().execute("MATCH (u:User) WHERE u.externalId IN {externalIds} " +
+                        "RETURN u.externalId AS externalId, u.id AS id, u.displayName AS displayName",
+                new JsonObject().put("externalIds", new JsonArray(new ArrayList<>(externalIds))),
+                Neo4jResult.validResultHandler(result -> {
+                    if (result.isLeft()) {
+                        promise.fail(result.left().getValue());
+                        return;
+                    }
+                    final Map<String, JsonObject> users = new HashMap<>();
+                    for (Object row : result.right().getValue()) {
+                        final JsonObject user = (JsonObject) row;
+                        users.put(user.getString("externalId"), user);
+                    }
+                    promise.complete(users);
+                }));
+        return promise.future();
     }
 
     /**
