@@ -134,7 +134,6 @@ export function RecipientListEdit({
     searchMinLength,
     handleSearchInputChange,
     handleSearchInputKeyUp,
-    resetSearchValue,
   } = useSearchRecipients({
     recipientType,
   });
@@ -168,6 +167,8 @@ export function RecipientListEdit({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipients]);
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   const renderListRecipients = (recipients: OptionListItemType[]) => {
     return recipients.map((recipient, index) => {
       const visible = searchAPIResults.find(
@@ -185,7 +186,7 @@ export function RecipientListEdit({
         setLoadingBookmarkIndex(index);
         try {
           await handleSelectRecipient(recipient);
-          resetSearchValue();
+          wrapperRef.current?.querySelector('input')?.select();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error('Failed to select recipient', error);
@@ -214,7 +215,10 @@ export function RecipientListEdit({
       : t('conversation.users.search.placeholder');
 
   return (
-    <div className="recipient-list-edit d-flex align-items-center flex-fill ps-8 pe-16 py-8">
+    <div
+      ref={wrapperRef}
+      className="recipient-list-edit d-flex align-items-center flex-fill ps-8 pe-16 py-8"
+    >
       <Combobox
         ref={comboboxRef}
         value={searchInputValue}
@@ -243,13 +247,13 @@ export function RecipientListEdit({
           const type =
             'size' in recipient || 'nbUsers' in recipient ? 'group' : 'user';
           return (
-            <li key={recipient.id} className="d-inline">
+            <div key={recipient.id} className="d-inline">
               <RecipientListSelectedItem
                 recipient={recipient}
                 type={type}
                 onRemoveClick={handleRemoveRecipient}
               />
-            </li>
+            </div>
           );
         })}
         renderList={(recipients) => (
