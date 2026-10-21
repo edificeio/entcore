@@ -138,6 +138,21 @@ export const useSearchRecipients = ({
     });
   };
 
+  const resetSearch = () => {
+    dispatch({
+      type: 'onChange',
+      payload: '',
+    });
+    if (defaultBookmarks) {
+      updateVisiblesFound(defaultBookmarks);
+    } else {
+      dispatch({
+        type: 'emptyResult',
+        payload: [],
+      });
+    }
+  };
+
   const searchMinLength = 1;
 
   const hasSearchNoResults =
@@ -153,5 +168,6 @@ export const useSearchRecipients = ({
     hasSearchNoResults,
     handleSearchInputChange,
     handleSearchInputKeyUp,
+    resetSearch,
   };
 };

@@ -134,6 +134,7 @@ export function RecipientListEdit({
     searchMinLength,
     handleSearchInputChange,
     handleSearchInputKeyUp,
+    resetSearch,
   } = useSearchRecipients({
     recipientType,
   });
@@ -186,6 +187,8 @@ export function RecipientListEdit({
         setLoadingBookmarkIndex(index);
         try {
           await handleSelectRecipient(recipient);
+          // ComboboxRef only exposes focus(), so reach the input through the DOM
+          // to select the kept search text.
           wrapperRef.current?.querySelector('input')?.select();
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -230,7 +233,14 @@ export function RecipientListEdit({
         onSearchInputChange={handleSearchInputChange}
         onSearchInputKeyUp={handleSearchInputKeyUp}
         variant="ghost"
-        onFocus={() => setIsComboboxFocused(true)}
+        onFocus={(event) => {
+          setIsComboboxFocused(true);
+          // The Combobox empties the input in the DOM when its list closes,
+          // without notifying us: drop the stale search kept in our state.
+          if (!event.target.value && searchInputValue) {
+            resetSearch();
+          }
+        }}
         onBlur={() => setIsComboboxFocused(false)}
         renderNoResult={
           <div className="p-8">
