@@ -15,6 +15,7 @@ import {
   MessageFlashListContainer,
   NotificationListContainer,
   QwantContainer,
+  RssContainer,
   SchoolSpaceContainer,
   UniversalisContainer,
   UsefulLinksContainer,
@@ -89,6 +90,7 @@ export const Root = () => {
           <UniversalisContainer />
           <GenerationHdfContainer />
           <CantineContainer />
+          <RssContainer />
         </div>
       </PageLayout.Content>
 
