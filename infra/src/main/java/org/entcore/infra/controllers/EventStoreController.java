@@ -189,7 +189,7 @@ public class EventStoreController extends BaseController {
 					final String module = body.getString("module");
 					if (!StringUtils.isEmpty(module)) {
 						eventStoreService.generateMobileEvent(TRACE_TYPE_MOBILE, user,
-								request, module, voidResponseHandler(request));
+								request, module, body, voidResponseHandler(request));
 					} else {
 						Renders.badRequest(request);
 					}
