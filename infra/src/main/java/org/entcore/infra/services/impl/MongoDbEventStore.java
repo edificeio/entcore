@@ -35,6 +35,7 @@ import static org.entcore.common.mongodb.MongoDbResult.validAsyncResultsHandler;
 import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.vertx.core.logging.Logger;
@@ -129,6 +130,12 @@ public class MongoDbEventStore implements EventStoreService {
 	@Override
 	public void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request,
 									 String module, final Handler<Either<String, Void>> handler) {
+		generateMobileEvent(eventType, user, request, module, null, handler);
+	}
+
+	@Override
+	public void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request,
+									 String module, JsonObject deviceInfo, final Handler<Either<String, Void>> handler) {
 		JsonObject event = new JsonObject();
 		event.put("event-type", eventType)
 				.put("module", module)
@@ -162,11 +169,28 @@ public class MongoDbEventStore implements EventStoreService {
 			if (ip != null) {
 				event.put("ip", ip);
 			}
+			putDeviceInfo(event, request, deviceInfo);
 		}
 		if (accessMobileDedupEnabled) {
 			storeWithCheck(event, user, module, eventType, handler);
 		} else {
 			store(event, handler);
+		}
+	}
+
+	/**
+	 * Uses the device info sent by the mobile app when present (most accurate),
+	 * otherwise the one resolved from the request (cookies or mobile app headers).
+	 */
+	private static void putDeviceInfo(final JsonObject event, final HttpServerRequest request, final JsonObject deviceInfo) {
+		final JsonObject fromRequest = generateEventAttributesFromRequest(request);
+		final JsonObject fromApp = deviceInfo != null ? deviceInfo : new JsonObject();
+		for (String field : Arrays.asList("osName", "osVersion", "deviceType", "deviceName")) {
+			final Object appValue = fromApp.getValue(field);
+			final Object value = appValue instanceof String ? appValue : fromRequest.getValue(field);
+			if (value != null) {
+				event.put(field, value);
+			}
 		}
 	}
 

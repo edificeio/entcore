@@ -65,6 +65,15 @@ public interface EventStoreService {
 
 	void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request, String module, final Handler<Either<String, Void>> handler);
 
+	/**
+	 * Default implementation for backward compatibility
+	 * @param deviceInfo device info sent by the mobile app (osName, osVersion, deviceName, deviceType), may be null
+	 */
+	default void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request, String module,
+									 JsonObject deviceInfo, final Handler<Either<String, Void>> handler) {
+		generateMobileEvent(eventType, user, request, module, handler);
+	}
+
 	void storeCustomEvent(String baseEventType, JsonObject payload);
 
   @Deprecated
