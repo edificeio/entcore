@@ -48,9 +48,9 @@ export const moncollegeConfig: WayfDomainConfig = {
     },
   ],
   partners: [
+    { logo: '/img/partners/logo-essonne.png', url: 'https://www.essonne.fr/' },
     { logo: '/img/partners/logo-internet-sans-crainte.png', url: 'https://www.internetsanscrainte.fr/' },
     { logo: '/img/partners/logo-ode.png', url: 'https://ode.essonne.fr/ode/index.xhtml?jfwid=c0898' },
-    { logo: '/img/partners/logo-essonne.png', url: 'https://www.essonne.fr/' },
     { logo: '/img/partners/logo-monecole.png', url: 'https://monecole.essonne.fr/' },
   ],
 };
