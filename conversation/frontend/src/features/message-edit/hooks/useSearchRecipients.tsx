@@ -12,7 +12,6 @@ type State = {
 };
 
 type Action =
-  | { type: 'resetSearch' }
   | { type: 'onChange'; payload: string }
   | { type: 'isSearching'; payload: boolean }
   | { type: 'addResult'; payload: OptionListItemType[] }
@@ -30,14 +29,6 @@ const initialState = {
 
 function reducer(state: State, action: Action) {
   switch (action.type) {
-    case 'resetSearch':
-      return {
-        ...state,
-        searchInputValue: '',
-        searchResults: [],
-        searchAPIResults: [],
-        isSearching: false,
-      };
     case 'onChange':
       return { ...state, searchInputValue: action.payload };
     case 'isSearching':
@@ -147,10 +138,19 @@ export const useSearchRecipients = ({
     });
   };
 
-  const resetSearchValue = () => {
+  const resetSearch = () => {
     dispatch({
-      type: 'resetSearch',
+      type: 'onChange',
+      payload: '',
     });
+    if (defaultBookmarks) {
+      updateVisiblesFound(defaultBookmarks);
+    } else {
+      dispatch({
+        type: 'emptyResult',
+        payload: [],
+      });
+    }
   };
 
   const searchMinLength = 1;
@@ -168,6 +168,6 @@ export const useSearchRecipients = ({
     hasSearchNoResults,
     handleSearchInputChange,
     handleSearchInputKeyUp,
-    resetSearchValue,
+    resetSearch,
   };
 };

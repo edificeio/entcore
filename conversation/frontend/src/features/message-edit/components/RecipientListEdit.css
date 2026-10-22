@@ -4,3 +4,14 @@
 .recipient-list-edit .combobox-trigger:focus-within {
   box-shadow: none;
 }
+
+/*
+Overrides of Combobox styles for RecipientList
+*/
+.recipient-list-edit .combobox-trigger {
+  width: auto;
+}
+
+.recipient-list-edit .combobox-trigger.input-group .input {
+  width: 100% !important; /* makes sure the input field is always under the selected recipients */
+}
