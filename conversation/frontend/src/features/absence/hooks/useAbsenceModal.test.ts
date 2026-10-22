@@ -53,7 +53,17 @@ function setEditorText(
 ) {
   (result.current.editor as any).current = {
     getContent: (as: 'html' | 'json' | 'plain') =>
-      as === 'json' ? { text } : text,
+      as === 'json'
+        ? {
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: text ? [{ type: 'text', text }] : [],
+              },
+            ],
+          }
+        : text,
   };
 }
 
@@ -247,6 +257,30 @@ describe('useAbsenceModal', () => {
     expect(result.current.canSave).toBe(true);
   });
 
+  it('treats a body made only of empty blocks or whitespace as empty', () => {
+    const { result } = renderAbsenceModal();
+
+    act(() => {
+      result.current.setValue('startDate', new Date('2026-01-10'));
+      result.current.setValue('endDate', new Date('2026-01-20'));
+      result.current.setValue('enabled', true);
+    });
+
+    // Empty paragraph: nothing to send.
+    act(() => setEditorText(result, ''));
+    act(() => result.current.handleBodyChange());
+    expect(result.current.canSave).toBe(false);
+
+    // Whitespace-only paragraph: still nothing to send.
+    act(() => setEditorText(result, '  \n '));
+    act(() => result.current.handleBodyChange());
+    expect(result.current.canSave).toBe(false);
+
+    act(() => setEditorText(result, 'Je suis en congés'));
+    act(() => result.current.handleBodyChange());
+    expect(result.current.canSave).toBe(true);
+  });
+
   it('calls onSave with a payload converted to UTC (local day boundaries)', async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const { result } = renderAbsenceModal({ onSave });
@@ -266,7 +300,15 @@ describe('useAbsenceModal', () => {
     expect(payload.enabled).toBe(true);
     expect(new Date(payload.startAt).getHours()).toBe(0);
     expect(new Date(payload.endAt).getHours()).toBe(23);
-    expect(payload.bodyJson).toEqual({ text: 'Je suis en congés' });
+    expect(payload.bodyJson).toEqual({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Je suis en congés' }],
+        },
+      ],
+    });
   });
 
   it('shows a success toast and closes the modal after a successful save', async () => {

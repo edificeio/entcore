@@ -73,10 +73,9 @@ function hasMeaningfulContent(node: JSONNode | null | undefined): boolean {
 
 /** Tells whether an editor body (JSON document or raw string) holds real content. */
 export function hasBodyContent(bodyJson: unknown): boolean {
-  if (bodyJson === undefined || bodyJson === null) return false;
   return typeof bodyJson === 'string'
     ? !!bodyJson.trim()
-    : hasMeaningfulContent(bodyJson as JSONNode);
+    : hasMeaningfulContent(bodyJson as JSONNode | null | undefined);
 }
 
 /** Returns the calendar day right after the given date. */
