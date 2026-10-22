@@ -1123,15 +1123,15 @@ public class DuplicateUsers {
 		final String query4 =
 				"MATCH (old:User {id: {oldId}}) " +
 						"WHERE old.oldId IS NULL OR old.oldId <> {id} " +
-						"WITH old, old.login AS oldLogin, old.password AS oldPassword, old.email AS oldEmail " +
+						"WITH old, old.login AS oldLogin, old.password AS oldPassword, old.email AS oldEmail, old.emailSearchField as oldEmailSearchField " +
 						"OPTIONAL MATCH (old)-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
 						"OPTIONAL MATCH (old)-[rUb:USERBOOK]->(ub:UserBook) " +
 						"OPTIONAL MATCH (old)-[r]-() " +
 						"DELETE r, rb, b, old, rUb, ub " +
-						"WITH oldLogin, oldPassword, oldEmail " +
+						"WITH oldLogin, oldPassword, oldEmail, oldEmailSearchField " +
 						"MATCH (u:User {id: {id}}) " +
 						"SET u.oldId = {id}, u.id = {oldId}, u.oldLogin = u.login, u.login = oldLogin, " +
-						"u.activationCode = null, u.password = oldPassword, u.email = oldEmail";
+						"u.activationCode = null, u.password = oldPassword, u.email = oldEmail, u.emailSearchField = oldEmailSearchField ";
 		tx.add(query4, params, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> res) {
