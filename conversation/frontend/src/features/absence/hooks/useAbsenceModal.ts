@@ -20,14 +20,6 @@ export interface AbsenceFormValues {
   endDate?: Date;
 }
 
-interface JSONNode {
-  type: string;
-  text?: string;
-  attrs?: Record<string, unknown>;
-  content?: JSONNode[];
-  marks?: { type: string; attrs?: Record<string, unknown> }[];
-}
-
 /** Converts a locally-picked calendar date to the UTC instant of its start of day. */
 function startOfLocalDayUtc(date: Date): string {
   const value = new Date(date);
@@ -40,42 +32,6 @@ function endOfLocalDayUtc(date: Date): string {
   const value = new Date(date);
   value.setHours(23, 59, 59, 999);
   return value.toISOString();
-}
-
-/** Nodes that are only containers or separators and carry no meaningful content on their own. */
-const STRUCTURAL_NODES: ReadonlySet<string> = new Set([
-  'doc',
-  'paragraph',
-  'heading',
-  'blockquote',
-  'bulletList',
-  'orderedList',
-  'listItem',
-  'hardBreak',
-]);
-
-function hasMeaningfulContent(node: JSONNode | null | undefined): boolean {
-  if (!node) return false;
-
-  // A text node counts only if it contains non-whitespace characters
-  if (node.type === 'text') {
-    return (node.text ?? '').trim().length > 0;
-  }
-
-  // A non-structural leaf node (custom-image, video, etc.) counts as real content
-  if (!node.content || node.content.length === 0) {
-    return !STRUCTURAL_NODES.has(node.type);
-  }
-
-  // A container has content if at least one of its children does
-  return node.content.some(hasMeaningfulContent);
-}
-
-/** Tells whether an editor body (JSON document or raw string) holds real content. */
-export function hasBodyContent(bodyJson: unknown): boolean {
-  return typeof bodyJson === 'string'
-    ? !!bodyJson.trim()
-    : hasMeaningfulContent(bodyJson as JSONNode | null | undefined);
 }
 
 /** Returns the calendar day right after the given date. */
@@ -106,10 +62,14 @@ export function useAbsenceModal({
   const toast = useToast();
   const editor = useRef<EditorRef>(null);
   const initialBodyJson = useRef(settings?.bodyJson);
-  const [hasBody, setHasBody] = useState(() =>
-    hasBodyContent(settings?.bodyJson),
-  );
+  const [isBodyEmpty, setIsBodyEmpty] = useState(true);
   const [isBodyDirty, setIsBodyDirty] = useState(false);
+
+  // The editor's `onContentChange` only fires on edits, so the initial state
+  // is read from the mounted editor (the ref is still null on first render).
+  useEffect(() => {
+    setIsBodyEmpty(editor.current?.isEmpty ?? true);
+  }, []);
 
   const defaultValues: AbsenceFormValues = {
     enabled: settings?.enabled ?? false,
@@ -152,12 +112,12 @@ export function useAbsenceModal({
     !!startDate &&
     !!endDate &&
     endDate >= startDate &&
-    (!enabled || hasBody) &&
+    (!enabled || !isBodyEmpty) &&
     isDirty;
 
   function handleBodyChange() {
     const bodyJson = editor.current?.getContent('json');
-    setHasBody(hasBodyContent(bodyJson));
+    setIsBodyEmpty(editor.current?.isEmpty ?? true);
     setIsBodyDirty(
       JSON.stringify(bodyJson) !== JSON.stringify(initialBodyJson.current),
     );

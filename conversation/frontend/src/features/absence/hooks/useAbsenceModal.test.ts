@@ -44,7 +44,7 @@ vi.mock('@edifice.io/react', async () => {
   };
 });
 
-/** Wires a fake editor ref exposing `getContent`, as the real Editor would. */
+/** Wires a fake editor ref exposing `getContent` and `isEmpty`, as the real Editor would. */
 function setEditorText(
   result: ReturnType<
     typeof renderHook<ReturnType<typeof useAbsenceModal>, unknown>
@@ -52,6 +52,7 @@ function setEditorText(
   text: string,
 ) {
   (result.current.editor as any).current = {
+    isEmpty: !text,
     getContent: (as: 'html' | 'json' | 'plain') =>
       as === 'json'
         ? {
@@ -132,6 +133,14 @@ describe('useAbsenceModal', () => {
         endAt: '2026-01-20T23:59:59.999Z',
         bodyJson: 'Je suis absent',
       },
+    });
+    // Editor mounted with the loaded body, unchanged: not empty, not dirty.
+    act(() => {
+      (result.current.editor as any).current = {
+        isEmpty: false,
+        getContent: () => 'Je suis absent',
+      };
+      result.current.handleBodyChange();
     });
 
     act(() => result.current.setValue('endDate', new Date('2026-01-25')));
@@ -257,7 +266,7 @@ describe('useAbsenceModal', () => {
     expect(result.current.canSave).toBe(true);
   });
 
-  it('treats a body made only of empty blocks or whitespace as empty', () => {
+  it('treats an empty editor body as empty', () => {
     const { result } = renderAbsenceModal();
 
     act(() => {
@@ -268,11 +277,6 @@ describe('useAbsenceModal', () => {
 
     // Empty paragraph: nothing to send.
     act(() => setEditorText(result, ''));
-    act(() => result.current.handleBodyChange());
-    expect(result.current.canSave).toBe(false);
-
-    // Whitespace-only paragraph: still nothing to send.
-    act(() => setEditorText(result, '  \n '));
     act(() => result.current.handleBodyChange());
     expect(result.current.canSave).toBe(false);
 
