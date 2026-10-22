@@ -13,6 +13,39 @@
 
 ### Security 
 
+## [7.0.0] - 2026-12-25
+
+### Messagerie : refonte de la table `usermessages` (script `029`)
+
+Le script `conversation/backend/src/main/resources/sql/029-conversation-optimize-usermessage-model.sql`
+crée la table `conversation.usermessages_v2` et la remplit à partir de `conversation.usermessages`
+et `conversation.messages`. L'ancienne table `usermessages` est conservée.
+
+**Ce script peut être long.** Sa durée est proportionnelle au volume de la messagerie : quelques
+secondes sur une petite plate-forme, de l'ordre de 35 à 50 minutes pour 130 à 175 millions de lignes
+dans `usermessages`. Prévoir aussi l'espace disque de la nouvelle table et de ses index, de l'ordre de
+65 % de la taille actuelle de `usermessages` (`SELECT pg_size_pretty(pg_total_relation_size('conversation.usermessages'));`).
+
+Comme toutes les migrations SQL d'Ent-Core, le script est joué au démarrage du module `conversation`,
+dans une seule transaction. Sur une grosse plate-forme, le module peut journaliser
+`Error when commit transaction : Timed out…` au bout de 30 secondes **alors que la migration continue en base**.
+Avant de conclure à un échec, vérifier qu'elle ne tourne plus :
+
+	SELECT pid, now() - query_start AS duree, state FROM pg_stat_activity WHERE query ILIKE '%usermessages_v2%';
+
+### En cas d'échec
+
+1. Jouer le script à la main, en dehors de l'application :
+
+   	psql -d <base> -v ON_ERROR_STOP=1 -f 029-conversation-optimize-usermessage-model.sql
+
+2. Redémarrer le module `conversation`.
+
+Le script est idempotent : si `conversation.usermessages_v2` existe déjà, la copie est ignorée, et seuls
+les fonctions et triggers sont recréés. Au redémarrage, le module rejoue donc le script sans refaire la
+migration, puis l'enregistre comme joué dans `conversation.scripts`.
+
+
 ## [3.3.0] - 2019-01-04
 
 ### Added
