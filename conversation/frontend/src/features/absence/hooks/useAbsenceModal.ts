@@ -20,6 +20,14 @@ export interface AbsenceFormValues {
   endDate?: Date;
 }
 
+interface JSONNode {
+  type: string;
+  text?: string;
+  attrs?: Record<string, unknown>;
+  content?: JSONNode[];
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+}
+
 /** Converts a locally-picked calendar date to the UTC instant of its start of day. */
 function startOfLocalDayUtc(date: Date): string {
   const value = new Date(date);
@@ -34,8 +42,41 @@ function endOfLocalDayUtc(date: Date): string {
   return value.toISOString();
 }
 
-function hasBodyContent(bodyJson: unknown): boolean {
-  return typeof bodyJson === 'string' ? !!bodyJson.trim() : !!bodyJson;
+/** Nodes that are only containers or separators and carry no meaningful content on their own. */
+const STRUCTURAL_NODES: ReadonlySet<string> = new Set([
+  'doc',
+  'paragraph',
+  'heading',
+  'blockquote',
+  'bulletList',
+  'orderedList',
+  'listItem',
+  'hardBreak',
+]);
+
+function hasMeaningfulContent(node: JSONNode | null | undefined): boolean {
+  if (!node) return false;
+
+  // A text node counts only if it contains non-whitespace characters
+  if (node.type === 'text') {
+    return (node.text ?? '').trim().length > 0;
+  }
+
+  // A non-structural leaf node (custom-image, video, etc.) counts as real content
+  if (!node.content || node.content.length === 0) {
+    return !STRUCTURAL_NODES.has(node.type);
+  }
+
+  // A container has content if at least one of its children does
+  return node.content.some(hasMeaningfulContent);
+}
+
+/** Tells whether an editor body (JSON document or raw string) holds real content. */
+export function hasBodyContent(bodyJson: unknown): boolean {
+  if (bodyJson === undefined || bodyJson === null) return false;
+  return typeof bodyJson === 'string'
+    ? !!bodyJson.trim()
+    : hasMeaningfulContent(bodyJson as JSONNode);
 }
 
 /** Returns the calendar day right after the given date. */
@@ -117,7 +158,7 @@ export function useAbsenceModal({
 
   function handleBodyChange() {
     const bodyJson = editor.current?.getContent('json');
-    setHasBody(hasBodyContent(editor.current?.getContent('plain')));
+    setHasBody(hasBodyContent(bodyJson));
     setIsBodyDirty(
       JSON.stringify(bodyJson) !== JSON.stringify(initialBodyJson.current),
     );
