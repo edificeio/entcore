@@ -51,7 +51,5 @@ export const ent05Config: WayfDomainConfig = {
   ],
   partners: [
     { logo: '/img/partners/logo-hautes-alpes.png', url: 'https://www.hautes-alpes.fr/' },
-    { logo: '/img/partners/logo-ac-aix-marseille.png', url: 'https://www.ac-aix-marseille.fr/' },
-    { logo: '/img/partners/logo-ue.png' },
   ],
 };
