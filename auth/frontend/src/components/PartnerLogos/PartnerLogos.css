@@ -13,10 +13,12 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  max-width: 100%;
 }
 
 .wayf-partners__logo {
   max-height: 40px;
+  max-width: 100%;
   width: auto;
   object-fit: contain;
   display: block;
