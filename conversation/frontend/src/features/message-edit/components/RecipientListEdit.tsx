@@ -134,7 +134,7 @@ export function RecipientListEdit({
     searchMinLength,
     handleSearchInputChange,
     handleSearchInputKeyUp,
-    resetSearchValue,
+    resetSearch,
   } = useSearchRecipients({
     recipientType,
   });
@@ -168,6 +168,8 @@ export function RecipientListEdit({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recipients]);
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   const renderListRecipients = (recipients: OptionListItemType[]) => {
     return recipients.map((recipient, index) => {
       const visible = searchAPIResults.find(
@@ -185,7 +187,9 @@ export function RecipientListEdit({
         setLoadingBookmarkIndex(index);
         try {
           await handleSelectRecipient(recipient);
-          resetSearchValue();
+          // ComboboxRef only exposes focus(), so reach the input through the DOM
+          // to select the kept search text.
+          wrapperRef.current?.querySelector('input')?.select();
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error('Failed to select recipient', error);
@@ -214,7 +218,10 @@ export function RecipientListEdit({
       : t('conversation.users.search.placeholder');
 
   return (
-    <div className="recipient-list-edit d-flex align-items-center flex-fill ps-8 pe-16 py-8">
+    <div
+      ref={wrapperRef}
+      className="recipient-list-edit d-flex align-items-center flex-fill ps-8 pe-16 py-8"
+    >
       <Combobox
         ref={comboboxRef}
         value={searchInputValue}
@@ -226,7 +233,14 @@ export function RecipientListEdit({
         onSearchInputChange={handleSearchInputChange}
         onSearchInputKeyUp={handleSearchInputKeyUp}
         variant="ghost"
-        onFocus={() => setIsComboboxFocused(true)}
+        onFocus={(event) => {
+          setIsComboboxFocused(true);
+          // The Combobox empties the input in the DOM when its list closes,
+          // without notifying us: drop the stale search kept in our state.
+          if (!event.target.value && searchInputValue) {
+            resetSearch();
+          }
+        }}
         onBlur={() => setIsComboboxFocused(false)}
         renderNoResult={
           <div className="p-8">
@@ -243,13 +257,13 @@ export function RecipientListEdit({
           const type =
             'size' in recipient || 'nbUsers' in recipient ? 'group' : 'user';
           return (
-            <li key={recipient.id} className="d-inline">
+            <div key={recipient.id} className="d-inline">
               <RecipientListSelectedItem
                 recipient={recipient}
                 type={type}
                 onRemoveClick={handleRemoveRecipient}
               />
-            </li>
+            </div>
           );
         })}
         renderList={(recipients) => (
