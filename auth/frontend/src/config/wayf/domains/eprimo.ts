@@ -42,4 +42,5 @@ export const eprimoConfig: WayfDomainConfig = {
       acs: '/auth/login',
     },
   ],
+  partners: [{ logo: '/img/partners/logo-e-primo.png' }],
 };
