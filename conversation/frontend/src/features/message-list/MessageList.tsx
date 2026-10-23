@@ -181,6 +181,7 @@ export function MessageList() {
             message={message}
             checked={!!checked}
             checkbox={checkbox}
+            isDraggable={folderId !== 'trash'}
           />
         )}
       />

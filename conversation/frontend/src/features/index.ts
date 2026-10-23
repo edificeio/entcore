@@ -6,3 +6,4 @@ export * from './modals/RenameFolderModal';
 export * from './modals/SignatureModal';
 export * from './modals/TrashFolderModal';
 export * from './modals/MoveMessageToFolderModal';
+export * from './message-list/components/MessageDragAndDrop';
