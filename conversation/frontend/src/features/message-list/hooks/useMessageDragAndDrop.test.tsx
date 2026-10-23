@@ -1,6 +1,9 @@
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { act } from 'react';
+import { mockCurrentUserPreview, mockMessageOfOutbox } from '~/mocks';
 import { renderHook, wrapper } from '~/mocks/setup';
+import { MessageMetadata } from '~/models';
+import { useConfirmModalStore } from '~/store';
 import { useActionsStore } from '~/store/actions';
 import {
   canDropMessages,
@@ -12,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   useSelectedFolder: vi.fn(),
   moveMutate: vi.fn(),
   trashMutate: vi.fn(),
+  folderMessages: [] as MessageMetadata[],
 }));
 
 vi.mock('~/hooks/useSelectedFolder', () => ({
@@ -26,6 +30,7 @@ vi.mock('~/services', async () => {
     useMoveMessage: () => ({ mutate: mocks.moveMutate }),
     useTrashMessage: () => ({ mutate: mocks.trashMutate }),
     useFolderUtils: () => ({ getFolderNameById: () => 'My folder' }),
+    useFolderMessages: () => ({ messages: mocks.folderMessages }),
   };
 });
 
@@ -34,7 +39,28 @@ vi.mock('@edifice.io/react', async () => {
     await vi.importActual<typeof import('@edifice.io/react')>(
       '@edifice.io/react',
     );
-  return { ...actual, useToast: () => ({ success: vi.fn() }) };
+  return {
+    ...actual,
+    useToast: () => ({ success: vi.fn() }),
+    useEdificeClient: () => ({
+      appCode: 'conversation',
+      user: { userId: mockCurrentUserPreview.id },
+    }),
+  };
+});
+
+/** A message received by the current user */
+const receivedMessage = (id: string): MessageMetadata => ({
+  ...mockMessageOfOutbox,
+  id,
+  from: { id: 'someone-else', displayName: 'Someone', profile: 'Teacher' },
+  to: { users: [mockCurrentUserPreview], groups: [] },
+});
+
+/** A message sent by the current user to others */
+const sentMessage = (id: string): MessageMetadata => ({
+  ...mockMessageOfOutbox,
+  id,
 });
 
 const dragStart = (messageId: string) =>
@@ -62,30 +88,42 @@ describe('getDraggedMessageIds', () => {
 
 describe('canDropMessages', () => {
   it.each([
-    ['inbox', 'folder-1'],
-    ['outbox', 'folder-1'],
-    ['folder-2', 'folder-1'],
-    ['inbox', 'trash'],
-    ['draft', 'trash'],
-    ['folder-1', 'trash'],
-    ['folder-1', 'inbox'],
-  ])('allows dropping from %s to %s', (source, target) => {
-    expect(canDropMessages(source, target)).toBe(true);
-  });
+    ['inbox', 'folder-1', ['inbox']],
+    ['outbox', 'folder-1', ['outbox']],
+    ['folder-2', 'folder-1', ['inbox']],
+    ['inbox', 'trash', ['inbox']],
+    ['draft', 'trash', ['draft']],
+    ['folder-1', 'trash', ['inbox']],
+    ['folder-1', 'inbox', ['inbox']],
+    ['folder-1', 'outbox', ['outbox']],
+    ['folder-1', 'draft', ['draft']],
+    ['folder-1', 'inbox', ['inbox', 'outbox']],
+    ['folder-1', 'outbox', ['inbox', 'outbox']],
+  ])(
+    'allows dropping from %s to %s messages from %j',
+    (source, target, origins) => {
+      expect(canDropMessages(source, target, origins)).toBe(true);
+    },
+  );
 
   it.each([
-    ['trash', 'folder-1'],
-    ['draft', 'folder-1'],
-    ['folder-1', 'folder-1'],
-    ['inbox', 'inbox'],
-    ['outbox', 'inbox'],
-    ['draft', 'inbox'],
-    ['trash', 'inbox'],
-    ['folder-1', 'outbox'],
-    [undefined, 'folder-1'],
-  ])('forbids dropping from %s to %s', (source, target) => {
-    expect(canDropMessages(source, target)).toBe(false);
-  });
+    ['trash', 'folder-1', ['inbox']],
+    ['draft', 'folder-1', ['draft']],
+    ['folder-1', 'folder-1', ['inbox']],
+    ['inbox', 'inbox', ['inbox']],
+    ['outbox', 'inbox', ['outbox']],
+    ['draft', 'inbox', ['draft']],
+    ['trash', 'inbox', ['inbox']],
+    ['folder-1', 'outbox', ['inbox']],
+    ['folder-1', 'inbox', ['outbox']],
+    ['folder-1', 'draft', ['inbox', 'outbox']],
+    [undefined, 'folder-1', ['inbox']],
+  ])(
+    'forbids dropping from %s to %s messages from %j',
+    (source, target, origins) => {
+      expect(canDropMessages(source, target, origins)).toBe(false);
+    },
+  );
 });
 
 describe('useMessageDragAndDrop', () => {
@@ -93,6 +131,12 @@ describe('useMessageDragAndDrop', () => {
     vi.clearAllMocks();
     mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
     useActionsStore.getState().setSelectedMessageIds(['a', 'b']);
+    useConfirmModalStore.getState().closeModal();
+    mocks.folderMessages = [
+      receivedMessage('a'),
+      sentMessage('b'),
+      receivedMessage('z'),
+    ];
   });
 
   it('exposes the dragged messages while dragging', () => {
@@ -118,17 +162,53 @@ describe('useMessageDragAndDrop', () => {
     expect(mocks.trashMutate).not.toHaveBeenCalled();
   });
 
-  it('removes the selected messages from their folder when dropped on the inbox', () => {
+  it('only accepts the origin folders of the dragged messages', () => {
     mocks.useSelectedFolder.mockReturnValue({ folderId: 'folder-1' });
     const { result } = renderHook(() => useMessageDragAndDrop(), { wrapper });
 
     act(() => result.current.handleDragStart(dragStart('a')));
-    act(() => result.current.handleDragEnd(dragEnd('a', 'inbox')));
 
+    expect(result.current.canDropOn('inbox')).toBe(true);
+    expect(result.current.canDropOn('outbox')).toBe(true);
+    expect(result.current.canDropOn('draft')).toBe(false);
+    expect(result.current.canDropOn('folder-2')).toBe(true);
+  });
+
+  it('asks for confirmation before putting messages back to their origin', () => {
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'folder-1' });
+    const { result } = renderHook(() => useMessageDragAndDrop(), { wrapper });
+
+    act(() => result.current.handleDragStart(dragStart('a')));
+    act(() => result.current.handleDragEnd(dragEnd('a', 'outbox')));
+
+    expect(useConfirmModalStore.getState().isOpen).toBe(true);
+    expect(mocks.moveMutate).not.toHaveBeenCalled();
+  });
+
+  it('puts every message back to its own origin once confirmed', () => {
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'folder-1' });
+    const { result } = renderHook(() => useMessageDragAndDrop(), { wrapper });
+
+    act(() => result.current.handleDragStart(dragStart('a')));
+    act(() => result.current.handleDragEnd(dragEnd('a', 'outbox')));
+    act(() => useConfirmModalStore.getState().onSuccess());
+
+    // "inbox" is the API target removing messages from their user's folder
     expect(mocks.moveMutate).toHaveBeenCalledWith(
       { folderId: 'inbox', id: ['a', 'b'] },
       expect.anything(),
     );
+  });
+
+  it('refuses a system folder which is not the origin of the dragged message', () => {
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'folder-1' });
+    const { result } = renderHook(() => useMessageDragAndDrop(), { wrapper });
+
+    act(() => result.current.handleDragStart(dragStart('z')));
+    act(() => result.current.handleDragEnd(dragEnd('z', 'outbox')));
+
+    expect(useConfirmModalStore.getState().isOpen).toBe(false);
+    expect(mocks.moveMutate).not.toHaveBeenCalled();
   });
 
   it('trashes only the dragged message when it is not selected', () => {
