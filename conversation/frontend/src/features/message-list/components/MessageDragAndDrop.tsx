@@ -11,6 +11,7 @@ import { IconMail } from '@edifice.io/react/icons';
 import { createContext, ReactNode, useContext } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageDragAndDrop } from '../hooks/useMessageDragAndDrop';
+import { useMessageDragAnnouncements } from '../hooks/useMessageDragAnnouncements';
 
 /** Tells whether the dragged messages, if any, can be dropped on a folder. */
 const CanDropMessagesOnContext = createContext<(folderId: string) => boolean>(
@@ -63,6 +64,7 @@ export function MessageDragAndDrop({ children }: { children: ReactNode }) {
     handleDragEnd,
     handleDragCancel,
   } = useMessageDragAndDrop();
+  const announcements = useMessageDragAnnouncements(canDropOn);
   // A small move is required before dragging, so that clicks keep opening messages.
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -74,6 +76,7 @@ export function MessageDragAndDrop({ children }: { children: ReactNode }) {
     <DndContext
       sensors={sensors}
       collisionDetection={pointerWithin}
+      accessibility={{ announcements }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
@@ -85,7 +88,7 @@ export function MessageDragAndDrop({ children }: { children: ReactNode }) {
         {count > 0 && (
           <div
             className="d-inline-flex align-items-center gap-8 px-12 py-8 rounded bg-white border shadow"
-            data-testid="message-drag-overlay"
+            data-testid="conversation-drag-overlay"
           >
             <IconMail width={20} height={20} />
             <span className="fw-bold">
