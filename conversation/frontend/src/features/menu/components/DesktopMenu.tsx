@@ -52,10 +52,11 @@ export function DesktopMenu() {
   const canDropMessagesOn = useCanDropMessagesOn();
   const { active, over } = useDndContext();
 
-  // Folder currently hovered by dragged messages, when they can be dropped there.
+  // Folder currently hovered by dragged messages, even if they can't be dropped there.
   const overFolderId = active
     ? (over?.data.current?.id as string | undefined)
     : undefined;
+  // Same folder, only when the dragged messages can be dropped there.
   const dropFolderId =
     overFolderId && canDropMessagesOn(overFolderId) ? overFolderId : undefined;
   useUnfoldOnDragHover(overFolderId);
@@ -197,7 +198,7 @@ function SystemFolderDropZone({
     data: { id: folderId },
   });
   return (
-    <div ref={setNodeRef} data-testid={`${folderId}-drop-zone`}>
+    <div ref={setNodeRef} data-testid={`conversation-dropzone-${folderId}`}>
       {children}
     </div>
   );
