@@ -1,3 +1,4 @@
+import { useDndContext, useDroppable } from '@dnd-kit/core';
 import {
   Button,
   Menu,
@@ -21,10 +22,13 @@ import {
   ProgressBar,
   ProgressBarProps,
 } from '~/components';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useUsedSpace } from '~/hooks/useUsedSpace';
+import { canDropMessages } from '~/features/message-list/hooks/useMessageDragAndDrop';
 import { buildTree, useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
+import { useUnfoldOnDragHover } from '../hooks/useUnfoldOnDragHover';
 import './DesktopMenu.css';
 import { DesktopMenuSkeleton } from './DesktopMenuSkeleton';
 
@@ -46,6 +50,26 @@ export function DesktopMenu() {
   } = useMenuData();
   const { usage, quota } = useUsedSpace();
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
+  const { folderId } = useSelectedFolder();
+  const { active, over } = useDndContext();
+  const { setNodeRef: setInboxDropRef } = useDroppable({
+    id: 'inbox-drop-zone',
+    data: { id: 'inbox' },
+  });
+  const { setNodeRef: setTrashDropRef } = useDroppable({
+    id: 'trash-drop-zone',
+    data: { id: 'trash' },
+  });
+
+  // Folder currently hovered by dragged messages, when they can be dropped there.
+  const overFolderId = active
+    ? (over?.data.current?.id as string | undefined)
+    : undefined;
+  const dropFolderId =
+    overFolderId && canDropMessages(folderId, overFolderId)
+      ? overFolderId
+      : undefined;
+  useUnfoldOnDragHover(overFolderId);
 
   const userFolders = useMemo(() => {
     const foldersTree = foldersTreeQuery.data;
@@ -85,14 +109,17 @@ export function DesktopMenu() {
   return (
     <Menu label={t('generic.folders')}>
       <Menu.Item>
-        <Menu.Button
-          selected={selectedSystemFolderId === 'inbox'}
-          leftIcon={<IconDepositeInbox />}
-          onClick={() => navigateTo('inbox')}
-          rightIcon={renderBadge(counters.inbox)}
-        >
-          {t('inbox.folder')}
-        </Menu.Button>
+        <div ref={setInboxDropRef} data-testid="inbox-drop-zone">
+          <Menu.Button
+            selected={selectedSystemFolderId === 'inbox'}
+            leftIcon={<IconDepositeInbox />}
+            onClick={() => navigateTo('inbox')}
+            rightIcon={renderBadge(counters.inbox)}
+            className={clsx({ 'drop-target': dropFolderId === 'inbox' })}
+          >
+            {t('inbox.folder')}
+          </Menu.Button>
+        </div>
         <Menu.Button
           selected={selectedSystemFolderId === 'outbox'}
           leftIcon={<IconSend />}
@@ -108,13 +135,16 @@ export function DesktopMenu() {
         >
           {t('draft.folder')}
         </Menu.Button>
-        <Menu.Button
-          selected={selectedSystemFolderId === 'trash'}
-          leftIcon={<IconDelete />}
-          onClick={() => navigateTo('trash')}
-        >
-          {t('trash.folder')}
-        </Menu.Button>
+        <div ref={setTrashDropRef} data-testid="trash-drop-zone">
+          <Menu.Button
+            selected={selectedSystemFolderId === 'trash'}
+            leftIcon={<IconDelete />}
+            onClick={() => navigateTo('trash')}
+            className={clsx({ 'drop-target': dropFolderId === 'trash' })}
+          >
+            {t('trash.folder')}
+          </Menu.Button>
+        </div>
       </Menu.Item>
       <Menu.Item>
         <div className="w-100 border-bottom pt-8 mb-12"></div>
@@ -125,7 +155,12 @@ export function DesktopMenu() {
           <Tree
             nodes={userFolders}
             onTreeItemClick={(folderId) => navigateTo(folderId, true)}
-            renderNode={UserFolderItem}
+            renderNode={({ node }) => (
+              <UserFolderItem
+                node={node}
+                isDropTarget={dropFolderId === node.id}
+              />
+            )}
             selectedNodeId={selectedUserFolderId}
           />
           <Button
@@ -154,8 +189,20 @@ export function DesktopMenu() {
   );
 }
 
-function UserFolderItem({ node }: { node: TreeItem }) {
+function UserFolderItem({
+  node,
+  isDropTarget,
+}: {
+  node: TreeItem;
+  isDropTarget: boolean;
+}) {
   const { renderBadge } = useMenuData();
+  // Every folder row, sub-folders included, is a drop target for dragged messages.
+  // (The DndTree of @edifice.io/react only registers root folders.)
+  const { setNodeRef } = useDroppable({
+    id: `folder-drop-zone-${node.id}`,
+    data: { id: node.id },
+  });
   const [dropdownOpened, setDropdownOpened] = useState(false);
   const handleDropdownOpened = (visible: boolean) => {
     setDropdownOpened(visible);
@@ -163,9 +210,10 @@ function UserFolderItem({ node }: { node: TreeItem }) {
 
   return (
     <div
+      ref={setNodeRef}
       className={clsx(
         'folder-item my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center',
-        { 'dropdown-opened': dropdownOpened },
+        { 'dropdown-opened': dropdownOpened, 'drop-target': isDropTarget },
       )}
     >
       <div

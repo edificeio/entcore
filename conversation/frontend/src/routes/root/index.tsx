@@ -12,6 +12,7 @@ import { Config, existingActions } from '~/config';
 import {
   CreateFolderModal,
   DesktopMenu,
+  MessageDragAndDrop,
   MobileMenu,
   MoveMessageToFolderModal,
   RenameFolderModal,
@@ -104,13 +105,15 @@ export function Component() {
         )}
 
         {lg && (
-          <div className="d-flex overflow-x-hidden flex-grow-1 me-n16 ">
-            <div className="d-print-none desktop-menu flex-column p-16 ps-0 gap-16 border-end bg-white overflow-y-auto overflow-x-hidden">
-              <DesktopMenu />
-            </div>
+          <MessageDragAndDrop>
+            <div className="d-flex overflow-x-hidden flex-grow-1 me-n16 ">
+              <div className="d-print-none desktop-menu flex-column p-16 ps-0 gap-16 border-end bg-white overflow-y-auto overflow-x-hidden">
+                <DesktopMenu />
+              </div>
 
-            <ScrollableOutlet />
-          </div>
+              <ScrollableOutlet />
+            </div>
+          </MessageDragAndDrop>
         )}
 
         {(openedModal === 'create' || openedModal === 'create-then-move') && (
