@@ -1,0 +1,62 @@
+.wayf-scroll-area {
+  position: relative;
+  height: 100%;
+}
+
+.wayf-scroll-area__viewport {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--primitive-spacer-32);
+  padding-inline: var(--primitive-spacer-64);
+  padding-block-end: var(--primitive-spacer-32);
+  overflow-y: auto;
+}
+
+/* Shadows overlay the content (siblings of the scroller, not its background).
+   Each one is an empty box placed just outside the edge: a box-shadow is never
+   painted inside its own box, so only the part cast onto the list is visible.
+   The design-system shadow casts downward; the bottom one is flipped vertically
+   so the same token also casts upward. */
+.wayf-scroll-area__shadow {
+  position: absolute;
+  inset-inline: -20px;
+  height: 10px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.wayf-scroll-area__shadow[data-visible='true'] {
+  opacity: 1;
+}
+
+.wayf-scroll-area__shadow--top {
+  top: -10px;
+  box-shadow: var(--primitive-box-shadow);
+}
+
+.wayf-scroll-area__shadow--bottom {
+  bottom: -10px;
+  box-shadow: var(--primitive-box-shadow);
+  transform: scaleY(-1);
+}
+
+/* Mobile: the page scrolls, not the list. */
+@media (max-width: 767px) {
+  .wayf-scroll-area {
+    height: auto;
+  }
+
+  .wayf-scroll-area__viewport {
+    height: auto;
+    padding-inline: var(--primitive-spacer-24);
+    padding-block-end: 0;
+    overflow-y: visible;
+  }
+
+  .wayf-scroll-area__shadow {
+    display: none;
+  }
+}
