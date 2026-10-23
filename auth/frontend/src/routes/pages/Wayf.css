@@ -64,7 +64,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--primitive-spacer-24);
-  padding-block: var(--primitive-spacer-48);
+  padding-block: var(--primitive-spacer-48) 0;
   overflow: hidden;
 }
 
@@ -78,12 +78,6 @@
 .wayf-view-slide {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--primitive-spacer-32);
-  padding-inline: var(--primitive-spacer-64);
-  overflow-y: auto;
 }
 
 .wayf-title {
@@ -197,8 +191,6 @@
   .wayf-view-slide {
     grid-area: 1 / 1;
     position: static;
-    padding-inline: var(--primitive-spacer-24);
-    overflow-y: visible;
   }
 
   .wayf-footer-links {

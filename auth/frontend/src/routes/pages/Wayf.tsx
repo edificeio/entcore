@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import edificeLogoUrl from '~/assets/edifice-logo.svg';
 import { PartnerLogos } from '~/components/PartnerLogos';
 import { ProviderList } from '~/components/ProviderList';
+import { ScrollArea } from '~/components/ScrollArea';
 import { WelcomeMessage } from '~/components/WelcomeMessage';
 import { useMobileLinkRedirect } from '~/hooks/useMobileLinkRedirect';
 import { useWayfConfig } from '~/hooks/useWayfConfig';
@@ -116,12 +117,14 @@ export const WayfPage = () => {
           <div className="wayf-view-container">
             {transitions((style, item) => (
               <animated.div style={style} className="wayf-view-slide">
-                <ProviderList
-                  providers={item.providers}
-                  onProviderClick={handleProviderClick}
-                  parentIconKey={item.parentIconKey}
-                  onBack={item.depth > 0 ? handleBack : undefined}
-                />
+                <ScrollArea>
+                  <ProviderList
+                    providers={item.providers}
+                    onProviderClick={handleProviderClick}
+                    parentIconKey={item.parentIconKey}
+                    onBack={item.depth > 0 ? handleBack : undefined}
+                  />
+                </ScrollArea>
               </animated.div>
             ))}
           </div>
