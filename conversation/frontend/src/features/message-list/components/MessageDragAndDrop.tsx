@@ -91,9 +91,7 @@ export function MessageDragAndDrop({ children }: { children: ReactNode }) {
             data-testid="conversation-drag-overlay"
           >
             <IconMail width={20} height={20} />
-            <span className="fw-bold">
-              {count > 1 ? t('messages.drag', { count }) : t('message.drag')}
-            </span>
+            <span className="fw-bold">{t('message.drag', { count })}</span>
           </div>
         )}
       </DragOverlay>
