@@ -8,9 +8,17 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { IconMail } from '@edifice.io/react/icons';
-import { ReactNode } from 'react';
+import { createContext, ReactNode, useContext } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageDragAndDrop } from '../hooks/useMessageDragAndDrop';
+
+/** Tells whether the dragged messages, if any, can be dropped on a folder. */
+const CanDropMessagesOnContext = createContext<(folderId: string) => boolean>(
+  () => false,
+);
+
+/** Returns whether the dragged messages, if any, can be dropped on a folder. */
+export const useCanDropMessagesOn = () => useContext(CanDropMessagesOnContext);
 
 /** Gap between the mouse pointer and the dragged messages overlay, in pixels. */
 const OVERLAY_POINTER_OFFSET = 12;
@@ -50,6 +58,7 @@ export function MessageDragAndDrop({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const {
     draggedMessageIds,
+    canDropOn,
     handleDragStart,
     handleDragEnd,
     handleDragCancel,
@@ -69,7 +78,9 @@ export function MessageDragAndDrop({ children }: { children: ReactNode }) {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      {children}
+      <CanDropMessagesOnContext.Provider value={canDropOn}>
+        {children}
+      </CanDropMessagesOnContext.Provider>
       <DragOverlay dropAnimation={null} modifiers={[stickToPointer]}>
         {count > 0 && (
           <div

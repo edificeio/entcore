@@ -17,7 +17,7 @@ function DropTargetsProbe() {
 }
 
 describe('DesktopMenu drop targets', () => {
-  it('makes the inbox, the trash and every user folder, sub-folders included, a drop target of its own', async () => {
+  it('makes the system folders and every user folder, sub-folders included, a drop target of its own', async () => {
     const { user } = render(
       <DndContext>
         <DesktopMenu />
@@ -41,6 +41,8 @@ describe('DesktopMenu drop targets', () => {
       expect(targets).toEqual(
         expect.arrayContaining([
           expect.stringMatching(/^inbox=/),
+          expect.stringMatching(/^outbox=/),
+          expect.stringMatching(/^draft=/),
           expect.stringMatching(/^trash=/),
           'folder_A=treeitem-folder_A',
           'folder_A_1=treeitem-folder_A_1',
