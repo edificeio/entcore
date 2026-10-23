@@ -992,6 +992,10 @@
   "navbar.customize": "Personnalisation",
   "navbar.notifications": "Notifications",
   "navbar.notifications.new": "Nouvelles notifications aujourd'hui",
+  "navbar.notifications.unavailable.title": "Non accessible",
+  "navbar.notifications.unavailable.body1": "Nous modernisons progressivement votre ENT module par module. Les notifications seront disponibles lorsque cette page aura fait peau neuve.",
+  "navbar.notifications.unavailable.body2": "En attendant, pour consulter vos notifications, rendez-vous sur votre page d'accueil.",
+  "navbar.notifications.unavailable.cta": "Consulter sur la page d'accueil",
   "navbar.disconnect": "Déconnexion",
   "navbar.help": "Aide en ligne",
   "navbar.home": "Accueil",
@@ -1003,6 +1007,7 @@
   "navbar.search": "Recherche transverse",
   "navbar.secondary.navigation": "Navigation secondaire",
   "navbar.tools": "Personnaliser l'accueil",
+
   "navigation.guard.text": "Les modifications que vous avez apportées ne seront peut-être pas enregistrées. Souhaitez vous quitter cette page?",
   "news": "Actualités",
   "next": "Suivant",
