@@ -57,6 +57,12 @@ export function ActionDelegate($scope: ActionDelegateScope) {
         if($scope.currentTree.filter=="external"){
             return false;
         }
+        // Matches isTileMenuActionVisible's own "download" case (controller.ts), which also excludes
+        // trash — missing here meant the bulk toolbar offered "Télécharger" from the trash view while
+        // the per-tile "..." menu correctly hid it for the same selection.
+        if($scope.currentTree.filter=="trash"){
+            return false;
+        }
         //
         const items = $scope.selectedItems();
         if(!workspaceService.isActionAvailable("download",items)){

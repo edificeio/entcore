@@ -28,16 +28,23 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
     /**
       * Rename Action
       */
+    // myRights["manager"] matches isTileMenuActionVisible's own "rename" case (controller.ts) — missing
+    // here meant the bulk toolbar offered "Propriétés" even for an item the user can only read/contrib
+    // on (no manager right), while the per-tile "..." menu correctly hid it for the same selection.
     $scope.canRenameDocument = function () {
         const totalFold = $scope.selectedFolders().length
         const totalDoc = $scope.selectedDocuments().length;
-        return totalFold == 0 && totalDoc == 1 && $scope.currentTree.filter != "trash";
+        const item = $scope.selectedDocuments()[0];
+        return totalFold == 0 && totalDoc == 1 && $scope.currentTree.filter != "trash"
+            && !!item?.myRights && !!item.myRights["manager"];
     }
 
     $scope.canRenameFolder = function () {
         const totalFold = $scope.selectedFolders().length
         const totalDoc = $scope.selectedDocuments().length;
-        return totalFold == 1 && totalDoc == 0 && $scope.currentTree.filter != "trash" && $scope.currentTree.filter != "external";
+        const item = $scope.selectedFolders()[0];
+        return totalFold == 1 && totalDoc == 0 && $scope.currentTree.filter != "trash" && $scope.currentTree.filter != "external"
+            && !!item?.myRights && !!item.myRights["manager"];
     }
 
     $scope.openRenameView = async function () {
