@@ -23,6 +23,11 @@ export interface IGoogleDriveShareEntry {
   // permission entry can also be "owner" — Drive includes the file's owner in its permissions list.
   role: GoogleDriveShareRole | "owner";
   emailAddress: string;
+  // True when this user's access to the file comes from a permission on an ancestor folder (the file
+  // is inside a folder shared by its owner), not a permission on the file itself. Drive rejects
+  // deleting such a permission directly on the file (403 cannotDeletePermission) — only the folder's
+  // own entry can be removed — so the UI must not offer to remove it here.
+  inherited: boolean;
 }
 
 export interface IGoogleDriveShareResult {
