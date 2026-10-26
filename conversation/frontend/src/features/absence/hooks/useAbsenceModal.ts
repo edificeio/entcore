@@ -34,10 +34,6 @@ function endOfLocalDayUtc(date: Date): string {
   return value.toISOString();
 }
 
-function hasBodyContent(bodyJson: unknown): boolean {
-  return typeof bodyJson === 'string' ? !!bodyJson.trim() : !!bodyJson;
-}
-
 /** Returns the calendar day right after the given date. */
 function dayAfter(date: Date): Date {
   const value = new Date(date);
@@ -66,10 +62,14 @@ export function useAbsenceModal({
   const toast = useToast();
   const editor = useRef<EditorRef>(null);
   const initialBodyJson = useRef(settings?.bodyJson);
-  const [hasBody, setHasBody] = useState(() =>
-    hasBodyContent(settings?.bodyJson),
-  );
+  const [isBodyEmpty, setIsBodyEmpty] = useState(true);
   const [isBodyDirty, setIsBodyDirty] = useState(false);
+
+  // The editor's `onContentChange` only fires on edits, so the initial state
+  // is read from the mounted editor (the ref is still null on first render).
+  useEffect(() => {
+    setIsBodyEmpty(editor.current?.isEmpty ?? true);
+  }, []);
 
   const defaultValues: AbsenceFormValues = {
     enabled: settings?.enabled ?? false,
@@ -112,12 +112,12 @@ export function useAbsenceModal({
     !!startDate &&
     !!endDate &&
     endDate >= startDate &&
-    (!enabled || hasBody) &&
+    (!enabled || !isBodyEmpty) &&
     isDirty;
 
   function handleBodyChange() {
     const bodyJson = editor.current?.getContent('json');
-    setHasBody(hasBodyContent(editor.current?.getContent('plain')));
+    setIsBodyEmpty(editor.current?.isEmpty ?? true);
     setIsBodyDirty(
       JSON.stringify(bodyJson) !== JSON.stringify(initialBodyJson.current),
     );
