@@ -114,16 +114,23 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	tileMenuPosition: { top?: string; right?: string };
 	isTileMenuOpen(item: models.Element): boolean;
 	toggleTileMenu(item: models.Element, $event?: MouseEvent): void;
-	isTileMenuActionVisible(item: models.Element, action: "download" | "rename" | "share" | "move" | "copy" | "trash" | "restore" | "delete"): boolean;
+	isTileMenuActionVisible(item: models.Element, action: "download" | "rename" | "share" | "comment" | "move" | "copy" | "trash" | "restore" | "delete" | "editImage" | "revision"): boolean;
 	onTileOpen(item: models.Element): void;
 	onTileDownload(item: models.Element): void;
 	onTileRename(item: models.Element): void;
 	onTileShare(item: models.Element): void;
+	onTileComment(item: models.Element): void;
 	onTileMove(item: models.Element): void;
 	onTileCopy(item: models.Element): void;
 	onTileTrash(item: models.Element): void;
 	onTileRestore(item: models.Element): void;
 	onTileDeletePermanently(item: models.Element): void;
+	onTileEditImage(item: models.Element): void;
+	onTileShowRevision(item: models.Element): void;
+	// Toolbar button ordering must mirror the per-tile "..." menu's order, but move/copy and
+	// trash/restore/delete come from the same currentTree.contextualButtons array (controller.ts) —
+	// split via this predicate so each group can be rendered at its own position in toaster.html.
+	isTrashContextualButton(button: { action: () => any }): boolean;
 }
 export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', '$route','$filter', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route, $route, $filter) => {
 	let _currentCursor: DocumentCursor = null;
@@ -295,6 +302,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			case "share":
 				return (filter === "shared" || filter === "owner")
 					&& workspaceService.isActionAvailable("share", [item]);
+			case "comment":
+				// Mirrors canComment() (delegates/comments.ts) — toolbar-only until now.
+				return (filter === "shared" || filter === "owner")
+					&& workspaceService.isActionAvailable("comment", [item]);
 			case "move":
 				return (filter === "owner" || filter === "shared")
 					&& workspaceService.isActionAvailable("move", [item]);
@@ -308,6 +319,14 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			case "restore":
 			case "delete":
 				return filter === "trash" && !!item.myRights && !!item.myRights["manager"];
+			case "editImage":
+				// Mirrors canEditImage() (delegates/actions/index.ts) — toolbar-only until now.
+				return !isFolder && !!item.isEditableImage
+					&& (filter === "shared" || filter === "owner" || filter === "protected");
+			case "revision":
+				// Mirrors canShowRevision() (delegates/revisions.ts) — toolbar-only until now.
+				return !isFolder && (filter === "shared" || filter === "owner")
+					&& workspaceService.isActionAvailable("history", [item]);
 		}
 		return false;
 	};
@@ -331,6 +350,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		$scope.openTileMenuFor = null;
 		withSelected(item, () => $scope.openShareView());
 	};
+	$scope.onTileComment = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openCommentView());
+	};
 	$scope.onTileMove = function (item: models.Element): void {
 		$scope.openTileMenuFor = null;
 		withSelected(item, () => $scope.openMoveView());
@@ -350,6 +373,14 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.onTileDeletePermanently = function (item: models.Element): void {
 		$scope.openTileMenuFor = null;
 		withSelectedPersisted(item, () => $scope.deleteConfirm());
+	};
+	$scope.onTileEditImage = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.editImage());
+	};
+	$scope.onTileShowRevision = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		withSelected(item, () => $scope.openHistory(item));
 	};
 
 	// Header button rendered here, not in the GD component, to stay aligned across every tree; reaches into the GD scopes directly since they have no relation to this one.
@@ -497,6 +528,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	/**
 	 * INIT
 	 */
+	$scope.isTrashContextualButton = function (button): boolean {
+		return button.action === $scope.toTrashConfirm || button.action === $scope.restore || button.action === $scope.deleteConfirm;
+	};
 	const allowAction = (type: DocumentActionType) => () => {
 		const items = $scope.selectedItems();
 		if (!workspaceService.isActionAvailable(type, items)) {
