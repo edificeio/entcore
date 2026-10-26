@@ -110,12 +110,16 @@ export function CommentDelegate($scope: CommentDelegateScope) {
         return $scope.selectedItems().length === 1 && $scope.selectedItems()[0].comments.length > 0 && $scope.currentTree.filter !== 'trash';
     }
 
+    // Backend secures POST .../comment per-resource (workspace.comment, WorkspaceController) — a shared
+    // item without myRights.comment granted by its owner would 403. isActionAvailable never actually
+    // enforces this (no filter is ever registered in this deployment), so check the right directly.
     $scope.canComment = function () {
         const items = $scope.selectedItems();
         if(!workspaceService.isActionAvailable("comment",items)){
             return false;
         }
-        return items.length === 1 && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner');
+        return items.length === 1 && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner')
+            && !!items[0].myRights && !!items[0].myRights["comment"];
     }
 
     $scope.commentCount = function () {
