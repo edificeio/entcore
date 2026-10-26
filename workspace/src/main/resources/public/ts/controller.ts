@@ -300,18 +300,28 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				return filter !== "trash" && (!isFolder || filter !== "external")
 					&& !!item.myRights && !!item.myRights["manager"];
 			case "share":
-				return (filter === "shared" || filter === "owner")
+				// "Mes documents partagés" (filter "shared") holds items someone else shared with me —
+				// re-sharing them from here is no longer offered, only from "Mes documents" (owner).
+				return filter === "owner"
 					&& workspaceService.isActionAvailable("share", [item]);
 			case "comment":
-				// Mirrors canComment() (delegates/comments.ts) — toolbar-only until now.
+				// Mirrors canComment() (delegates/comments.ts) — toolbar-only until now. The backend
+				// secures POST .../comment as a per-resource action (workspace.comment, WorkspaceController),
+				// so a shared item without myRights.comment granted would 403 — check it here too, since
+				// isActionAvailable is a permanent no-op (see allowAction's own comment, further below).
 				return (filter === "shared" || filter === "owner")
-					&& workspaceService.isActionAvailable("comment", [item]);
+					&& workspaceService.isActionAvailable("comment", [item])
+					&& !!item.myRights && !!item.myRights["comment"];
 			case "move":
+				// item.canMove (owner, or myRights.manager) is the real check — isActionAvailable is a
+				// permanent no-op in this deployment (see allowAction's own comment above). Without this,
+				// "Déplacer" stayed visible for a shared item you only have read rights on, and silently
+				// did nothing on click (openMoveView's own canMove guard).
 				return (filter === "owner" || filter === "shared")
-					&& workspaceService.isActionAvailable("move", [item]);
+					&& workspaceService.isActionAvailable("move", [item]) && item.canMove;
 			case "copy":
 				return (filter === "owner" || filter === "shared" || filter === "protected")
-					&& workspaceService.isActionAvailable("copy", [item]);
+					&& workspaceService.isActionAvailable("copy", [item]) && item.canCopy;
 			case "trash":
 				if (filter === "trash") return false;
 				if (filter === "external") return !isFolder;
@@ -319,10 +329,15 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			case "restore":
 			case "delete":
 				return filter === "trash" && !!item.myRights && !!item.myRights["manager"];
-			case "editImage":
-				// Mirrors canEditImage() (delegates/actions/index.ts) — toolbar-only until now.
+			case "editImage": {
+				// Mirrors canEditImage() (delegates/actions/index.ts) — toolbar-only until now, including
+				// its own myRights.contrib check (the save route, PUT /document/:id, is resource-secured
+				// on workspace.contrib — isActionAvailable is a permanent no-op, see allowAction's comment).
+				const ownerId: any = item.owner && (item.owner["userId"] || item.owner);
 				return !isFolder && !!item.isEditableImage
+					&& (ownerId == model.me.userId || !!(item.myRights && item.myRights["contrib"]))
 					&& (filter === "shared" || filter === "owner" || filter === "protected");
+			}
 			case "revision":
 				// Mirrors canShowRevision() (delegates/revisions.ts) — toolbar-only until now.
 				return !isFolder && (filter === "shared" || filter === "owner")
@@ -535,6 +550,17 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		const items = $scope.selectedItems();
 		if (!workspaceService.isActionAvailable(type, items)) {
 			return false;
+		}
+		// isActionAvailable is a permanent no-op here: nothing in this deployment ever calls
+		// registerExternalActionFilter, so it always returns true regardless of rights. The model's own
+		// canMove/canCopy getters (owner, or myRights.manager/read respectively) are the real per-item
+		// check — without this, "Déplacer"/"Copier" stayed visible (and silently did nothing on click,
+		// per openMoveView/openCopyView's own canMove/canCopy guard) for a read-only shared item.
+		if (type === "move") {
+			return items.every(i => i.canMove);
+		}
+		if (type === "copy") {
+			return items.every(i => i.canCopy);
 		}
 		return true
 	}
