@@ -111,6 +111,7 @@ export function MessageActionDropdown({
                 size="sm"
                 color={appearance.buttonColor}
                 variant={appearance.dropdownVariant}
+                data-testid="conversation-message-action-button"
                 icon={<IconOptions />}
               />
               <Dropdown.Menu>
@@ -120,6 +121,7 @@ export function MessageActionDropdown({
                       key={option.id}
                       icon={option.icon}
                       onClick={option.action}
+                      data-testid={`conversation-message-action-${option.id}`}
                     >
                       {option.label}
                     </Dropdown.Item>,
