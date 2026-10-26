@@ -19,8 +19,12 @@
                     <span class="cell reduce-block-two">[[entry.displayName || entry.emailAddress]]</span>
                     <em class="low-importance cell">[[translate('google-drive.role.' + entry.role)]]</em>
                 </span>
+                <!-- entry.inherited: access comes from a permission on an ancestor folder (this file
+                     is inside a folder its owner shared), not a permission on the file itself — Drive
+                     rejects removing that here (403 cannotDeletePermission), only removable from the
+                     folder's own share dialog. -->
                 <a
-                    ng-if="entry.userId && entry.role !== 'owner'"
+                    ng-if="entry.userId && entry.role !== 'owner' && !entry.inherited"
                     ng-click="toolbar.share.onRemoveShare(entry)"
                     class="current-share-remove"
                     aria-label="[[translate('google-drive.unshare')]]"
