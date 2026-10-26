@@ -26,17 +26,6 @@
 			<button ng-if="canDownload()" ng-click="downloadFile()" class="cell">
 				<i18n>workspace.download</i18n>
 			</button>
-			<resource-right resource="selectedItems()" name="comment">
-				<button ng-click="openCommentView()" ng-if="canComment()" class="cell">
-					<i18n>workspace.document.comment</i18n>
-				</button>
-			</resource-right>
-			<resource-right resource="selectedItems()" name="manager">
-				<button ng-click="openShareView()" ng-if="canShareElements()"
-				 ng-class="cell">
-					<i18n>workspace.share</i18n>
-				</button>
-			</resource-right>
 			<resource-right resource="selectedItems()" name="manager">
 				<button ng-click="openRenameView()" ng-if="canRenameFolder()" class="cell">
 					<i18n>workspace.properties</i18n>
@@ -45,6 +34,26 @@
 			<resource-right resource="selectedItems()" name="manager">
 				<button ng-click="openRenameView()" ng-if="canRenameDocument()" class="cell">
 					<i18n>workspace.properties</i18n>
+				</button>
+			</resource-right>
+			<!-- Move/Copy, split from Trash/Restore/Delete (same currentTree.contextualButtons array,
+			     controller.ts) so the toolbar order mirrors the per-tile "..." menu's order. -->
+			<div class="cell" ng-repeat="button in currentTree.contextualButtons" ng-if="!isTrashContextualButton(button)">
+				<resource-right resource="selectedItems()" name="[[button.right]]">
+					<button ng-if="button.allow ? button.allow() : true" ng-click="button.action()">
+						[[button.text]]
+					</button>
+				</resource-right>
+			</div>
+			<resource-right resource="selectedItems()" name="manager">
+				<button ng-click="openShareView()" ng-if="canShareElements()"
+				 ng-class="cell">
+					<i18n>workspace.share</i18n>
+				</button>
+			</resource-right>
+			<resource-right resource="selectedItems()" name="comment">
+				<button ng-click="openCommentView()" ng-if="canComment()" class="cell">
+					<i18n>workspace.document.comment</i18n>
 				</button>
 			</resource-right>
 			<resource-right resource="selectedItems()" name="contrib">
@@ -58,7 +67,7 @@
 				</button>
 			</resource-right>
 
-			<div class="cell" ng-repeat="button in currentTree.contextualButtons">
+			<div class="cell" ng-repeat="button in currentTree.contextualButtons" ng-if="isTrashContextualButton(button)">
 				<resource-right resource="selectedItems()" name="[[button.right]]">
 					<button ng-if="button.allow ? button.allow() : true" ng-click="button.action()">
 						[[button.text]]
