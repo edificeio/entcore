@@ -12,6 +12,7 @@ import { createContext, ReactNode, useContext } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageDragAndDrop } from '../hooks/useMessageDragAndDrop';
 import { useMessageDragAnnouncements } from '../hooks/useMessageDragAnnouncements';
+import './MessageDragAndDrop.css';
 
 /** Tells whether the dragged messages, if any, can be dropped on a folder. */
 const CanDropMessagesOnContext = createContext<(folderId: string) => boolean>(
@@ -87,11 +88,13 @@ export function MessageDragAndDrop({ children }: { children: ReactNode }) {
       <DragOverlay dropAnimation={null} modifiers={[stickToPointer]}>
         {count > 0 && (
           <div
-            className="d-inline-flex align-items-center gap-8 px-12 py-8 rounded bg-white border shadow"
+            className="message-drag-overlay"
             data-testid="conversation-drag-overlay"
           >
             <IconMail width={20} height={20} />
-            <span className="fw-bold">{t('message.drag', { count })}</span>
+            <span className="message-drag-overlay-label">
+              {t('message.drag', { count })}
+            </span>
           </div>
         )}
       </DragOverlay>
