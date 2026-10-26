@@ -573,6 +573,13 @@
 			width: 160px !important;
 			height: auto !important;
 		}
+		/* 1D (panda) renders the legend in normal flow below the image (height:auto, no overlay) — unlike
+		   2D where this same legend redesign still leaves just enough row gap in practice. Under 1D the
+		   two-line legend (filename + owner) ends up taller than the gap panda's own grid reserves between
+		   rows, so it visually spills into the tile below. Reserve extra clearance so it can't. */
+		.theme-1d .icons-view explorer{
+			margin-bottom: 45px !important;
+		}
 		/* The <explorer> directive's own template root is a nested ".explorer"-classed div (not the
 		   <explorer> tag itself) — some theme skins size THAT div independently (e.g. a fixed 140x140
 		   square), unrelated to the 160px tile width set above. .tile-menu-wrapper's position:absolute
