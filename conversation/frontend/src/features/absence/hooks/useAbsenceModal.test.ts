@@ -44,7 +44,7 @@ vi.mock('@edifice.io/react', async () => {
   };
 });
 
-/** Wires a fake editor ref exposing `getContent`, as the real Editor would. */
+/** Wires a fake editor ref exposing `getContent` and `isEmpty`, as the real Editor would. */
 function setEditorText(
   result: ReturnType<
     typeof renderHook<ReturnType<typeof useAbsenceModal>, unknown>
@@ -52,8 +52,19 @@ function setEditorText(
   text: string,
 ) {
   (result.current.editor as any).current = {
+    isEmpty: !text,
     getContent: (as: 'html' | 'json' | 'plain') =>
-      as === 'json' ? { text } : text,
+      as === 'json'
+        ? {
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: text ? [{ type: 'text', text }] : [],
+              },
+            ],
+          }
+        : text,
   };
 }
 
@@ -122,6 +133,14 @@ describe('useAbsenceModal', () => {
         endAt: '2026-01-20T23:59:59.999Z',
         bodyJson: 'Je suis absent',
       },
+    });
+    // Editor mounted with the loaded body, unchanged: not empty, not dirty.
+    act(() => {
+      (result.current.editor as any).current = {
+        isEmpty: false,
+        getContent: () => 'Je suis absent',
+      };
+      result.current.handleBodyChange();
     });
 
     act(() => result.current.setValue('endDate', new Date('2026-01-25')));
@@ -247,6 +266,25 @@ describe('useAbsenceModal', () => {
     expect(result.current.canSave).toBe(true);
   });
 
+  it('treats an empty editor body as empty', () => {
+    const { result } = renderAbsenceModal();
+
+    act(() => {
+      result.current.setValue('startDate', new Date('2026-01-10'));
+      result.current.setValue('endDate', new Date('2026-01-20'));
+      result.current.setValue('enabled', true);
+    });
+
+    // Empty paragraph: nothing to send.
+    act(() => setEditorText(result, ''));
+    act(() => result.current.handleBodyChange());
+    expect(result.current.canSave).toBe(false);
+
+    act(() => setEditorText(result, 'Je suis en congés'));
+    act(() => result.current.handleBodyChange());
+    expect(result.current.canSave).toBe(true);
+  });
+
   it('calls onSave with a payload converted to UTC (local day boundaries)', async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const { result } = renderAbsenceModal({ onSave });
@@ -266,7 +304,15 @@ describe('useAbsenceModal', () => {
     expect(payload.enabled).toBe(true);
     expect(new Date(payload.startAt).getHours()).toBe(0);
     expect(new Date(payload.endAt).getHours()).toBe(23);
-    expect(payload.bodyJson).toEqual({ text: 'Je suis en congés' });
+    expect(payload.bodyJson).toEqual({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Je suis en congés' }],
+        },
+      ],
+    });
   });
 
   it('shows a success toast and closes the modal after a successful save', async () => {

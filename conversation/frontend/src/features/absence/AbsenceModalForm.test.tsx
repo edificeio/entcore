@@ -92,6 +92,9 @@ vi.mock('@edifice.io/react/editor', () => ({
     // `onChange` handler that also calls `onContentChange`.
     const textRef = useRef(initial);
     useImperativeHandle(ref, () => ({
+      get isEmpty() {
+        return !textRef.current;
+      },
       getContent: (as: string) =>
         as === 'json' ? { text: textRef.current } : textRef.current,
     }));
