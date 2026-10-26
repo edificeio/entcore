@@ -199,11 +199,14 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         return $scope.order.field === field && $scope.order.desc;
     }
     //
+    // Matches isTileMenuActionVisible's own "open" gating (controller.ts), which excludes trash —
+    // missing here meant the bulk toolbar offered "Ouvrir" from the trash view while the per-tile
+    // "..." menu correctly hid it for the same selection.
     $scope.canOpenFile = function () {
-        return $scope.selectedDocuments().length == 1 && $scope.selectedFolders().length == 0;
+        return $scope.currentTree.filter !== "trash" && $scope.selectedDocuments().length == 1 && $scope.selectedFolders().length == 0;
     }
     $scope.canOpenFolder = function () {
-        return $scope.selectedDocuments().length == 0 && $scope.selectedFolders().length == 1;
+        return $scope.currentTree.filter !== "trash" && $scope.selectedDocuments().length == 0 && $scope.selectedFolders().length == 1;
     }
     $scope.isViewMode = function (mode: WorkspacePreferenceView) {
         return template.contains('documents', mode);

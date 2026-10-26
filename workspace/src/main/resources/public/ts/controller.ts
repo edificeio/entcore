@@ -700,7 +700,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
           right: "manager",
         },
         {
-          text: lang.translate("workspace.move.trash"),
+          text: lang.translate("workspace.delete"),
           action: $scope.deleteConfirm,
           right: "manager",
         },
