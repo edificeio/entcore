@@ -1352,14 +1352,14 @@
 					<i class="storage"></i><i18n class="storage zero-mobile">workspace.headers</i18n>
 					<i class="storage"></i><i18n class="storage zero-desktop">workspace.headers.short</i18n>
 				</h1>
-				<div workflow="lool.createDocument" class="aligned document-buttons-import-wrapper" style="float: left;" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && !$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen">
+				<div workflow="lool.createDocument" class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: left;" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && !$root.isGDTrashbinOpen && !$root.isNextcloudTrashbinOpen">
 					<button class="document-buttons-import" ng-click="openLoolModal()">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"></path></svg>
 						<i18n>workspace.lool.create-document</i18n>
 					</button>
 				</div>
 				<!-- Nextcloud equivalent: same gate, but creates the document in the opened Nextcloud folder. -->
-				<div workflow="lool.createDocument" class="aligned document-buttons-import-wrapper" style="float: left;" ng-if="ENABLE_LOOL && ENABLE_NEXTCLOUD && $root.isNextcloudTrashbinOpen && isNextcloudImportableFolder()">
+				<div workflow="lool.createDocument" class="zero-mobile vertical-spacing-twice-1d aligned document-buttons-import-wrapper" style="float: left;" ng-if="ENABLE_LOOL && ENABLE_NEXTCLOUD && $root.isNextcloudTrashbinOpen && isNextcloudImportableFolder()">
 					<button class="document-buttons-import" ng-click="triggerNextcloudCreateDocument()">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"></path></svg>
 						<i18n>workspace.lool.create-document</i18n>
