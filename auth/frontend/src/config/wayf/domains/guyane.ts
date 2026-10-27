@@ -61,7 +61,7 @@ export const guyaneConfig: WayfDomainConfig = {
       i18n: 'wayf.perseducnat',
       color: 'perseducnat',
       icon: 'perseducnat',
-      acs: '/auth/login',
+      acs: ARENA_ACS,
     },
     {
       i18n: 'wayf.other',
