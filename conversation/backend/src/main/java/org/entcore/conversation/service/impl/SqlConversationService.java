@@ -109,6 +109,18 @@ public class SqlConversationService implements ConversationService{
 	 */
 	private static final int MIN_ABSENCE_REPLIES_RETENTION_DAYS = 2;
 
+	/** Bus address of the workspace quota service, which holds the storage counter of each user. */
+	private static final String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
+
+	/** Storage alert threshold in percent, when the configuration has no alertStorage (same default as ConversationController). */
+	private static final int DEFAULT_STORAGE_ALERT_THRESHOLD = 80;
+
+	/** Field holding the outcome of a bus reply. */
+	private static final String STATUS_FIELD = "status";
+
+	/** Storage counter of a user, in the quota service replies and in the session. */
+	private static final String STORAGE_FIELD = "storage";
+
 	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
 		this.sql = Sql.getInstance();
@@ -378,7 +390,7 @@ public class SqlConversationService implements ConversationService{
 
             sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout),
 					h -> {
-				if (!"ok".equalsIgnoreCase(h.body().getString("status"))) {
+				if (!"ok".equalsIgnoreCase(h.body().getString(STATUS_FIELD))) {
 					result.handle(new Either.Left<>("conversation.error.alreadysend"));
 					return;
 				}
@@ -2193,18 +2205,24 @@ public class SqlConversationService implements ConversationService{
 		// Purge par lots des liens usermessages de messages âgés de plus de `months` mois
 		// et rangés dans aucun dossier (folder_id IS NULL). Chaque lot est une transaction
 		// autonome afin de relâcher les verrous entre les lots (cf. SUPPORT-4770).
+		// Chaque lot renvoie, par utilisateur, le quota des lignes supprimées, à lui rendre.
 		final String query =
-			"DELETE FROM " + userMessageTable + " um " +
-			"USING " + messageTable + " m " +
-			"WHERE um.message_id = m.id " +
-			"AND um.folder_id IS NULL " +
-			"AND m.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
-			"AND (um.user_id, um.message_id) IN (" +
-				"SELECT um2.user_id, um2.message_id FROM " + userMessageTable + " um2 " +
-				"JOIN " + messageTable + " m2 ON um2.message_id = m2.id " +
-				"WHERE um2.folder_id IS NULL " +
-				"AND m2.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
-				"LIMIT ?);";
+			"WITH deleted AS (" +
+				"DELETE FROM " + userMessageTable + " um " +
+				"USING " + messageTable + " m " +
+				"WHERE um.message_id = m.id " +
+				"AND um.folder_id IS NULL " +
+				"AND m.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
+				"AND (um.user_id, um.message_id) IN (" +
+					"SELECT um2.user_id, um2.message_id FROM " + userMessageTable + " um2 " +
+					"JOIN " + messageTable + " m2 ON um2.message_id = m2.id " +
+					"WHERE um2.folder_id IS NULL " +
+					"AND m2.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
+					"LIMIT ?) " +
+				"RETURNING um.user_id, um.total_quota" +
+			") " +
+			"SELECT user_id, coalesce(sum(total_quota), 0)::bigint AS total_quota, count(*) AS deleted " +
+			"FROM deleted GROUP BY user_id;";
 
 		log.info("Starting old messages purge (retention=" + months + " months, batch-size=" + batchSize + ", max-batches=" + maxBatches + ")");
 		// Repousse la date des messages de supervision protégés avant la purge : ils ne franchissent ainsi jamais le seuil d'ancienneté et échappent à la purge. 
@@ -2222,7 +2240,7 @@ public class SqlConversationService implements ConversationService{
 		deliveryOptions.setSendTimeout(timeout);
 		final Promise<Void> promise = Promise.promise();
 		sql.prepared(update, new JsonArray().add(protectedSubject), deliveryOptions, result -> {
-			if ("ok".equals(result.body().getString("status"))) {
+			if ("ok".equals(result.body().getString(STATUS_FIELD))) {
 				log.info("Refreshed date of " + result.body().getInteger("rows", 0) + " protected supervision message(s)");
 				promise.complete();
 			} else {
@@ -2245,14 +2263,21 @@ public class SqlConversationService implements ConversationService{
 
 		Promise<Void> promise = Promise.promise();
 		sql.prepared(query, new JsonArray().add(batchSize), deliveryOptions, result -> {
-			if ("ok".equals(result.body().getString("status"))) {
-				int deleted = result.body().getInteger("rows", 0);
+			if ("ok".equals(result.body().getString(STATUS_FIELD))) {
+				final JsonArray perUser = result.body().getJsonArray("results", new JsonArray());
+				int deleted = 0;
+				for (Object row : perUser) {
+					deleted += ((JsonArray) row).getLong(2).intValue();
+				}
 				if (deleted == 0) {
 					log.info("Old messages purge completed, total deleted: " + totalDeleted + " usermessages");
 					promise.complete();
 				} else {
 					log.info("Old messages purge batch " + batchNumber + " deleted " + deleted + " usermessages");
-					purgeMessagesBatch(query, batchSize, timeout, maxBatches, batchNumber + 1, totalDeleted + deleted).onComplete(promise);
+					final int deletedInBatch = deleted;
+					releasePurgedQuota(perUser)
+						.compose(v -> purgeMessagesBatch(query, batchSize, timeout, maxBatches, batchNumber + 1, totalDeleted + deletedInBatch))
+						.onComplete(promise);
 				}
 			} else {
 				String error = result.body().getString("message", "Unknown error");
@@ -2262,6 +2287,42 @@ public class SqlConversationService implements ConversationService{
 		});
 
 		return promise.future();
+	}
+
+	/**
+	 * Gives back to each user the storage of the messages the purge removed from their box, as deleting them from the
+	 * application does : the storage counter is only ever updated by differences, so what is not given back here stays
+	 * counted forever. The rows are already deleted, so a failure is logged and does not stop the purge.
+	 * @param perUser rows of [user_id, total_quota, deleted] returned by one batch
+	 */
+	private Future<Void> releasePurgedQuota(final JsonArray perUser) {
+		final int threshold = Config.getConf().getInteger("alertStorage", DEFAULT_STORAGE_ALERT_THRESHOLD);
+		final List<Future<Void>> updates = new ArrayList<>();
+		for (Object o : perUser) {
+			final JsonArray row = (JsonArray) o;
+			final String userId = row.getString(0);
+			final long quota = row.getLong(1);
+			if (quota <= 0) {
+				continue;
+			}
+			final JsonObject message = new JsonObject()
+				.put("action", "updateUserQuota")
+				.put("userId", userId)
+				.put("size", -quota)
+				.put("threshold", threshold);
+			final Promise<Void> released = Promise.promise();
+			eb.<JsonObject>request(QUOTA_BUS_ADDRESS, message, reply -> {
+				if (reply.failed() || "error".equals(reply.result().body().getString(STATUS_FIELD))) {
+					log.error("Failed giving back " + quota + " bytes of purged messages to user " + userId + ": "
+						+ (reply.failed() ? reply.cause().getMessage() : reply.result().body().encode()));
+				} else if (reply.result().body().getLong(STORAGE_FIELD) != null) {
+					UserUtils.addSessionAttribute(eb, userId, STORAGE_FIELD, reply.result().body().getLong(STORAGE_FIELD), null);
+				}
+				released.complete();
+			});
+			updates.add(released.future());
+		}
+		return Future.join(updates).mapEmpty();
 	}
 
 	@Override
@@ -2282,7 +2343,7 @@ public class SqlConversationService implements ConversationService{
 
 		final Promise<Void> promise = Promise.promise();
 		sql.prepared(purgeAbsenceRepliesQuery, new JsonArray().add(absenceRepliesPurgeBatchSize), deliveryOptions, result -> {
-			if ("ok".equals(result.body().getString("status"))) {
+			if ("ok".equals(result.body().getString(STATUS_FIELD))) {
 				final int deleted = result.body().getInteger("rows", 0);
 				if (deleted == 0) {
 					log.info("Absence replies purge completed, total deleted: " + totalDeleted + " rows");
