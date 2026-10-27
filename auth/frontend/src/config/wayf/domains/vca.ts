@@ -1,5 +1,7 @@
 import type { WayfDomainConfig } from '~/models/wayf';
 
+const EDUCONNECT_ACS =
+  'https://educonnect.education.gouv.fr/idp/profile/SAML2/Unsolicited/SSO?providerId=urn%3Afi%3Aent%3Aprod-vca-edu%3A1.0';
 const ARENA_GRENOBLE_ACS =
   'https://extranet.ac-grenoble.fr/sso/SSO?SPEntityID=urn:fi:ent:prod-vcag-aaa:1.0&TARGET=https://ent.vienne-condrieu-agglomeration.fr';
 const ARENA_LYON_ACS =
@@ -17,7 +19,7 @@ export const vcaConfig: WayfDomainConfig = {
       i18n: 'wayf.relative',
       color: 'relative',
       icon: 'relative',
-      acs: '/auth/login',
+      acs: EDUCONNECT_ACS,
     },
     {
       i18n: 'wayf.teacher',
