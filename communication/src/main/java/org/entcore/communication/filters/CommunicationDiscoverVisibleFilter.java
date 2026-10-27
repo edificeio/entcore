@@ -38,17 +38,20 @@ public class CommunicationDiscoverVisibleFilter implements ResourcesProvider {
 
             JsonObject params = new JsonObject().put("userId", user.getUserId()).put("groupId", groupId);
 
-            check(query, params, handler);
+            check(resourceRequest, query, params, handler);
             return;
         }
 
         handler.handle(true);
     }
 
-    private void check(String query, JsonObject params, Handler<Boolean> handler) {
+    private void check(HttpServerRequest request, String query, JsonObject params, Handler<Boolean> handler) {
+        // The access logger already resumed the request: pause it so the body is not lost during the async check
+        request.pause();
         neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
+                request.resume();
                 JsonArray r = event.body().getJsonArray("result");
                 handler.handle(
                         "ok".equals(event.body().getString("status")) &&
