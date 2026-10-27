@@ -273,6 +273,51 @@
 		.document-buttons-add-mobile-wrapper, .document-buttons-add-mobile-wrapper button{
 			width: 100% !important;
 		}
+		/* The move/copy folder-picker modal (folderPicker2.ts's generic "right-magnet"/"cancel" buttons,
+		   shared by the classic space, Google Drive and Nextcloud alike) renders nested inside Nextcloud/
+		   Google Drive's own bottom bulk-selection toolbar markup (.toggle-buttons, e.g.
+		   workspace-nextcloud-toolbar.html) purely because that's where its <lightbox> happens to be
+		   ng-included — that toolbar's own ".toggle-buttons button{color:#fff;background:transparent}"
+		   (meant for ITS OWN white-ghost-text buttons sitting on an orange bar) leaks onto this modal's
+		   buttons too, which sit on a plain light modal background instead, making them invisible until
+		   hovered. The identical dialog opened from "Mon espace personnel" isn't nested this way and was
+		   never affected — restore the same ordinary confirm/cancel look here regardless of theme or
+		   which space's toolbar the dialog happens to be DOM-nested under. */
+		.theme-2d .lightbox-buttons button:not(.cancel) {
+			background: rgb(255, 133, 0) !important;
+			color: rgb(255, 255, 255) !important;
+		}
+		.theme-2d .lightbox-buttons button.cancel {
+			background: rgb(233, 235, 239) !important;
+			color: rgb(255, 133, 0) !important;
+			border: none !important;
+			box-shadow: none !important;
+		}
+		.theme-1d .lightbox-buttons button:not(.cancel) {
+			background: rgb(255, 141, 46) !important;
+			color: rgb(255, 255, 255) !important;
+		}
+		.theme-1d .lightbox-buttons button.cancel {
+			background: rgb(233, 235, 239) !important;
+			color: rgb(255, 141, 46) !important;
+			border: none !important;
+			box-shadow: none !important;
+		}
+		/* The two rules above force the orange "confirm" look on every non-cancel button in the modal,
+		   which also overrides the browser's native dimming of folderPicker2's submit button while
+		   ng-disabled="cannotSubmit()" is true (no destination folder selected yet) — the button stays
+		   fully orange and looks clickable even though the click handler is actually a no-op. Higher
+		   specificity (:disabled added to the selector) restores a visibly inert look in that state. */
+		.theme-2d .lightbox-buttons button:not(.cancel):disabled {
+			background: rgb(233, 235, 239) !important;
+			color: rgb(140, 147, 158) !important;
+			cursor: not-allowed;
+		}
+		.theme-1d .lightbox-buttons button:not(.cancel):disabled {
+			background: rgb(233, 235, 239) !important;
+			color: rgb(140, 147, 158) !important;
+			cursor: not-allowed;
+		}
 		/* "Créer un document" (Google Drive) dropdown — no framework dropdown component here. */
 		.google-drive-create-document-wrapper{
 			position: relative;
