@@ -124,12 +124,18 @@ export const folderPicker2 = ng.directive("folderPicker2", [
               </div>
               <hr />
               <div class="lightbox-buttons fluid">
-                  <button class="nextcloud-button-confirm right-magnet" ng-disabled="cannotSubmit()" ng-click="onSubmit()">
+                  <!-- Plain right-magnet/cancel (no "nextcloud-"-prefixed classes): this picker is shared
+                       by the classic space, Google Drive and Nextcloud alike, but those prefixed classes
+                       carry Nextcloud's own hardcoded app branding (panda theme CSS scopes them under
+                       .sniplet.nextcloud .nextcloud-content-toolbar) — so a dialog opened from Nextcloud
+                       picked up a different, Nextcloud-colored button style than the identical dialog
+                       opened from "Mon espace personnel", which this component must look the same from. -->
+                  <button class="right-magnet" ng-disabled="cannotSubmit()" ng-click="onSubmit()">
                     <i class="google-drive-import-spinner" ng-if="isSubmitting" style="margin-right: 6px; vertical-align: middle;"></i>
                     <span ng-if="!isSubmitting" translate content="[[folderProps.i18.actionTitle]]"></span>
                     <span ng-if="isSubmitting" translate content="[[folderProps.i18.actionProcessing]]"></span>
                   </button>
-                  <button class="nextcloud-button-cancel cancel right-magnet" ng-disabled="isSubmitting" ng-click="onCancel()"><i18n>cancel</i18n></button>
+                  <button class="cancel right-magnet" ng-disabled="isSubmitting" ng-click="onCancel()"><i18n>cancel</i18n></button>
               </div>
             </div>
           </div>
