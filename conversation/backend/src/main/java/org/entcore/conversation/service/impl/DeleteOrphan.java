@@ -30,6 +30,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import java.io.FileNotFoundException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,20 +48,28 @@ public class DeleteOrphan implements Handler<Long> {
 	private static final String SELECT_ORPHAN_ATTACHMENT =
 		"SELECT a.id AS orphanid FROM conversation.attachments a " +
 		"WHERE a.orphan = TRUE " +
+		"AND NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
 		"LIMIT ?;";
 
 	private static final String DELETE_ORPHAN_MESSAGE =
 		"DELETE FROM conversation.messages WHERE id IN " +
 		"(SELECT id FROM conversation.messages m " +
 		"WHERE m.orphan = TRUE " +
+		"AND NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
 		"LIMIT ?);";
 
 	private static final String DELETE_ORPHAN_THREAD =
 		"WITH to_delete AS " +
 		"(SELECT t.id FROM conversation.threads t " +
 		"WHERE t.orphan = TRUE " +
+		"AND NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
 		"ORDER BY t.date LIMIT ?) " +
 		"DELETE FROM conversation.threads th USING to_delete WHERE th.id = to_delete.id;";
+
+	private static final String UNFLAG_RELINKED_THREADS =
+		"UPDATE conversation.threads t SET orphan = FALSE " +
+		"WHERE t.orphan = TRUE " +
+		"AND EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id);";
 
 	private static final String DELETE_ORPHAN_ATTACHMENT_BATCH =
 		"DELETE FROM conversation.attachments WHERE id = ANY(?::text[]);";
@@ -87,7 +97,8 @@ public class DeleteOrphan implements Handler<Long> {
 			.onFailure(err -> log.error("Orphan cleanup process failed: " + err.getMessage(), err));
 	}
 
-	private Future<Void> deleteOrphanEntitiesInBatches() {
+	/** Package-private so that tests can wait for the end of a run. */
+	Future<Void> deleteOrphanEntitiesInBatches() {
 		return deleteOrphanMessages()
 			.compose(v -> deleteOrphanThreads())
 			.compose(v -> deleteOrphanAttachments())
@@ -101,7 +112,28 @@ public class DeleteOrphan implements Handler<Long> {
 
 	private Future<Void> deleteOrphanThreads() {
 		log.info("Starting orphan threads cleanup");
-		return deleteInBatchesSequential(DELETE_ORPHAN_THREAD, "threads", 0, 0);
+		return unflagRelinkedThreads()
+			.compose(v -> deleteInBatchesSequential(DELETE_ORPHAN_THREAD, "threads", 0, 0));
+	}
+
+	private Future<Void> unflagRelinkedThreads() {
+		final Sql sql = Sql.getInstance();
+		Promise<Void> promise = Promise.promise();
+		sql.prepared(UNFLAG_RELINKED_THREADS, new JsonArray(),
+			new DeliveryOptions().setSendTimeout(sqlTimeout),
+			result -> {
+				if (STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
+					int unflagged = result.body().getInteger("rows", 0);
+					if (unflagged > 0) {
+						log.info("Unflagged " + unflagged + " orphan threads linked again to a user");
+					}
+				} else {
+					// Not blocking : the deletion re-checks the links anyway
+					log.error("Failed to unflag orphan threads linked again to a user: " + result.body().getString(MESSAGE_FIELD, UNKNOWN_ERROR));
+				}
+				promise.complete();
+			});
+		return promise.future();
 	}
 
 	private Future<Void> deleteInBatchesSequential(String query, String entityType, int batchNumber, int totalDeleted) {
@@ -227,11 +259,19 @@ public class DeleteOrphan implements Handler<Long> {
 				Promise<StorageResult> storagePromise = Promise.promise();
 				Future<StorageResult> storageDeletion = storagePromise.future();
 				storage.removeFile(fileId, event -> {
-					boolean success = STATUS_OK.equals(event.getString(STATUS_FIELD));
-					if (!success) {
-						log.error("Error deleting attachment file " + fileId + ": " + event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
+					if (STATUS_OK.equals(event.getString(STATUS_FIELD))) {
+						storagePromise.complete(new StorageResult(fileId, true, false));
+						return;
 					}
-					storagePromise.complete(new StorageResult(fileId, success));
+					// A file already missing from the storage counts as deleted : keeping its row for a retry would
+					// have it selected again every night, and failing again, forever.
+					storage.fileStats(fileId, stats -> {
+						final boolean missing = stats.failed() && isFileNotFound(stats.cause());
+						if (!missing) {
+							log.error("Error deleting attachment file " + fileId + ": " + event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
+						}
+						storagePromise.complete(new StorageResult(fileId, missing, missing));
+					});
 				});
 				storageDeletions.add(storageDeletion);
 			}
@@ -241,18 +281,18 @@ public class DeleteOrphan implements Handler<Long> {
 			return Future.succeededFuture();
 		}
 
-		// Wait for all storage deletions to complete and collect results
-		Promise<List<StorageResult>> allResultsPromise = Promise.promise();
-		collectAllStorageResults(storageDeletions, new ArrayList<>(), 0, allResultsPromise);
-
 		// Process results and delete from database ONLY successful storage deletions
-		return allResultsPromise.future().compose(results -> {
+		return collectAllStorageResults(storageDeletions).compose(results -> {
 			List<String> successfulIds = new ArrayList<>();
 			int failureCount = 0;
+			int missingCount = 0;
 
 			for (StorageResult result : results) {
 				if (result.success) {
 					successfulIds.add(result.attachmentId);
+					if (result.missing) {
+						missingCount++;
+					}
 				} else {
 					failureCount++;
 				}
@@ -260,6 +300,9 @@ public class DeleteOrphan implements Handler<Long> {
 
 			if (successfulIds.size() > 0) {
 				log.info("Successfully deleted " + successfulIds.size() + " attachment files from storage");
+			}
+			if (missingCount > 0) {
+				log.warn(missingCount + " attachment files were already missing from storage - deleting them from database");
 			}
 			if (failureCount > 0) {
 				log.warn(failureCount + " attachment files failed to delete from storage - keeping them in database for retry");
@@ -300,21 +343,36 @@ public class DeleteOrphan implements Handler<Long> {
 		return promise.future();
 	}
 
-	private void collectAllStorageResults(List<Future<StorageResult>> futures, List<StorageResult> results, int index, Promise<List<StorageResult>> promise) {
-		if (index >= futures.size()) {
-			promise.complete(results);
-			return;
-		}
-
-		futures.get(index).onComplete(ar -> {
-			if (ar.succeeded()) {
-				results.add(ar.result());
-			} else {
-				// Future failed - treat as deletion failure (won't be deleted from DB)
-				log.error("Storage deletion future failed: " + ar.cause().getMessage());
+	/**
+	 * Waits for all the storage deletions at once. Chaining them one after the other recursed once per deletion
+	 * already completed, and overflowed the stack on large batches (StackOverflowError with 5000 per batch).
+	 */
+	private Future<List<StorageResult>> collectAllStorageResults(List<Future<StorageResult>> futures) {
+		return Future.join(futures).transform(ignored -> {
+			final List<StorageResult> results = new ArrayList<>();
+			for (Future<StorageResult> future : futures) {
+				if (future.succeeded()) {
+					results.add(future.result());
+				} else {
+					// Future failed - treat as deletion failure (won't be deleted from DB)
+					log.error("Storage deletion future failed: " + future.cause().getMessage());
+				}
 			}
-			collectAllStorageResults(futures, results, index + 1, promise);
+			return Future.succeededFuture(results);
 		});
+	}
+
+	/**
+	 * Whether a storage error means the file does not exist : NoSuchFileException from the file system, or
+	 * FileNotFoundException when no bucket holds the file. Any other error keeps the row, for a retry.
+	 */
+	private static boolean isFileNotFound(Throwable error) {
+		for (Throwable t = error; t != null; t = t.getCause()) {
+			if (t instanceof NoSuchFileException || t instanceof FileNotFoundException) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private Future<Void> logRemainingOrphans() {
@@ -390,10 +448,12 @@ public class DeleteOrphan implements Handler<Long> {
 	private static class StorageResult {
 		final String attachmentId;
 		final boolean success;
+		final boolean missing;
 
-		StorageResult(String attachmentId, boolean success) {
+		StorageResult(String attachmentId, boolean success, boolean missing) {
 			this.attachmentId = attachmentId;
 			this.success = success;
+			this.missing = missing;
 		}
 	}
 
