@@ -390,7 +390,13 @@ export class ToolbarSnipletViewModel implements IViewModel {
                 rootFolder.children = documents.filter(
                   (doc) => doc.isFolder && doc.path !== "/",
                 );
-                return [rootFolder];
+                // Same "Nextcloud" grouping label as the sidebar tree (SyncDocument.createRootGroup,
+                // already recognized as a non-selectable wrapper by folderPicker2.ts's canSelect) —
+                // without it, this root's own label ("Mes documents", from initParent()) was
+                // indistinguishable from the workspace destination tree's identically-named node above it.
+                const group = SyncDocument.createRootGroup();
+                group.children = [rootFolder];
+                return [group];
               } catch (e) {
                 console.error("Error loading Nextcloud folders", e);
                 return [];
