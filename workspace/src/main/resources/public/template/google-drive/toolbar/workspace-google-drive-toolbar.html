@@ -152,6 +152,18 @@
                 </button>
             </div>
 
+            <!-- move file(s) — only for a file genuinely owned by the current user even while browsing
+                 in shared mode (e.g. created inside a folder someone else shared with them), same
+                 gating as the per-tile "..." menu and as rename above. -->
+            <div
+                id="google-drive-toolbar-move-shared"
+                ng-if="toolbar.isSelectedOwnedByMe(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleMoveView(true, selectedDocuments)">
+                    <i18n>workspace.move</i18n>
+                </button>
+            </div>
+
             <!-- export to the personal workspace — editor-permission shares only (see
                  isSelectedExportable's own comment). -->
             <div
@@ -160,6 +172,16 @@
             >
                 <button ng-click="toolbar.toggleCopyView(true, selectedDocuments)">
                     <i18n>google-drive.export</i18n>
+                </button>
+            </div>
+
+            <!-- duplicate within Google Drive — same ownership gating as move/rename above. -->
+            <div
+                id="google-drive-toolbar-duplicate-shared"
+                ng-if="toolbar.isSelectedDuplicatable(selectedDocuments) && toolbar.isSelectedOwnedByMe(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleDuplicateView(true, selectedDocuments)">
+                    <i18n>google-drive.duplicate</i18n>
                 </button>
             </div>
 
