@@ -433,8 +433,8 @@ export class ToolbarSnipletViewModel implements IToolbarViewModel {
       move: {
         title: "workspace.move.window.title",
         actionTitle: "workspace.move.window.action",
-        actionProcessing: "workspace.moving",
-        actionFinished: "workspace.move.finished",
+        actionProcessing: "workspace.move.window.processing",
+        actionFinished: "workspace.move.window.finished",
         info: "workspace.move.window.info",
       },
       copy: {

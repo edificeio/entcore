@@ -345,11 +345,13 @@ export class ToolbarSnipletViewModel implements IViewModel {
             ? "workspace.copy.window.action"
             : "workspace.move.window.action",
         actionProcessing:
-          type === "copy" ? "workspace.copying" : "workspace.moving",
+          type === "copy"
+            ? "workspace.copy.window.processing"
+            : "workspace.move.window.processing",
         actionFinished:
           type === "copy"
-            ? "workspace.copy.finished"
-            : "workspace.move.finished",
+            ? "workspace.copy.window.finished"
+            : "workspace.move.window.finished",
         info:
           type === "copy"
             ? "workspace.copy.window.info"
