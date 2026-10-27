@@ -313,10 +313,10 @@ export const nextcloudService: INextcloudService = {
   },
 
   getFiles: (userid: string, path: string, files: Array<string>): string => {
-    const pathParam: string = `?path=${path}`;
+    const pathParam: string = `?path=${encodeURIComponent(path)}`;
     let filesParam: string = "";
     files.forEach((file: string) => {
-      filesParam += `&file=${file}`;
+      filesParam += `&file=${encodeURIComponent(file)}`;
     });
     const urlParam: string = `${pathParam}${filesParam}`;
     return `/nextcloud/files/user/${userid}/multiple/download${urlParam}`;
