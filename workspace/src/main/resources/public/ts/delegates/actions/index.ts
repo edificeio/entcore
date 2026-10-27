@@ -43,9 +43,12 @@ export function ActionDelegate($scope: ActionDelegateScope) {
     // a shared document without myRights.contrib granted would 403. isActionAvailable is never actually
     // enforced in this deployment, so check the right directly (owner always has it on their own document).
     $scope.canEditImage = function () {
+        if ($scope.selectedFolders().length !== 0 || $scope.selectedDocuments().length !== 1) {
+            return false;
+        }
         const item = $scope.selectedDocuments()[0];
         const ownerId: any = item.owner && (item.owner.userId || item.owner);
-        return $scope.selectedFolders().length === 0 && $scope.selectedDocuments().length == 1 && item.isEditableImage
+        return !!item.isEditableImage
             && (ownerId == model.me.userId || !!item.myRights["contrib"])
             && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner' || $scope.currentTree.filter === 'protected');
     }
