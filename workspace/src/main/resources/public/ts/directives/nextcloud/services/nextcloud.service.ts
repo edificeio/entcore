@@ -6,6 +6,9 @@ import {
 } from "../models/nextcloudFolder.model";
 import models = workspace.v2.models;
 
+/** Workflow right granting access to Nextcloud, declared by the fr.openent.nextcloud module. */
+export const NEXTCLOUD_VIEW_RIGHT = "fr.openent.nextcloud.controller.NextcloudController|view";
+
 export interface INextcloudService {
   openNextcloudLink(document: SyncDocument, nextcloudUrl: string): void;
 
