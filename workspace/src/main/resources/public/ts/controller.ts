@@ -40,8 +40,7 @@ import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
 import {GeogebraDelegate, GeogebraDelegateScope} from "./delegates/geogebra";
 import {GOOGLE_DRIVE_CREATE_DOCUMENT_TYPES} from "./directives/google-drive/models/googleDriveCreateDocumentType.model";
 import {GOOGLE_DRIVE_VIEW_RIGHT} from "./directives/google-drive/services/googleDrive.service";
-
-const NEXTCLOUD_VIEW_RIGHT = 'fr.openent.nextcloud.controller.NextcloudController|view';
+import {NEXTCLOUD_VIEW_RIGHT} from "./directives/nextcloud/services/nextcloud.service";
 
 declare var ENABLE_LOOL: boolean;
 declare var ENABLE_SCRATCH: boolean;

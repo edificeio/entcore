@@ -3,7 +3,7 @@ import { models, workspaceService } from "../../services";
 import { GoogleDriveDocument } from "../../directives/google-drive/models/googleDriveDocument.model";
 import { GOOGLE_DRIVE_VIEW_RIGHT, googleDriveService } from "../../directives/google-drive/services/googleDrive.service";
 import { SyncDocument } from "../../directives/nextcloud/models/nextcloudFolder.model";
-import { nextcloudService } from "../../directives/nextcloud/services/nextcloud.service";
+import { NEXTCLOUD_VIEW_RIGHT, nextcloudService } from "../../directives/nextcloud/services/nextcloud.service";
 
 declare var ENABLE_GOOGLE_DRIVE: boolean;
 declare var ENABLE_NEXTCLOUD: boolean;
@@ -88,7 +88,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
                 return [];
             }
         } : null,
-        nextcloudTreeProvider: ENABLE_NEXTCLOUD ? async () => {
+        nextcloudTreeProvider: ENABLE_NEXTCLOUD && model.me.hasWorkflow(NEXTCLOUD_VIEW_RIGHT) ? async () => {
             const rootFolder = SyncDocument.createRootGroup();
             const myDocuments = new SyncDocument().initParent();
             rootFolder.children = [myDocuments];
