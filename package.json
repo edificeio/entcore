@@ -20,6 +20,7 @@
     "url": "https://github.com/entcore/entcore/issues"
   },
   "private": true,
+  "packageManager": "pnpm@9.12.2",
   "homepage": "https://github.com/entcore/entcore#readme",
   "dependencies": {
     "angular": "1.8.3",
