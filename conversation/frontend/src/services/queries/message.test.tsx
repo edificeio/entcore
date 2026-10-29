@@ -3,11 +3,14 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { act } from 'react';
 import { wrapper } from '~/mocks/setup';
 import { MessageBase } from '~/models';
+import { queryClient } from '~/providers';
 import { messageService } from '../api';
+import { folderQueryKeys } from './folder';
 import {
   useDeleteMessage,
   useMarkRead,
   useMarkUnread,
+  useMoveMessage,
   useRestoreMessage,
   useTrashMessage,
 } from './message';
@@ -75,6 +78,25 @@ describe('Message Queries', () => {
 
     await waitFor(() => {
       expect(messageServiceSpy).toHaveBeenCalledWith('trash', variables.id);
+    });
+  });
+
+  test('use useMoveMessage hook to remove messages from their folder, refreshing every origin folder', async () => {
+    const { result } = renderHook(() => useMoveMessage(), { wrapper });
+
+    vi.spyOn(messageService, 'moveToFolder').mockResolvedValue(undefined);
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    act(() => {
+      result.current.mutate({ folderId: 'inbox', id: ['1234', '5678'] });
+    });
+
+    await waitFor(() => {
+      ['inbox', 'outbox', 'draft'].forEach((originFolderId) =>
+        expect(invalidateSpy).toHaveBeenCalledWith({
+          queryKey: folderQueryKeys.messages(originFolderId),
+        }),
+      );
     });
   });
 
