@@ -1,7 +1,9 @@
+import { useDndContext, useDroppable } from '@dnd-kit/core';
 import {
   Button,
   Menu,
   Tree,
+  TreeHandlers,
   TreeItem,
   useEdificeClient,
 } from '@edifice.io/react';
@@ -13,7 +15,7 @@ import {
   IconWrite,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { useMemo, useState } from 'react';
+import { ReactNode, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -21,10 +23,12 @@ import {
   ProgressBar,
   ProgressBarProps,
 } from '~/components';
+import { useCanDropMessagesOn } from '~/features/message-list/components/MessageDragAndDrop';
 import { useUsedSpace } from '~/hooks/useUsedSpace';
 import { buildTree, useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
+import { useUnfoldOnDragHover } from '../hooks/useUnfoldOnDragHover';
 import './DesktopMenu.css';
 import { DesktopMenuSkeleton } from './DesktopMenuSkeleton';
 
@@ -46,6 +50,18 @@ export function DesktopMenu() {
   } = useMenuData();
   const { usage, quota } = useUsedSpace();
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
+  const canDropMessagesOn = useCanDropMessagesOn();
+  const { active, over } = useDndContext();
+
+  // Folder currently hovered by dragged messages, even if they can't be dropped there.
+  const overFolderId = active
+    ? (over?.data.current?.id as string | undefined)
+    : undefined;
+  // Same folder, only when the dragged messages can be dropped there.
+  const dropFolderId =
+    overFolderId && canDropMessagesOn(overFolderId) ? overFolderId : undefined;
+  const treeRef = useRef<TreeHandlers>(null);
+  useUnfoldOnDragHover(overFolderId, treeRef);
 
   const userFolders = useMemo(() => {
     const foldersTree = foldersTreeQuery.data;
@@ -85,36 +101,48 @@ export function DesktopMenu() {
   return (
     <Menu label={t('generic.folders')}>
       <Menu.Item>
-        <Menu.Button
-          selected={selectedSystemFolderId === 'inbox'}
-          leftIcon={<IconDepositeInbox />}
-          onClick={() => navigateTo('inbox')}
-          rightIcon={renderBadge(counters.inbox)}
-        >
-          {t('inbox.folder')}
-        </Menu.Button>
-        <Menu.Button
-          selected={selectedSystemFolderId === 'outbox'}
-          leftIcon={<IconSend />}
-          onClick={() => navigateTo('outbox')}
-        >
-          {t('outbox.folder')}
-        </Menu.Button>
-        <Menu.Button
-          selected={selectedSystemFolderId === 'draft'}
-          leftIcon={<IconWrite />}
-          onClick={() => navigateTo('draft')}
-          rightIcon={renderBadge(counters.draft)}
-        >
-          {t('draft.folder')}
-        </Menu.Button>
-        <Menu.Button
-          selected={selectedSystemFolderId === 'trash'}
-          leftIcon={<IconDelete />}
-          onClick={() => navigateTo('trash')}
-        >
-          {t('trash.folder')}
-        </Menu.Button>
+        <SystemFolderDropZone folderId="inbox">
+          <Menu.Button
+            selected={selectedSystemFolderId === 'inbox'}
+            leftIcon={<IconDepositeInbox />}
+            onClick={() => navigateTo('inbox')}
+            rightIcon={renderBadge(counters.inbox)}
+            className={clsx({ 'drop-target': dropFolderId === 'inbox' })}
+          >
+            {t('inbox.folder')}
+          </Menu.Button>
+        </SystemFolderDropZone>
+        <SystemFolderDropZone folderId="outbox">
+          <Menu.Button
+            selected={selectedSystemFolderId === 'outbox'}
+            leftIcon={<IconSend />}
+            onClick={() => navigateTo('outbox')}
+            className={clsx({ 'drop-target': dropFolderId === 'outbox' })}
+          >
+            {t('outbox.folder')}
+          </Menu.Button>
+        </SystemFolderDropZone>
+        <SystemFolderDropZone folderId="draft">
+          <Menu.Button
+            selected={selectedSystemFolderId === 'draft'}
+            leftIcon={<IconWrite />}
+            onClick={() => navigateTo('draft')}
+            rightIcon={renderBadge(counters.draft)}
+            className={clsx({ 'drop-target': dropFolderId === 'draft' })}
+          >
+            {t('draft.folder')}
+          </Menu.Button>
+        </SystemFolderDropZone>
+        <SystemFolderDropZone folderId="trash">
+          <Menu.Button
+            selected={selectedSystemFolderId === 'trash'}
+            leftIcon={<IconDelete />}
+            onClick={() => navigateTo('trash')}
+            className={clsx({ 'drop-target': dropFolderId === 'trash' })}
+          >
+            {t('trash.folder')}
+          </Menu.Button>
+        </SystemFolderDropZone>
       </Menu.Item>
       <Menu.Item>
         <div className="w-100 border-bottom pt-8 mb-12"></div>
@@ -123,9 +151,15 @@ export function DesktopMenu() {
         <div className="d-flex flex-column">
           <strong className="fs-6 mb-8">{t('user.folders')}</strong>
           <Tree
+            ref={treeRef}
             nodes={userFolders}
             onTreeItemClick={(folderId) => navigateTo(folderId, true)}
-            renderNode={UserFolderItem}
+            renderNode={({ node }) => (
+              <UserFolderItem
+                node={node}
+                isDropTarget={dropFolderId === node.id}
+              />
+            )}
             selectedNodeId={selectedUserFolderId}
           />
           <Button
@@ -154,8 +188,39 @@ export function DesktopMenu() {
   );
 }
 
-function UserFolderItem({ node }: { node: TreeItem }) {
+/** Makes a system folder of the menu a drop target for dragged messages. */
+function SystemFolderDropZone({
+  folderId,
+  children,
+}: {
+  folderId: string;
+  children: ReactNode;
+}) {
+  const { setNodeRef } = useDroppable({
+    id: `${folderId}-drop-zone`,
+    data: { id: folderId },
+  });
+  return (
+    <div ref={setNodeRef} data-testid={`conversation-dropzone-${folderId}`}>
+      {children}
+    </div>
+  );
+}
+
+function UserFolderItem({
+  node,
+  isDropTarget,
+}: {
+  node: TreeItem;
+  isDropTarget: boolean;
+}) {
   const { renderBadge } = useMenuData();
+  // Every folder row, sub-folders included, is a drop target for dragged messages.
+  // (The DndTree of @edifice.io/react only registers root folders.)
+  const { setNodeRef } = useDroppable({
+    id: `folder-drop-zone-${node.id}`,
+    data: { id: node.id },
+  });
   const [dropdownOpened, setDropdownOpened] = useState(false);
   const handleDropdownOpened = (visible: boolean) => {
     setDropdownOpened(visible);
@@ -163,9 +228,10 @@ function UserFolderItem({ node }: { node: TreeItem }) {
 
   return (
     <div
+      ref={setNodeRef}
       className={clsx(
         'folder-item my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center',
-        { 'dropdown-opened': dropdownOpened },
+        { 'dropdown-opened': dropdownOpened, 'drop-target': isDropTarget },
       )}
     >
       <div

@@ -1,0 +1,16 @@
+/* Overlay following the mouse pointer while messages are dragged */
+.message-drag-overlay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1.2rem;
+  border: var(--edifice-border-width) var(--edifice-border-style)
+    var(--edifice-border-color);
+  border-radius: var(--edifice-border-radius);
+  background-color: var(--edifice-white);
+  box-shadow: var(--edifice-box-shadow);
+}
+
+.message-drag-overlay-label {
+  font-weight: 700;
+}

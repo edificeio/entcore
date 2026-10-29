@@ -1,3 +1,4 @@
+import { useDraggable } from '@dnd-kit/core';
 import clsx from 'clsx';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -10,9 +11,21 @@ interface MessageItemProps {
   message: MessageMetadata;
   checked: boolean;
   checkbox: JSX.Element | undefined;
+  isDraggable?: boolean;
 }
-export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
+export function MessageItem({
+  message,
+  checked,
+  checkbox,
+  isDraggable = false,
+}: MessageItemProps) {
   const navigate = useNavigate();
+  // Keyboard users keep the "Move" toolbar action, so no draggable attributes are spread.
+  const { listeners, setNodeRef, isDragging } = useDraggable({
+    id: message.id,
+    data: { messageId: message.id },
+    disabled: !isDraggable,
+  });
   const [searchParams] = useSearchParams();
   const { toggleUnreadMessagesFromQueryCache } =
     useToggleUnreadMessagesFromQueryCache();
@@ -43,11 +56,14 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
       'bg-secondary-200': checked,
       'fw-bold bg-primary-200 gray-800':
         message.state !== 'DRAFT' && message.unread,
+      'opacity-50': isDragging,
     },
   );
 
   return (
     <div
+      ref={setNodeRef}
+      {...listeners}
       className={className}
       onClick={() => handleMessageClick(message)}
       onKeyUp={(event) => handleMessageKeyUp(event, message)}
