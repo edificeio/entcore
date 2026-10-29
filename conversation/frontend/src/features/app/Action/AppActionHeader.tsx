@@ -46,7 +46,6 @@ export function AppActionHeader() {
       {!isDraft && (
         <div className="d-flex flex-fill align-items-center justify-content-end gap-12 align-self-end">
           <NewMessageButton />
-
           <Dropdown>
             {(
               triggerProps: JSX.IntrinsicAttributes &
@@ -60,6 +59,7 @@ export function AppActionHeader() {
                   aria-label={common_t('tiptap.tooltip.plus')}
                   color="primary"
                   variant="outline"
+                  data-testid="conversation-header-settings-button"
                   icon={<IconSettings />}
                 />
 
@@ -72,6 +72,7 @@ export function AppActionHeader() {
                         option.visibility && (
                           <Dropdown.Item
                             icon={option.icon}
+                            data-testid={`conversation-header-settings-${option.id}`}
                             onClick={() => option.action(null)}
                           >
                             {option.label}
