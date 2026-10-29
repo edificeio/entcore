@@ -2,6 +2,7 @@ import { SearchBar } from '@edifice.io/react';
 import { useDebounce } from '@edifice.io/react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useConfirmLeaveReorder } from '~/hooks/useConfirmLeaveReorder';
 
 interface DebounceSearchBarProps {
   onDebouncedChange: (value: string) => void;
@@ -13,6 +14,7 @@ export const DebounceSearchBar = ({
   applicationLength,
 }: DebounceSearchBarProps) => {
   const { t } = useTranslation('common');
+  const { confirmLeave } = useConfirmLeaveReorder();
   const [search, setSearch] = useState('');
   const debouncedSearch =
     applicationLength > 100 ? useDebounce(search, 500) : search;
@@ -26,7 +28,12 @@ export const DebounceSearchBar = ({
       clearable
       isVariant
       value={search}
-      onChange={(e) => setSearch(e.target.value)}
+      onChange={(e) => {
+        const value = e.target.value;
+        const isStartingSearch = !search && !!value;
+        if (isStartingSearch && !confirmLeave()) return;
+        setSearch(value);
+      }}
       placeholder={t('my.apps.search')}
       className="my-apps-search"
       size="md"

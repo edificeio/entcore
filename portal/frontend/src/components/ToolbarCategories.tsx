@@ -2,6 +2,7 @@ import { Toolbar, ToolbarItem } from '@edifice.io/react';
 import clsx from 'clsx';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useConfirmLeaveReorder } from '~/hooks/useConfirmLeaveReorder';
 import { Category, CategoryId } from '~/models/category';
 import { useApplications } from '~/services';
 import {
@@ -13,6 +14,7 @@ import { useCategoryStore } from '~/store/categoryStore';
 export const ToolbarCategories = () => {
   const { applications, isLoading, isError } = useApplications();
   const { setActiveCategory, activeCategory } = useCategoryStore();
+  const { confirmLeave } = useConfirmLeaveReorder();
   const { t } = useTranslation('common');
 
   const {
@@ -88,6 +90,7 @@ export const ToolbarCategories = () => {
             <span data-id={`tab-${category.id}`}>{t(category.name)}</span>
           ),
           onClick: () => {
+            if (!isActive && !confirmLeave()) return;
             setActiveCategory(category.id);
             updateMyAppsPreferences.mutate({ tab: category.id });
           },
