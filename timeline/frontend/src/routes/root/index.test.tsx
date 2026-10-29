@@ -85,6 +85,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   GenerationHdfContainer: () => <div data-testid="generation-hdf-container" />,
   CantineContainer: () => <div data-testid="cantine-container" />,
   RssContainer: () => <div data-testid="rss-container" />,
+  EdumalinContainer: () => <div data-testid="edumalin-container" />,
   UserSpaceContainer: ({
     children,
     onCustomizeWidgetsClick,
