@@ -334,9 +334,12 @@ export const useMoveMessage = () => {
         queryClient.invalidateQueries({
           queryKey: folderQueryKeys.messages(currentFolderId),
         });
-        queryClient.invalidateQueries({
-          queryKey: folderQueryKeys.messages('inbox'),
-        });
+        // Removed from their user's folder, messages go back to their own origin folder.
+        ['inbox', 'outbox', 'draft'].forEach((originFolderId) =>
+          queryClient.invalidateQueries({
+            queryKey: folderQueryKeys.messages(originFolderId),
+          }),
+        );
       } else {
         deleteMessagesFromQueryCache(currentFolderId, messageIds);
         queryClient.invalidateQueries({

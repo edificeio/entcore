@@ -22,3 +22,14 @@
 .folder-item.dropdown-opened .actions-button button {
   opacity: 1;
 }
+
+/*
+ * Folder or trash hovered by dragged messages, styled like the .drag-focus of @edifice.io trees.
+ * Drawn inside the box (inset shadow) : the menu and the tree rows clip anything drawn outside.
+ * For a folder, the whole tree row is highlighted, not only its label.
+ */
+.desktop-menu .btn.drop-target,
+.desktop-menu .action-container:has(.folder-item.drop-target) {
+  box-shadow: inset 0 0 0 1px var(--edifice-secondary);
+  border-radius: 0.8rem;
+}

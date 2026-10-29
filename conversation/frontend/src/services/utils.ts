@@ -71,6 +71,19 @@ export function isInRecipient(message: MessageBase, userId: string) {
   ].some((u) => u.id === userId);
 }
 
+/**
+ * The system folder a message belongs to, once out of any user's folder :
+ * the drafts for a draft, the inbox when the user is a recipient, the outbox when he is only the author.
+ */
+export function getMessageOriginFolderId(
+  message: MessageBase,
+  userId: string,
+): 'draft' | 'inbox' | 'outbox' {
+  if (message.state === 'DRAFT') return 'draft';
+  if (isInRecipient(message, userId)) return 'inbox';
+  return message.from?.id === userId ? 'outbox' : 'inbox';
+}
+
 // Must be a function to make a deep copy of the object
 export function createDefaultMessage(signature?: string): Message {
   return {
