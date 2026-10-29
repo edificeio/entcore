@@ -30,9 +30,12 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/react": "develop-b2school",
-    "@edifice.io/bootstrap": "develop-b2school",
-    "@edifice.io/client": "develop-b2school",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "8.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "@edifice.io/react": "%packageVersion%",
+    "@edifice.io/bootstrap": "%packageVersion%",
+    "@edifice.io/client": "%packageVersion%",
     "@react-spring/web": "^9.7.5",
     "@tanstack/react-query": "5.62.7",
     "@uidotdev/usehooks": "2.4.1",
