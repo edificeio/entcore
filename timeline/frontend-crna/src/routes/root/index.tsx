@@ -11,6 +11,7 @@ import {
   MessageFlashListContainer,
   NotificationListContainer,
   SchoolSpaceContainer,
+  UsefulLinksContainer,
 } from '@edifice.io/react/homepage';
 import { useEffect, useState } from 'react';
 import styles from './Root.module.css';
@@ -35,6 +36,9 @@ export const Root = () => {
   );
   const hasCarnetDeBord = user?.widgets?.some(
     (w) => w.name === 'carnet-de-bord',
+  );
+  const hasUsefulLinks = user?.widgets?.some(
+    (w) => w.name === 'bookmark-widget',
   );
   const { isOverlayOpen, updateOverlayOpen } = useOverlay();
   const [activePanel, setActivePanel] = useState<OverlayPanel>(null);
@@ -147,6 +151,11 @@ export const Root = () => {
           {hasCarnetDeBord && (
             <WidgetErrorBoundary>
               <CarnetDeBordWidget onError={handleWidgetError} />
+            </WidgetErrorBoundary>
+          )}
+          {hasUsefulLinks && (
+            <WidgetErrorBoundary>
+              <UsefulLinksContainer />
             </WidgetErrorBoundary>
           )}
         </WidgetMasonry>
