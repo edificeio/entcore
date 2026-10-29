@@ -21,6 +21,7 @@ import {
   UniversalisContainer,
   UsefulLinksContainer,
   UserSpaceContainer,
+  EdumalinContainer,
 } from '@edifice.io/react/homepage';
 import { useState } from 'react';
 import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
@@ -93,6 +94,7 @@ export const Root = () => {
           <GenerationHdfContainer />
           <CantineContainer />
           <RssContainer />
+          <EdumalinContainer />
         </div>
       </PageLayout.Content>
 
