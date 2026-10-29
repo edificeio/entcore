@@ -5,7 +5,11 @@ type State = {
   bookmarks: string[];
   isHydrated: boolean;
   toggleBookmark: (appName: string) => void;
-  setPreferences: (prefs: { applications: string[]; bookmarks: string[] }) => void;
+  setBookmarks: (bookmarks: string[]) => void;
+  setPreferences: (prefs: {
+    applications: string[];
+    bookmarks: string[];
+  }) => void;
 };
 
 export const useUserPreferencesStore = create<State>((set) => ({
@@ -21,6 +25,7 @@ export const useUserPreferencesStore = create<State>((set) => ({
           : [...state.bookmarks, appName],
       };
     }),
+  setBookmarks: (bookmarks) => set({ bookmarks }),
   setPreferences: ({ applications, bookmarks }) =>
     set({ applications, bookmarks, isHydrated: true }),
 }));

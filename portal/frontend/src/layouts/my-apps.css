@@ -29,6 +29,69 @@ body {
   width: 130px;
   height: 150px;
 }
+
+.sortable-application-card {
+  cursor: grab;
+  touch-action: none;
+  /* `rotate` composes with the `transform` dnd-kit sets inline on cards. */
+  animation: app-card-wiggle 0.25s ease-in-out infinite alternate;
+}
+.sortable-application-card:hover {
+  background-color: var(--edifice-gray-200);
+  border-color: var(--edifice-secondary);
+}
+.sortable-application-card:nth-child(2n) {
+  animation-direction: alternate-reverse;
+}
+.sortable-application-card:nth-child(3n) {
+  animation-duration: 0.3s;
+}
+@keyframes app-card-wiggle {
+  from {
+    rotate: -1.5deg;
+  }
+  to {
+    rotate: 1.5deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sortable-application-card {
+    animation: none;
+  }
+}
+.sortable-application-card.is-dragging {
+  animation: none;
+  opacity: 0.4;
+}
+/* A rotated card is a stacking context: its insertion bar could not rise above the overlay. */
+.sortable-application-card.drop-before,
+.sortable-application-card.drop-after {
+  animation: none;
+}
+.application-card-overlay {
+  cursor: grabbing;
+}
+.sortable-application-card.drop-before::before,
+.sortable-application-card.drop-after::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 2px;
+  background-color: var(--edifice-primary);
+  /* Above the drag overlay (z-index: 3), which usually covers the gap. */
+  z-index: 4;
+}
+/* Centered in the gap-16 (1.6rem) between cards, beyond their 1px border. */
+.sortable-application-card.drop-before::before {
+  left: calc(-0.8rem - 1px);
+  transform: translateX(-50%);
+}
+.sortable-application-card.drop-after::after {
+  right: calc(-0.8rem - 1px);
+  transform: translateX(50%);
+}
 .theme-1d .application-icon {
   width: 80px;
   height: 80px;

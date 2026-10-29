@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useCategoryStore } from '~/store/categoryStore';
+import { useUserPreferencesStore } from '~/store/userPreferencesStore';
 import { getAppName } from '~/utils/get-app-name';
 import { ApplicationListGrid } from './ApplicationListGrid';
+import { FavoriteApplicationList } from './FavoriteApplicationList';
 import { EmptyCategory } from '~/components/EmptyCategory';
 import { Application } from '~/models/application';
 
@@ -13,6 +15,7 @@ type Props = {
 export function ApplicationList({ applications, isSearch }: Props) {
   const { t } = useTranslation('common');
   const { activeCategory } = useCategoryStore();
+  const { bookmarks } = useUserPreferencesStore();
   const sortAppsAndConnectors = (apps: Application[]) =>
     apps.sort((a, b) => {
       if (a.category === 'connector' && b.category !== 'connector') return 1;
@@ -70,12 +73,21 @@ export function ApplicationList({ applications, isSearch }: Props) {
     );
   }
 
-  const filteredApps =
-    activeCategory === 'favorites'
-      ? sortAppsAndConnectors(sortedApps).filter(
-          (app) => app.isFavorite === true,
-        )
-      : sortedApps.filter((app) => app.category === activeCategory);
+  if (activeCategory === 'favorites') {
+    const favoriteApps = bookmarks
+      .map((name) => applications.find((app) => app.name === name))
+      .filter((app): app is Application => app !== undefined);
+
+    return favoriteApps.length > 0 ? (
+      <FavoriteApplicationList applications={favoriteApps} />
+    ) : (
+      <EmptyCategory category="favorites" />
+    );
+  }
+
+  const filteredApps = sortedApps.filter(
+    (app) => app.category === activeCategory,
+  );
 
   return filteredApps.length > 0 ? (
     <ApplicationListGrid applications={filteredApps} />

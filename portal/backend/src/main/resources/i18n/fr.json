@@ -865,6 +865,7 @@
   "my.apps.empty.search.text": "Désolé, il n’y a rien sous ce nom-là... Aucune application ne correspond à votre recherche. Modifiez votre recherche et tentez à nouveau !",
   "my.apps.empty.search.title": "Pas de résultats pour votre recherche",
   "my.apps.examples": "Voir des exemples",
+  "my.apps.favorites.reorder": "Modifier l’ordre",
   "my.apps.infos": "Infos sur l'application",
   "my.apps.onboarding.modal.actu.alt": "Actualités",
   "my.apps.onboarding.modal.actu.text": "Nouveau design, une petite touche d’IA, l’affichage du nombre de vues, une meilleure gestion des fils et des notifications des publications différées, toutes ces nouveautés vous attendent sur Actualités.<br />On vous explique tout dans la <a href=\"https://edifice.io/releases/web-6-14/\" target=\"_blank\" style=\"text-decoration: underline; color:inherit;\">note de version</a>.",

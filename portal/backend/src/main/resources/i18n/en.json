@@ -150,6 +150,7 @@
   "my.apps.tabs.pedagogy": "Produce",
   "my.apps.tabs.organisation": "Organize",
   "my.apps.tabs.connector": "Other Services",
+  "my.apps.favorites.reorder": "Change order",
   "my.apps.onboarding.modal.screen1.title": "Your \"My Apps\" page is changing!",
   "my.apps.onboarding.modal.screen1.alt": "News",
   "my.apps.onboarding.modal.screen1.text": "<strong>Your app access page is now more intuitive!</strong><br/>Apps are organized by use case (Communicate, Produce, Organize) to make navigation easier.",
