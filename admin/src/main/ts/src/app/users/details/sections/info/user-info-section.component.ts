@@ -166,6 +166,11 @@ export class UserInfoSectionComponent
     return new Date(date).toLocaleDateString(this.bundles.currentLanguage);
   }
 
+  connectionModeLabel(): string {
+    const prefix = "users.details.section.infos.connectionMode.";
+    return this.details.hasFederatedIdentity ? prefix + "federated" : prefix + "local";
+  }
+
   showAddAdmlButton() {
     if (this.details.isAdml(this.structure.id)) {
       return false;

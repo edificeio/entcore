@@ -13,6 +13,9 @@
       <ode-form-field label="source">
         <span>{{ details.source | translate }}</span>
       </ode-form-field>
+      <ode-form-field label="users.details.section.infos.connectionMode">
+        <span>{{ connectionModeLabel() | translate }}</span>
+      </ode-form-field>
       <ode-form-field *ngIf="details.created" label="creation">
         <span>{{ displayDate(details.created) }}</span>
       </ode-form-field>
