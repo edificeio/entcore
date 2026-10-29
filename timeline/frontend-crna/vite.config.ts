@@ -17,9 +17,10 @@ export default ({ mode }: { mode: string }) => {
       '^/calendar/(?!public/)',
       '/sso/pronote',
       '/mediacentre',
-      '/actualites', 
+      '/actualites',
+      '/bookmark',
       '/themes',
-      '/languages'
+      '/languages',
     ],
   });
 
