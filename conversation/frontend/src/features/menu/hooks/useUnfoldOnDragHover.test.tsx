@@ -1,6 +1,6 @@
-import { Tree, TreeItem } from '@edifice.io/react';
-import { act } from 'react';
-import { render, screen } from '~/mocks/setup';
+import { Tree, TreeHandlers, TreeItem } from '@edifice.io/react';
+import { act, useRef } from 'react';
+import { render, renderHook, screen } from '~/mocks/setup';
 import {
   UNFOLD_ON_DRAG_HOVER_DELAY,
   useUnfoldOnDragHover,
@@ -17,8 +17,9 @@ const nodes: TreeItem[] = [
 
 /** A folders tree, with one of its folders hovered by dragged messages. */
 function HoveredTree({ hoveredFolderId }: { hoveredFolderId?: string }) {
-  useUnfoldOnDragHover(hoveredFolderId);
-  return <Tree nodes={nodes} onTreeItemClick={vi.fn()} />;
+  const treeRef = useRef<TreeHandlers>(null);
+  useUnfoldOnDragHover(hoveredFolderId, treeRef);
+  return <Tree ref={treeRef} nodes={nodes} onTreeItemClick={vi.fn()} />;
 }
 
 describe('useUnfoldOnDragHover', () => {
@@ -38,20 +39,6 @@ describe('useUnfoldOnDragHover', () => {
 
     act(() => vi.advanceTimersByTime(1));
     expect(screen.getByText('Sub Folder A.1')).toBeInTheDocument();
-  });
-
-  it('unfolds even though clicks are blocked while dragging', () => {
-    // Like @dnd-kit, which stops every click from reaching React during a drag
-    const blockClick = (event: MouseEvent) => event.stopPropagation();
-    document.addEventListener('click', blockClick, { capture: true });
-    try {
-      render(<HoveredTree hoveredFolderId="folder_A" />);
-      act(() => vi.advanceTimersByTime(UNFOLD_ON_DRAG_HOVER_DELAY));
-
-      expect(screen.getByText('Sub Folder A.1')).toBeInTheDocument();
-    } finally {
-      document.removeEventListener('click', blockClick, { capture: true });
-    }
   });
 
   it('does not unfold a folder left before the delay', () => {
@@ -83,5 +70,13 @@ describe('useUnfoldOnDragHover', () => {
     act(() => vi.advanceTimersByTime(UNFOLD_ON_DRAG_HOVER_DELAY));
 
     expect(screen.getByText('Sub Folder A.1')).toBeInTheDocument();
+  });
+
+  it('does nothing when the tree is gone', () => {
+    renderHook(() => useUnfoldOnDragHover('folder_A', { current: null }));
+
+    expect(() =>
+      act(() => vi.advanceTimersByTime(UNFOLD_ON_DRAG_HOVER_DELAY)),
+    ).not.toThrow();
   });
 });

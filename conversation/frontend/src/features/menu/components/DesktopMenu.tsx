@@ -3,6 +3,7 @@ import {
   Button,
   Menu,
   Tree,
+  TreeHandlers,
   TreeItem,
   useEdificeClient,
 } from '@edifice.io/react';
@@ -14,7 +15,7 @@ import {
   IconWrite,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -59,7 +60,8 @@ export function DesktopMenu() {
   // Same folder, only when the dragged messages can be dropped there.
   const dropFolderId =
     overFolderId && canDropMessagesOn(overFolderId) ? overFolderId : undefined;
-  useUnfoldOnDragHover(overFolderId);
+  const treeRef = useRef<TreeHandlers>(null);
+  useUnfoldOnDragHover(overFolderId, treeRef);
 
   const userFolders = useMemo(() => {
     const foldersTree = foldersTreeQuery.data;
@@ -149,6 +151,7 @@ export function DesktopMenu() {
         <div className="d-flex flex-column">
           <strong className="fs-6 mb-8">{t('user.folders')}</strong>
           <Tree
+            ref={treeRef}
             nodes={userFolders}
             onTreeItemClick={(folderId) => navigateTo(folderId, true)}
             renderNode={({ node }) => (
