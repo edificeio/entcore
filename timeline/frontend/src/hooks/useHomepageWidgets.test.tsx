@@ -1,7 +1,14 @@
 import { renderHook } from '@testing-library/react';
 import { useHomepageWidgets } from './useHomepageWidgets';
 
-const mocks = vi.hoisted(() => ({ useWidgetPreferences: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  useWidgetPreferences: vi.fn(),
+  useWidgetsOrder: vi.fn(),
+}));
+
+vi.mock('./useWidgetsOrder', () => ({
+  useWidgetsOrder: mocks.useWidgetsOrder,
+}));
 
 vi.mock('./useWidgetPreferences', () => ({
   useWidgetPreferences: mocks.useWidgetPreferences,
@@ -37,9 +44,24 @@ const setPreferences = ({
     isLocked: locked,
   });
 
+const setOrder = (names: string[], isLoading = false) =>
+  mocks.useWidgetsOrder.mockReturnValue({
+    order: names.map((name) => ({ name })),
+    isLoading,
+  });
+
 const names = (list: { name: string }[]) => list.map((w) => w.name);
 
 describe('useHomepageWidgets', () => {
+  beforeEach(() => {
+    setOrder([
+      'communities-widget',
+      'agenda-widget',
+      'universalis-widget',
+      'cantine-widget',
+    ]);
+  });
+
   it('lists the deployed catalog widgets in the configured order', () => {
     // Deliberately given in another order than the configured one
     setPreferences({
@@ -61,7 +83,40 @@ describe('useHomepageWidgets', () => {
     ]);
   });
 
+  it('follows the order given by the project', () => {
+    setOrder(['cantine-widget', 'agenda-widget']);
+    setPreferences({ deployed: ['agenda-widget', 'cantine-widget'] });
+
+    const { result } = renderHook(() => useHomepageWidgets());
+
+    expect(names(result.current.available)).toEqual([
+      'cantine-widget',
+      'agenda-widget',
+    ]);
+  });
+
+  it('hides deployed widgets absent from the order', () => {
+    setOrder(['agenda-widget']);
+    setPreferences({ deployed: ['agenda-widget', 'cantine-widget'] });
+
+    const { result } = renderHook(() => useHomepageWidgets());
+
+    expect(names(result.current.available)).toEqual(['agenda-widget']);
+    expect(names(result.current.displayed)).toEqual(['agenda-widget']);
+  });
+
+  it('lists nothing while the order is loading', () => {
+    setOrder(['agenda-widget'], true);
+    setPreferences({ deployed: ['agenda-widget'] });
+
+    const { result } = renderHook(() => useHomepageWidgets());
+
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.available).toEqual([]);
+  });
+
   it('ignores deployed widgets the new homepage does not handle', () => {
+    setOrder(['agenda-widget', 'mood', 'notes']);
     setPreferences({ deployed: ['agenda-widget', 'mood', 'notes'] });
 
     const { result } = renderHook(() => useHomepageWidgets());

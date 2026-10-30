@@ -10,7 +10,7 @@ import {
   UsefulLinksContainer,
 } from '@edifice.io/react/homepage';
 import { ComponentType } from 'react';
-import widgetsConfig from './widgets.json';
+import { WidgetOrderEntry } from '~/services';
 
 export interface HomepageWidget {
   /** Name of the widget in the platform catalog (`user.widgets`). */
@@ -35,15 +35,16 @@ const WIDGET_COMPONENTS: Record<string, ComponentType> = {
 };
 
 /**
- * Widgets handled by the new homepage, in display order. The order is the
- * one of `widgets.json` — the same one applies to the homepage and to the
- * personalization panel, and users cannot change it.
- * TODO(IMPULS-6083): move this order to the platform/project configuration.
+ * Widgets of the given order that the new homepage handles, in that order.
+ * Widgets absent from the order are left out: only what the project provides
+ * is displayed.
  */
-export const HOMEPAGE_WIDGETS: HomepageWidget[] = widgetsConfig.map(
-  (config) => ({
-    name: config.name,
-    fullWidth: 'fullWidth' in config && config.fullWidth === true,
-    Component: WIDGET_COMPONENTS[config.name],
-  }),
-);
+export const resolveHomepageWidgets = (
+  order: WidgetOrderEntry[],
+): HomepageWidget[] =>
+  order.flatMap(({ name, fullWidth }) => {
+    const Component = WIDGET_COMPONENTS[name];
+    return Component
+      ? [{ name, fullWidth: fullWidth === true, Component }]
+      : [];
+  });
