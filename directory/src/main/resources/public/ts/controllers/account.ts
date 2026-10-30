@@ -73,8 +73,10 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 	});
 
 	// Platform version, served as plain text by the front server. The version
-	// block stays hidden if it cannot be read.
+	// block stays hidden if it cannot be read. Loaded once per page: it cannot
+	// change while the user switches tabs.
 	const loadPlatformVersion = async () => {
+		if ($scope.platformVersion) return;
 		try {
 			const response = await fetch('/assets/version', { cache: 'no-cache' });
 			if (!response.ok) return;
