@@ -1,0 +1,16 @@
+[
+  {
+    "name": "communities-widget",
+    "fullWidth": true,
+    "defaultVisibleFor": ["Teacher", "Student"]
+  },
+  { "name": "agenda-widget" },
+  { "name": "bookmark-widget" },
+  { "name": "briefme-widget" },
+  { "name": "qwant" },
+  { "name": "universalis-widget" },
+  { "name": "cursus-widget" },
+  { "name": "cantine-widget" },
+  { "name": "edumalin-widget" },
+  { "name": "rss-widget" }
+]
