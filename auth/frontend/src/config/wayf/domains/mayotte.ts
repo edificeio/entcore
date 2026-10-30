@@ -51,18 +51,7 @@ export const mayotteConfig: WayfDomainConfig = {
       i18n: 'wayf.perseducnat',
       color: 'perseducnat',
       icon: 'perseducnat',
-      children: [
-        {
-          i18n: 'wayf.perseducnat.academy',
-          color: 'perseducnat',
-          acs: ARENA_ACS,
-        },
-        {
-          i18n: 'wayf.perseducnat.collectivite',
-          color: 'perseducnat',
-          acs: '/auth/login',
-        },
-      ],
+      acs: ARENA_ACS,
     },
     {
       i18n: 'wayf.other',
