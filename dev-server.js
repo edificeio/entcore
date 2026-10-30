@@ -29,6 +29,9 @@ const publicDir = path.join(moduleResources, "public");
 // Local i18n keys are merged over the recette's ones, so new keys show up
 // without a deployment.
 const localI18nPath = path.join(moduleResources, "i18n/fr.json");
+// Module stylesheets (paths relative to public/, comma-separated) linked by a
+// view-src/ view: the view comes from the recette and may not link them yet.
+const LOCAL_CSS = (process.env.LOCAL_CSS || "").split(",").map((p) => p.trim()).filter(Boolean);
 
 // Minimal .env parser (no dotenv dependency), same pattern as admin.
 const parseEnvFile = (content) => {
@@ -111,8 +114,11 @@ function injectInHtml(body) {
   // Without `server` or `proxy` options browser-sync runs in snippet mode and
   // injects its client nowhere: without this, `files` would have no client
   // to send reload orders to.
-  const snippet = browserSync.getOption("snippet") || "";
-  return body.indexOf("</head>") !== -1 ? body.replace("</head>", snippet + "</head>") : body + snippet;
+  const stylesheets = LOCAL_CSS.filter((p) => body.indexOf(`${APP_ADDRESS}/public/${p}`) === -1)
+    .map((p) => `<link rel="stylesheet" type="text/css" href="${APP_ADDRESS}/public/${p}">`)
+    .join("");
+  const injection = stylesheets + (browserSync.getOption("snippet") || "");
+  return body.indexOf("</head>") !== -1 ? body.replace("</head>", injection + "</head>") : body + injection;
 }
 
 function mergeLocalI18n(body) {
@@ -211,6 +217,7 @@ browserSync.init(
       `${relativePublic}/dist/*.js`,
       `${relativePublic}/js/behaviours.js`,
       `${relativePublic}/template/**/*.html`,
+      `${relativePublic}/css/**/*.css`,
       path.relative(__dirname, localI18nPath),
     ],
     watchEvents: ["change", "add"],
