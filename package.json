@@ -11,7 +11,7 @@
     "legacy:watch": "node node_modules/gulp/bin/gulp.js watch-dev",
     "legacy:server": "node dev-server.js",
     "legacy:dev": "concurrently --kill-others-on-fail -n webpack,serve -c blue,green \"npm run legacy:watch\" \"npm run legacy:server\"",
-    "dev:directory": "cross-env MODULE=directory START_PATH=/userbook/mon-compte#/edit-me npm run legacy:dev",
+    "dev:directory": "cross-env MODULE=directory START_PATH=/userbook/mon-compte#/edit-me LOCAL_CSS=css/account.css npm run legacy:dev",
     "prepare": "husky install"
   },
   "repository": {

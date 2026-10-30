@@ -98,7 +98,7 @@ Autre module ou autre page : `MODULE=workspace START_PATH=/workspace/workspace n
 
 - Les `.ts` sont recompilés (webpack) et les templates `public/template/` rechargés automatiquement dans le navigateur.
 - Les clés de `i18n/fr.json` du module sont fusionnées par-dessus celles de la recette.
-- Les vues `view-src/` restent celles déployées sur la recette : un changement local n'y apparaît pas.
+- Les vues `view-src/` restent celles déployées sur la recette : un changement local n'y apparaît pas. Une feuille de style du module qu'une vue lie mais que la recette n'a pas encore se déclare dans `LOCAL_CSS` (chemins relatifs à `public/`, séparés par des virgules) pour être injectée.
 - Une session expirée se traduit par une redirection vers `/auth/login`, signalée dans la console : régénérer le `.env`.
 
 ## Débugage
