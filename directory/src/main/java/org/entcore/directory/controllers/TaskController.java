@@ -6,14 +6,23 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.ReplyException;
+import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import org.entcore.directory.Directory;
+import org.entcore.directory.util.ImportReportSummary;
 
 public class TaskController extends BaseController {
 	protected static final Logger log = LoggerFactory.getLogger(TaskController.class);
+	/** Environment variable which enables the routes feeding the AAF import directories (integration tests only). */
+	private static final String ALLOW_UPLOAD_AAF_FILES_ENV = "ALLOW_UPLOAD_AAF_FILES";
+	/** Time in milliseconds a synchronous import is awaited when the request gives none. */
+	private static final long DEFAULT_SYNC_IMPORT_TIMEOUT = 900000L;
+	/** Longest time in milliseconds a synchronous import can be awaited. */
+	private static final long MAX_SYNC_IMPORT_TIMEOUT = 5400000L;
 
 	@Post("/api/internal/delete-users")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -73,6 +82,11 @@ public class TaskController extends BaseController {
 	public void triggerImport(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, jsonBody -> {
 			String feederType = jsonBody.getString("feeder");
+			if (jsonBody.getBoolean("wait", false)) {
+				triggerImportAndWait(request, feederType, jsonBody.getLong("timeout", DEFAULT_SYNC_IMPORT_TIMEOUT),
+						jsonBody.getBoolean("waitPostImport", true));
+				return;
+			}
 			JsonObject message = new JsonObject()
 					.put("action", "import-with-auto-export")
 					.put("feeder", feederType)
@@ -87,17 +101,102 @@ public class TaskController extends BaseController {
 		} );
 	}
 
+	/**
+	 * Triggers an import and answers once it is over, with a summary of its report (errors, ignored records...).
+	 * Reserved to the platforms accepting the AAF files upload since the report contains personal data.
+	 * @param feederType the type of feeder (AAF, AAF1D)
+	 * @param timeout the time in milliseconds the end of the import is awaited (capped)
+	 * @param waitPostImport whether the answer also waits for the end of the post import (duplicates merge, communication rules)
+	 */
+	private void triggerImportAndWait(final HttpServerRequest request, final String feederType, final long timeout,
+			final boolean waitPostImport) {
+		if (!isAafUploadAllowed()) {
+			render(request, new JsonObject().put("error", "feature.disabled"), 403);
+			return;
+		}
+		final JsonObject message = new JsonObject().put("action", "import").put("feeder", feederType)
+				.put("waitPostImport", waitPostImport);
+		final DeliveryOptions options = new DeliveryOptions().setLocalOnly(true)
+				.setSendTimeout(Math.max(1000L, Math.min(timeout, MAX_SYNC_IMPORT_TIMEOUT)));
+		eb.request(Directory.FEEDER, message, options)
+				.onSuccess(reply -> {
+					final JsonObject body = (JsonObject) reply.body();
+					log.info("Import of feeder " + feederType + " done with status " + body.getString("status"));
+					render(request, ImportReportSummary.summarize(body), "ok".equals(body.getString("status")) ? 200 : 500);
+				})
+				.onFailure(th -> {
+					log.warn("Error while waiting for the import of feeder " + feederType, th);
+					render(request, new JsonObject().put("error", th.getMessage()), statusOf(th, 504));
+				});
+	}
+
+	/**
+	 * Uploads AAF files into the import directory of a feeder (integration tests).
+	 * @param request the HTTP request containing :
+	 *                - subPath : the directory, under the import directory, receiving the files
+	 *                - files : the content of each file, by file name
+	 *                - feeder : AAF or AAF1D, to choose the import directory ("imports.&lt;feeder&gt;.files" of the feeder
+	 *                configuration). Optional, the default import directory is used when missing.
+	 */
 	@Post("/api/internal/upload-aaf")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void uploadAAFFiles(final HttpServerRequest request) {
+		if (!isAafUploadAllowed()) {
+			render(request, new JsonObject().put("error", "feature.disabled"), 403);
+			return;
+		}
 		RequestUtils.bodyToJson(request, uploadRequest -> {
 			eb.request("feeder.upload-aaf", uploadRequest)
 			.onSuccess(message -> render(request, new JsonObject().put("success", true)))
 			.onFailure(th -> {
 				log.warn("Error while uploading aaf files", th);
-				renderError(request);
+				render(request, new JsonObject().put("error", th.getMessage()), statusOf(th, 500));
 			});
 		});
+	}
+
+	/**
+	 * Removes the directories created by {@link #uploadAAFFiles(HttpServerRequest)} (integration tests). A directory
+	 * supplied by an academy is never removed and nothing is removed while an import is running (409).
+	 * @param request the HTTP request containing :
+	 *                - feeder : AAF or AAF1D, to choose the import directory. Optional, same rule as for the upload.
+	 *                - subPath : the uploaded directory to remove. Optional, every uploaded directory is removed when missing.
+	 */
+	@Post("/api/internal/clean-aaf")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void cleanAAFFiles(final HttpServerRequest request) {
+		if (!isAafUploadAllowed()) {
+			render(request, new JsonObject().put("error", "feature.disabled"), 403);
+			return;
+		}
+		RequestUtils.bodyToJson(request, cleanRequest -> {
+			eb.request("feeder.clean-aaf", cleanRequest)
+			.onSuccess(message -> render(request, (JsonObject) message.body()))
+			.onFailure(th -> {
+				log.warn("Error while cleaning aaf files", th);
+				render(request, new JsonObject().put("error", th.getMessage()), statusOf(th, 500));
+			});
+		});
+	}
+
+	/** @return {@code true} iff the platform accepts to have its AAF import directories fed through the API. */
+	private static boolean isAafUploadAllowed() {
+		return "true".equals(System.getenv(ALLOW_UPLOAD_AAF_FILES_ENV));
+	}
+
+	/** @return The HTTP status carried by a failed bus reply, or {@code defaultStatus} when there is none. */
+	private static int statusOf(final Throwable th, final int defaultStatus) {
+		if (th instanceof ReplyException) {
+			final ReplyException replyException = (ReplyException) th;
+			if (replyException.failureType() == ReplyFailure.RECIPIENT_FAILURE
+					&& replyException.failureCode() >= 400 && replyException.failureCode() < 600) {
+				return replyException.failureCode();
+			}
+			if (replyException.failureType() == ReplyFailure.TIMEOUT) {
+				return 504;
+			}
+		}
+		return defaultStatus;
 	}
 
 	/**

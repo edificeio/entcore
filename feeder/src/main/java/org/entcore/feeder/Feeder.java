@@ -42,6 +42,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.feeder.aaf.AAFFilesCleanRequest;
 import org.entcore.feeder.aaf.AAFFilesUploadRequest;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
@@ -67,12 +68,14 @@ import org.entcore.feeder.timetable.edt.EDTFeederLauncher;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.timetable.udt.UDTImporter;
+import org.entcore.feeder.utils.AAFUploadDirectories;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.vertx.java.busmods.BusModBase;
 
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
@@ -284,7 +287,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				final AAFFilesUploadRequest request = ((JsonObject) m.body()).mapTo(AAFFilesUploadRequest.class);
 				uploadAAFFiles(request)
 				.onSuccess(e -> m.reply(new JsonObject().put("success", true)))
-				.onFailure(th -> m.fail(500, th.getMessage()));
+				.onFailure(th -> m.fail(statusCodeOf(th), th.getMessage()));
+			});
+			eb.localConsumer("feeder.clean-aaf", m -> {
+				final AAFFilesCleanRequest request = ((JsonObject) m.body()).mapTo(AAFFilesCleanRequest.class);
+				cleanAAFFiles(request)
+				.onSuccess(removed -> m.reply(new JsonObject().put("success", true).put("removed", removed)))
+				.onFailure(th -> m.fail(statusCodeOf(th), th.getMessage()));
 			});
 		} else {
 			log.debug("No aaf files uploading is possible");
@@ -933,6 +942,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String importPath = message.body().getString("path");
 		final boolean executePostImport = getOrElse(message.body().getBoolean("postImport"), true);
 		final boolean notReverseFilesOrder = message.body().getBoolean("notReverseFilesOrder", false);
+		// when true, the reply waits for the end of the post import (duplicates, communication rules...)
+		final boolean waitPostImport = message.body().getBoolean("waitPostImport", false);
 		final FeederLogger logger = new FeederLogger(t -> "Feeder.doImport", t -> String.format("withPostImport: %s", executePostImport));
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
@@ -957,13 +968,21 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						report.setNotReverseFilesOrder(true);
 					}
 					try {
+						final Future<Void>[] postImportEnded = new Future[1];
 						Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(t -> "SUCCEED to launch feeder | details: "+m.body().encode(), true);
 									if (executePostImport) {
-										postImport.execute(feed.getFeederSource(), new HashSet<String>(importer.getStructureImportedExternalId()));
+										final HashSet<String> importedStructures = new HashSet<String>(importer.getStructureImportedExternalId());
+										if (waitPostImport) {
+											final Promise<Void> postImportEnd = Promise.promise();
+											postImportEnded[0] = postImportEnd.future();
+											postImport.execute(feed.getFeederSource(), importedStructures, v -> postImportEnd.tryComplete());
+										} else {
+											postImport.execute(feed.getFeederSource(), importedStructures);
+										}
 									}
 								} else {
 									Validator.initLogin(neo4j, vertx);
@@ -982,7 +1001,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								report.sendEmails(vertx, config,feed.getFeederSource());
 								logger.info(t -> "Elapsed time " + (endTime - start) + " ms.", true);
 								importer.clear();
-								h.handle(report);
+								if (postImportEnded[0] != null) {
+									postImportEnded[0].onComplete(ar -> h.handle(report));
+								} else {
+									h.handle(report);
+								}
 							}
 						};
 						if (importPath != null && !importPath.trim().isEmpty()) {
@@ -1012,17 +1035,42 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 	}
 
+	/**
+	 * @param feeder The feeder (AAF, AAF1D) whose import directory is wanted, or {@code null} for the default one
+	 * @return The import directory in which the files of the feeder are uploaded
+	 * @throws AAFUploadDirectories.RefusedException If the feeder does not read AAF files
+	 */
+	private String getUploadRoot(final String feeder) throws AAFUploadDirectories.RefusedException {
+		if (isEmpty(feeder)) {
+			return this.config.getString("import-files");
+		}
+		if (!"AAF".equals(feeder) && !"AAF1D".equals(feeder)) {
+			throw new AAFUploadDirectories.RefusedException(400, "invalid.feeder");
+		}
+		return getFilesDirectory(feeder);
+	}
+
+	private static int statusCodeOf(final Throwable th) {
+		return th instanceof AAFUploadDirectories.RefusedException ? ((AAFUploadDirectories.RefusedException) th).getStatusCode() : 500;
+	}
+
 	public Future<Void> uploadAAFFiles(final AAFFilesUploadRequest request) {
-		final String importFiles = this.config.getString("import-files");
+		final String importFiles;
+		try {
+			importFiles = getUploadRoot(request.getFeeder());
+		} catch (AAFUploadDirectories.RefusedException e) {
+			logger.warn(request.getFeeder() + " is not an acceptable feeder");
+			return failedFuture(e);
+		}
 		final String subPath = request.getSubPath();
 		if(!checkPathIsStraightForward(subPath)) {
 			logger.warn(subPath + " is not an acceptable path");
-			return failedFuture("subPath.not.acceptable");
+			return failedFuture(new AAFUploadDirectories.RefusedException(400, "subPath.not.acceptable"));
 		}
 		for (String key : request.getFiles().keySet()) {
 			if(!checkPathIsStraightForward(key)) {
 				logger.warn(key + " is not an acceptable path");
-				return failedFuture("filename.not.acceptable");
+				return failedFuture(new AAFUploadDirectories.RefusedException(400, "filename.not.acceptable"));
 			}
 		}
 		final FileSystem fs = vertx.fileSystem();
@@ -1038,6 +1086,56 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						.onFailure(th -> logger.warn("Error while writing file " + filePath, th));
 			}).collect(Collectors.toList());
 			return Future.all(futures).mapEmpty();
+		})
+		.compose(e -> StringUtils.isEmpty(subPath) ? Future.<Void>succeededFuture() :
+				fs.writeFile(parentDir + separator + AAFUploadDirectories.UPLOAD_MARKER, Buffer.buffer()))
+		.compose(e -> updateAAFDirectories(importFiles, subPath));
+	}
+
+	/**
+	 * Registers the uploaded directory in the file listing the directories imported by the feeders.
+	 * @param importFiles The import directory containing the listing
+	 * @param subPath The uploaded directory
+	 */
+	private Future<Void> updateAAFDirectories(final String importFiles, final String subPath) {
+		if(StringUtils.isEmpty(subPath)) {
+			return Future.succeededFuture();
+		}
+		final String importDirectoriesPath = importFiles + separator + AAFUploadDirectories.IMPORT_DIRECTORIES_JSON;
+		final FileSystem fs = vertx.fileSystem();
+		return fs.exists(importDirectoriesPath)
+		.compose(exists -> exists ? Future.<Void>succeededFuture() : fs.writeFile(importDirectoriesPath, Buffer.buffer("[]")))
+		.compose(v -> fs.readFile(importDirectoriesPath))
+		.compose(data -> {
+			final JsonArray directories = data.toJsonArray();
+			if(directories.contains(subPath)) {
+				return Future.<Void>succeededFuture();
+			}
+			directories.add(subPath);
+			return fs.writeFile(importDirectoriesPath, Buffer.buffer(directories.encode()));
+		});
+	}
+
+	/**
+	 * Removes the directories created by {@link #uploadAAFFiles(AAFFilesUploadRequest)}. Directories supplied by
+	 * the academies are never touched (see {@link AAFUploadDirectories}) and nothing is removed while an import is
+	 * running.
+	 * @return The names of the removed directories
+	 */
+	public Future<JsonArray> cleanAAFFiles(final AAFFilesCleanRequest request) {
+		if (!Importer.getInstance().isReady()) {
+			return failedFuture(new AAFUploadDirectories.RefusedException(409, "import.in.progress"));
+		}
+		final String root;
+		try {
+			root = getUploadRoot(request.getFeeder());
+		} catch (AAFUploadDirectories.RefusedException e) {
+			return failedFuture(e);
+		}
+		return vertx.<List<String>>executeBlocking(() -> AAFUploadDirectories.clean(Paths.get(root), request.getSubPath()), false)
+		.map(removed -> {
+			logger.info("Cleaned AAF import directory " + root + " | requested: " + request.getSubPath() + " | removed: " + removed);
+			return new JsonArray(removed);
 		});
 	}
 
