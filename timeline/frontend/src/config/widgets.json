@@ -1,5 +1,9 @@
 [
-  { "name": "communities-widget", "fullWidth": true },
+  {
+    "name": "communities-widget",
+    "fullWidth": true,
+    "defaultVisibleFor": ["Teacher", "Student"]
+  },
   { "name": "agenda-widget" },
   { "name": "bookmark-widget" },
   { "name": "briefme-widget" },

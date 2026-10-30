@@ -32,22 +32,30 @@ vi.mock('@edifice.io/react/homepage', () => {
 
 const setPreferences = ({
   deployed,
-  visible = () => true,
+  visible = (_name, defaultVisible) => defaultVisible,
   locked = () => false,
+  profiles = ['Teacher'],
 }: {
   deployed: string[];
-  visible?: (name: string) => boolean;
+  visible?: (name: string, defaultVisible: boolean) => boolean;
   locked?: (name: string) => boolean;
+  profiles?: string[];
 }) =>
   mocks.useWidgetPreferences.mockReturnValue({
     widgets: deployed.map((name) => ({ name })),
+    profiles,
     isVisible: visible,
     isLocked: locked,
   });
 
-const setOrder = (names: string[], isLoading = false) =>
+const setOrder = (
+  entries: (string | { name: string; defaultVisibleFor?: string[] })[],
+  isLoading = false,
+) =>
   mocks.useWidgetsOrder.mockReturnValue({
-    order: names.map((name) => ({ name })),
+    order: entries.map((entry) =>
+      typeof entry === 'string' ? { name: entry } : entry,
+    ),
     isLoading,
   });
 
@@ -158,5 +166,81 @@ describe('useHomepageWidgets', () => {
     const { result } = renderHook(() => useHomepageWidgets());
 
     expect(names(result.current.displayed)).toContain('agenda-widget');
+  });
+
+  describe('default visibility by profile', () => {
+    const communities = {
+      name: 'communities-widget',
+      defaultVisibleFor: ['Teacher', 'Student'],
+    };
+
+    beforeEach(() => setOrder([communities, 'agenda-widget']));
+
+    it.each(['Teacher', 'Student'])(
+      'displays it by default for a %s',
+      (profile) => {
+        setPreferences({
+          deployed: ['communities-widget', 'agenda-widget'],
+          profiles: [profile],
+        });
+
+        const { result } = renderHook(() => useHomepageWidgets());
+
+        expect(names(result.current.displayed)).toEqual([
+          'communities-widget',
+          'agenda-widget',
+        ]);
+      },
+    );
+
+    it.each(['Relative', 'Personnel', 'Guest'])(
+      'hides it by default for a %s, but still lists it in the panel',
+      (profile) => {
+        setPreferences({
+          deployed: ['communities-widget', 'agenda-widget'],
+          profiles: [profile],
+        });
+
+        const { result } = renderHook(() => useHomepageWidgets());
+
+        expect(names(result.current.available)).toEqual([
+          'communities-widget',
+          'agenda-widget',
+        ]);
+        expect(names(result.current.displayed)).toEqual(['agenda-widget']);
+      },
+    );
+
+    it('keeps the choice of the user over the default', () => {
+      setPreferences({
+        deployed: ['communities-widget', 'agenda-widget'],
+        profiles: ['Relative'],
+        visible: (name) => name === 'communities-widget',
+      });
+
+      const { result } = renderHook(() => useHomepageWidgets());
+
+      expect(names(result.current.displayed)).toEqual(['communities-widget']);
+    });
+
+    it('always displays it to a profile hidden by default when it is locked', () => {
+      setPreferences({
+        deployed: ['communities-widget'],
+        profiles: ['Guest'],
+        locked: (name) => name === 'communities-widget',
+      });
+
+      const { result } = renderHook(() => useHomepageWidgets());
+
+      expect(names(result.current.displayed)).toEqual(['communities-widget']);
+    });
+
+    it('hides it for a user without profile', () => {
+      setPreferences({ deployed: ['communities-widget'], profiles: [] });
+
+      const { result } = renderHook(() => useHomepageWidgets());
+
+      expect(result.current.displayed).toEqual([]);
+    });
   });
 });

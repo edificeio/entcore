@@ -49,4 +49,30 @@ describe('useWidgetsOrder', () => {
 
     expect(await renderOrder()).toEqual(widgetsDefaultOrder);
   });
+
+  it('keeps the profiles a widget is displayed for by default', async () => {
+    server.use(
+      http.get(WIDGETS_ORDER_URL, () =>
+        HttpResponse.json([
+          { name: 'communities-widget', defaultVisibleFor: ['Teacher'] },
+        ]),
+      ),
+    );
+
+    expect(await renderOrder()).toEqual([
+      { name: 'communities-widget', defaultVisibleFor: ['Teacher'] },
+    ]);
+  });
+
+  it('falls back to the default order when the profiles are invalid', async () => {
+    server.use(
+      http.get(WIDGETS_ORDER_URL, () =>
+        HttpResponse.json([
+          { name: 'communities-widget', defaultVisibleFor: 'Teacher' },
+        ]),
+      ),
+    );
+
+    expect(await renderOrder()).toEqual(widgetsDefaultOrder);
+  });
 });

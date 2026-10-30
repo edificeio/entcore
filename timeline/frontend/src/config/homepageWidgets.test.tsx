@@ -61,4 +61,14 @@ describe('resolveHomepageWidgets', () => {
       ]);
     },
   );
+
+  it('keeps the profiles a widget is displayed for by default', () => {
+    const [communities, agenda] = resolveHomepageWidgets([
+      { name: 'communities-widget', defaultVisibleFor: ['Teacher'] },
+      { name: 'agenda-widget' },
+    ]);
+
+    expect(communities.defaultVisibleFor).toEqual(['Teacher']);
+    expect(agenda.defaultVisibleFor).toBeUndefined();
+  });
 });
