@@ -213,7 +213,7 @@ public class DirectoryController extends BaseController {
 	@Post("/reinitLogins")
 	@SecuredAction("directory.reinit.login")
 	public void reinitLogins(HttpServerRequest request) {
-		eb.request("entcore.feeder", new JsonObject().put("action", "reinit-logins"));
+		eb.publish("entcore.feeder", new JsonObject().put("action", "reinit-logins"));
 		request.response().end();
 	}
 
