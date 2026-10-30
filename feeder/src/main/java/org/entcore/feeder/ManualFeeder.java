@@ -1071,6 +1071,7 @@ public class ManualFeeder extends BusModBase {
 					if (users.size() == res.size()) {
 						final Set<String> oldLogins = new HashSet<>();
 						final JsonArray deleteUsers = new JsonArray();
+						final JsonArray preDeletedUsers = new JsonArray();
 						executeTransaction(message, tx -> {
 							for (Object o : res) {
 								if (!(o instanceof JsonObject)) continue;
@@ -1079,6 +1080,7 @@ public class ManualFeeder extends BusModBase {
 								if (isNotEmpty(id)) {
 									User.backupRelationship(id, false, tx);
 									User.preDelete(id, tx);
+									preDeletedUsers.add(id);
 									if (j.getBoolean("inactive", false)) {
 										oldLogins.add(j.getString("login"));
 										if (isNotEmpty(j.getString("loginAlias"))) {
@@ -1100,6 +1102,9 @@ public class ManualFeeder extends BusModBase {
 								final JsonArray r = results.getJsonArray(results.size() - 2);
 								User.DeleteTask.publishDeleteUsers(eb, eventStore, r);
 								Validator.removeLogins(oldLogins);
+							}
+							if ("ok".equals(m.body().getString("status"))) {
+								SessionUtil.revokeUsers(eb, preDeletedUsers);
 							}
 							message.reply(m.body());
 						});
