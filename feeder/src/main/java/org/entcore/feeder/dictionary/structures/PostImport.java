@@ -83,6 +83,16 @@ public class PostImport {
 	}
 
 	public void execute(String source, Set<String> structureExternalIds) {
+		execute(source, structureExternalIds, null);
+	}
+
+	/**
+	 * @param onEnd Called once the duplicates have been merged / marked and the communication rules applied, and
+	 *              the tasks which follow have been started (the ones which have no completion callback, such as the
+	 *              tenant link, the manual groups link or the fix of functional groups, are not awaited).
+	 *              {@code null} when the caller does not need to know.
+	 */
+	public void execute(String source, Set<String> structureExternalIds, Handler<Void> onEnd) {
 		storeImportedEvent();
 		if (source == null || config.getJsonArray("exclude-mark-duplicates-by-source") == null ||
 				!config.getJsonArray("exclude-mark-duplicates-by-source").contains(source)) {
@@ -107,14 +117,28 @@ public class PostImport {
 							}else{
 								logger.error(e-> "FAILED autoMergeDuplicatesInStructure", mergedUsers.cause());
 							}
-							applyComRules(getFinalHandler(source), structureExternalIds);
+							applyComRules(getFinalHandler(source, onEnd), structureExternalIds);
 						});
 					});
 				});
 		} else {
 			logger.info(e-> "SKIP mergeSameIne");
-			applyComRules(getFinalHandler(source), structureExternalIds);
+			applyComRules(getFinalHandler(source, onEnd), structureExternalIds);
 		}
+	}
+
+	private Handler<Void> getFinalHandler(String source, Handler<Void> onEnd) {
+		final Handler<Void> finalTasks = getFinalHandler(source);
+		if (onEnd == null) {
+			return finalTasks;
+		}
+		return v -> {
+			try {
+				finalTasks.handle(v);
+			} finally {
+				onEnd.handle(null);
+			}
+		};
 	}
 
 	private Handler<Void> getFinalHandler(String source) {
