@@ -46,6 +46,7 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserDataSync;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
+import org.entcore.feeder.utils.SessionUtil;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 
@@ -325,6 +326,7 @@ public class User {
 		private void preDeleteUsers(final JsonArray users, final Handler<Message<JsonObject>> handler) {
 			try {
 				JsonArray nullIdUserNodes = new JsonArray();
+				final JsonArray preDeletedUsers = new JsonArray();
 				TransactionHelper tx = TransactionManager.getInstance().begin();
 				for (Object o : users) {
 					if (!(o instanceof JsonObject)) continue;
@@ -336,6 +338,7 @@ public class User {
 					{
 						backupRelationship(userId, false, tx);
 						preDelete(userId, tx);
+						preDeletedUsers.add(userId);
 					}
 				}
 				if(nullIdUserNodes.size() > 0)
@@ -350,6 +353,7 @@ public class User {
 					public void handle(Message<JsonObject> m) {
 						if ("ok".equals(m.body().getString("status"))) {
 							log.info("PreDelete users : " + users.encode());
+							SessionUtil.revokeUsers(Vertx.currentContext().owner().eventBus(), preDeletedUsers);
 						} else {
 							log.error(m.body().encode());
 						}
@@ -514,6 +518,11 @@ public class User {
 				"WHERE p.name = head(um.profiles) " +
 				"CREATE UNIQUE um-[:IN]->rcg ";
 		transaction.add(mQuery, params);
+		// Suppression des tokens FCM pour stopper les notifications push sur les appareils de l'utilisateur
+		String fcmQuery =
+				"MATCH (u:User { id : {userId}})-[:PREFERS]->(uac:UserAppConf) " +
+				"SET uac.fcmTokens = null";
+		transaction.add(fcmQuery, params);
 		String query =
 				"MATCH (u:User { id : {userId}}), (dg:DeleteGroup) " +
 				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED|DUPLICATE|TEACHES_FOS|TEACHES|HAS_FUNCTION]-() " +
