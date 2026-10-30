@@ -39,14 +39,27 @@ const WIDGET_COMPONENTS: Record<string, ComponentType> = {
 /**
  * Widgets of the given order that the new homepage handles, in that order.
  * Widgets absent from the order are left out: only what the project provides
- * is displayed.
+ * is displayed. Unknown names and repeated entries are ignored (the first
+ * one wins), the order comes from a deployed file that is not trusted.
  */
 export const resolveHomepageWidgets = (
   order: WidgetOrderEntry[],
-): HomepageWidget[] =>
-  order.flatMap(({ name, fullWidth }) => {
-    const Component = WIDGET_COMPONENTS[name];
-    return Component
-      ? [{ name, fullWidth: fullWidth === true, Component }]
-      : [];
+): HomepageWidget[] => {
+  const seen = new Set<string>();
+  return order.flatMap(({ name, fullWidth }) => {
+    // Own keys only: "constructor" or "__proto__" must not resolve to a component
+    const isHandled = Object.prototype.hasOwnProperty.call(
+      WIDGET_COMPONENTS,
+      name,
+    );
+    if (!isHandled || seen.has(name)) return [];
+    seen.add(name);
+    return [
+      {
+        name,
+        fullWidth: fullWidth === true,
+        Component: WIDGET_COMPONENTS[name],
+      },
+    ];
   });
+};
