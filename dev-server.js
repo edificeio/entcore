@@ -14,10 +14,10 @@ const path = require("path");
 const httpProxy = require("http-proxy");
 const browserSync = require("browser-sync").create();
 
-const MODULES = ["archive", "auth", "directory", "timeline", "workspace"];
+// A legacy module is one built by gulpfile.js, i.e. with its own webpack.config.js
 const target = process.env.MODULE || "directory";
-if (MODULES.indexOf(target) === -1) {
-  console.error(`MODULE inconnu : "${target}". Valeurs possibles : ${MODULES.join(", ")}`);
+if (!fs.existsSync(path.resolve(__dirname, target, "webpack.config.js"))) {
+  console.error(`MODULE inconnu : "${target}" (pas de ${target}/webpack.config.js, cf. apps dans gulpfile.js)`);
   process.exit(1);
 }
 
@@ -26,9 +26,9 @@ const START_PATH = process.env.START_PATH || APP_ADDRESS;
 const PORT = Number(process.env.PORT) || 3000;
 const moduleResources = path.resolve(__dirname, target, "src/main/resources");
 const publicDir = path.join(moduleResources, "public");
-// Local i18n keys are merged over the recette's ones, so new keys show up
-// without a deployment.
-const localI18nPath = path.join(moduleResources, "i18n/fr.json");
+// Local i18n keys (i18n/<lang>.json, lang from the request) are merged over
+// the recette's ones, so new keys show up without a deployment.
+const localI18nDir = path.join(moduleResources, "i18n");
 // Module stylesheets (paths relative to public/, comma-separated) linked by a
 // view-src/ view: the view comes from the recette and may not link them yet.
 const LOCAL_CSS = (process.env.LOCAL_CSS || "").split(",").map((p) => p.trim()).filter(Boolean);
@@ -121,8 +121,10 @@ function injectInHtml(body) {
   return body.indexOf("</head>") !== -1 ? body.replace("</head>", injection + "</head>") : body + injection;
 }
 
-function mergeLocalI18n(body) {
-  if (!fs.existsSync(localI18nPath)) return body;
+function mergeLocalI18n(body, req) {
+  const lang = (req.headers["accept-language"] || "fr").split(/[,;-]/)[0].trim().toLowerCase();
+  const localI18nPath = path.join(localI18nDir, `${lang}.json`);
+  if (!/^[a-z]+$/.test(lang) || !fs.existsSync(localI18nPath)) return body;
   try {
     const local = JSON.parse(fs.readFileSync(localI18nPath, "utf-8"));
     return JSON.stringify(Object.assign(JSON.parse(body), local));
@@ -169,7 +171,7 @@ proxy.on("proxyRes", (proxyRes, req, res) => {
   const chunks = [];
   proxyRes.on("data", (chunk) => chunks.push(chunk));
   proxyRes.on("end", () => {
-    const body = rewrite(Buffer.concat(chunks).toString("utf8"));
+    const body = rewrite(Buffer.concat(chunks).toString("utf8"), req);
     const headers = Object.assign({}, proxyRes.headers);
     // Sent in one block: keeping transfer-encoding with a new content-length
     // makes an ambiguous response (RFC 7230 3.3.3).
@@ -218,7 +220,7 @@ browserSync.init(
       `${relativePublic}/js/behaviours.js`,
       `${relativePublic}/template/**/*.html`,
       `${relativePublic}/css/**/*.css`,
-      path.relative(__dirname, localI18nPath),
+      `${path.relative(__dirname, localI18nDir)}/*.json`,
     ],
     watchEvents: ["change", "add"],
     // The hoisted fsevents is 1.x (legacy webpack 1 toolchain), incompatible
