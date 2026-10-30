@@ -84,6 +84,23 @@ Lancer depuis le projet racine :
 * `gradle :{nom_module}:clean` : `clean` juste pour `{nom_module}`
 * `gradle integrationTest` : Éxécute les test d'intégrations
 
+## Front AngularJS legacy contre une recette (sans backend local)
+
+Pour les modules buildés par `gulpfile.js` (`directory`, `archive`, `workspace`...), `dev-server.js` sert le dossier `public/` du module depuis le disque et proxifie tout le reste (vues serveur, `ng-app.js`, thème, API, `/assets/version`) vers une recette, avec la session d'un utilisateur connecté.
+
+```shell
+npm install
+cp .env.template .env        # puis dev-auth-fetcher connect (ou le skill auth-user-frontend)
+npm run dev:directory        # ouvre http://localhost:3000/userbook/mon-compte#/edit-me
+```
+
+Autre module ou autre page : `MODULE=workspace START_PATH=/workspace/workspace npm run legacy:dev`. Port : variable `PORT` (défaut 3000).
+
+- Les `.ts` sont recompilés (webpack) et les templates `public/template/` rechargés automatiquement dans le navigateur.
+- Les clés de `i18n/fr.json` du module sont fusionnées par-dessus celles de la recette.
+- Les vues `view-src/` restent celles déployées sur la recette : un changement local n'y apparaît pas. Une feuille de style du module qu'une vue lie mais que la recette n'a pas encore se déclare dans `LOCAL_CSS` (chemins relatifs à `public/`, séparés par des virgules) pour être injectée.
+- Une session expirée se traduit par une redirection vers `/auth/login`, signalée dans la console : régénérer le `.env`.
+
 ## Débugage
 
 Ajouter la variable d'environement suivante pour debugger sur le port 5000

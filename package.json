@@ -8,6 +8,10 @@
   },
   "scripts": {
     "test": "karma start ./karma.conf.js",
+    "legacy:watch": "node node_modules/gulp/bin/gulp.js watch-dev",
+    "legacy:server": "node dev-server.js",
+    "legacy:dev": "concurrently --kill-others-on-fail -n webpack,serve -c blue,green \"npm run legacy:watch\" \"npm run legacy:server\"",
+    "dev:directory": "cross-env MODULE=directory START_PATH=/userbook/mon-compte#/edit-me LOCAL_CSS=css/account.css npm run legacy:dev",
     "prepare": "husky install"
   },
   "repository": {
@@ -49,7 +53,9 @@
     "angular-router-loader": "0.5.0",
     "angular2-template-loader": "^0.6.2",
     "argv": "0.0.2",
+    "browser-sync": "^3.0.4",
     "concurrently": "^3.0.0",
+    "cross-env": "^7.0.3",
     "css-loader": "0.27.3",
     "del": "2.2.2",
     "file-loader": "0.10.1",
@@ -67,6 +73,7 @@
     "gulp-watch": "5.0.1",
     "html-loader": "^0.4.5",
     "html-webpack-plugin": "^5.5.0",
+    "http-proxy": "^1.18.1",
     "jasmine-core": "~2.6.2",
     "jasmine-spec-reporter": "~4.1.0",
     "karma": "~1.7.0",

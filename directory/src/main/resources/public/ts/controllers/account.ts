@@ -20,6 +20,9 @@ import { directory } from '../model';
 
 declare let window: any;
 
+// Release notes page of a platform version: <base><X-Y-Z>/
+const RELEASE_NOTES_BASE_URL = 'https://edifice.io/releases/web-';
+
 export const accountController = ng.controller('MyAccount', ['$scope', '$timeout', 'route', 'tracker', '$location', '$anchorScroll', ($scope, $timeout, route, tracker, $location, $anchorScroll) => {
 	route({
 		editUserInfos: async function(params){
@@ -65,8 +68,27 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 			}
 			$scope.openView('userbook-edit', 'userbook');
 			$scope.applyShowParam();
+			void loadPlatformVersion();
 		}
 	});
+
+	// Platform version, served as plain text by the front server. The version
+	// block stays hidden if it cannot be read. Loaded once per page: it cannot
+	// change while the user switches tabs.
+	const loadPlatformVersion = async () => {
+		if ($scope.platformVersion) return;
+		try {
+			const response = await fetch('/assets/version', { cache: 'no-cache' });
+			if (!response.ok) return;
+			const version = (await response.text()).trim();
+			if (!/^[\w.-]+$/.test(version)) return;
+			$scope.platformVersion = version;
+			$scope.releaseNotesUrl = `${RELEASE_NOTES_BASE_URL}${version.replace(/\./g, '-')}/`;
+			$scope.$apply();
+		} catch (e) {
+			console.error('Unable to load platform version', e);
+		}
+	};
 
 	// Look for an "show" URL parameter, and if found, scroll to the element id by it.
 	$scope.applyShowParam = () => {

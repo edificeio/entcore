@@ -220,3 +220,17 @@
 		</div>
 	</article>
 </div>
+
+<div class="row reduce-block-six" ng-if="platformVersion && me.userId === account.id">
+	<article id="platform-version">
+		<h2>
+			<i18n>version.info.title</i18n>
+		</h2>
+		<div class="row medium-text platform-version-line">
+			<span><i18n>version.info.platform</i18n> [[platformVersion]]</span>
+			<a class="release-notes-link" ng-href="[[releaseNotesUrl]]" target="_blank" rel="noopener noreferrer" data-testid="directory-version-release-notes-link">
+				<i class="new-tab" aria-hidden="true"></i><i18n>version.info.release.notes</i18n>
+			</a>
+		</div>
+	</article>
+</div>
