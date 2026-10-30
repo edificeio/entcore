@@ -45,7 +45,7 @@ export function WidgetsPersonalizationPanelContainer({
   const { t } = useI18n();
   const { isLoading, isVisible, isLocked, toggleWidget } =
     useWidgetPreferences();
-  const { available } = useHomepageWidgets();
+  const { available, isLoading: isOrderLoading } = useHomepageWidgets();
 
   const items = available.map((widget) => ({
     id: widget.name,
@@ -58,7 +58,7 @@ export function WidgetsPersonalizationPanelContainer({
   return (
     <WidgetsPersonalizationPanel
       items={items}
-      isLoading={isLoading}
+      isLoading={isLoading || isOrderLoading}
       onToggle={toggleWidget}
       onClose={onClose}
     />

@@ -6,3 +6,4 @@ export { handlers as themeHandlers } from './theme';
 export { handlers as timelineHandlers } from './timeline';
 export { handlers as userbookHandlers } from './userbook';
 export { handlers as workspaceHandlers } from './workspace';
+export { handlers as widgetsOrderHandlers } from './widgetsOrder';

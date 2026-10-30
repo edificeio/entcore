@@ -15,6 +15,7 @@ import {
   themeHandlers,
   timelineHandlers,
   userbookHandlers,
+  widgetsOrderHandlers,
   workspaceHandlers,
 } from './handlers';
 
@@ -32,4 +33,5 @@ export const platformBootstrapHandlers = [
 export const platformDataHandlers = [
   ...timelineHandlers,
   ...actualitesHandlers,
+  ...widgetsOrderHandlers,
 ];
