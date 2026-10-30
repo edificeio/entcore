@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "typecheck:feeder": "npx -y -p typescript@5.6 tsc -p tsconfig.json",
+    "test:feeder": "node --experimental-transform-types --no-warnings --test it/scenarios/feeder/_feeder-engine.test.ts it/scenarios/feeder/_feeder-errors.test.ts"
+  },
   "devDependencies": {
     "@types/k6": "^0.54.2",
     "edifice-k6-commons": "develop"
