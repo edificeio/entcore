@@ -55,7 +55,12 @@ vi.mock('@edifice.io/react/homepage', () => ({
 }));
 
 const available = [{ name: 'agenda-widget' }, { name: 'carnet-de-bord' }].map(
-  (widget) => ({ ...widget, catalog: true, Component: () => null }),
+  (widget) => ({
+    ...widget,
+    catalog: true,
+    defaultVisible: true,
+    Component: () => null,
+  }),
 );
 
 beforeEach(() => {
@@ -102,7 +107,7 @@ describe('WidgetsPersonalizationPanelContainer', () => {
     render(<WidgetsPersonalizationPanelContainer onClose={vi.fn()} />);
     screen.getByText('toggle agenda-widget').click();
 
-    expect(toggleWidget).toHaveBeenCalledWith('agenda-widget');
+    expect(toggleWidget).toHaveBeenCalledWith('agenda-widget', true);
   });
 
   it('prefers the label written for this panel over the legacy one', () => {
@@ -166,5 +171,36 @@ describe('WidgetsPersonalizationPanelContainer', () => {
     screen.getByText('close').click();
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('gives the default visibility of the widget to the toggle and the rows', async () => {
+    const isVisible = vi.fn((_name: string, defaultVisible?: boolean) =>
+      Boolean(defaultVisible),
+    );
+    const toggleWidget = vi.fn();
+    mocks.useHomepageWidgets.mockReturnValue({
+      available: [
+        { name: 'agenda-widget', defaultVisible: true },
+        { name: 'communities-widget', defaultVisible: false },
+      ],
+      displayed: [],
+    });
+    mocks.useWidgetPreferences.mockReturnValue({
+      isLoading: false,
+      isVisible,
+      isLocked: () => false,
+      toggleWidget,
+    });
+
+    render(<WidgetsPersonalizationPanelContainer onClose={vi.fn()} />);
+
+    expect(screen.getByTestId('checked-agenda-widget')).toHaveTextContent(
+      'true',
+    );
+    expect(screen.getByTestId('checked-communities-widget')).toHaveTextContent(
+      'false',
+    );
+    screen.getByText('toggle communities-widget').click();
+    expect(toggleWidget).toHaveBeenCalledWith('communities-widget', false);
   });
 });

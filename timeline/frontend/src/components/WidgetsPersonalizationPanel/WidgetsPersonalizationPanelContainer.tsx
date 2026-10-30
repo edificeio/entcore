@@ -51,15 +51,21 @@ export function WidgetsPersonalizationPanelContainer({
     id: widget.name,
     label: widgetLabel({ name: widget.name }, t),
     icon: getWidgetIcon(widget.name),
-    checked: isVisible(widget.name),
+    checked: isVisible(widget.name, widget.defaultVisible),
     locked: isLocked(widget.name),
   }));
+
+  const handleToggle = (name: string) =>
+    toggleWidget(
+      name,
+      available.find((widget) => widget.name === name)?.defaultVisible,
+    );
 
   return (
     <WidgetsPersonalizationPanel
       items={items}
       isLoading={isLoading || isOrderLoading}
-      onToggle={toggleWidget}
+      onToggle={handleToggle}
       onClose={onClose}
     />
   );

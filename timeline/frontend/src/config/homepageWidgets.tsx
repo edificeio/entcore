@@ -18,6 +18,8 @@ export interface HomepageWidget {
   name: string;
   /** Whether the widget spans every column of the homepage grid. */
   fullWidth: boolean;
+  /** Profiles it is displayed for by default, `undefined` for everyone. */
+  defaultVisibleFor?: string[];
   Component: ComponentType;
 }
 
@@ -46,7 +48,7 @@ export const resolveHomepageWidgets = (
   order: WidgetOrderEntry[],
 ): HomepageWidget[] => {
   const seen = new Set<string>();
-  return order.flatMap(({ name, fullWidth }) => {
+  return order.flatMap(({ name, fullWidth, defaultVisibleFor }) => {
     // Own keys only: "constructor" or "__proto__" must not resolve to a component
     const isHandled = Object.prototype.hasOwnProperty.call(
       WIDGET_COMPONENTS,
@@ -58,6 +60,7 @@ export const resolveHomepageWidgets = (
       {
         name,
         fullWidth: fullWidth === true,
+        defaultVisibleFor,
         Component: WIDGET_COMPONENTS[name],
       },
     ];

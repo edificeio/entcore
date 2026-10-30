@@ -81,4 +81,36 @@ describe('useWidgetPreferences', () => {
       expect(result.current.isVisible('carnet-de-bord')).toBe(false),
     );
   });
+
+  it('follows the default given for a widget with no recorded preference', async () => {
+    const { result } = renderHook(() => useWidgetPreferences(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.isVisible('agenda-widget', false)).toBe(false);
+    expect(result.current.isVisible('agenda-widget', true)).toBe(true);
+  });
+
+  it('shows a widget hidden by default on its first toggle', async () => {
+    const { result } = renderHook(() => useWidgetPreferences(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.isVisible('agenda-widget', false)).toBe(false);
+
+    result.current.toggleWidget('agenda-widget', false);
+
+    await waitFor(() =>
+      expect(result.current.isVisible('agenda-widget', false)).toBe(true),
+    );
+  });
+
+  it('exposes the profiles of the user, from the session', () => {
+    mocks.useUser.mockReturnValue({
+      user: { widgets: [], profiles: ['Relative'] },
+      avatar: '',
+      userDescription: {},
+    });
+
+    const { result } = renderHook(() => useWidgetPreferences(), { wrapper });
+
+    expect(result.current.profiles).toEqual(['Relative']);
+  });
 });

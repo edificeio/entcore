@@ -5,6 +5,12 @@ export interface WidgetOrderEntry {
   name: string;
   /** Whether the widget spans every column of the homepage grid. */
   fullWidth?: boolean;
+  /**
+   * Profiles (`Teacher`, `Student`, `Relative`, `Personnel`, `Guest`) for which
+   * the widget is displayed until the user chooses otherwise. Absent: it is
+   * displayed by default for everyone.
+   */
+  defaultVisibleFor?: string[];
 }
 
 /**
@@ -13,10 +19,16 @@ export interface WidgetOrderEntry {
  */
 export const WIDGETS_ORDER_URL = '/assets/widgets/widgets-order.json';
 
-const isEntry = (value: unknown): value is WidgetOrderEntry =>
-  typeof value === 'object' &&
-  value !== null &&
-  typeof (value as WidgetOrderEntry).name === 'string';
+const isEntry = (value: unknown): value is WidgetOrderEntry => {
+  if (typeof value !== 'object' || value === null) return false;
+  const { name, defaultVisibleFor } = value as WidgetOrderEntry;
+  return (
+    typeof name === 'string' &&
+    (defaultVisibleFor === undefined ||
+      (Array.isArray(defaultVisibleFor) &&
+        defaultVisibleFor.every((profile) => typeof profile === 'string')))
+  );
+};
 
 export const widgetsOrderService = {
   /**
