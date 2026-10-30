@@ -102,11 +102,11 @@ describe('useWidgetPreferences', () => {
     );
   });
 
-  it('exposes the profiles of the user, from the session', () => {
+  it('exposes the profiles of the user, from its description', () => {
     mocks.useUser.mockReturnValue({
-      user: { widgets: [], profiles: ['Relative'] },
+      user: { widgets: [] },
       avatar: '',
-      userDescription: {},
+      userDescription: { profiles: ['Relative'] },
     });
 
     const { result } = renderHook(() => useWidgetPreferences(), { wrapper });

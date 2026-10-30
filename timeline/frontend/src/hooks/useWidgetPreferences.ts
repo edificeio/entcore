@@ -26,10 +26,11 @@ function widgetPreferencesQueryOptions() {
  * per-user show/hide flag) in a TanStack Query hook.
  */
 export function useWidgetPreferences() {
-  const { user } = useUser();
+  // `profiles` is not in the session `user` (userinfo) but in the description
+  const { user, userDescription } = useUser();
   const queryClient = useQueryClient();
   const widgets = user?.widgets ?? [];
-  const profiles = user?.profiles ?? [];
+  const profiles = userDescription?.profiles ?? [];
 
   const { data: preferences, isLoading } = useQuery(
     widgetPreferencesQueryOptions(),
