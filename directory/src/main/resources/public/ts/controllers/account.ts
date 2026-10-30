@@ -68,7 +68,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 			}
 			$scope.openView('userbook-edit', 'userbook');
 			$scope.applyShowParam();
-			loadPlatformVersion();
+			void loadPlatformVersion();
 		}
 	});
 
