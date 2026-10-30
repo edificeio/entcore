@@ -21,6 +21,7 @@ vi.mock('@edifice.io/react/homepage', () => {
     BriefMeContainer: stub,
     CantineContainer: stub,
     CommunitiesContainer: stub,
+    EdumalinContainer: stub,
     GenerationHdfContainer: stub,
     QwantContainer: stub,
     RssContainer: stub,

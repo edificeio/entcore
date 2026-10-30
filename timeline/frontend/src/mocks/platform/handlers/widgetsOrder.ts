@@ -13,6 +13,7 @@ export const handlers = [
       { name: 'universalis-widget' },
       { name: 'cursus-widget' },
       { name: 'cantine-widget' },
+      { name: 'edumalin-widget' },
       { name: 'rss-widget' },
     ]),
   ),

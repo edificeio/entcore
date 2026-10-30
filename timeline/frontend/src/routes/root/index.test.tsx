@@ -14,6 +14,7 @@ const deployedWidgets = [
   'universalis-widget',
   'cursus-widget',
   'cantine-widget',
+  'edumalin-widget',
   'rss-widget',
 ].map((name) => ({ name }));
 
@@ -113,9 +114,9 @@ vi.mock('@edifice.io/react/homepage', () => ({
   UniversalisContainer: () => <div data-testid="universalis-container" />,
   GenerationHdfContainer: () => <div data-testid="generation-hdf-container" />,
   CantineContainer: () => <div data-testid="cantine-container" />,
-  RssContainer: () => <div data-testid="rss-container" />,
   EdumalinContainer: () => <div data-testid="edumalin-container" />,
   ScreenTimeContainer: () => <div data-testid="screen-time-container" />,
+  RssContainer: () => <div data-testid="rss-container" />,
   UserSpaceContainer: ({
     children,
     onCustomizeWidgetsClick,
@@ -328,6 +329,7 @@ describe('Root - widgets', () => {
       'universalis-container',
       'generation-hdf-container',
       'cantine-container',
+      'edumalin-container',
       'rss-container',
     ]);
   });
