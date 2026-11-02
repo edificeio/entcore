@@ -334,6 +334,7 @@ export class TimelineController implements IController {
 		switch( notifType ) {
 			case "news":						return "actualites";
 			case "collaborativewall":			return "collaborative-wall";
+			case "collect":						return "rack"; // Collect shares the Rack pictogram
 			case "messagerie":					return "conversation";
 			case "homeworks":					return "cahier-de-texte";
 			case "userbook_motto":				return "userbook"; //#45822, motto notifications share the same color as userbook
