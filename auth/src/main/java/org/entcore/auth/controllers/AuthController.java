@@ -43,6 +43,8 @@ import io.vertx.core.http.*;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -113,6 +115,7 @@ public class AuthController extends BaseController {
 	private ProtectedResource protectedResource;
 	private UserAuthAccount userAuthAccount;
 	private static final Tracer trace = TracerFactory.getTracer("auth");
+	private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 	private EventStore eventStore;
 	private Map<Object, Object> invalidEmails;
 	private JsonArray authorizedHostsLogin;
@@ -1274,6 +1277,8 @@ public class AuthController extends BaseController {
 	}
 
 	private void activeAccountSubmit(final HttpServerRequest request, final boolean autoLogin) {
+		final long perfStart = System.nanoTime();
+
 		request.setExpectMultipart(true);
 		request.endHandler(new io.vertx.core.Handler<Void>() {
 
@@ -1373,9 +1378,10 @@ public class AuthController extends BaseController {
 						final String phoneToStore = normalizedPhone;
 						userAuthAccount.activateAccount(login, activationCode, password, email, phoneToStore, theme, request,
 							new io.vertx.core.Handler<Either<String, String>>() {
-
 								@Override
 								public void handle(Either<String, String> activated) {
+									// TRACE TEMPORAIRE (mesure du temps d'activation) : à retirer une fois l'analyse faite
+									log.info("[ACTIVATION-SUBMIT] login=" + (System.nanoTime() - perfStart ));
 									if (activated.isRight() && activated.right().getValue() != null) {
 										handleActivation(login, request, activated, autoLogin);
 									} else {

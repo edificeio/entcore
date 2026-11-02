@@ -372,6 +372,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		{
 			if((action.startsWith("manual-") && this.allowManualActionsDuringFeeds) == false)
 			{
+				// TRACE TEMPORAIRE (mesure du temps d'activation) : à retirer une fois l'analyse faite
+				logger.info("[ACTIVATION-PERF] action '" + action + "' mise en file : import en cours (file: " + eventQueue.size() + ")");
 				eventQueue.add(queueMessage);
 				return;
 			}

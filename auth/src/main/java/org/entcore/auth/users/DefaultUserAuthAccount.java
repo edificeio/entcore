@@ -156,7 +156,9 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				"SET n.password = {password}, n.oldPasswords = {oldPasswords}, n.activationCode = null, n.email = {email}, n.emailSearchField=LOWER({email}), n.mobile = {phone}, n.needRevalidateTerms = {needRevalidateTerms})  " +
 				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile, duplicates > 0 as hasDuplicate, " +
 				"n.login as login, n.loginAlias as loginAlias ";
+		final long perfStart = System.nanoTime();
 		final String encryptedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+		final long perfAfterHash = System.nanoTime();
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
@@ -170,6 +172,12 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 
 			@Override
 			public void handle(Message<JsonObject> res) {
+				final long perfAfterQuery = System.nanoTime();
+				// TRACE TEMPORAIRE (mesure du temps d'activation) : à retirer une fois l'analyse faite
+				log.info("[ACTIVATION-PERF] login=" + login + " status=" + res.body().getString("status")
+						+ " bcryptMs=" + (perfAfterHash - perfStart) / 1_000_000
+						+ " neo4jMs=" + (perfAfterQuery - perfAfterHash) / 1_000_000
+						+ " thread=" + Thread.currentThread().getName());
 				if ("ok".equals(res.body().getString("status"))
 						&& res.body().getJsonObject("result").getJsonObject("0") != null) {
 					if(res.body().getJsonObject("result").getJsonObject("0").getBoolean("hasDuplicate")){
@@ -189,11 +197,14 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 						jo.put("theme", theme);
 					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
+					final long perfFeederStart = System.nanoTime();
 					vertx.eventBus().request("entcore.feeder", jo.put("action", "check-duplicates"), handlerToAsyncHandler(new Handler<Message<JsonObject>>()
 					{
 						@Override
 						public void handle(Message<JsonObject> message)
 						{
+							log.info("[ACTIVATION-PERF] check-duplicates userId=" + jo.getString("userId")
+									+ " feederRoundTripMs=" + (System.nanoTime() - perfFeederStart) / 1_000_000);
 							if("ok".equals(message.body().getString("status")) == false)
 								log.error("Failed to check duplicates for activated user " + jo.getString("userId"));
 						}
