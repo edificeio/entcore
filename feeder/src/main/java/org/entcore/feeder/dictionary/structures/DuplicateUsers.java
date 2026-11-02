@@ -740,7 +740,16 @@ public class DuplicateUsers {
 				"DELETE r";
 		JsonObject params = new JsonObject().put("ids", userIds).put("notDuplicateSource", new JsonArray(notDeduplicateSource));
 
-		TransactionManager.getNeo4jHelper().execute(query, params, handler);
+		final long perfStart = System.nanoTime();
+		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				// TRACE TEMPORAIRE (mesure du temps d'activation) : à retirer une fois l'analyse faite
+				log.info("[ACTIVATION-PERF] checkDuplicatesIntegrity ids=" + userIds.size()
+						+ " neo4jMs=" + (System.nanoTime() - perfStart) / 1_000_000);
+				handler.handle(event);
+			}
+		});
 	}
 
 	private int prioritySource(String source) {
