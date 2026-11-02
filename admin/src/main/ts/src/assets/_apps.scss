@@ -177,7 +177,10 @@ i.mindmap {
 
 i.rack-large,
 i.type.rack,
-i.rack {
+i.rack,
+i.collect-large,
+i.type.collect,
+i.collect {
   @include fonticon;
   &::before {
     content: "\e80d";
