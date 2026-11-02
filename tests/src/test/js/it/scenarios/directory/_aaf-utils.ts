@@ -1,4 +1,5 @@
 import http, { RefinedResponse } from "k6/http";
+import { sleep } from "k6";
 import { getHeaders } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 const rootUrl = __ENV.ROOT_URL;
@@ -42,6 +43,25 @@ export function cleanAAF(feeder: AAFFeeder, subPath?: string): RefinedResponse<a
   return http.post(`${rootUrl}/directory/api/internal/clean-aaf`, JSON.stringify({ feeder, subPath }), {
     headers: getHeaders("application/json"),
   });
+}
+
+/**
+ * Removes an uploaded directory once the import which reads it is over. The feeder refuses to remove anything (409)
+ * while an import is running, which is still the case for a while after the imported data became visible, so the
+ * removal is retried.
+ * A directory which stays listed is read by every later import of the platform, whatever its feeder, and breaks the
+ * ones which cannot read its format : a test which uploads files must always call this at the end.
+ * @param maxWaitSeconds How long to wait for the end of the running import
+ * @return null when the directory has been removed, otherwise why it could not be
+ */
+export function cleanAAFWhenIdle(feeder: AAFFeeder, subPath: string, maxWaitSeconds: number = 120): string | null {
+  const end = Date.now() + maxWaitSeconds * 1000;
+  for (;;) {
+    const res = cleanAAF(feeder, subPath);
+    if (res.status === 200) return null;
+    if (res.status !== 409 || Date.now() >= end) return `${res.status} ${res.body}`;
+    sleep(2);
+  }
 }
 
 /**

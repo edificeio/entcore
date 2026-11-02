@@ -15,7 +15,7 @@ import {
 import http from "k6/http";
 import { check, group, sleep } from "k6";
 import { AAFGeneratorBuilder, AAFGeneratedModel, AAFFiles } from "./_aaf-generator.ts";
-import { getUserDetail, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
+import { cleanAAF, cleanAAFWhenIdle, getUserDetail, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
@@ -23,6 +23,8 @@ const rootUrl = __ENV.ROOT_URL;
 const schoolNameBig = __ENV.DATA_SCHOOL_NAME_BIG || "IT Directory Big";
 const indexStart = parseInt(__ENV.INDEX_START || "500000");
 const MAX_WAIT_BIG_AAF_IMPORTED = parseInt(__ENV.MAX_WAIT_BIG_AAF_IMPORTED || "300");
+/** Import directory of the files uploaded by this test. Removed at the end : see teardown(). */
+const AAF_IMPORT_DIRECTORY = "test-big";
 
 const NB_STRUCTURES = parseInt(__ENV.NB_STRUCTURES || "10");
 const NB_CLASSES_PER_STRUCTURE = parseInt(__ENV.NB_CLASSES_PER_STRUCTURE || "3");
@@ -63,6 +65,8 @@ export function setup(): InitData {
 
   group("[Directory] Generate and import a big multi-structure AAF dataset", () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    // teardown() does not run when a previous run was killed or failed in setup : start from a clean directory
+    cleanAAF("AAF", AAF_IMPORT_DIRECTORY);
     model = generateAndImportBigAAF();
     result = waitForBigAAFImport(model);
   });
@@ -70,6 +74,18 @@ export function setup(): InitData {
     `${model.students.length} students, ${model.relatives.length} relatives, ${model.teachers.length} teachers, ` +
     `${model.classes.length} classes, ${model.groups.length} groups`);
   return { model, structures: result.structures, usersByStructure: result.usersByStructure };
+}
+
+/**
+ * Leaves no file behind : a directory which stays listed in importDirectories.json is read by every later import of
+ * the platform, including the AAF1D ones, which fail on it.
+ */
+export function teardown() {
+  authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+  const failure = cleanAAFWhenIdle("AAF", AAF_IMPORT_DIRECTORY);
+  check(failure, {
+    [`the AAF files uploaded in "${AAF_IMPORT_DIRECTORY}" have been removed${failure ? ` (${failure})` : ""}`]: (f) => f === null,
+  });
 }
 
 /*******************************************************************************************************
@@ -287,7 +303,7 @@ function triggerAAFImport(): RefinedResponse<any> {
 }
 
 function importAAFStructureOrFail(files: Record<string, string>) {
-  const res = uploadAAF("AAF", "test-big", files);
+  const res = uploadAAF("AAF", AAF_IMPORT_DIRECTORY, files);
   assertOk(res, "Big AAF structure files should be uploaded");
 }
 

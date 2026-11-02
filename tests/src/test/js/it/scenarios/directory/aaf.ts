@@ -14,7 +14,7 @@ import {
 import http from "k6/http";
 import {check, group, sleep} from "k6";
 import { AAFGeneratorBuilder } from "./_aaf-generator.ts";
-import { uploadAAF } from "./_aaf-utils.ts";
+import { cleanAAF, cleanAAFWhenIdle, uploadAAF } from "./_aaf-utils.ts";
 
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
@@ -26,6 +26,8 @@ const skipInit = __ENV.SKIP_INIT === "true";
 const indexStart = parseInt(__ENV.INDEX_START || "9999");
 const MAX_WAIT_STRUCTURE_IMPORTED = parseInt(__ENV.MAX_WAIT_STRUCTURE_IMPORTED || "30");
 const nbDuplicateUsers = parseInt(__ENV.NB_DUPLICATE_USERS || "3");
+/** Import directory of the files uploaded by this test. Removed at the end : see teardown(). */
+const AAF_IMPORT_DIRECTORY = "test";
 
 const types: UserProfileType[] = ['Teacher', 'Relative', 'Student'];
 
@@ -72,6 +74,8 @@ export function setup() {
 
   group("[Directory] Initialize data", () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    // teardown() does not run when a previous run was killed or failed in setup : start from a clean directory
+    cleanAAF("AAF", AAF_IMPORT_DIRECTORY);
     structureCSV = createEmptyStructure(schoolNameCSV, true);
     let usersCSV = getUsersOfSchool(structureCSV);
     if(usersCSV.length < nbDuplicateUsers) {
@@ -140,6 +144,18 @@ export function testImportAAF(data: InitData) {
     'list duplicates without structure filter has all duplicated of AAF structure': (r) => {
       return idsOfDuplicatedUsersInAAF.every((id) => duplicates.has(id));
     }
+  });
+}
+
+/**
+ * Leaves no file behind : a directory which stays listed in importDirectories.json is read by every later import of
+ * the platform, including the AAF1D ones, which fail on it.
+ */
+export function teardown() {
+  authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+  const failure = cleanAAFWhenIdle("AAF", AAF_IMPORT_DIRECTORY);
+  check(failure, {
+    [`the AAF files uploaded in "${AAF_IMPORT_DIRECTORY}" have been removed${failure ? ` (${failure})` : ""}`]: (f) => f === null,
   });
 }
 
@@ -222,7 +238,7 @@ function generateAAFStructureRequest(parameters: AAFStructureGenerationParameter
 }
 
 export function importAAFStructure(files: Record<string, string>): RefinedResponse<any> {
-  return uploadAAF("AAF", "test", files);
+  return uploadAAF("AAF", AAF_IMPORT_DIRECTORY, files);
 }
 
 export function importAAFStructureOrFail(files: Record<string, string>) {
