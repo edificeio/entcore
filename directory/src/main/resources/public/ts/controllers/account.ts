@@ -20,8 +20,8 @@ import { directory } from '../model';
 
 declare let window: any;
 
-// Release notes page of a platform version: <base><X-Y-Z>/
-const RELEASE_NOTES_BASE_URL = 'https://edifice.io/releases/web-';
+// Release notes page:
+const RELEASE_NOTES_BASE_URL = 'https://edifice.io/releases/';
 
 export const accountController = ng.controller('MyAccount', ['$scope', '$timeout', 'route', 'tracker', '$location', '$anchorScroll', ($scope, $timeout, route, tracker, $location, $anchorScroll) => {
 	route({
@@ -83,7 +83,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 			const version = (await response.text()).trim();
 			if (!/^[\w.-]+$/.test(version)) return;
 			$scope.platformVersion = version;
-			$scope.releaseNotesUrl = `${RELEASE_NOTES_BASE_URL}${version.replace(/\./g, '-')}/`;
+			$scope.releaseNotesUrl = RELEASE_NOTES_BASE_URL; // Per-version page: append version.replace(/\./g, '-') + '/'
 			$scope.$apply();
 		} catch (e) {
 			console.error('Unable to load platform version', e);
