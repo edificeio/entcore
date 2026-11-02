@@ -58,6 +58,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   SchoolSpaceContainer: () => <div data-testid="school-space-container" />,
   CommunitiesContainer: () => <div data-testid="communities-container" />,
   UsefulLinksContainer: () => <div data-testid="useful-links-container" />,
+  AlloRegionContainer: () => <div data-testid="allo-region-container" />,
   UserSpaceContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="user-space-container">{children}</div>
   ),
@@ -102,5 +103,19 @@ describe('Root - MessageFlashListContainer responsive placement', () => {
     expect(
       within(sidebarLeft).queryByTestId('message-flash-list-container'),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('Root - Allô Région widget', () => {
+  it('renders the Allô Région widget in the main content', () => {
+    mocks.useBreakpoint.mockReturnValue({ sm: true, md: true });
+
+    render(<Root />);
+
+    expect(
+      within(screen.getByTestId('content')).getByTestId(
+        'allo-region-container',
+      ),
+    ).toBeInTheDocument();
   });
 });

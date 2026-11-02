@@ -5,6 +5,7 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import {
+  AlloRegionContainer,
   CommunitiesContainer,
   FavoritesContainer,
   LastInfosContainer,
@@ -56,6 +57,7 @@ export const Root = () => {
           </UserSpaceContainer>
           <CommunitiesContainer />
           <UsefulLinksContainer />
+          <AlloRegionContainer />
         </div>
       </PageLayout.Content>
 
