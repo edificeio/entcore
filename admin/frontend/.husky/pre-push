@@ -1,0 +1,2 @@
+# Run the full build before pushing (kept out of pre-commit to keep commits fast).
+cd frontend && pnpm run pre-push
