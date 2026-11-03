@@ -1696,7 +1696,7 @@
   "users.details.section.children": "Enfant(s)",
   "users.details.section.classes": "Classe(s)",
   "users.details.section.connection.federatedFields.toggle.locked": "Débloquer",
-  "users.details.section.connection.federatedFields.toggle.unlocked": "Bloquer",
+  "users.details.section.connection.federatedFields.toggle.unlocked": "débloqué",
   "users.details.section.connection.federatedFields.unlock.confirm.content": "Vous êtes sur le point de débloquer l'accès aux informations de connexion de ce compte. Si vous distribuez ces identifiants, pensez à bien indiquer à l'utilisateur de passer par la fenêtre de connexion de l'ENT (généralement pour les profils invités).",
   "users.details.section.connection.federatedFields.unlock.confirm.title": "Débloquer le code d'activation",
   "users.details.section.connection.federatedInfo.issue.content": "Toutefois, en cas de problème d'accès persistant par l'authentification externe, vous pouvez débloquer le login et code ENT. Si vous distribuez ces identifiants, indiquez à l'utilisateur de sélectionner le profil \"invité\" ou \"autre profil\" depuis la page de connexion.",
