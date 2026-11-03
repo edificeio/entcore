@@ -1,18 +1,21 @@
 import { LoadingScreen, useEdificeClient } from '@edifice.io/react';
-import { ReportList } from '~/features/report-list/ReportList';
-/** Check old format URL and redirect if needed */
+import Button from '@mui/material/Button';
+import { useNavigate } from 'react-router-dom';
 export const loader = async () => {
   return null;
 };
 
 export const Root = () => {
   const { init } = useEdificeClient();
+  const navigate = useNavigate();
 
   if (!init) return <LoadingScreen position={false} />;
 
   return init ? (
     <div>
-      <ReportList />
+      <Button color="primary" onClick={() => navigate('/reports/fakeid')}>
+        Go to reports
+      </Button>
     </div>
   ) : null;
 };

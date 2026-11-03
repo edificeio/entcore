@@ -18,6 +18,21 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
     },
     errorElement: <PageError />,
   },
+  {
+    path: 'reports/:structureid', // TODO : remplacer par la bonne nomenclauture
+    children: [
+      {
+        path: '',
+        async lazy() {
+          const { loader, Component } = await import('~/routes/pages/Reports');
+          return {
+            loader,
+            Component,
+          };
+        },
+      },
+    ],
+  },
   /* 404 Page */
   {
     path: '*',

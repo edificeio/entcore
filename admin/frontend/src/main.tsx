@@ -2,12 +2,14 @@ import React, { StrictMode } from 'react';
 
 import { createRoot } from 'react-dom/client';
 
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
 import { RouterProvider } from 'react-router-dom';
+import theme from './theme';
+
 import './i18n';
 import { Providers, queryClient } from './providers';
 import { router } from './routes';
-
-import '@edifice.io/bootstrap/dist/index.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement!);
@@ -21,7 +23,10 @@ if (import.meta.env.DEV) {
 root.render(
   <StrictMode>
     <Providers>
-      <RouterProvider router={router(queryClient)} />
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <RouterProvider router={router(queryClient)} />
+      </ThemeProvider>
     </Providers>
   </StrictMode>,
 );
