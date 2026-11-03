@@ -133,4 +133,30 @@ apps.forEach((app) => {
     });
 })
 
+// Local dev with dev-server.js: rebuilds a single module in place, without
+// springboard copy nor rev-hashed bundles (they would pile up on each rebuild).
+// Module from --module, or MODULE env var.
+gulp.task('watch-dev', () => {
+    const app = apps.length === 1 ? apps[0] : process.env.MODULE;
+    if (apps.indexOf(app) === -1) {
+        throw new Error('watch-dev: set --module or MODULE to one of ' + apps.join(', '));
+    }
+    const publicDir = './' + app + '/src/main/resources/public';
+    const buildDev = () => {
+        const webpackConf = require('./' + app + '/webpack.config.js');
+        webpackConf.devtool = 'inline-source-map';
+        return gulp.src(publicDir + '/**/*.ts')
+            .pipe(webpack(webpackConf))
+            .on('error', function (err) {
+                console.error(err.message);
+                this.emit('end');
+            })
+            .pipe(gulp.dest(publicDir + '/dist'));
+    };
+    const copyBehaviours = () => gulp.src(publicDir + '/dist/behaviours.js', { allowEmpty: true })
+        .pipe(gulp.dest(publicDir + '/js'));
+
+    gulp.watch(publicDir + '/ts/**/*.ts', { ignoreInitial: false }, gulp.series(buildDev, copyBehaviours));
+});
+
 exports.build = gulp.series('drop-old-files', 'update-libs', 'webpack', 'build');
