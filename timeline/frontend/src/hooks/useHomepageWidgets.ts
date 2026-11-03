@@ -1,7 +1,7 @@
 import {
   HomepageWidget,
   resolveHomepageWidgets,
-} from '~/config/homepageWidgets';
+} from '~/adapters/homepageWidgets';
 import { useWidgetPreferences } from './useWidgetPreferences';
 import { useWidgetsOrder } from './useWidgetsOrder';
 
