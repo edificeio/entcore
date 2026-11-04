@@ -20,12 +20,18 @@ public class SSOPeertube extends AbstractSSOProvider {
     @Override
     public void generate(EventBus eb, String userId, String host, String serviceProviderEntityId, JsonObject eventAttributes,
                          Handler<Either<String, JsonArray>> handler) {
-
-        final String moderatorGroup = Vertx.currentContext().config().getString("peertube-moderator-group", "PEERTUBE_MODERATEUR");
+        final JsonObject config = Vertx.currentContext().config();
+        final String moderatorGroup = config.getString("peertube-moderator-group", "PEERTUBE_MODERATEUR");
+        final String adminGroup = config.getString("peertube-admin-group", "PEERTUBE_ROLE_ADMIN");
+        final String vipGroup = config.getString("peertube-vip-group", "PEERTUBE_VIP");
+        final String contribGroup = config.getString("peertube-contrib-group", "PEERTUBE_ELEVE_CONTRIB");
         String query = "MATCH (u:User {id:{userId}})\n" +
                 "OPTIONAL MATCH (u)-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(:Action)<-[:PROVIDE]-(a:Application)\n" +
                 "WITH u, COLLECT(a) AS applications OPTIONAL MATCH (u)-[:HAS_FUNCTION]->(f:Function {externalId:'ADMIN_LOCAL'})\n" +
                 "OPTIONAL MATCH (u)-[:IN]->(mg:ManualGroup{name:{moderatorGroup}})\n" +
+                "OPTIONAL MATCH (u)-[:IN]->(ag:ManualGroup{name:{adminGroup}})\n" +
+                "OPTIONAL MATCH (u)-[:IN]->(vg:ManualGroup{name:{vipGroup}})\n" +
+                "OPTIONAL MATCH (u)-[:IN]->(cg:ManualGroup{name:{contribGroup}})\n" +
                 "RETURN DISTINCT u.id AS id,\n" +
                 "u.login AS login,\n" +
                 "u.displayName AS displayName,\n" +
@@ -34,9 +40,13 @@ public class SSOPeertube extends AbstractSSOProvider {
                 "head(u.profiles) AS profile,\n" +
                 "f.externalId AS ADML,\n" +
                 "mg.name AS moderator,\n" +
+                "ag.name AS administrator,\n" +
+                "vg.name AS vip,\n" +
+                "cg.name AS contributor,\n" +
                 "REDUCE(s = false, i IN applications | s OR i.name CONTAINS({serviceName})) AS hasMatchingApplication";
 
-        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceName","PeertubeSAMLId").put("moderatorGroup", moderatorGroup),
+        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceName","PeertubeSAMLId")
+                        .put("moderatorGroup", moderatorGroup).put("adminGroup", adminGroup).put("vipGroup", vipGroup).put("contribGroup", contribGroup),
                 Neo4jResult.validUniqueResultHandler(evt -> {
             if (evt.isLeft()) {
                 handler.handle(new Either.Left(evt.left().getValue()));
@@ -54,6 +64,9 @@ public class SSOPeertube extends AbstractSSOProvider {
             result.add(new JsonObject().put("profile", user.getString("profile", "")));
             result.add(new JsonObject().put("adml", user.getString("ADML", "")));
             result.add(new JsonObject().put("moderator", user.getString("moderator", "")));
+            result.add(new JsonObject().put("administrator", user.getString("administrator", "")));
+            result.add(new JsonObject().put("vip", user.getString("vip", "")));
+            result.add(new JsonObject().put("contributor", user.getString("contributor", "")));
             UserUtils.getUserInfos(eb, userId, userInfos -> {
                 if(userInfos != null) {
                     JsonObject customAttributes = new JsonObject().put("service", host).put("connector-type", "saml")
