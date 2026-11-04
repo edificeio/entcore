@@ -15,6 +15,7 @@ const deployedWidgets = [
   'cursus-widget',
   'cantine-widget',
   'edumalin-widget',
+  'screen-time-widget',
   'rss-widget',
 ].map((name) => ({ name }));
 
@@ -331,6 +332,7 @@ describe('Root - widgets', () => {
       'cantine-container',
       'edumalin-container',
       'rss-container',
+      'screen-time-container',
     ]);
   });
 

@@ -12,5 +12,6 @@
   { "name": "cursus-widget" },
   { "name": "cantine-widget" },
   { "name": "edumalin-widget" },
-  { "name": "rss-widget" }
+  { "name": "rss-widget" },
+  { "name": "screen-time-widget" }
 ]

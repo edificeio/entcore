@@ -7,6 +7,7 @@ import {
   GenerationHdfContainer,
   QwantContainer,
   RssContainer,
+  ScreenTimeContainer,
   UniversalisContainer,
   UsefulLinksContainer,
 } from '@edifice.io/react/homepage';
@@ -36,6 +37,7 @@ const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'cantine-widget': CantineContainer,
   'edumalin-widget': EdumalinContainer,
   'rss-widget': RssContainer,
+  'screen-time-widget': ScreenTimeContainer,
 };
 
 /**

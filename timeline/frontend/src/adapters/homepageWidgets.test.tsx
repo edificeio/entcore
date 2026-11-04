@@ -8,6 +8,7 @@ vi.mock('@edifice.io/react/homepage', () => {
     CantineContainer: stub,
     CommunitiesContainer: stub,
     EdumalinContainer: stub,
+    ScreenTimeContainer: stub,
     GenerationHdfContainer: stub,
     QwantContainer: stub,
     RssContainer: stub,
