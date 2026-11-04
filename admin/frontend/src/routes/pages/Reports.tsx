@@ -14,6 +14,8 @@ import Typography from '@mui/material/Typography';
 
 import emptyState from '~/assets/emptystate.svg';
 
+import TextareaAvecCompteur from '~/components/TextareaAvecCompteur';
+
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
   return null;
@@ -99,7 +101,7 @@ export const Component = () => {
             </Grid>
           </TabPanel>
           <TabPanel value={value} index={1} dir={theme.direction}>
-            Item Two
+            <TextareaAvecCompteur />
           </TabPanel>
         </Box>
       </Grid>
