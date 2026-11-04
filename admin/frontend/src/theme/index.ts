@@ -50,7 +50,7 @@ const themeOptions: ThemeOptions = {
       disabled: '#A1A1AF',
     },
     background: {
-      default: '#F7F7FB',
+      default: '#EAEDF2',
       paper: '#FFFFFF',
     },
     divider: '#E4E4EC',
