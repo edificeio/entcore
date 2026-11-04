@@ -1,9 +1,16 @@
-import type { IWidgetModel } from '@edifice.io/client';
 import { render, screen } from '@testing-library/react';
 import type { WidgetsPersonalizationPanelProps } from '@edifice.io/react/homepage';
 import { WidgetsPersonalizationPanelContainer } from './WidgetsPersonalizationPanelContainer';
 
-const mocks = vi.hoisted(() => ({ useWidgetPreferences: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  translations: {} as Record<string, string>,
+  useWidgetPreferences: vi.fn(),
+  useHomepageWidgets: vi.fn(),
+}));
+
+vi.mock('~/hooks/useHomepageWidgets', () => ({
+  useHomepageWidgets: mocks.useHomepageWidgets,
+}));
 
 vi.mock('~/hooks/useWidgetPreferences', () => ({
   useWidgetPreferences: mocks.useWidgetPreferences,
@@ -12,7 +19,10 @@ vi.mock('~/hooks/useWidgetPreferences', () => ({
 vi.mock('~/hooks/useI18n', () => ({
   useI18n: () => ({
     t: (key: string, opts?: Record<string, unknown> | string) =>
-      typeof opts === 'string' ? opts : ((opts?.defaultValue as string) ?? key),
+      mocks.translations[key] ??
+      (typeof opts === 'string'
+        ? opts
+        : ((opts?.defaultValue as string) ?? key)),
     common_t: (key: string) => key,
   }),
 }));
@@ -44,32 +54,23 @@ vi.mock('@edifice.io/react/homepage', () => ({
   ),
 }));
 
-// `i18n` mirrors the real API: a resource path, not a translation key —
-// the container falls back to a label derived from `name` (see
-// WidgetsPersonalizationPanelContainer's `fallbackLabel`).
-const widget = (overrides: Partial<IWidgetModel>): IWidgetModel => ({
-  id: 'w',
-  js: '',
-  path: '',
-  i18n: '/assets/widgets/agenda-widget/i18n',
-  mandatory: false,
-  name: 'agenda-widget',
-  ...overrides,
+const available = [{ name: 'agenda-widget' }, { name: 'carnet-de-bord' }].map(
+  (widget) => ({
+    ...widget,
+    catalog: true,
+    defaultVisible: true,
+    Component: () => null,
+  }),
+);
+
+beforeEach(() => {
+  mocks.translations = {};
+  mocks.useHomepageWidgets.mockReturnValue({ available, displayed: [] });
 });
 
-const widgets: IWidgetModel[] = [
-  widget({ name: 'agenda-widget', i18n: '/assets/widgets/agenda-widget/i18n' }),
-  widget({
-    name: 'carnet-de-bord',
-    i18n: '/assets/widgets/carnet-de-bord/i18n',
-    mandatory: true,
-  }),
-];
-
 describe('WidgetsPersonalizationPanelContainer', () => {
-  it('maps each catalog widget to a row (label, checked, locked)', () => {
+  it('maps each available widget to a row (label, checked, locked)', () => {
     mocks.useWidgetPreferences.mockReturnValue({
-      widgets,
       isLoading: false,
       isVisible: (name: string) => name === 'agenda-widget',
       isLocked: (name: string) => name === 'carnet-de-bord',
@@ -97,7 +98,6 @@ describe('WidgetsPersonalizationPanelContainer', () => {
   it('calls toggleWidget with the widget name when a row toggle is clicked', async () => {
     const toggleWidget = vi.fn();
     mocks.useWidgetPreferences.mockReturnValue({
-      widgets,
       isLoading: false,
       isVisible: () => false,
       isLocked: () => false,
@@ -107,12 +107,46 @@ describe('WidgetsPersonalizationPanelContainer', () => {
     render(<WidgetsPersonalizationPanelContainer onClose={vi.fn()} />);
     screen.getByText('toggle agenda-widget').click();
 
-    expect(toggleWidget).toHaveBeenCalledWith('agenda-widget');
+    expect(toggleWidget).toHaveBeenCalledWith('agenda-widget', true);
+  });
+
+  it('prefers the label written for this panel over the legacy one', () => {
+    mocks.translations = {
+      'timeline.settings.agenda-widget': 'Legacy agenda',
+      'timeline.widgets.agenda-widget': 'Panel agenda',
+      'timeline.settings.carnet-de-bord': 'Legacy carnet',
+    };
+    mocks.useWidgetPreferences.mockReturnValue({
+      isLoading: false,
+      isVisible: () => true,
+      isLocked: () => false,
+      toggleWidget: vi.fn(),
+    });
+
+    render(<WidgetsPersonalizationPanelContainer onClose={vi.fn()} />);
+
+    expect(screen.getByText('Panel agenda')).toBeInTheDocument();
+    expect(screen.queryByText('Legacy agenda')).not.toBeInTheDocument();
+    // No panel-specific label: the legacy one is used
+    expect(screen.getByText('Legacy carnet')).toBeInTheDocument();
+  });
+
+  it('lists no row when no widget is available', () => {
+    mocks.useHomepageWidgets.mockReturnValue({ available: [], displayed: [] });
+    mocks.useWidgetPreferences.mockReturnValue({
+      isLoading: false,
+      isVisible: () => true,
+      isLocked: () => false,
+      toggleWidget: vi.fn(),
+    });
+
+    render(<WidgetsPersonalizationPanelContainer onClose={vi.fn()} />);
+
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
   });
 
   it('forwards isLoading to the panel', () => {
     mocks.useWidgetPreferences.mockReturnValue({
-      widgets,
       isLoading: true,
       isVisible: () => true,
       isLocked: () => false,
@@ -127,7 +161,6 @@ describe('WidgetsPersonalizationPanelContainer', () => {
   it('calls onClose when the panel requests to close', () => {
     const onClose = vi.fn();
     mocks.useWidgetPreferences.mockReturnValue({
-      widgets: [],
       isLoading: false,
       isVisible: () => true,
       isLocked: () => false,
@@ -138,5 +171,36 @@ describe('WidgetsPersonalizationPanelContainer', () => {
     screen.getByText('close').click();
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('gives the default visibility of the widget to the toggle and the rows', async () => {
+    const isVisible = vi.fn((_name: string, defaultVisible?: boolean) =>
+      Boolean(defaultVisible),
+    );
+    const toggleWidget = vi.fn();
+    mocks.useHomepageWidgets.mockReturnValue({
+      available: [
+        { name: 'agenda-widget', defaultVisible: true },
+        { name: 'communities-widget', defaultVisible: false },
+      ],
+      displayed: [],
+    });
+    mocks.useWidgetPreferences.mockReturnValue({
+      isLoading: false,
+      isVisible,
+      isLocked: () => false,
+      toggleWidget,
+    });
+
+    render(<WidgetsPersonalizationPanelContainer onClose={vi.fn()} />);
+
+    expect(screen.getByTestId('checked-agenda-widget')).toHaveTextContent(
+      'true',
+    );
+    expect(screen.getByTestId('checked-communities-widget')).toHaveTextContent(
+      'false',
+    );
+    screen.getByText('toggle communities-widget').click();
+    expect(toggleWidget).toHaveBeenCalledWith('communities-widget', false);
   });
 });

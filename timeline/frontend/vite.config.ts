@@ -29,7 +29,7 @@ export default ({ mode }: { mode: string }) => {
           '^/(?=applications-list)',
           '^/(?=assets)',
           '^/(?=theme|locale|i18n|skin|languages|themes)',
-          '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra|zendeskGuide)',
+          '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra|zendeskGuide|bookmark|rss)',
           '^/calendar/(?!public/)',
           '^/actualites/api/',
           '^/communities/',
