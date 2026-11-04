@@ -22,10 +22,12 @@ public class SSOPeertube extends AbstractSSOProvider {
                          Handler<Either<String, JsonArray>> handler) {
 
         final String moderatorGroup = Vertx.currentContext().config().getString("peertube-moderator-group", "PEERTUBE_MODERATEUR");
+        final String adminGroup = Vertx.currentContext().config().getString("peertube-admin-group", "PEERTUBE_ADMIN");
         String query = "MATCH (u:User {id:{userId}})\n" +
                 "OPTIONAL MATCH (u)-[:IN]->(:Group)-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(:Action)<-[:PROVIDE]-(a:Application)\n" +
                 "WITH u, COLLECT(a) AS applications OPTIONAL MATCH (u)-[:HAS_FUNCTION]->(f:Function {externalId:'ADMIN_LOCAL'})\n" +
                 "OPTIONAL MATCH (u)-[:IN]->(mg:ManualGroup{name:{moderatorGroup}})\n" +
+                "OPTIONAL MATCH (u)-[:IN]->(ma:ManualGroup{name:{adminGroup}})\n" +
                 "RETURN DISTINCT u.id AS id,\n" +
                 "u.login AS login,\n" +
                 "u.displayName AS displayName,\n" +
@@ -34,9 +36,11 @@ public class SSOPeertube extends AbstractSSOProvider {
                 "head(u.profiles) AS profile,\n" +
                 "f.externalId AS ADML,\n" +
                 "mg.name AS moderator,\n" +
+                "ma.name AS administrator,\n" +
                 "REDUCE(s = false, i IN applications | s OR i.name CONTAINS({serviceName})) AS hasMatchingApplication";
 
-        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceName","PeertubeSAMLId").put("moderatorGroup", moderatorGroup),
+        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceName","PeertubeSAMLId")
+                        .put("moderatorGroup", moderatorGroup).put("adminGroup", adminGroup),
                 Neo4jResult.validUniqueResultHandler(evt -> {
             if (evt.isLeft()) {
                 handler.handle(new Either.Left(evt.left().getValue()));
@@ -54,6 +58,7 @@ public class SSOPeertube extends AbstractSSOProvider {
             result.add(new JsonObject().put("profile", user.getString("profile", "")));
             result.add(new JsonObject().put("adml", user.getString("ADML", "")));
             result.add(new JsonObject().put("moderator", user.getString("moderator", "")));
+            result.add(new JsonObject().put("administrator", user.getString("administrator", "")));
             UserUtils.getUserInfos(eb, userId, userInfos -> {
                 if(userInfos != null) {
                     JsonObject customAttributes = new JsonObject().put("service", host).put("connector-type", "saml")
