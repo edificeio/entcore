@@ -31,7 +31,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
     <QueryClientProvider client={queryClient}>
       <EdificeClientProvider
         params={{
-          app: 'boilerplate',
+          app: 'admin',
         }}
       >
         {children}

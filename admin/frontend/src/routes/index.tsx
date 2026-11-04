@@ -40,7 +40,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
   },
 ];
 
-export const basename = import.meta.env.PROD ? '/boilerplate' : '/';
+export const basename = import.meta.env.PROD ? '/admin' : '/';
 
 export const router = (queryClient: QueryClient) => {
   const redirectPath = manageRedirections();

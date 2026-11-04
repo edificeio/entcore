@@ -16,14 +16,14 @@ export default ({ mode }: { mode: string }) => {
       '^/(?=theme|locale|i18n|skin)',
       '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
       '/explorer',
-      '/boilerplate',
+      '/admin',
     ],
   });
 
   return defineConfig({
-    base: mode === 'production' ? '/boilerplate' : '',
+    base: mode === 'production' ? '/admin' : '',
     root: import.meta.dirname,
-    cacheDir: './node_modules/.vite/boilerplate',
+    cacheDir: './node_modules/.vite/admin',
 
     resolve: {
       tsconfigPaths: true,
@@ -53,7 +53,9 @@ export default ({ mode }: { mode: string }) => {
         allow: ['../../'],
       },
       proxy,
-      port: 4200,
+      // 4200 is taken by the legacy Angular admin (ng serve, src/main/ts)
+      port: 4201,
+      strictPort: true,
       headers,
       host: 'localhost',
     },
@@ -66,10 +68,10 @@ export default ({ mode }: { mode: string }) => {
 
     plugins: [
       serveLocalI18n({
-        route: '/boilerplate/i18n',
+        route: '/admin/i18n',
         filePath: resolve(
           import.meta.dirname,
-          '../backend/src/main/resources/i18n/fr.json',
+          '../src/main/resources/i18n/fr.json',
         ),
       }),
       react(),
@@ -96,7 +98,7 @@ export default ({ mode }: { mode: string }) => {
       restoreMocks: true,
       reporters: ['default'],
       coverage: {
-        reportsDirectory: './coverage/boilerplate',
+        reportsDirectory: './coverage/admin',
         provider: 'v8',
       },
       server: {
