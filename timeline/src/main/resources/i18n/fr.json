@@ -384,6 +384,8 @@
   "timeline.weekly.mail.subject.end": "dans votre ENT",
   "timeline.weekly.mail.subject.header": "Quoi de neuf cette semaine ?",
   "timeline.weekly.mail.subject.start": "Bonjour {{displayName}}, voici les",
+  "timeline.widgets.communities-widget": "Communautés",
+  "timeline.widgets.cursus-widget": "Génération #HDF",
   "tiptap.toolbar.audio": "Ajout audio",
   "tiptap.toolbar.presentation": "Présentation",
   "tiptap.toolbar.spreadsheet": "Classeur",
