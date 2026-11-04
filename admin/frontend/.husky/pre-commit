@@ -1,0 +1,2 @@
+# Lint & format only the staged files (fast). See frontend/README.md.
+cd frontend && pnpm run pre-commit
