@@ -26,9 +26,11 @@ function widgetPreferencesQueryOptions() {
  * per-user show/hide flag) in a TanStack Query hook.
  */
 export function useWidgetPreferences() {
-  const { user } = useUser();
+  // `profiles` is not in the session `user` (userinfo) but in the description
+  const { user, userDescription } = useUser();
   const queryClient = useQueryClient();
   const widgets = user?.widgets ?? [];
+  const profiles = userDescription?.profiles ?? [];
 
   const { data: preferences, isLoading } = useQuery(
     widgetPreferencesQueryOptions(),
@@ -50,20 +52,26 @@ export function useWidgetPreferences() {
     },
   });
 
-  /** Widgets default to visible until the user explicitly hides them. */
-  const isVisible = (name: string) => preferences?.[name]?.show ?? true;
+  /**
+   * Without a recorded preference a widget is shown or hidden according to
+   * `defaultShow` (visible unless the order says otherwise for the profile).
+   */
+  const isVisible = (name: string, defaultShow = true) =>
+    preferences?.[name]?.show ?? defaultShow;
 
   const isLocked = (name: string) =>
     widgets.find((widget) => widget.name === name)?.mandatory ?? false;
 
-  const toggleWidget = (name: string) => {
+  const toggleWidget = (name: string, defaultShow = true) => {
     const current = preferences ?? {};
-    const currentPref = current[name] ?? { index: 0, show: true };
+    // Flips the effective visibility, so the first click of a widget hidden
+    // by default shows it
+    const currentPref = current[name] ?? { index: 0, show: defaultShow };
     mutation.mutate({
       ...current,
       [name]: { ...currentPref, show: !currentPref.show },
     });
   };
 
-  return { widgets, isLoading, isVisible, isLocked, toggleWidget };
+  return { widgets, profiles, isLoading, isVisible, isLocked, toggleWidget };
 }
