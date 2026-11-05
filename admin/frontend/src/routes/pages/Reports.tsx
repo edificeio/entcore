@@ -12,6 +12,8 @@ import Tab from '@mui/material/Tab';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
+import { useI18n } from '~/hooks/useI18n';
+
 import emptyState from '~/assets/emptystate.svg';
 
 import TextareaAvecCompteur from '~/components/TextareaAvecCompteur';
@@ -59,6 +61,7 @@ function a11yProps(index: number) {
 export const Component = () => {
   const theme = useTheme();
   const [value, setValue] = useState(0);
+  const { t } = useI18n();
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -96,7 +99,7 @@ export const Component = () => {
               <Grid sx={{ textAlign: 'center' }}>
                 <img src={emptyState} />
                 <br />
-                Aucun traitement pour le moment
+                {t('reports.no.report')}
               </Grid>
             </Grid>
           </TabPanel>

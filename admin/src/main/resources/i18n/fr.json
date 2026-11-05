@@ -1237,6 +1237,7 @@
   "record-me": "Le studio",
   "relative": "Parent",
   "reports": "Signalements",
+  "reports.no.report": "Aucun traitement pour le moment",
   "restore": "Restaurer",
   "restore.account": "Restaurer le compte",
   "role.actualites.access": "Actualites - Accès",
