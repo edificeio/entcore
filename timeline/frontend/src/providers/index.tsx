@@ -1,5 +1,8 @@
 import { ERROR_CODE } from '@edifice.io/client';
-import { EdificeClientProvider } from '@edifice.io/react';
+import {
+  EdificeClientProvider,
+  EdificeScreebProvider,
+} from '@edifice.io/react';
 import {
   QueryCache,
   QueryClient,
@@ -40,7 +43,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
           app: 'timeline',
         }}
       >
-        {children}
+        <EdificeScreebProvider>{children}</EdificeScreebProvider>
       </EdificeClientProvider>
       {import.meta.env.DEV && ReactQueryDevtools ? (
         <Suspense fallback={null}>
