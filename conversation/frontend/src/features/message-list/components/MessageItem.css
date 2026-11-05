@@ -1,0 +1,40 @@
+/* Message row in the message list. The root class is also used by MessageList for infinite scroll. */
+.message-list-item {
+  display: flex;
+  gap: 2.4rem;
+  padding: 1.2rem 1.6rem;
+  margin-bottom: 0.2rem;
+  overflow: hidden;
+}
+
+.message-list-item:hover {
+  background: var(--edifice-gray-300);
+}
+
+.message-list-item-unread {
+  font-weight: 700;
+  background-color: var(--edifice-primary-200);
+}
+
+/* Declared after the unread state so a selected row stays highlighted as selected. */
+.message-list-item-checked {
+  background-color: var(--edifice-secondary-200);
+}
+
+.message-list-item-dragging {
+  opacity: 0.5;
+}
+
+.message-list-item-content {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 1.2rem;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .message-list-item-checkbox {
+    padding-left: 0.8rem;
+  }
+}

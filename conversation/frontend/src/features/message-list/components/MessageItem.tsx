@@ -6,6 +6,7 @@ import { MessageMetadata } from '~/models';
 import { useToggleUnreadMessagesFromQueryCache } from '~/services/queries/hooks/useToggleUnreadMessageFromQueryCache';
 import { useScrollStore } from '~/store/scrollStore';
 import { MessagePreview } from './MessagePreview/MessagePreview';
+import './MessageItem.css';
 
 interface MessageItemProps {
   message: MessageMetadata;
@@ -50,15 +51,11 @@ export function MessageItem({
     });
   };
 
-  const className = clsx(
-    'd-flex message-list-item gap-24 px-16 py-12 mb-2 overflow-hidden',
-    {
-      'bg-secondary-200': checked,
-      'fw-bold bg-primary-200 gray-800':
-        message.state !== 'DRAFT' && message.unread,
-      'opacity-50': isDragging,
-    },
-  );
+  const className = clsx('message-list-item', {
+    'message-list-item-checked': checked,
+    'message-list-item-unread': message.state !== 'DRAFT' && message.unread,
+    'message-list-item-dragging': isDragging,
+  });
 
   return (
     <div
@@ -72,8 +69,8 @@ export function MessageItem({
       key={message.id}
       data-testid="message-item"
     >
-      <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
-        <div className="ps-lg-8">{checkbox}</div>
+      <div className="message-list-item-content">
+        <div className="message-list-item-checkbox">{checkbox}</div>
         <MessagePreview message={message} />
       </div>
     </div>
