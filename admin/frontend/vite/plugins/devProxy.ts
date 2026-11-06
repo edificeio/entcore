@@ -33,11 +33,10 @@ export function createDevProxyConfig({
     'authenticated=true',
   ];
 
+  // No Cache-Control here: these headers apply to every module served by Vite,
+  // and a cached module keeps importing outdated pre-bundled deps after a re-optimization.
   const headers: Record<string, string | string[]> = hasEnvFile
-    ? {
-        'set-cookie': setCookie,
-        'Cache-Control': 'public, max-age=300',
-      }
+    ? { 'set-cookie': setCookie }
     : {};
 
   const proxyObj: ProxyOptions = hasEnvFile
