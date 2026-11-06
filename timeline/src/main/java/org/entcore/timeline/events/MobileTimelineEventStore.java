@@ -1,5 +1,6 @@
 package org.entcore.timeline.events;
 
+import java.util.Date;
 import java.util.List;
 
 import org.entcore.common.user.UserInfos;
@@ -118,6 +119,12 @@ public class MobileTimelineEventStore extends DefaultTimelineEventStore {
         } else {
             result.handle(invalidArguments());
         }
+    }
+
+    @Override
+    public void listReceivedSince(final UserInfos user, final Date since, final JsonObject restrictionFilter,
+            final Handler<JsonObject> result) {
+        this.original.listReceivedSince(user, since, restrictionFilter, result);
     }
 
     @Override
