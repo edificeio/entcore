@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1711" -->
+<!-- versionSDET="http://eduscol.education.fr/AAF-SDET" -->
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+<identifier><id>4</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>4</value></attr>
+<attr name="ENTPersonDateNaissance"><value>10/04/1975</value></attr>
+<attr name="ENTPersonNomPatro"><value>PIRES</value></attr>
+<attr name="sn"><value>PIRES</value></attr>
+<attr name="givenName"><value>Rachelle</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="mail"><value></value></attr>
+<attr name="ENTPersonStructRattach"><value>42</value></attr>
+<attr name="ENTAuxEnsCategoDiscipline"><value></value></attr>
+<attr name="ENTAuxEnsDisciplinesPoste"><value></value></attr>
+<attr name="ENTAuxEnsMEF"><value/></attr>
+<attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
+<attr name="ENTAuxEnsClasses"><value/></attr>
+<attr name="ENTAuxEnsGroupes"><value/></attr>
+<attr name="ENTAuxEnsClassesMatieres"><value>42$1TES 2</value></attr>
+<attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+<attr name="ENTPersonFonctions"><value>42$ENS$ENSEIGNEMENT$P0210$LETTRES HISTOIRE GEOGRAPHIE</value></attr>
+<attr name="PersEducNatPresenceDevantEleves"><value>O</value></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+<identifier><id>5</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>5</value></attr>
+<attr name="ENTPersonDateNaissance"><value>10/04/1975</value></attr>
+<attr name="ENTPersonNomPatro"><value>DEVOST</value></attr>
+<attr name="sn"><value>DEVOST</value></attr>
+<attr name="givenName"><value>Julie</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="mail"><value></value></attr>
+<attr name="ENTPersonStructRattach"><value>42</value></attr>
+<attr name="ENTAuxEnsCategoDiscipline"><value></value></attr>
+<attr name="ENTAuxEnsDisciplinesPoste"><value></value></attr>
+<attr name="ENTAuxEnsMEF"><value/></attr>
+<attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
+<attr name="ENTAuxEnsClasses"><value/></attr>
+<attr name="ENTAuxEnsGroupes"><value/></attr>
+<attr name="ENTAuxEnsClassesMatieres"><value>42$1TES 2</value></attr>
+<attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+<attr name="ENTPersonFonctions"><value>42$ENS$ENSEIGNEMENT$P0210$LETTRES HISTOIRE GEOGRAPHIE</value></attr>
+<attr name="PersEducNatPresenceDevantEleves"><value>O</value></attr>
+</attributes>
+</addRequest>
+
+</ficAlimMENESR>
