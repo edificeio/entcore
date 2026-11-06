@@ -1,5 +1,6 @@
 import { type SyntheticEvent, useState } from 'react';
 
+import Alert from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -78,6 +79,16 @@ export const Component = () => {
               })}
             </Tabs>
           </AppBar>
+
+          <Box sx={{ px: 3, pt: 3 }}>
+            <Alert
+              severity="info"
+              variant="outlined"
+              data-testid="reports-retention-alert"
+            >
+              {t('reports.retention.info')}
+            </Alert>
+          </Box>
 
           {TABS.map(({ workflowState }, index) => (
             <div
