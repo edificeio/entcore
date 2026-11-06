@@ -1241,6 +1241,7 @@
   "reports.list.label": "Liste des signalements",
   "reports.list.loading": "Chargement des signalements…",
   "reports.no.report": "Aucun traitement pour le moment",
+  "reports.page.title": "Contenus signalés",
   "reports.retention.info": "Les signalements, les copies des contenus et leurs pièces jointes restent accessibles pendant un an. Ils sont ensuite supprimés.",
   "reports.tab.pending": "À traiter",
   "reports.tab.settled": "Traités",

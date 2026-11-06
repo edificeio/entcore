@@ -20,7 +20,7 @@ export const ReportCaseCard = ({
 }: ReportCaseCardProps) => (
   <Card variant="outlined" data-testid="reports-case-card">
     <CardContent>
-      <Typography id={titleId} variant="subtitle1" component="h3">
+      <Typography id={titleId} variant="subtitle1" component="h2">
         {reportCase.title}
       </Typography>
       <Typography variant="body2" color="text.secondary">

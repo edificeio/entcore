@@ -10,6 +10,7 @@ import Tabs from '@mui/material/Tabs';
 
 import { ReportList } from '~/features/report-list';
 import { useI18n } from '~/hooks/useI18n';
+import { usePageTitle } from '~/hooks/usePageTitle';
 import { type WorkflowState } from '~/models';
 import { useSearchCases } from '~/services';
 
@@ -39,19 +40,22 @@ export const Component = () => {
     SETTLE: useCasesCount('SETTLE'),
   };
 
+  usePageTitle(`${t('reports.page.title')} - ${t('admin.title')}`);
+
   const handleChange = (_event: SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
   };
 
   return (
-    <Container>
+    <Container component="main">
       <Grid>
         <Box sx={{ bgcolor: 'background.paper' }}>
-          <AppBar position="static">
+          {/* Not a page header: rendered as a div to avoid a "banner" landmark */}
+          <AppBar position="static" component="div">
             <Tabs
               value={currentTab}
               onChange={handleChange}
-              indicatorColor="secondary"
+              indicatorColor="primary"
               textColor="inherit"
               variant="fullWidth"
               aria-label={t('reports.tabs.label')}
@@ -79,6 +83,8 @@ export const Component = () => {
             <Alert
               severity="info"
               variant="outlined"
+              // Static information, not a live alert
+              role="note"
               data-testid="reports-retention-alert"
             >
               {t('reports.retention.info')}

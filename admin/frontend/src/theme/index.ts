@@ -177,6 +177,17 @@ const themeOptions: ThemeOptions = {
         },
       },
     },
+    MuiTab: {
+      styleOverrides: {
+        // Visible keyboard focus (RGAA 10.7): the default ripple is too faint
+        root: ({ theme }) => ({
+          '&.Mui-focusVisible': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: -2,
+          },
+        }),
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: ({ theme }) => ({
