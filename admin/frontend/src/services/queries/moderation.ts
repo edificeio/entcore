@@ -1,27 +1,34 @@
 import {
+  infiniteQueryOptions,
   queryOptions,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 
-import { type CaseSearchPayload, type DecisionPayload } from '~/models';
+import { type DecisionPayload, type WorkflowState } from '~/models';
 import { moderationService } from '../api';
 
 export const moderationQueryKeys = {
   all: ['moderation'] as const,
   cases: () => [...moderationQueryKeys.all, 'cases'] as const,
-  search: (payload: CaseSearchPayload, page: number) =>
-    [...moderationQueryKeys.cases(), 'search', payload, page] as const,
+  search: (workflowState: WorkflowState) =>
+    [...moderationQueryKeys.cases(), 'search', workflowState] as const,
   detail: (id: string) =>
     [...moderationQueryKeys.cases(), 'detail', id] as const,
 };
 
 export const moderationQueryOptions = {
-  searchCases: (payload: CaseSearchPayload, page = 0) =>
-    queryOptions({
-      queryKey: moderationQueryKeys.search(payload, page),
-      queryFn: () => moderationService.searchCases(payload, page),
+  /** Paginated search, one page fetched at a time (infinite loading). */
+  searchCases: (workflowState: WorkflowState) =>
+    infiniteQueryOptions({
+      queryKey: moderationQueryKeys.search(workflowState),
+      queryFn: ({ pageParam }) =>
+        moderationService.searchCases({ workflowState }, pageParam),
+      initialPageParam: 0,
+      getNextPageParam: ({ page, size, totalCount }) =>
+        (page + 1) * size < totalCount ? page + 1 : undefined,
     }),
   getCase: (id: string) =>
     queryOptions({
@@ -31,8 +38,8 @@ export const moderationQueryOptions = {
     }),
 };
 
-export const useSearchCases = (payload: CaseSearchPayload, page = 0) =>
-  useQuery(moderationQueryOptions.searchCases(payload, page));
+export const useSearchCases = (workflowState: WorkflowState) =>
+  useInfiniteQuery(moderationQueryOptions.searchCases(workflowState));
 
 export const useCase = (id: string) =>
   useQuery(moderationQueryOptions.getCase(id));
