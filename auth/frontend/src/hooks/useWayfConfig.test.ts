@@ -34,9 +34,9 @@ describe('useWayfConfig', () => {
       ...window.location,
       hostname: 'unknown.example.com',
     });
-    document.cookie = 'wayf-domain=connexion.enthdf.fr';
+    document.cookie = 'wayf-domain=enthdf.fr';
 
     const { result } = renderHook(() => useWayfConfig());
-    expect(result.current).toBe(wayfConfig['wayf-v2']['connexion.enthdf.fr']);
+    expect(result.current).toBe(wayfConfig['wayf-v2']['enthdf.fr']);
   });
 });
