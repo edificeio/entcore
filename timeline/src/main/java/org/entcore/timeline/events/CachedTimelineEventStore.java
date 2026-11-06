@@ -242,6 +242,11 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     @Override
+    public void listReceivedSince(UserInfos user, Date since, JsonObject restrictionFilter, Handler<JsonObject> result) {
+        original.listReceivedSince(user, since, restrictionFilter, result);
+    }
+
+    @Override
     public void deleteSubResource(String resource, Handler<JsonObject> result) {
         original.deleteSubResource(resource, result);
     }

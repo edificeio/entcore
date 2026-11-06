@@ -68,7 +68,9 @@ import org.vertx.java.core.http.RouteMatcher;
 import java.io.StringReader;
 import java.io.Writer;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -401,6 +403,38 @@ public class TimelineController extends BaseController {
 					unauthorized(request);
 				}
 			}
+		});
+	}
+
+	@Get("/notifications/since")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void notificationsSince(final HttpServerRequest request) {
+		final String date = request.params().get("date");
+		final Date since;
+		try {
+			since = Date.from(OffsetDateTime.parse(date == null ? "" : date).toInstant());
+		} catch (DateTimeParseException e) {
+			badRequest(request, "timeline.invalid.date");
+			return;
+		}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user == null) {
+				unauthorized(request);
+				return;
+			}
+			getExternalNotifications(notifs -> {
+				if (notifs.isLeft()) {
+					badRequest(request, notifs.left().getValue());
+					return;
+				}
+				store.listReceivedSince(user, since, notifs.right().getValue(), res -> {
+					if (res != null && "ok".equals(res.getString("status"))) {
+						renderJson(request, res);
+					} else {
+						renderError(request, res);
+					}
+				});
+			});
 		});
 	}
 

@@ -32,13 +32,19 @@ import io.vertx.core.json.JsonObject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 
 public class DefaultTimelineEventStore implements TimelineEventStore {
 
 	public static final String TIMELINE_COLLECTION = "timeline";
+	public static final int MAX_RECEIVED_SINCE = 1000;
+	private static final String DELETED_FIELD = "deleted";
+	private static final String RECIPIENTS_USER_ID_FIELD = "recipients.userId";
 
 	protected MongoDb mongo = MongoDb.getInstance();
 
@@ -99,7 +105,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			final JsonObject filtersQuery = new JsonObject();
 			// 1.a Not deleted or future items
 			final JsonObject query = new JsonObject()
-					.put("deleted", new JsonObject()
+					.put(DELETED_FIELD, new JsonObject()
 							.put("$exists", false))
 					.put("date", new JsonObject().put("$lt", MongoDb.now()));
 			// 1.b Filter by types
@@ -136,7 +142,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 							.add(new JsonObject().put(
 									"$or", new JsonArray()
 											.add(new JsonObject().put("sender", recipient))
-											.add(new JsonObject().put("recipients.userId", recipient))
+											.add(new JsonObject().put(RECIPIENTS_USER_ID_FIELD, recipient))
 							))
 					);
 					keys.put("recipients", new JsonObject()
@@ -145,7 +151,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 					keys.put("reporters", new JsonObject()
 							.put("$elemMatch", new JsonObject()
 									.put("userId", user.getUserId())));
-				} else { query.put("recipients.userId", recipient); }
+				} else { query.put(RECIPIENTS_USER_ID_FIELD, recipient); }
 			}
 
 			// 3. Include only notifications with preview
@@ -192,6 +198,44 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		} else {
 			result.handle(invalidArguments());
 		}
+	}
+
+	@Override
+	public void listReceivedSince(final UserInfos user, final Date since, final JsonObject restrictionFilter, final Handler<JsonObject> result) {
+		final String recipient = user.getUserId();
+		if (recipient == null || recipient.trim().isEmpty() || since == null) {
+			result.handle(invalidArguments());
+			return;
+		}
+		final JsonObject sinceDate = new JsonObject().put("$date", formatUtcDateTime(since));
+		final JsonObject query = new JsonObject()
+				.put(RECIPIENTS_USER_ID_FIELD, recipient)
+				.put(DELETED_FIELD, new JsonObject().put("$exists", false))
+				.put("reportAction.action", new JsonObject().put("$ne", "DELETE"))
+				.put("created", new JsonObject().put("$gte", sinceDate))
+				.put("date", new JsonObject()
+						.put("$gte", sinceDate)
+						.put("$lt", MongoDb.now()));
+		if (restrictionFilter != null && restrictionFilter.size() > 0) {
+			final JsonArray nor = new JsonArray();
+			for (String type : restrictionFilter.getMap().keySet()) {
+				for (Object eventType : restrictionFilter.getJsonArray(type, new JsonArray())) {
+					nor.add(new JsonObject()
+							.put("type", type)
+							.put("event-type", eventType.toString()));
+				}
+			}
+			query.put("$nor", nor);
+		}
+		final JsonObject sort = new JsonObject().put("created", -1);
+		final JsonObject keys = new JsonObject()
+				.put("resource", 1)
+				.put("sub-resource", 1)
+				.put("date", 1)
+				.put("type", 1)
+				.put("event-type", 1);
+		mongo.find(timelineCollection, query, sort, keys, 0, MAX_RECEIVED_SINCE, MAX_RECEIVED_SINCE,
+				message -> result.handle(message.body()));
 	}
 
 	@Override
@@ -277,7 +321,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
 		JsonObject objNew = new JsonObject().put("$set", new JsonObject()
 				.put("recipients", new JsonArray())
-				.put("deleted", 1));
+				.put(DELETED_FIELD, 1));
 
 		mongo.update(timelineCollection, matcher, objNew, MongoDbResult.validActionResultHandler(result));
 	}
