@@ -39,7 +39,7 @@ Backend seul	— (pas de front)	—	app-registry, audience, cas, communication, 
 # Architecture, navigation
 
 Chaque module a son dossier et embarque son front.
-Certains modules ont un dossier frontend et backend séparés.
+Certains modules ont un sous-dossier frontend et backend séparés.
 Un module est le seul à pouvoir manipuler ses données dans sa base de données. Il doit fournir aux autres modules une interface via l'eventbus si ceux-ci veulent les manipuler.
 
 # Interdits, limites, pièges
