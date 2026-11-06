@@ -1,5 +1,11 @@
 <!doctype html>
-<html lang="en">
+<!--
+  No lang attribute on purpose: the displayed language depends on the
+  translations served by the backend (managed in Phrase), so browsers must
+  detect it from the content. A hard-coded value makes Chrome offer a wrong
+  automatic translation that garbles the labels.
+-->
+<html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
