@@ -20,13 +20,22 @@ if (import.meta.env.DEV) {
   });
 }
 
-root.render(
-  <StrictMode>
-    <Providers>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <RouterProvider router={router(queryClient)} />
-      </ThemeProvider>
-    </Providers>
-  </StrictMode>,
+/** Mock not-yet-available APIs with `pnpm dev:mock`, see src/mocks/browser.ts */
+async function enableMocking() {
+  if (import.meta.env.MODE !== 'mock') return;
+  const { worker } = await import('./mocks/browser');
+  await worker.start({ onUnhandledRequest: 'bypass' });
+}
+
+enableMocking().then(() =>
+  root.render(
+    <StrictMode>
+      <Providers>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <RouterProvider router={router(queryClient)} />
+        </ThemeProvider>
+      </Providers>
+    </StrictMode>,
+  ),
 );

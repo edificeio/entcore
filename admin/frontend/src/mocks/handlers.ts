@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { HttpResponse, http } from 'msw';
+import { moderationHandlers } from './moderation/handlers';
 
 /** Local admin i18n bundle, so translations resolve in component tests. */
 const adminI18nPath = resolve(
@@ -244,4 +245,4 @@ const defaultHandlers = [
  * MSW Handlers
  * Mock HTTP methods for your own application
  */
-export const handlers = [...defaultHandlers];
+export const handlers = [...defaultHandlers, ...moderationHandlers];
