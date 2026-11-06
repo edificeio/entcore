@@ -3,7 +3,6 @@ import { type SyntheticEvent, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
@@ -47,10 +46,6 @@ export const Component = () => {
   return (
     <Container>
       <Grid>
-        <Button component="a" href="/">
-          retour
-        </Button>
-
         <Box sx={{ bgcolor: 'background.paper' }}>
           <AppBar position="static">
             <Tabs
