@@ -218,6 +218,7 @@ public class TimelineController extends BaseController {
 	}
 
 	/**
+	 * TODO #IMPULS-6352 Supprimer le bandeau + bouton de switch beta.
 	 * Endpoint to create the workflow right to show beta switch on timeline front
 	 * @param request
 	 */
@@ -236,14 +237,15 @@ public class TimelineController extends BaseController {
 						if(specificHomepagesHost != null && !specificHomepagesHost.isEmpty() && host != null && !host.isEmpty() && specificHomepagesHost.contains(host)) {
 							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage-crna.html", null);
 						}
-						else if (user.getAuthorizedActions().stream().anyMatch( a -> a.getName().equals(TIMELINE_BETA_RIGHT)) && preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
+						else if (preferences.getHomePage() == null || preferences.getHomePage().isBetaEnabled()) {
+							// New homepage by default (betaEnabled undefined) ; only an explicit betaEnabled=false serves the legacy timeline
 							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
 						} else {
 							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
 						}
 					}).onFailure( e -> {
 						log.error("Error while retreiving user preferences", e);
-						renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+						renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
 					});
 		});
 	}
