@@ -5,15 +5,15 @@ const themeOptions: ThemeOptions = {
   palette: {
     mode: 'light',
     primary: {
-      light: '#8A7FF5',
-      main: '#5B4CF0',
-      dark: '#3F33C2',
+      light: '#FFA726',
+      main: '#FF8D2E',
+      dark: '#FF7F14',
       contrastText: '#FFFFFF',
     },
     secondary: {
-      light: '#FF9A9A',
-      main: '#FF6B6B',
-      dark: '#D94848',
+      light: '#BA68C8',
+      main: '#9C27B0',
+      dark: '#7B1FA2',
       contrastText: '#FFFFFF',
     },
     tertiary: {
@@ -89,7 +89,7 @@ const themeOptions: ThemeOptions = {
   // ─── Espacement & forme ─────────────────────────────────
   spacing: 8, // theme.spacing(2) = 16px
   shape: {
-    borderRadius: 10,
+    borderRadius: 4,
   },
 
   // ─── Breakpoints ────────────────────────────────────────
