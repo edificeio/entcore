@@ -1,9 +1,18 @@
 import { type Case, type Reason, type Status } from '~/models';
 
-const SENDERS = [
+/** Authors of the reported contents. */
+const AUTHORS = [
   { id: 'u-001', firstName: 'Jean', lastName: 'QUILLE' },
   { id: 'u-002', firstName: 'Marie', lastName: 'CURIE' },
   { id: 'u-003', firstName: 'Paul', lastName: 'MARTIN' },
+];
+
+/** People who report contents. */
+const REPORTERS = [
+  { id: 'r-001', displayName: 'NOKA Louis' },
+  { id: 'r-002', displayName: 'BERNARD Chloé' },
+  { id: 'r-003', displayName: 'PETIT Hugo' },
+  { id: 'r-004', displayName: 'ROUX Léa' },
 ];
 
 const SOURCES = [
@@ -42,7 +51,7 @@ const isoDate = (daysAgo: number) =>
 
 /** Build a deterministic fake case, so the mock data is stable between reloads. */
 const buildCase = (n: number): Case => {
-  const sender = SENDERS[n % SENDERS.length];
+  const author = AUTHORS[n % AUTHORS.length];
   const source = SOURCES[n % SOURCES.length];
   const reason = REASONS[n % REASONS.length];
   const status = STATUSES[n % STATUSES.length];
@@ -58,19 +67,24 @@ const buildCase = (n: number): Case => {
     modifiedAt: isoDate(n),
     status,
     title: `${source.title} #${n}`,
-    senderId: sender.id,
-    senderDisplayName: `${sender.firstName} ${sender.lastName}`,
-    senderFirstName: sender.firstName,
-    senderLastName: sender.lastName,
+    authorId: author.id,
+    authorDisplayName: `${author.lastName} ${author.firstName}`,
+    authorFirstName: author.firstName,
+    authorLastName: author.lastName,
     references: `${source.module.toUpperCase()}-${String(n).padStart(3, '0')}`,
     body: { type: 'doc', content: [{ type: 'text', text: 'Contenu signalé' }] },
-    reports: Array.from({ length: reportsCount }, (_, i) => ({
-      id: uuid(`rep${i}`, n),
-      reporterId: uuid('usr', n + i),
-      reason,
-      comment: `Commentaire du signalement ${i + 1}`,
-      createdAt: isoDate(n),
-    })),
+    reports: Array.from({ length: reportsCount }, (_, i) => {
+      const reporter = REPORTERS[(n + i) % REPORTERS.length];
+      return {
+        id: uuid(`rep${i}`, n),
+        reporterId: reporter.id,
+        displayName: reporter.displayName,
+        // First report carries the case reason, later ones vary
+        reason: i === 0 ? reason : REASONS[(n + i) % REASONS.length],
+        comment: `Commentaire du signalement ${i + 1}`,
+        createdAt: isoDate(n),
+      };
+    }),
     decisions:
       status === 'OPEN'
         ? []

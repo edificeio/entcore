@@ -8,6 +8,10 @@ import {
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ReactNode } from 'react';
 
+import { ThemeProvider } from '@mui/material/styles';
+
+import theme from '~/theme';
+
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
@@ -34,7 +38,8 @@ export const Providers = ({ children }: { children: ReactNode }) => {
           app: 'admin',
         }}
       >
-        {children}
+        {/* Here rather than in main.tsx so component tests get the app theme */}
+        <ThemeProvider theme={theme}>{children}</ThemeProvider>
       </EdificeClientProvider>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
