@@ -25,7 +25,7 @@ export const ReportCaseCard = ({
       </Typography>
       <Typography variant="body2" color="text.secondary">
         {reportCase.module} · {reportCase.senderDisplayName} ·{' '}
-        {new Date(reportCase.createAt).toLocaleDateString()}
+        {new Date(reportCase.createdAt).toLocaleDateString()}
       </Typography>
     </CardContent>
   </Card>

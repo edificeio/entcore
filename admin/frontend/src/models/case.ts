@@ -6,10 +6,9 @@ export interface Case {
   id: string;
   module: string;
   type: string;
-  resource: string;
-  subResource?: string;
+  path: string;
   reason: Reason;
-  createAt: string;
+  createdAt: string;
   modifiedAt: string;
   status: Status;
   title: string;
