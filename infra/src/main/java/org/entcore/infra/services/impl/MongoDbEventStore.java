@@ -41,6 +41,7 @@ import java.util.List;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.json.schema.*;
+import org.entcore.common.events.impl.DeviceInfo;
 import org.entcore.common.events.impl.PostgresqlEventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.infra.services.EventStoreService;
@@ -170,6 +171,10 @@ public class MongoDbEventStore implements EventStoreService {
 				event.put("ip", ip);
 			}
 			putDeviceInfo(event, request, deviceInfo);
+			if (user != null) {
+				// keep the device info sent by the app for the other events of its session
+				DeviceInfo.storeInSession(vertx.eventBus(), request, user, deviceInfo);
+			}
 		}
 		if (accessMobileDedupEnabled) {
 			storeWithCheck(event, user, module, eventType, handler);
