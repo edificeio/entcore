@@ -64,18 +64,6 @@ export const Component = () => {
               textColor="primary"
               variant="fullWidth"
               aria-label={t('reports.tabs.label')}
-              sx={{
-                '& .MuiTabs-indicator': { height: 5 },
-                // Design token: common.black._states.outlinedBorder
-                '& .MuiTab-root': {
-                  borderBottom: 5,
-                  borderColor: 'rgba(0, 0, 0, 0.5)',
-                },
-                '& .MuiTab-root:not(.Mui-selected)': {
-                  fontWeight: '500',
-                  color: 'rgba(0, 0, 0, 0.5)',
-                },
-              }}
             >
               {TABS.map(({ workflowState, labelKey }) => {
                 const count = counts[workflowState];
