@@ -251,12 +251,14 @@ const themeOptions: ThemeOptions = {
   // ─── Surcharges des composants ──────────────────────────
   components: {
     MuiCssBaseline: {
-      styleOverrides: {
+      styleOverrides: (theme) => ({
         body: {
+          // The page sits on background.page; background.default keeps its Figma value
+          backgroundColor: theme.palette.background.page,
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
         },
-      },
+      }),
     },
     MuiButton: {
       defaultProps: {
@@ -295,7 +297,7 @@ const themeOptions: ThemeOptions = {
     MuiTabs: {
       styleOverrides: {
         root: ({ theme }) => ({
-          backgroundColor: theme.palette.background.default,
+          backgroundColor: theme.palette.background.paper,
           borderTopLeftRadius: theme.shape.borderRadius,
           borderTopRightRadius: theme.shape.borderRadius,
         }),

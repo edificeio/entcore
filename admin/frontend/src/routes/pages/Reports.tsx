@@ -1,7 +1,6 @@
 import { useState, type SyntheticEvent } from 'react';
 
 import Alert from '@mui/material/Alert';
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -49,42 +48,34 @@ export const Component = () => {
   return (
     <Container component="main">
       <Grid>
-        <Box sx={{ bgcolor: 'background.paper' }}>
-          {/* Not a page header: rendered as a div to avoid a "banner" landmark */}
-          <AppBar
-            position="static"
-            component="div"
-            // The tabs draw their own bottom border
-            sx={{ borderBottom: 0 }}
+        <Box>
+          <Tabs
+            value={currentTab}
+            onChange={handleChange}
+            indicatorColor="primary"
+            textColor="primary"
+            variant="fullWidth"
+            aria-label={t('reports.tabs.label')}
           >
-            <Tabs
-              value={currentTab}
-              onChange={handleChange}
-              indicatorColor="primary"
-              textColor="primary"
-              variant="fullWidth"
-              aria-label={t('reports.tabs.label')}
-            >
-              {TABS.map(({ workflowState, labelKey }) => {
-                const count = counts[workflowState];
-                return (
-                  <Tab
-                    key={workflowState}
-                    id={tabId(workflowState)}
-                    aria-controls={panelId(workflowState)}
-                    label={
-                      count === undefined
-                        ? t(labelKey)
-                        : `${t(labelKey)} (${count})`
-                    }
-                    data-testid={`reports-tab-${workflowState.toLowerCase()}`}
-                  />
-                );
-              })}
-            </Tabs>
-          </AppBar>
+            {TABS.map(({ workflowState, labelKey }) => {
+              const count = counts[workflowState];
+              return (
+                <Tab
+                  key={workflowState}
+                  id={tabId(workflowState)}
+                  aria-controls={panelId(workflowState)}
+                  label={
+                    count === undefined
+                      ? t(labelKey)
+                      : `${t(labelKey)} (${count})`
+                  }
+                  data-testid={`reports-tab-${workflowState.toLowerCase()}`}
+                />
+              );
+            })}
+          </Tabs>
 
-          <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ px: 3, pt: 3, bgcolor: 'background.paper' }}>
             <Alert
               severity="info"
               variant="outlined"
@@ -105,7 +96,7 @@ export const Component = () => {
               aria-labelledby={tabId(workflowState)}
             >
               {currentTab === index && (
-                <Box sx={{ p: 3 }}>
+                <Box sx={{ p: 3, bgcolor: 'background.paper' }}>
                   <ReportList workflowState={workflowState} />
                 </Box>
               )}
