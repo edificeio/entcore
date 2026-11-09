@@ -289,8 +289,14 @@ const themeOptions: ThemeOptions = {
         },
       },
     },
+    // Figma <Tabs> (Console Signalement)
     MuiTabs: {
       styleOverrides: {
+        root: ({ theme }) => ({
+          backgroundColor: theme.palette.background.default,
+          borderTopLeftRadius: theme.shape.borderRadius,
+          borderTopRightRadius: theme.shape.borderRadius,
+        }),
         indicator: () => ({ height: 5 }),
       },
     },
@@ -298,10 +304,18 @@ const themeOptions: ThemeOptions = {
       styleOverrides: {
         // Visible keyboard focus (RGAA 10.7): the default ripple is too faint
         root: ({ theme }) => ({
+          'padding': theme.spacing(2, 4),
+          'fontSize': '1rem',
+          'lineHeight': '24px',
+          'letterSpacing': '0.4px',
           // Full shorthand: styleOverrides don't go through the sx border transform
           'borderBottom': `5px solid ${theme.palette.common._states.black.outlinedBorder}`,
+          '&.Mui-selected': {
+            fontWeight: theme.typography.fontWeightBold,
+            backgroundColor: theme.palette.primary._states.hover,
+          },
           '&:not(.Mui-selected)': {
-            fontWeight: '500',
+            fontWeight: theme.typography.fontWeightMedium,
             color: theme.palette.common._states.black.outlinedBorder,
           },
           '&.Mui-focusVisible': {
