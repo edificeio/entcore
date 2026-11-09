@@ -18,11 +18,18 @@
 
 - utilisation des io.vertx.core.Future au lieu des io.vertx.core.Handler. 
 - usage des DTOs au lieu des JsonObject. Ces DTOs sont immutables.
-- voir @https://github.com/edificeio/web-utils/blob/master/AGENTS.md pour les montées de version dues schémas PostgreSQL.
+- voir @https://github.com/edificeio/web-utils/blob/master/AGENTS.md pour les montées de version des schémas PostgreSQL.
 
 ### Build
 
 Le backend est buildé avec la commande `./build.sh buildBackend`.
+
+### Interdits, limites, pièges
+
+✅ Les classes des DTOs sont annotées de `@JsonIgnoreProperties(ignoreUnknown = true)` pour éviter les problèmes de désérialisation.
+✅ Voir @https://github.com/edificeio/web-utils/blob/master/AGENTS.md pour les limitations de montées de version des schémas SQL.
+❌ Il ne faut plus utiliser les méthodes dépréciées de UserUtils.
+❌ Un module ne doit pas accéder directement à la base de données d'un autre module.
 
 ## Frontend
 
@@ -36,13 +43,13 @@ Double front	AngularJS legacy + React, les deux zones dans le même module	les d
 Angular moderne (v14, Angular CLI)	ng (angular.json) + gulp pour le packaging	admin/src/main/ts/	admin
 Backend seul	— (pas de front)	—	app-registry, audience, cas, communication, feeder, infra
 
-# Architecture, navigation
+### Architecture, navigation
 
 Chaque module a son dossier et embarque son front.
 Certains modules ont un sous-dossier frontend et backend séparés.
 Un module est le seul à pouvoir manipuler ses données dans sa base de données. Il doit fournir aux autres modules une interface via l'eventbus si ceux-ci veulent les manipuler.
 
-# Interdits, limites, pièges
+#### Interdits, limites, pièges
 
 ✅ Les classes des DTOs sont annotées de `@JsonIgnoreProperties(ignoreUnknown = true)` pour éviter les problèmes de désérialisation.
 ✅ Voir @https://github.com/edificeio/web-utils/blob/master/AGENTS.md pour les limitations de montées de version des schémas SQL.
