@@ -2,6 +2,8 @@ import React, { StrictMode } from 'react';
 
 import { createRoot } from 'react-dom/client';
 
+// Self-hosted Open Sans (variable, weights 300-800), bundled by Vite
+import '@fontsource-variable/open-sans';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { RouterProvider } from 'react-router-dom';

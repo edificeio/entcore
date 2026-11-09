@@ -107,7 +107,9 @@ const themeOptions: ThemeOptions = {
   // Figma text styles (typography/* in the Typography and Button pages of the DS).
   // Letter spacings are in px, as in Figma.
   typography: {
-    fontFamily: '"Open Sans", "Roboto", "Helvetica", "Arial", sans-serif',
+    // "Open Sans Variable" is the self-hosted @fontsource-variable/open-sans font
+    fontFamily:
+      '"Open Sans Variable", "Open Sans", "Roboto", "Helvetica", "Arial", sans-serif',
     fontSize: 14,
     fontWeightLight: 300,
     fontWeightRegular: 400,
