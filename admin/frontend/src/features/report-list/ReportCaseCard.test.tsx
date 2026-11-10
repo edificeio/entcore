@@ -171,6 +171,31 @@ describe('ReportCaseCard', () => {
     ]);
   });
 
+  it('keeps every reporter available to screen readers when the list is cut', async () => {
+    const report = buildCase().reports[0];
+    const reports = Array.from({ length: 12 }, (_, i) => ({
+      ...report,
+      id: `r${i}`,
+      reporterId: `u${i}`,
+      displayName: `REPORTER ${i}`,
+    }));
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({ reports })}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
+
+    // The cut is visual only (line clamp): no reporter leaves the accessibility tree
+    expect(
+      await screen.findByRole('link', { name: 'REPORTER 11' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByTestId('reports-case-reporter-link')).toHaveLength(
+      12,
+    );
+  });
+
   it('shows a placeholder when the case has no report', async () => {
     render(
       <ReportCaseCard

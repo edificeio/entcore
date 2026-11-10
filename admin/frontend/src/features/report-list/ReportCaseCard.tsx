@@ -31,7 +31,13 @@ const ACTION_STATUSES: Status[] = [
   'RESOURCE_DELETED',
 ];
 
-/** Lines the reporters list may take before it is cut with an ellipsis. */
+/**
+ * Line height of the info rows: 24px of text plus the 8px Figma puts between
+ * rows and between the wrapped lines of a row.
+ */
+const INFO_LINE_HEIGHT = 32;
+
+/** Lines a row may take, label included, before it is cut with an ellipsis. */
 const REPORTERS_MAX_LINES = 2;
 
 /** User page of the admin console (Angular app served next to this one). */
@@ -53,45 +59,36 @@ interface InfoRowProps {
   children: ReactNode;
 }
 
-/** One "label : value" line, as a term/description pair of the enclosing list. */
+/**
+ * One "label : value" pair of the enclosing list. Term and description flow as
+ * one inline text, so a long value wraps after its label instead of below it.
+ */
 const InfoRow = ({ label, maxLines, children }: InfoRowProps) => (
-  // Wraps the value under its label on narrow screens
-  <Box
+  <Typography
+    component="div"
+    variant="body1"
     sx={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      columnGap: 0.5,
-      alignItems: 'baseline',
+      lineHeight: `${INFO_LINE_HEIGHT}px`,
+      overflowWrap: 'anywhere',
+      ...(maxLines && {
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        WebkitLineClamp: maxLines,
+        // Clipped, not removed: screen readers still read the whole value
+        overflow: 'hidden',
+      }),
     }}
   >
-    <Typography
+    <Box
       component="dt"
-      variant="body1"
-      sx={{
-        fontWeight: 'fontWeightBold',
-        whiteSpace: { xs: 'normal', sm: 'nowrap' },
-      }}
+      sx={{ display: 'inline', fontWeight: 'fontWeightBold' }}
     >
       {label}&nbsp;:
-    </Typography>
-    <Typography
-      component="dd"
-      variant="body1"
-      sx={{
-        m: 0,
-        minWidth: 0,
-        overflowWrap: 'anywhere',
-        ...(maxLines && {
-          display: '-webkit-box',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: maxLines,
-          overflow: 'hidden',
-        }),
-      }}
-    >
+    </Box>{' '}
+    <Box component="dd" sx={{ display: 'inline', m: 0 }}>
       {children}
-    </Typography>
-  </Box>
+    </Box>
+  </Typography>
 );
 
 /** Card of a reported case in the moderation list. */
@@ -170,9 +167,10 @@ export const ReportCaseCard = ({
               alt=""
               sx={{ width: 64, height: 64 }}
             />
-            <Stack spacing={1.5} sx={{ alignItems: 'flex-start', minWidth: 0 }}>
+            {/* 8px + the 4px half-leading of the first row: 12px under the chip, as in Figma */}
+            <Stack spacing={1} sx={{ alignItems: 'flex-start', minWidth: 0 }}>
               <ReportCaseModuleChip module={reportCase.module} />
-              <Stack component="dl" spacing={1} sx={{ m: 0 }}>
+              <Box component="dl" sx={{ m: 0 }}>
                 <InfoRow label={t('reports.case.content.type')}>
                   {t(`reports.case.type.${reportCase.type}`, {
                     defaultValue: reportCase.type,
@@ -189,14 +187,20 @@ export const ReportCaseCard = ({
                     {reportCase.authorDisplayName}
                   </Link>
                 </InfoRow>
-              </Stack>
+              </Box>
             </Stack>
           </Stack>
 
-          <Stack
+          <Box
             component="dl"
-            spacing={1}
-            sx={{ m: 0, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}
+            sx={{
+              m: 0,
+              flex: 1,
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+            }}
           >
             <InfoRow label={t('reports.case.reasons')}>
               {reasons || EMPTY_VALUE}
@@ -222,12 +226,13 @@ export const ReportCaseCard = ({
                   ))
                 : EMPTY_VALUE}
             </InfoRow>
-          </Stack>
+          </Box>
         </Stack>
 
         {decision && (
           <>
-            <Divider sx={{ mt: 2, mb: 1.5 }} />
+            {/* 12px + the 4px half-leading of the last row: 16px, as in Figma */}
+            <Divider sx={{ mt: 1.5, mb: 1.5 }} />
             <Typography variant="body1" data-testid="reports-case-decision">
               {t(`reports.case.decision.${decision.status}`, {
                 date: formatDate(decision.createdAt, 'L'),
