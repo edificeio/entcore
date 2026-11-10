@@ -101,6 +101,8 @@ export default ({ mode }: { mode: string }) => {
       globals: true,
       include: ['src/**/*.test.{ts,tsx}'],
       setupFiles: ['./src/mocks/setup.ts', './src/mocks/testingLibrary.ts'],
+      // Leaves room for the 5s findBy* timeout set in testingLibrary.ts
+      testTimeout: 10000,
       watch: false,
       clearMocks: true,
       restoreMocks: true,

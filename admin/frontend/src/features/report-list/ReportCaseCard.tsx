@@ -17,6 +17,9 @@ import { type Case } from '~/models';
 import { ReportCaseModuleChip } from './ReportCaseModuleChip';
 import { ReportCaseStatusChip } from './ReportCaseStatusChip';
 
+/** Shown instead of an empty value, so the row never reads as blank. */
+const EMPTY_VALUE = '—';
+
 export interface ReportCaseCardProps {
   reportCase: Case;
   /** Id of the title, used to label the enclosing feed article. */
@@ -70,10 +73,20 @@ export const ReportCaseCard = ({
 
   const reasons = [
     ...new Set(reportCase.reports.map((report) => report.reason)),
-  ];
+  ]
+    .map((reason) => t(`reports.reason.${reason}`, { defaultValue: reason }))
+    .join(', ');
+  // By reporter id: two homonyms are two reporters, and a person reporting twice is one
   const reporters = [
-    ...new Set(reportCase.reports.map((report) => report.displayName)),
-  ];
+    ...new Map(
+      reportCase.reports.map((report) => [
+        report.reporterId,
+        report.displayName,
+      ]),
+    ).values(),
+  ]
+    .filter(Boolean)
+    .join(', ');
 
   return (
     <Card elevation={4} sx={{ p: 1 }} data-testid="reports-case-card">
@@ -81,12 +94,14 @@ export const ReportCaseCard = ({
         title={reportCase.title}
         slotProps={{
           title: { id: titleId, variant: 'h3', component: 'h2' },
+          // From sm up, a long title wraps beside the chip instead of pushing it below
+          content: { sx: { flexBasis: { xs: 'auto', sm: 0 }, minWidth: 0 } },
           // As in Figma: the chip sits 16px from the card top and right edges
           // and overhangs the header bottom padding instead of growing it
           action: { sx: { alignSelf: 'flex-start', m: 0, mr: -1, mb: -1 } },
         }}
         action={<ReportCaseStatusChip status={reportCase.status} />}
-        // The status chip goes under the title on narrow screens
+        // The status chip goes under the title on xs screens
         sx={{ flexWrap: 'wrap', rowGap: 1 }}
       />
 
@@ -134,15 +149,13 @@ export const ReportCaseCard = ({
             sx={{ m: 0, justifyContent: 'flex-end' }}
           >
             <InfoRow label={t('reports.case.reasons')}>
-              {reasons
-                .map((reason) => t(`reports.reason.${reason}`))
-                .join(', ')}
+              {reasons || EMPTY_VALUE}
             </InfoRow>
             <InfoRow label={t('reports.case.date')}>
               {formatDate(reportCase.createdAt, 'L')}
             </InfoRow>
             <InfoRow label={t('reports.case.reporters')}>
-              {reporters.join(', ')}
+              {reporters || EMPTY_VALUE}
             </InfoRow>
           </Stack>
         </Stack>

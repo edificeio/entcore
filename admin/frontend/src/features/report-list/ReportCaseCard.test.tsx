@@ -74,6 +74,71 @@ describe('ReportCaseCard', () => {
     );
   });
 
+  it('still renders a case whose status and reason are unknown to the front', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({
+          status: 'ARCHIVED' as Case['status'],
+          reports: [
+            {
+              id: 'r1',
+              reporterId: 'u1',
+              displayName: 'NOKA Louis',
+              reason: 'SPAM' as Case['reason'],
+              comment: '',
+              createdAt: '2026-11-05T10:00:00.000Z',
+            },
+          ],
+        })}
+        titleId={TITLE_ID}
+      />,
+    );
+
+    expect(await screen.findByTestId('reports-case-status')).toHaveTextContent(
+      'ARCHIVED',
+    );
+    expect(screen.getByText('SPAM')).toBeVisible();
+  });
+
+  it('keeps homonyms apart and skips reporters without a name', async () => {
+    const report = buildCase().reports[0];
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({
+          reports: [
+            {
+              ...report,
+              id: 'r1',
+              reporterId: 'u1',
+              displayName: 'NOKA Louis',
+            },
+            {
+              ...report,
+              id: 'r2',
+              reporterId: 'u2',
+              displayName: 'NOKA Louis',
+            },
+            { ...report, id: 'r3', reporterId: 'u3', displayName: '' },
+          ],
+        })}
+        titleId={TITLE_ID}
+      />,
+    );
+
+    expect(await screen.findByText('NOKA Louis, NOKA Louis')).toBeVisible();
+  });
+
+  it('shows a placeholder when the case has no report', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({ reports: [] })}
+        titleId={TITLE_ID}
+      />,
+    );
+
+    expect(await screen.findAllByText('—')).toHaveLength(2);
+  });
+
   it('describes the consult button with the case title', async () => {
     render(<ReportCaseCard reportCase={buildCase()} titleId={TITLE_ID} />);
 
