@@ -45,6 +45,8 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	public static final int MAX_RECEIVED_SINCE = 1000;
 	private static final String DELETED_FIELD = "deleted";
 	private static final String RECIPIENTS_USER_ID_FIELD = "recipients.userId";
+	private static final String CREATED_FIELD = "created";
+	private static final String SUB_RESOURCE_FIELD = "sub-resource";
 
 	protected MongoDb mongo = MongoDb.getInstance();
 
@@ -65,7 +67,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			if (!doc.containsKey("date")) {
 				doc.put("date", MongoDb.now());
 			}
-			doc.put("created", doc.getJsonObject("date"));
+			doc.put(CREATED_FIELD, doc.getJsonObject("date"));
 			mongo.save(timelineCollection, doc, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());
@@ -89,7 +91,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		final String recipient = user.getUserId();
 		if (recipient != null && !recipient.trim().isEmpty()) {
 			// 1. Common trunk (literally)
-			JsonObject sort = new JsonObject().put("created", -1);
+			JsonObject sort = new JsonObject().put(CREATED_FIELD, -1);
 			JsonObject keys = new JsonObject()
 					.put("message", 1)
 					.put("params", 1)
@@ -99,7 +101,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 					.put("type", 1)
 					.put("event-type", 1)
 					.put("resource", 1)
-					.put("sub-resource", 1)
+					.put(SUB_RESOURCE_FIELD, 1)
 					.put("add-comment", 1);
 			final JsonObject typesQuery = new JsonObject();
 			final JsonObject filtersQuery = new JsonObject();
@@ -212,7 +214,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				.put(RECIPIENTS_USER_ID_FIELD, recipient)
 				.put(DELETED_FIELD, new JsonObject().put("$exists", false))
 				.put("reportAction.action", new JsonObject().put("$ne", "DELETE"))
-				.put("created", new JsonObject().put("$gte", sinceDate))
+				.put(CREATED_FIELD, new JsonObject().put("$gte", sinceDate))
 				.put("date", new JsonObject()
 						.put("$gte", sinceDate)
 						.put("$lt", MongoDb.now()));
@@ -227,10 +229,10 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			}
 			query.put("$nor", nor);
 		}
-		final JsonObject sort = new JsonObject().put("created", -1);
+		final JsonObject sort = new JsonObject().put(CREATED_FIELD, -1);
 		final JsonObject keys = new JsonObject()
 				.put("resource", 1)
-				.put("sub-resource", 1)
+				.put(SUB_RESOURCE_FIELD, 1)
 				.put("date", 1)
 				.put("type", 1)
 				.put("event-type", 1);
@@ -242,7 +244,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	public void deleteSubResource(String resource, Handler<JsonObject> result) {
 		if (resource != null && !resource.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-					.put("sub-resource", resource);
+					.put(SUB_RESOURCE_FIELD, resource);
 			mongo.delete(timelineCollection, query, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());
