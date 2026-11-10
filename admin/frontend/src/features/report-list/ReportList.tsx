@@ -4,13 +4,13 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
+import visuallyHidden from '@mui/utils/visuallyHidden';
 
 import { ReportCaseEmptyState } from '~/components/ReportCaseEmptyState';
 import { useI18n } from '~/hooks/useI18n';
 import { useIntersectionObserver } from '~/hooks/useIntersectionObserver';
 import { type WorkflowState } from '~/models';
 import { useSearchCases } from '~/services';
-import { visuallyHidden } from '~/theme/visuallyHidden';
 import { ReportCaseCard } from './ReportCaseCard';
 
 /** Fetch the next page as soon as focus reaches one of the last N cards. */
