@@ -44,7 +44,7 @@ export const ReportCaseModuleChip = ({ module }: ReportCaseModuleChipProps) => {
         'borderColor': theme.palette.primary._states.outlinedBorder,
         ...theme.typography.body2,
         'fontWeight': theme.typography.fontWeightBold,
-        '& .MuiChip-icon': { color: 'inherit' },
+        '& .MuiChip-icon': { color: 'inherit', marginLeft: theme.spacing(1) },
       })}
     />
   );
