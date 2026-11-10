@@ -81,7 +81,9 @@ export const ReportCaseCard = ({
         title={reportCase.title}
         slotProps={{
           title: { id: titleId, variant: 'h3', component: 'h2' },
-          action: { sx: { alignSelf: 'center', m: 0 } },
+          // As in Figma: the chip sits 16px from the card top and right edges
+          // and overhangs the header bottom padding instead of growing it
+          action: { sx: { alignSelf: 'flex-start', m: 0, mr: -1, mb: -1 } },
         }}
         action={<ReportCaseStatusChip status={reportCase.status} />}
         // The status chip goes under the title on narrow screens
