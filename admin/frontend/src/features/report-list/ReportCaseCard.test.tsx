@@ -265,6 +265,55 @@ describe('ReportCaseCard', () => {
     );
   });
 
+  it('follows the latest decision by date, whatever their order', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({
+          status: 'RESOURCE_DELETED',
+          decisions: [
+            decisionBy('RESOURCE_DELETED', '2026-11-08T16:45:00'),
+            decisionBy('QUARANTINE', '2026-11-06T14:30:00'),
+          ],
+        })}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
+
+    expect(
+      await screen.findByTestId('reports-case-decision'),
+    ).toHaveTextContent(
+      'Contenu supprimé le 08/11/2026 à 16:45 par MARTIN Paul.',
+    );
+    expect(screen.getByTestId('reports-case-status')).toHaveTextContent(
+      'Contenu supprimé',
+    );
+  });
+
+  it('shows the status of the latest decision on the chip', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({
+          // Case status not yet updated after the deletion
+          status: 'QUARANTINE',
+          decisions: [
+            decisionBy('QUARANTINE', '2026-11-06T14:30:00'),
+            decisionBy('RESOURCE_DELETED', '2026-11-08T16:45:00'),
+          ],
+        })}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
+
+    expect(await screen.findByTestId('reports-case-status')).toHaveTextContent(
+      'Contenu supprimé',
+    );
+    expect(screen.getByTestId('reports-case-decision')).toHaveTextContent(
+      'Contenu supprimé le 08/11/2026 à 16:45 par MARTIN Paul.',
+    );
+  });
+
   it('has no decision line while no action was taken', async () => {
     render(
       <ReportCaseCard

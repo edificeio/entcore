@@ -14,7 +14,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { useI18n } from '~/hooks/useI18n';
-import { type Case, type Status } from '~/models';
+import { type Case, type Decision, type Status } from '~/models';
 import { ReportCaseModuleChip } from './ReportCaseModuleChip';
 import { ReportCaseStatusChip } from './ReportCaseStatusChip';
 
@@ -115,12 +115,22 @@ export const ReportCaseCard = ({
       ]),
     ),
   ].filter(([, displayName]) => displayName);
-  // Latest decision behind the current status, when that status comes from an action
-  const decision = ACTION_STATUSES.includes(reportCase.status)
-    ? [...(reportCase.decisions ?? [])]
-        .reverse()
-        .find(({ status }) => status === reportCase.status)
-    : undefined;
+  // The latest decision drives both the status chip and the decision line,
+  // e.g. a quarantine followed by a deletion shows the deletion
+  const lastDecision = (reportCase.decisions ?? []).reduce<
+    Decision | undefined
+  >(
+    (latest, current) =>
+      !latest || Date.parse(current.createdAt) >= Date.parse(latest.createdAt)
+        ? current
+        : latest,
+    undefined,
+  );
+  const status = lastDecision?.status ?? reportCase.status;
+  const decision =
+    lastDecision && ACTION_STATUSES.includes(lastDecision.status)
+      ? lastDecision
+      : undefined;
 
   return (
     <Card elevation={4} sx={{ p: 1 }} data-testid="reports-case-card">
@@ -137,7 +147,7 @@ export const ReportCaseCard = ({
           // and overhangs the header bottom padding instead of growing it
           action: { sx: { alignSelf: 'flex-start', m: 0, mr: -1, mb: -1 } },
         }}
-        action={<ReportCaseStatusChip status={reportCase.status} />}
+        action={<ReportCaseStatusChip status={status} />}
         // The status chip goes under the title on xs screens
         sx={{ flexWrap: 'wrap', rowGap: 1 }}
       />
