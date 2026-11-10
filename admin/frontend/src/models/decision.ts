@@ -6,4 +6,6 @@ export interface Decision {
   displayName: string;
   status: Status;
   comment: string;
+  /** When the decision was taken. Field name to confirm with the backend. */
+  createdAt: string;
 }

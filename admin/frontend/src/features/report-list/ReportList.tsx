@@ -18,6 +18,8 @@ const PREFETCH_THRESHOLD = 3;
 
 export interface ReportListProps {
   workflowState: WorkflowState;
+  /** Structure the cases are moderated for. */
+  structureId: string;
 }
 
 /** Decorative spinner: loading is announced by the status region. */
@@ -33,7 +35,7 @@ const Spinner = ({ size, py }: { size?: number; py: number }) => (
  * - keyboard: each card is focusable (Tab, or Page Down / Page Up between cards),
  *   and the next page loads when focus gets close to the end of the list.
  */
-export function ReportList({ workflowState }: ReportListProps) {
+export function ReportList({ workflowState, structureId }: ReportListProps) {
   const { t } = useI18n();
   const feedRef = useRef<HTMLDivElement>(null);
   const {
@@ -121,7 +123,11 @@ export function ReportList({ workflowState }: ReportListProps) {
                   },
                 }}
               >
-                <ReportCaseCard reportCase={reportCase} titleId={titleId} />
+                <ReportCaseCard
+                  reportCase={reportCase}
+                  titleId={titleId}
+                  structureId={structureId}
+                />
               </Box>
             );
           })}

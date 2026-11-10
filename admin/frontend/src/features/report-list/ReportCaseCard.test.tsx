@@ -9,7 +9,9 @@ const TITLE_ID = 'case-title';
 
 const buildCase = (overrides: Partial<Case> = {}): Case => ({
   ...createMockCases(1)[0],
+  module: 'conversation',
   title: 'Retour sur la kermesse',
+  authorId: 'author-1',
   status: 'OPEN',
   authorDisplayName: 'GROUDER Lucas',
   reports: [
@@ -42,23 +44,55 @@ const buildCase = (overrides: Partial<Case> = {}): Case => ({
 });
 
 describe('ReportCaseCard', () => {
-  it('renders the case title as a heading labelled by the given id', async () => {
-    render(<ReportCaseCard reportCase={buildCase()} titleId={TITLE_ID} />);
+  it('titles the card with the application and the content title', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase()}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
 
     const heading = await screen.findByRole('heading', {
-      name: 'Retour sur la kermesse',
+      // The platform common bundle is not served in tests: the app name stays its key
+      name: 'Signalement - conversation - Retour sur la kermesse',
     });
     expect(heading).toHaveAttribute('id', TITLE_ID);
   });
 
   it('lists each reason and each reporter once', async () => {
-    render(<ReportCaseCard reportCase={buildCase()} titleId={TITLE_ID} />);
+    render(
+      <ReportCaseCard
+        reportCase={buildCase()}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
 
     expect(
       await screen.findByText('Harcèlement, Incitation à la haine'),
     ).toBeVisible();
-    expect(screen.getByText('NOKA Louis, ROUX Léa')).toBeVisible();
-    expect(screen.getByText('GROUDER Lucas')).toBeVisible();
+    expect(
+      screen
+        .getAllByTestId('reports-case-reporter-link')
+        .map((link) => link.textContent),
+    ).toEqual(['NOKA Louis', 'ROUX Léa']);
+  });
+
+  it('links the author to the admin console and reporters to the directory', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase()}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
+
+    expect(
+      await screen.findByRole('link', { name: 'GROUDER Lucas' }),
+    ).toHaveAttribute('href', '/admin/structure-1/users/list/author-1/details');
+    const [firstReporter] = screen.getAllByTestId('reports-case-reporter-link');
+    expect(firstReporter.getAttribute('href')).toContain('u1');
   });
 
   it('shows the processing state of the case', async () => {
@@ -66,6 +100,7 @@ describe('ReportCaseCard', () => {
       <ReportCaseCard
         reportCase={buildCase({ status: 'RESOURCE_KEPT' })}
         titleId={TITLE_ID}
+        structureId="structure-1"
       />,
     );
 
@@ -91,6 +126,7 @@ describe('ReportCaseCard', () => {
           ],
         })}
         titleId={TITLE_ID}
+        structureId="structure-1"
       />,
     );
 
@@ -122,10 +158,17 @@ describe('ReportCaseCard', () => {
           ],
         })}
         titleId={TITLE_ID}
+        structureId="structure-1"
       />,
     );
 
-    expect(await screen.findByText('NOKA Louis, NOKA Louis')).toBeVisible();
+    const reporters = await screen.findAllByTestId(
+      'reports-case-reporter-link',
+    );
+    expect(reporters.map((link) => link.textContent)).toEqual([
+      'NOKA Louis',
+      'NOKA Louis',
+    ]);
   });
 
   it('shows a placeholder when the case has no report', async () => {
@@ -133,14 +176,96 @@ describe('ReportCaseCard', () => {
       <ReportCaseCard
         reportCase={buildCase({ reports: [] })}
         titleId={TITLE_ID}
+        structureId="structure-1"
       />,
     );
 
     expect(await screen.findAllByText('—')).toHaveLength(2);
   });
 
+  const decisionBy = (
+    status: Case['status'],
+    createdAt = '2026-11-06T14:30:00',
+  ): NonNullable<Case['decisions']>[number] => ({
+    id: `d-${status}`,
+    userId: 'adml-1',
+    displayName: 'MARTIN Paul',
+    status,
+    comment: '',
+    createdAt,
+  });
+
+  it.each([
+    ['QUARANTINE', 'mis en quarantaine'],
+    ['RESOURCE_KEPT', 'conservé'],
+    ['RESOURCE_DELETED', 'supprimé'],
+  ] as const)(
+    'tells when and by whom the %s action was taken',
+    async (status, action) => {
+      render(
+        <ReportCaseCard
+          reportCase={buildCase({ status, decisions: [decisionBy(status)] })}
+          titleId={TITLE_ID}
+          structureId="structure-1"
+        />,
+      );
+
+      expect(
+        await screen.findByTestId('reports-case-decision'),
+      ).toHaveTextContent(
+        `Contenu ${action} le 06/11/2026 à 14:30 par MARTIN Paul.`,
+      );
+    },
+  );
+
+  it('tells the decision behind the current status, not an earlier one', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({
+          status: 'RESOURCE_KEPT',
+          decisions: [
+            decisionBy('QUARANTINE', '2026-11-06T14:30:00'),
+            decisionBy('RESOURCE_KEPT', '2026-11-07T09:15:00'),
+          ],
+        })}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
+
+    expect(
+      await screen.findByTestId('reports-case-decision'),
+    ).toHaveTextContent(
+      'Contenu conservé le 07/11/2026 à 09:15 par MARTIN Paul.',
+    );
+  });
+
+  it('has no decision line while no action was taken', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase({
+          status: 'PENDING',
+          decisions: [decisionBy('PENDING')],
+        })}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
+
+    await screen.findByTestId('reports-case-status');
+    expect(
+      screen.queryByTestId('reports-case-decision'),
+    ).not.toBeInTheDocument();
+  });
+
   it('describes the consult button with the case title', async () => {
-    render(<ReportCaseCard reportCase={buildCase()} titleId={TITLE_ID} />);
+    render(
+      <ReportCaseCard
+        reportCase={buildCase()}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+      />,
+    );
 
     expect(
       await screen.findByRole('button', { name: 'Consulter le signalement' }),

@@ -38,7 +38,6 @@ const STATUSES: Status[] = [
   'QUARANTINE',
   'RESOURCE_DELETED',
   'RESOURCE_KEPT',
-  'CLOSED',
 ];
 
 const uuid = (prefix: string, n: number) =>
@@ -95,6 +94,7 @@ const buildCase = (n: number): Case => {
               displayName: 'Super adml',
               status,
               comment: 'Décision de test',
+              createdAt: isoDate(n),
             },
           ],
   };

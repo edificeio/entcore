@@ -20,7 +20,7 @@ const PAGE_SIZE = 20;
  */
 const STATUSES_BY_WORKFLOW_STATE: Record<WorkflowState, Status[]> = {
   PENDING: ['OPEN', 'PENDING', 'QUARANTINE'],
-  SETTLE: ['RESOURCE_DELETED', 'RESOURCE_KEPT', 'CLOSED'],
+  SETTLE: ['RESOURCE_DELETED', 'RESOURCE_KEPT'],
 };
 
 let cases: Case[] = createMockCases();
@@ -79,6 +79,7 @@ export const moderationHandlers = [
           displayName: 'Fake Admin',
           status,
           comment,
+          createdAt: new Date().toISOString(),
         },
       ];
 

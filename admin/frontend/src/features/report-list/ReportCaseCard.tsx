@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 
 import { useDate, useDirectory } from '@edifice.io/react';
 import Avatar from '@mui/material/Avatar';
@@ -9,30 +9,52 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
+import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { useI18n } from '~/hooks/useI18n';
-import { type Case } from '~/models';
+import { type Case, type Status } from '~/models';
 import { ReportCaseModuleChip } from './ReportCaseModuleChip';
 import { ReportCaseStatusChip } from './ReportCaseStatusChip';
 
 /** Shown instead of an empty value, so the row never reads as blank. */
 const EMPTY_VALUE = '—';
 
+/** Width of the left column (avatar and content info) in the Figma design. */
+const LEFT_COLUMN_WIDTH = 384;
+
+/** Statuses set by a moderation action, each told by a decision line on the card. */
+const ACTION_STATUSES: Status[] = [
+  'QUARANTINE',
+  'RESOURCE_KEPT',
+  'RESOURCE_DELETED',
+];
+
+/** Lines the reporters list may take before it is cut with an ellipsis. */
+const REPORTERS_MAX_LINES = 2;
+
+/** User page of the admin console (Angular app served next to this one). */
+const adminUserURL = (structureId: string, userId: string) =>
+  `/admin/${structureId}/users/list/${userId}/details`;
+
 export interface ReportCaseCardProps {
   reportCase: Case;
   /** Id of the title, used to label the enclosing feed article. */
   titleId: string;
+  /** Structure the cases are moderated for, used to open the author page. */
+  structureId: string;
 }
 
 interface InfoRowProps {
   label: string;
+  /** Cut the value with an ellipsis after this number of lines. */
+  maxLines?: number;
   children: ReactNode;
 }
 
 /** One "label : value" line, as a term/description pair of the enclosing list. */
-const InfoRow = ({ label, children }: InfoRowProps) => (
+const InfoRow = ({ label, maxLines, children }: InfoRowProps) => (
   // Wraps the value under its label on narrow screens
   <Box
     sx={{
@@ -55,7 +77,17 @@ const InfoRow = ({ label, children }: InfoRowProps) => (
     <Typography
       component="dd"
       variant="body1"
-      sx={{ m: 0, minWidth: 0, overflowWrap: 'anywhere' }}
+      sx={{
+        m: 0,
+        minWidth: 0,
+        overflowWrap: 'anywhere',
+        ...(maxLines && {
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: maxLines,
+          overflow: 'hidden',
+        }),
+      }}
     >
       {children}
     </Typography>
@@ -66,10 +98,11 @@ const InfoRow = ({ label, children }: InfoRowProps) => (
 export const ReportCaseCard = ({
   reportCase,
   titleId,
+  structureId,
 }: ReportCaseCardProps) => {
-  const { t } = useI18n();
+  const { t, common_t } = useI18n();
   const { formatDate } = useDate();
-  const { getAvatarURL } = useDirectory();
+  const { getAvatarURL, getUserbookURL } = useDirectory();
 
   const reasons = [
     ...new Set(reportCase.reports.map((report) => report.reason)),
@@ -83,15 +116,22 @@ export const ReportCaseCard = ({
         report.reporterId,
         report.displayName,
       ]),
-    ).values(),
-  ]
-    .filter(Boolean)
-    .join(', ');
+    ),
+  ].filter(([, displayName]) => displayName);
+  // Latest decision behind the current status, when that status comes from an action
+  const decision = ACTION_STATUSES.includes(reportCase.status)
+    ? [...(reportCase.decisions ?? [])]
+        .reverse()
+        .find(({ status }) => status === reportCase.status)
+    : undefined;
 
   return (
     <Card elevation={4} sx={{ p: 1 }} data-testid="reports-case-card">
       <CardHeader
-        title={reportCase.title}
+        title={t('reports.case.title', {
+          app: common_t(reportCase.module),
+          title: reportCase.title,
+        })}
         slotProps={{
           title: { id: titleId, variant: 'h3', component: 'h2' },
           // From sm up, a long title wraps beside the chip instead of pushing it below
@@ -119,7 +159,12 @@ export const ReportCaseCard = ({
             />
           }
         >
-          <Stack direction="row" spacing={3}>
+          {/* Fixed width from md up, so the columns line up from one card to the next */}
+          <Stack
+            direction="row"
+            spacing={3}
+            sx={{ flex: { md: `0 0 ${LEFT_COLUMN_WIDTH}px` }, minWidth: 0 }}
+          >
             <Avatar
               src={getAvatarURL(reportCase.authorId, 'user')}
               alt=""
@@ -137,7 +182,12 @@ export const ReportCaseCard = ({
                   {reportCase.title}
                 </InfoRow>
                 <InfoRow label={t('reports.case.author')}>
-                  {reportCase.authorDisplayName}
+                  <Link
+                    href={adminUserURL(structureId, reportCase.authorId)}
+                    data-testid="reports-case-author-link"
+                  >
+                    {reportCase.authorDisplayName}
+                  </Link>
                 </InfoRow>
               </Stack>
             </Stack>
@@ -146,7 +196,7 @@ export const ReportCaseCard = ({
           <Stack
             component="dl"
             spacing={1}
-            sx={{ m: 0, justifyContent: 'flex-end' }}
+            sx={{ m: 0, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}
           >
             <InfoRow label={t('reports.case.reasons')}>
               {reasons || EMPTY_VALUE}
@@ -154,11 +204,39 @@ export const ReportCaseCard = ({
             <InfoRow label={t('reports.case.date')}>
               {formatDate(reportCase.createdAt, 'L')}
             </InfoRow>
-            <InfoRow label={t('reports.case.reporters')}>
-              {reporters || EMPTY_VALUE}
+            <InfoRow
+              label={t('reports.case.reporters')}
+              maxLines={REPORTERS_MAX_LINES}
+            >
+              {reporters.length > 0
+                ? reporters.map(([reporterId, displayName], index) => (
+                    <Fragment key={reporterId}>
+                      {index > 0 && ', '}
+                      <Link
+                        href={getUserbookURL(reporterId, 'user')}
+                        data-testid="reports-case-reporter-link"
+                      >
+                        {displayName}
+                      </Link>
+                    </Fragment>
+                  ))
+                : EMPTY_VALUE}
             </InfoRow>
           </Stack>
         </Stack>
+
+        {decision && (
+          <>
+            <Divider sx={{ mt: 2, mb: 1.5 }} />
+            <Typography variant="body1" data-testid="reports-case-decision">
+              {t(`reports.case.decision.${decision.status}`, {
+                date: formatDate(decision.createdAt, 'L'),
+                time: formatDate(decision.createdAt, 'LT'),
+                name: decision.displayName,
+              })}
+            </Typography>
+          </>
+        )}
       </CardContent>
 
       <CardActions sx={{ justifyContent: 'flex-end', p: 1 }}>
