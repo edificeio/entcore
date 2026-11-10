@@ -2,6 +2,8 @@ import { IAttributes, IController, IDirective, IScope } from "angular";
 import { notify } from "entcore";
 import { http, session } from "ode-ngjs-front";
 
+// TODO #IMPULS-6352 Supprimer le bouton beta homepage
+
 type UserPrefs = {
   homePage: { closeBetaSwitch?: string; betaEnabled?: boolean } | null;
 };
