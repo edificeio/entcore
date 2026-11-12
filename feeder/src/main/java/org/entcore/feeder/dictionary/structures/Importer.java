@@ -636,9 +636,11 @@ public class Importer {
 						"s=node:node_auto_index({studentExternalIds}) " +
 						"MATCH u0-[:MERGED*0..1]->u " +
 						"WHERE NOT(HAS(u.mergedWith)) " +
-						"MERGE u<-[:RELATED]-s ";
+						"MERGE u<-[r:RELATED]-s " +
+						"ON CREATE SET r.source = {source} ";
 				JsonObject p = new JsonObject()
 						.put("externalId", object.getString("externalId"))
+						.put("source", currentSource)
 						.put("studentExternalIds",
 								"externalId:" + Joiner.on(" OR externalId:").join(linkStudent));
 				transactionHelper.add(query2, p);
