@@ -33,6 +33,7 @@ export default ({ mode }: { mode: string }) => {
           '^/calendar/(?!public/)',
           '^/actualites/api/',
           '^/communities/',
+          '^/mediacentre/',
         ],
   });
 

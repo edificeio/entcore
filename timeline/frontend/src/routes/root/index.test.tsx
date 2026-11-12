@@ -12,6 +12,7 @@ const deployedWidgets = [
   'briefme-widget',
   'qwant',
   'universalis-widget',
+  'mediacentre-widget',
   'cursus-widget',
   'cantine-widget',
   'edumalin-widget',
@@ -114,6 +115,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   BriefMeContainer: () => <div data-testid="briefme-container" />,
   QwantContainer: () => <div data-testid="qwant-container" />,
   UniversalisContainer: () => <div data-testid="universalis-container" />,
+  MediacentreContainer: () => <div data-testid="mediacentre-container" />,
   GenerationHdfContainer: () => <div data-testid="generation-hdf-container" />,
   CantineContainer: () => <div data-testid="cantine-container" />,
   EdumalinContainer: () => <div data-testid="edumalin-container" />,
@@ -343,6 +345,7 @@ describe('Root - widgets', () => {
       'briefme-container',
       'qwant-container',
       'universalis-container',
+      'mediacentre-container',
       'generation-hdf-container',
       'cantine-container',
       'edumalin-container',
@@ -358,6 +361,7 @@ describe('Root - widgets', () => {
       screen.getByTestId(testId).parentElement?.dataset.span;
     expect(spanOf('communities-container')).toBe('2');
     expect(spanOf('agenda-container')).toBe('1');
+    expect(spanOf('mediacentre-container')).toBe('1');
   });
 
   it('hides a widget the user turned off', () => {
