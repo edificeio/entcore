@@ -74,9 +74,12 @@ export function ReportCaseDetails({
             onChange={handleChange}
             indicatorColor="primary"
             textColor="primary"
-            // Scrolls on narrow screens rather than overflowing the page
+            // Scrolls on narrow screens rather than overflowing the page.
+            // MUI hides the scroll arrows below sm by default, leaving the
+            // hidden tabs out of reach: keep them visible on mobile.
             variant="scrollable"
             scrollButtons="auto"
+            allowScrollButtonsMobile
             aria-label={t('reports.detail.tabs.label')}
             // As in Figma: the white bar stops after the last tab
             sx={{ width: 'fit-content', maxWidth: '100%' }}
