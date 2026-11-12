@@ -42,6 +42,25 @@ describe('useCustomization', () => {
     );
   });
 
+  it('keeps the generic default background when the platform default is already listed', async () => {
+    mocks.uiOverrides['background.default'] = { variant: 'orange-200' };
+
+    const { result } = renderHook(() => useCustomization(), {
+      wrapper: Providers,
+    });
+
+    await waitFor(() =>
+      expect(result.current.backgrounds).toEqual([
+        'default',
+        'pink-200',
+        'yellow-200',
+        'orange-200',
+        'blue-200',
+        'green-200',
+      ]),
+    );
+  });
+
   it('keeps the generic default background when no platform default is set', async () => {
     const { result } = renderHook(() => useCustomization(), {
       wrapper: Providers,
