@@ -1072,6 +1072,15 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void getUserRelatives(String studentId, Handler<Either<String, JsonArray>> result) {
+		final String query = 
+			"MATCH (student:User {id: {studentId}})-[:RELATED]-(relative:User) "+ 
+			"MATCH (relative)-[:IN]->(:ProfileGroup {filter: 'Relative'}) " + 
+			"RETURN DISTINCT relative AS relative";
+		neo.execute(query, new JsonObject().put("studentId", studentId), validResultHandler(result));
+	}
+
+	@Override
 	public void relativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-relative-student")
