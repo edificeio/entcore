@@ -33,8 +33,9 @@ export const useCustomization = () => {
   const { data: backgrounds, isError: isBackgroundsError } = useQuery({
     ...customizeQueryOptions.getBackgrounds(),
     // Without a saved preference, the homepage shows the platform default: its tile must match.
+    // When the platform default is already one of the listed backgrounds, its own tile does.
     select: (list) =>
-      platformBackground
+      platformBackground && !list.includes(platformBackground)
         ? list.map((background) =>
             background === 'default' ? platformBackground : background,
           )
