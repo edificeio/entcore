@@ -5,6 +5,7 @@ import {
   CommunitiesContainer,
   EdumalinContainer,
   GenerationHdfContainer,
+  MediacentreContainer,
   QwantContainer,
   RssContainer,
   ScreenTimeContainer,
@@ -32,6 +33,7 @@ const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'briefme-widget': BriefMeContainer,
   'qwant': QwantContainer,
   'universalis-widget': UniversalisContainer,
+  'mediacentre-widget': MediacentreContainer,
   // Génération HDF is the `cursus-widget` of the platform catalog
   'cursus-widget': GenerationHdfContainer,
   'cantine-widget': CantineContainer,
