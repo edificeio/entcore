@@ -6,6 +6,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import { type Theme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import visuallyHidden from '@mui/utils/visuallyHidden';
 
 import { ReportCaseCard } from '~/components/ReportCaseCard';
@@ -38,6 +40,9 @@ export function ReportCaseDetails({
   const { t } = useI18n();
   const { data: reportCase, isPending, isError } = useCase(caseId);
   const [currentTab, setCurrentTab] = useState(0);
+  const isMobile = useMediaQuery((theme: Theme) =>
+    theme.breakpoints.down('sm'),
+  );
 
   const handleChange = (_event: SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
@@ -74,15 +79,15 @@ export function ReportCaseDetails({
             onChange={handleChange}
             indicatorColor="primary"
             textColor="primary"
-            // Scrolls on narrow screens rather than overflowing the page.
-            // MUI hides the scroll arrows below sm by default, leaving the
-            // hidden tabs out of reach: keep them visible on mobile.
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
+            // Below sm, the three tabs share the width and their labels wrap,
+            // so all of them stay visible. Above, they scroll (with arrows)
+            // rather than overflow the page when the screen is still narrow.
+            {...(isMobile
+              ? { variant: 'fullWidth' }
+              : { variant: 'scrollable', scrollButtons: 'auto' })}
             aria-label={t('reports.detail.tabs.label')}
             // As in Figma: the white bar stops after the last tab
-            sx={{ width: 'fit-content', maxWidth: '100%' }}
+            sx={{ width: { xs: '100%', sm: 'fit-content' }, maxWidth: '100%' }}
           >
             {TABS.map(({ key, labelKey }) => (
               <Tab
@@ -95,6 +100,8 @@ export function ReportCaseDetails({
                     : t(labelKey)
                 }
                 data-testid={`report-case-tab-${key}`}
+                // Narrower than the theme's 32px below sm, to leave room for the label
+                sx={{ px: { xs: 1, sm: 4 } }}
               />
             ))}
           </Tabs>
