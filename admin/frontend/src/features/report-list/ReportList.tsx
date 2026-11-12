@@ -127,6 +127,7 @@ export function ReportList({ workflowState, structureId }: ReportListProps) {
                   reportCase={reportCase}
                   titleId={titleId}
                   structureId={structureId}
+                  consultHref={`/reports/${structureId}/cases/${reportCase.id}`}
                 />
               </Box>
             );

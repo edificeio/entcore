@@ -31,6 +31,17 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
           };
         },
       },
+      {
+        path: 'cases/:caseId',
+        async lazy() {
+          const { loader, Component } =
+            await import('~/routes/pages/ReportCase');
+          return {
+            loader,
+            Component,
+          };
+        },
+      },
     ],
   },
   /* 404 Page */

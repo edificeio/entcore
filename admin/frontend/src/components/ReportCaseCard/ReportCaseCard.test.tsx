@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { type Case } from '~/models';
+import { renderWithRouter } from '~/mocks/renderWithRouter';
 import { render, screen } from '~/mocks/setup';
 import { createMockCases } from '~/mocks/moderation/data';
 import { ReportCaseCard } from './ReportCaseCard';
@@ -332,7 +333,28 @@ describe('ReportCaseCard', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('describes the consult button with the case title', async () => {
+  it('links the consult button to the case and describes it with the case title', async () => {
+    renderWithRouter(
+      '/',
+      <ReportCaseCard
+        reportCase={buildCase()}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+        consultHref="/reports/structure-1/cases/case-1"
+      />,
+    );
+
+    const consult = await screen.findByRole('link', {
+      name: 'Consulter le signalement',
+    });
+    expect(consult).toHaveAttribute(
+      'href',
+      '/reports/structure-1/cases/case-1',
+    );
+    expect(consult).toHaveAttribute('aria-describedby', TITLE_ID);
+  });
+
+  it('has no consult button without a link to the case', async () => {
     render(
       <ReportCaseCard
         reportCase={buildCase()}
@@ -341,8 +363,25 @@ describe('ReportCaseCard', () => {
       />,
     );
 
+    await screen.findByRole('heading', { level: 2 });
     expect(
-      await screen.findByRole('button', { name: 'Consulter le signalement' }),
-    ).toHaveAttribute('aria-describedby', TITLE_ID);
+      screen.queryByTestId('reports-case-consult-button'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the title with the requested heading level', async () => {
+    render(
+      <ReportCaseCard
+        reportCase={buildCase()}
+        titleId={TITLE_ID}
+        structureId="structure-1"
+        titleComponent="h1"
+      />,
+    );
+
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveAttribute(
+      'id',
+      TITLE_ID,
+    );
   });
 });

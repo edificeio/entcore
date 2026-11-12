@@ -12,6 +12,7 @@ import Divider from '@mui/material/Divider';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { Link as RouterLink } from 'react-router-dom';
 
 import { useI18n } from '~/hooks/useI18n';
 import { type Case, type Decision, type Status } from '~/models';
@@ -50,6 +51,10 @@ export interface ReportCaseCardProps {
   titleId: string;
   /** Structure the cases are moderated for, used to open the author page. */
   structureId: string;
+  /** Route of the case detail page; without it, the card has no consult button. */
+  consultHref?: string;
+  /** Heading level of the title: h2 in the list, h1 on the case detail page. */
+  titleComponent?: 'h1' | 'h2';
 }
 
 interface InfoRowProps {
@@ -96,6 +101,8 @@ export const ReportCaseCard = ({
   reportCase,
   titleId,
   structureId,
+  consultHref,
+  titleComponent = 'h2',
 }: ReportCaseCardProps) => {
   const { t, common_t } = useI18n();
   const { formatDate } = useDate();
@@ -140,7 +147,7 @@ export const ReportCaseCard = ({
           title: reportCase.title,
         })}
         slotProps={{
-          title: { id: titleId, variant: 'h3', component: 'h2' },
+          title: { id: titleId, variant: 'h3', component: titleComponent },
           // From sm up, a long title wraps beside the chip instead of pushing it below
           content: { sx: { flexBasis: { xs: 'auto', sm: 0 }, minWidth: 0 } },
           // As in Figma: the chip sits 16px from the card top and right edges
@@ -254,17 +261,20 @@ export const ReportCaseCard = ({
         )}
       </CardContent>
 
-      <CardActions sx={{ justifyContent: 'flex-end', p: 1 }}>
-        {/* TODO: open the case detail once its page exists */}
-        <Button
-          variant="contained"
-          // Same label on every card: the case title tells them apart
-          aria-describedby={titleId}
-          data-testid="reports-case-consult-button"
-        >
-          {t('reports.case.consult')}
-        </Button>
-      </CardActions>
+      {consultHref && (
+        <CardActions sx={{ justifyContent: 'flex-end', p: 1 }}>
+          <Button
+            component={RouterLink}
+            to={consultHref}
+            variant="contained"
+            // Same label on every card: the case title tells them apart
+            aria-describedby={titleId}
+            data-testid="reports-case-consult-button"
+          >
+            {t('reports.case.consult')}
+          </Button>
+        </CardActions>
+      )}
     </Card>
   );
 };

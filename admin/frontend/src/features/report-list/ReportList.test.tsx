@@ -3,10 +3,19 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { resetModerationMocks } from '~/mocks/moderation/handlers';
 import { server } from '~/mocks/server';
-import { fireEvent, render, screen, waitFor } from '~/mocks/setup';
+import { renderWithRouter } from '~/mocks/renderWithRouter';
+import { fireEvent, screen, waitFor } from '~/mocks/setup';
+import { type WorkflowState } from '~/models';
 import { queryClient } from '~/providers';
 import { moderationBaseUrl } from '~/services/api';
 import { ReportList } from './ReportList';
+
+/** The cards link to the case detail page: the list needs a router around it. */
+const renderList = (workflowState: WorkflowState) =>
+  renderWithRouter(
+    '/',
+    <ReportList workflowState={workflowState} structureId="structure-1" />,
+  );
 
 describe('ReportList', () => {
   beforeEach(() => {
@@ -15,12 +24,24 @@ describe('ReportList', () => {
   });
 
   it('renders the first page of cases as a feed', async () => {
-    render(<ReportList workflowState="PENDING" structureId="structure-1" />);
+    renderList('PENDING');
 
     const articles = await screen.findAllByRole('article');
     expect(articles).toHaveLength(20);
     expect(articles[0]).toHaveAttribute('aria-posinset', '1');
     expect(articles[0]).toHaveAttribute('aria-setsize', '31');
+  });
+
+  it('links each card to the case detail page', async () => {
+    renderList('PENDING');
+
+    const [firstConsult] = await screen.findAllByRole('link', {
+      name: 'Consulter le signalement',
+    });
+    expect(firstConsult).toHaveAttribute(
+      'href',
+      '/reports/structure-1/cases/case-0000-4000-8000-000000000001',
+    );
   });
 
   it('renders the empty state when there is no case', async () => {
@@ -30,14 +51,14 @@ describe('ReportList', () => {
       ),
     );
 
-    render(<ReportList workflowState="SETTLE" structureId="structure-1" />);
+    renderList('SETTLE');
 
     expect(await screen.findByTestId('reports-empty-state')).toBeVisible();
     expect(screen.queryByRole('feed')).not.toBeInTheDocument();
   });
 
   it('loads the next page when keyboard focus reaches the end of the list', async () => {
-    render(<ReportList workflowState="PENDING" structureId="structure-1" />);
+    renderList('PENDING');
     const articles = await screen.findAllByRole('article');
 
     articles[articles.length - 1].focus();
@@ -48,7 +69,7 @@ describe('ReportList', () => {
   });
 
   it('moves focus between cards with Page Down / Page Up', async () => {
-    render(<ReportList workflowState="PENDING" structureId="structure-1" />);
+    renderList('PENDING');
     const articles = await screen.findAllByRole('article');
 
     articles[0].focus();
