@@ -48,49 +48,55 @@ public class Neo4jConversationService {
 	}
 
 	/**
-	 * Reads the preferred language of several users at once.
+	 * Reads what acting on behalf of several users requires, when no session exists for them : display name,
+	 * main profile and preferred language — the fields a session would carry.
 	 * <p>
 	 * Batched on purpose : a single send can concern thousands of absent users, and language
 	 * preferences are stored as serialized JSON strings, which makes one-by-one access costly.
-	 * @param userIds the users whose language is needed
+	 * @param userIds the users to resolve
 	 * @param batchSize how many users to resolve per query
-	 * @return a {@link Future} of a userId to language code mapping, holding only the users that have one
+	 * @return a {@link Future} of a userId to {@code {username, type, language}} mapping, holding only the users
+	 * found ; {@code language} is absent when the user has no readable preference
 	 */
-	public Future<JsonObject> findUsersLanguages(final List<String> userIds, final int batchSize) {
+	public Future<JsonObject> findUsersIdentities(final List<String> userIds, final int batchSize) {
 		if (userIds == null || userIds.isEmpty()) {
 			return Future.succeededFuture(new JsonObject());
 		}
-		return findUsersLanguagesBatch(userIds, 0, batchSize, new JsonObject());
+		return findUsersIdentitiesBatch(userIds, 0, batchSize, new JsonObject());
 	}
 
-	private Future<JsonObject> findUsersLanguagesBatch(final List<String> userIds, final int offset,
-			final int batchSize, final JsonObject languages) {
+	private Future<JsonObject> findUsersIdentitiesBatch(final List<String> userIds, final int offset,
+			final int batchSize, final JsonObject identities) {
 		if (offset >= userIds.size()) {
-			return Future.succeededFuture(languages);
+			return Future.succeededFuture(identities);
 		}
 		final List<String> batch = userIds.subList(offset, Math.min(offset + batchSize, userIds.size()));
 		final Promise<JsonObject> promise = Promise.promise();
 		final String query =
 			"MATCH (u:User) WHERE u.id IN {userIds} " +
 			"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
-			"RETURN u.id as id, uac.language as language";
+			"RETURN u.id as id, uac.language as language, u.displayName as username, HEAD(u.profiles) as type";
 		final JsonObject params = new JsonObject().put("userIds", new JsonArray(new ArrayList<>(batch)));
 		neo.execute(query, params, event -> {
 			if (!"ok".equals(event.body().getString("status"))) {
-				promise.fail("conversation.absence.languages.failed");
+				promise.fail("conversation.absence.identities.failed");
 				return;
 			}
 			for (Object row : event.body().getJsonArray("result", new JsonArray())) {
 				final JsonObject user = (JsonObject) row;
+				final JsonObject identity = new JsonObject()
+						.put("username", user.getString("username"))
+						.put("type", user.getString("type"));
 				final String language = readLanguage(user.getString("id"), user.getString("language"));
 				if (language != null) {
-					languages.put(user.getString("id"), language);
+					identity.put("language", language);
 				}
+				identities.put(user.getString("id"), identity);
 			}
-			promise.complete(languages);
+			promise.complete(identities);
 		});
 		return promise.future()
-				.compose(v -> findUsersLanguagesBatch(userIds, offset + batchSize, batchSize, languages));
+				.compose(v -> findUsersIdentitiesBatch(userIds, offset + batchSize, batchSize, identities));
 	}
 
 	/**
