@@ -42,10 +42,8 @@ export const customizeQueryOptions = {
   getLanguages() {
     return queryOptions({
       queryKey: customizeQueryKeys.languages(),
-      queryFn: () =>
-        customizeService
-          .listLanguages()
-          .then((languages) => reorderLanguages(languages)),
+      queryFn: async () =>
+        reorderLanguages(await customizeService.listLanguages()),
       staleTime: Infinity,
     });
   },
@@ -55,8 +53,7 @@ export const customizeQueryOptions = {
   getFonts() {
     return queryOptions({
       queryKey: customizeQueryKeys.fonts(),
-      queryFn: () =>
-        customizeService.listFonts().then((fonts) => reorderFonts(fonts)),
+      queryFn: async () => reorderFonts(await customizeService.listFonts()),
       staleTime: Infinity,
     });
   },
