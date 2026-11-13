@@ -107,7 +107,8 @@ export function CommentDelegate($scope: CommentDelegateScope) {
     };
 
     $scope.canShowComments = function () {
-        return $scope.selectedItems().length === 1 && $scope.selectedItems()[0].comments.length > 0 && $scope.currentTree.filter !== 'trash';
+        const current = $scope.selectedItems().length === 1 && $scope.selectedItems()[0];
+        return current && current.comments && current.comments.length > 0 && $scope.currentTree.filter !== 'trash';
     }
 
     // Backend secures POST .../comment per-resource (workspace.comment, WorkspaceController) — a shared

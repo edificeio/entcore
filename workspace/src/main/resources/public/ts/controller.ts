@@ -113,12 +113,13 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	tileMenuPosition: { top?: string; right?: string };
 	isTileMenuOpen(item: models.Element): boolean;
 	toggleTileMenu(item: models.Element, $event?: MouseEvent): void;
-	isTileMenuActionVisible(item: models.Element, action: "download" | "rename" | "share" | "comment" | "move" | "copy" | "trash" | "restore" | "delete" | "editImage" | "revision"): boolean;
+	isTileMenuActionVisible(item: models.Element, action: "download" | "rename" | "share" | "comment" | "showComments" | "move" | "copy" | "trash" | "restore" | "delete" | "editImage" | "revision"): boolean;
 	onTileOpen(item: models.Element): void;
 	onTileDownload(item: models.Element): void;
 	onTileRename(item: models.Element): void;
 	onTileShare(item: models.Element): void;
 	onTileComment(item: models.Element): void;
+	onTileShowComments(item: models.Element): void;
 	onTileMove(item: models.Element): void;
 	onTileCopy(item: models.Element): void;
 	onTileTrash(item: models.Element): void;
@@ -311,7 +312,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				return (filter === "shared" || filter === "owner")
 					&& workspaceService.isActionAvailable("comment", [item])
 					&& !!item.myRights && !!item.myRights["comment"];
-			case "move":
+				case "showComments":
+					// Mirrors canShowBadgeComments() (delegates/comments.ts) — same badge visible on the tile.
+					return $scope.canShowBadgeComments(item);
+				case "move":
 				// item.canMove (owner, or myRights.manager) is the real check — isActionAvailable is a
 				// permanent no-op in this deployment (see allowAction's own comment above). Without this,
 				// "Déplacer" stayed visible for a shared item you only have read rights on, and silently
@@ -367,6 +371,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.onTileComment = function (item: models.Element): void {
 		$scope.openTileMenuFor = null;
 		withSelected(item, () => $scope.openCommentView());
+	};
+	$scope.onTileShowComments = function (item: models.Element): void {
+		$scope.openTileMenuFor = null;
+		$scope.showComments(item);
 	};
 	$scope.onTileMove = function (item: models.Element): void {
 		$scope.openTileMenuFor = null;
