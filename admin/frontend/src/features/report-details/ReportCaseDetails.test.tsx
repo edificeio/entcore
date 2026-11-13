@@ -48,6 +48,15 @@ describe('ReportCaseDetails', () => {
     );
   });
 
+  it('shows the received reports in the default tab', async () => {
+    renderDetails();
+
+    expect(await screen.findAllByTestId('reports-report-card')).toHaveLength(2);
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Signalements reçus' }),
+    ).toBeInTheDocument();
+  });
+
   it('switches to another tab on click', async () => {
     renderDetails();
 
