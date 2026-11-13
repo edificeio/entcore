@@ -23,7 +23,13 @@ export function ReportList({ reports }: ReportListProps) {
       <Typography variant="h3" component="h2">
         {t('reports.detail.tab.received')}
       </Typography>
-      <Stack component="ul" spacing={2} sx={{ listStyle: 'none', p: 0, m: 0 }}>
+      {/* Explicit role: Safari drops the list semantics of a list without bullets */}
+      <Stack
+        component="ul"
+        role="list"
+        spacing={2}
+        sx={{ listStyle: 'none', p: 0, m: 0 }}
+      >
         {sortedReports.map((report) => (
           <li key={report.id}>
             <ReportCard report={report} />

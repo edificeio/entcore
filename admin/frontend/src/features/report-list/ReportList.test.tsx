@@ -33,4 +33,11 @@ describe('ReportList', () => {
     expect(links.map((link) => link.textContent)).toEqual(['B', 'C', 'A']);
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
+
+  it('keeps an explicit list role on the unstyled list', async () => {
+    render(<ReportList reports={[report('1', 'A', '2026-09-28T10:00:00')]} />);
+
+    // Safari drops the list semantics of a list without bullets
+    expect(await screen.findByRole('list')).toHaveAttribute('role', 'list');
+  });
 });
