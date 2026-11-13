@@ -116,6 +116,11 @@ public class VisiblesFilter implements ResourcesProvider{
 						params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
 						filterFewOrGetAllVisibles(neo.getEventBus(), user.getUserId(), new JsonArray(new ArrayList<>(ids)), true)
 								.onComplete( visible -> {
+										// The error is already logged by UserUtils : without this answer, the request would hang
+										if (visible.failed()) {
+											handler.handle(false);
+											return;
+										}
 										int countVisible = ids.size();
 										ids.retainAll((Collection<?>) visible.result().getList()
 																	  .stream()
