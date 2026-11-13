@@ -229,4 +229,64 @@ public class StructureTest {
                 async.complete();
             });
     }
+
+    /**
+     * La structure modèle peut figurer dans la liste des UAI cibles : elle doit garder son paramétrage
+     * et le transmettre aux autres cibles (IMPULS-6455).
+     */
+    @Test
+    public void testDuplicateStructureSettingsWithSourceInTargets(TestContext context) {
+        final JsonObject options = new JsonObject()
+                .put("setApplications", true)
+                .put("setWidgets", true)
+                .put("setDistribution", false)
+                .put("setEducation", false)
+                .put("setHasApp", false);
+        final JsonArray uais = new JsonArray().add("5555555A").add("6666666B");
+        CompositeFuture.all(
+                test.directory().createStructure("Self Source Structure", "5555555A"),
+                test.directory().createStructure("Self Target Structure", "6666666B"),
+                test.directory().createProfileGroup("SelfSourceProfileGroup-Teacher"),
+                test.directory().createProfileGroup("SelfTargetProfileGroup-Teacher"),
+                test.directory().createRole("SelfRoleApp", "Role"),
+                test.directory().createRole("SelfRoleWidget", "Widget"))
+            .compose(created -> {
+                final String sourceId = created.resultAt(0);
+                final String targetId = created.resultAt(1);
+                final String sourceGroupId = created.resultAt(2);
+                final String targetGroupId = created.resultAt(3);
+                final JsonArray roleIds = new JsonArray().add(created.<String>resultAt(4)).add(created.<String>resultAt(5));
+                return CompositeFuture.all(
+                        test.directory().attachGroupToStruct(sourceGroupId, sourceId),
+                        test.directory().attachGroupToStruct(targetGroupId, targetId),
+                        test.database().executeNeo4j(
+                                "MATCH (g:Group {id:{groupId}}), (r) WHERE r.id IN {roleIds} MERGE (g)-[:AUTHORIZED]->(r)",
+                                new JsonObject().put("groupId", sourceGroupId).put("roleIds", roleIds)))
+                    .compose(attached -> {
+                        final Promise<Void> duplicated = Promise.promise();
+                        schoolService.duplicateStructureSettings(sourceId, uais, options, res -> {
+                            if (res.isRight()) {
+                                duplicated.complete();
+                            } else {
+                                duplicated.fail(res.left().getValue());
+                            }
+                        });
+                        return duplicated.future();
+                    })
+                    .compose(duplicated -> CompositeFuture.all(
+                            countAuthorized(sourceGroupId, roleIds),
+                            countAuthorized(targetGroupId, roleIds)));
+            })
+            .onComplete(context.asyncAssertSuccess(counts -> {
+                context.assertEquals(2, counts.resultAt(0), "La structure modèle doit garder son paramétrage");
+                context.assertEquals(2, counts.resultAt(1), "La cible doit recevoir le paramétrage de la structure modèle");
+            }));
+    }
+
+    private Future<Integer> countAuthorized(String groupId, JsonArray roleIds) {
+        return test.database().executeNeo4jWithUniqueResult(
+                "MATCH (g:Group {id:{groupId}})-[a:AUTHORIZED]->(r) WHERE r.id IN {roleIds} RETURN COUNT(a) AS nb",
+                new JsonObject().put("groupId", groupId).put("roleIds", roleIds))
+            .map(res -> res.getInteger("nb"));
+    }
 }
