@@ -8,7 +8,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { useParams } from 'react-router-dom';
 
-import { ReportList } from '~/features/report-list';
+import { ReportCaseList } from '~/features/report-case-list';
 import { useI18n } from '~/hooks/useI18n';
 import { usePageTitle } from '~/hooks/usePageTitle';
 import { type WorkflowState } from '~/models';
@@ -100,7 +100,7 @@ export const Component = () => {
             >
               {currentTab === index && (
                 <Box sx={{ p: 3, bgcolor: 'background.paper' }}>
-                  <ReportList
+                  <ReportCaseList
                     workflowState={workflowState}
                     structureId={structureid}
                   />

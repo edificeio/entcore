@@ -11,6 +11,9 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import visuallyHidden from '@mui/utils/visuallyHidden';
 
 import { ReportCaseCard } from '~/components/ReportCaseCard';
+import { DecisionsHistory } from '~/features/decisions-history';
+import { ReportContent } from '~/features/report-content';
+import { ReportList } from '~/features/report-list';
 import { useI18n } from '~/hooks/useI18n';
 import { useCase } from '~/services';
 
@@ -106,7 +109,7 @@ export function ReportCaseDetails({
             ))}
           </Tabs>
 
-          {/* Empty shells for now: each tab content comes with its own feature */}
+          {/* Each tab content comes with its own feature */}
           {TABS.map(({ key }, index) => (
             <div
               key={key}
@@ -115,7 +118,21 @@ export function ReportCaseDetails({
               id={panelId(key)}
               aria-labelledby={tabId(key)}
               data-testid={`report-case-tabpanel-${key}`}
-            />
+            >
+              {currentTab === index && (
+                <Box
+                  sx={(theme) => ({
+                    p: 3,
+                    bgcolor: 'background.paper',
+                    mt: theme.spacing(4),
+                  })}
+                >
+                  {key === 'received' && <ReportList />}
+                  {key === 'content' && <ReportContent />}
+                  {key === 'history' && <DecisionsHistory />}
+                </Box>
+              )}
+            </div>
           ))}
         </Box>
       </Stack>
