@@ -40,7 +40,7 @@
 
 .customize-content-wrap-title {
   color: var(--primitive-grey-900);
-  font-family: Urbanist;
+  font-family: var(--font-family-title);
   font-size: 26px;
   font-style: normal;
   font-weight: 700;
