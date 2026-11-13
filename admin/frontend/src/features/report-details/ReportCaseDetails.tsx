@@ -117,6 +117,28 @@ export function ReportCaseDetails({
               data-testid={`report-case-tabpanel-${key}`}
             />
           ))}
+
+          {TABS.map(({ key }, index) => (
+            <div
+              key={key}
+              role="tabpanel"
+              hidden={currentTab !== index}
+              id={panelId(key)}
+              aria-labelledby={tabId(key)}
+            >
+              {currentTab === index && (
+                <Box
+                  sx={(theme) => ({
+                    p: 3,
+                    bgcolor: 'background.paper',
+                    mt: theme.spacing(4),
+                  })}
+                >
+                  {key}-{index}
+                </Box>
+              )}
+            </div>
+          ))}
         </Box>
       </Stack>
     );
