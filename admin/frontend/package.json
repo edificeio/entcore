@@ -1,0 +1,81 @@
+{
+  "name": "boilerplate",
+  "version": "1.0.0",
+  "private": true,
+  "license": "GPL-3.0",
+  "author": "Edifice",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm run typecheck && vite build",
+    "dev": "vite",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "pre-commit": "lint-staged",
+    "pre-push": "pnpm run build",
+    "prepare": "cd .. && husky frontend/.husky || true",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc -b --noEmit"
+  },
+  "lint-staged": {
+    "**/*.{js,ts,tsx}": "eslint --no-warn-ignored",
+    "**/*": "prettier --write --ignore-unknown"
+  },
+  "dependencies": {
+    "@edifice.io/bootstrap": "develop-b2school",
+    "@edifice.io/client": "develop-b2school",
+    "@edifice.io/react": "develop-b2school",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.5.0",
+    "@tanstack/react-query": "5.102.8",
+    "clsx": "2.1.1",
+    "i18next": "26.4.2",
+    "i18next-http-backend": "4.0.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-hook-form": "7.87.0",
+    "react-i18next": "14.1.3",
+    "react-is": "18.3.1",
+    "react-router-dom": "7.18.3",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@axe-core/react": "4.13.0",
+    "@eslint/js": "10.0.1",
+    "@tanstack/react-query-devtools": "5.102.8",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@types/node": "22.20.1",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "@vitest/coverage-v8": "5.0.0",
+    "@vitest/ui": "5.0.0",
+    "eslint": "10.10.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.6",
+    "globals": "17.12.0",
+    "husky": "9.1.7",
+    "jsdom": "30.0.1",
+    "lint-staged": "17.5.0",
+    "msw": "2.15.0",
+    "nx": "23.2.0",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0",
+    "vite": "8.2.2",
+    "vitest": "5.0.0"
+  },
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "nx": {},
+  "overrides": {
+    "react-is": "^18.3.1"
+  }
+}
