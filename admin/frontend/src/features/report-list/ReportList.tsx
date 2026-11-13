@@ -11,7 +11,7 @@ import { useI18n } from '~/hooks/useI18n';
 import { useIntersectionObserver } from '~/hooks/useIntersectionObserver';
 import { type WorkflowState } from '~/models';
 import { useSearchCases } from '~/services';
-import { ReportCaseCard } from './ReportCaseCard';
+import { ReportCaseCard } from '~/components/ReportCaseCard';
 
 /** Fetch the next page as soon as focus reaches one of the last N cards. */
 const PREFETCH_THRESHOLD = 3;
@@ -127,6 +127,7 @@ export function ReportList({ workflowState, structureId }: ReportListProps) {
                   reportCase={reportCase}
                   titleId={titleId}
                   structureId={structureId}
+                  consultHref={`/reports/${structureId}/cases/${reportCase.id}`}
                 />
               </Box>
             );
