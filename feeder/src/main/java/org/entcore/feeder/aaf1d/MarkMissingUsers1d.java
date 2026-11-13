@@ -5,6 +5,7 @@ import java.util.Set;
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.StudentImportProcessing2;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -16,9 +17,12 @@ public class MarkMissingUsers1d extends StudentImportProcessing2 {
 		super(path, vertx);
 	}
 
+	// This pass only marks missing users : it must NOT run the batched relative-linking that
+	// StudentImportProcessing2 performs in postCommit, so we deliberately override it to a no-op.
 	@Override
-	protected void preCommit() {
+	protected Future<Void> postCommit() {
         log.info(e -> "Mark missing users 1d", true);
+        return Future.succeededFuture();
 	}
 
 	@Override
