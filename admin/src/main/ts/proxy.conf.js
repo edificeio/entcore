@@ -11,6 +11,8 @@ const PROXY_CONFIG = [
       "/cas",
       "/admin/conf/public",
       "/admin/public/dist/assets/trumbowyg",
+      "/admin/reports",
+      "/admin/public/dist/moderation",
       "/admin/i18n",
       "/i18n",
       "/languages",

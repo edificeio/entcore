@@ -24,6 +24,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserUtils;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -35,7 +36,12 @@ import fr.wseduc.security.MfaProtected;
 import fr.wseduc.webutils.http.BaseController;
 
 public class AdminController extends BaseController {
+	/** Workflow right granting access to the moderation (reports) React app. */
+	private static final String REPORTS_TREAT_RIGHT = "admin.reports.treat";
+
 	private final EventHelper eventHelper;
+	private final AdminFilter adminFilter = new AdminFilter();
+
 	public AdminController(){
 		final EventStore store = EventStoreFactory.getFactory().getEventStore(Admin.class.getSimpleName());
 		eventHelper = new EventHelper(store);
@@ -50,11 +56,35 @@ public class AdminController extends BaseController {
 		eventHelper.onAccess(request);
 	}
 
-	@Get(value = "(?!api).*", regex = true)
+	/** Catch-all for the Angular console routes ; /reports is served by the moderation React app. */
+	@Get(value = "(?!api|reports(/|$)).*", regex = true)
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void serveHomeAlias(HttpServerRequest request) {
 		serveHome(request);
+	}
+
+	/* Signalements (moderation) */
+
+	/**
+	 * Serves the moderation React app (embedded in the Angular console through an iframe),
+	 * for /admin/reports and all its sub-routes handled by the React router.
+	 * Requires both the workflow right and the ADMC/ADML functions : a WORKFLOW action does not
+	 * evaluate @ResourceFilter, so the AdminFilter check is done explicitly.
+	 */
+	@Get(value = "/reports(/.*)?", regex = true)
+	@SecuredAction(REPORTS_TREAT_RIGHT)
+	@MfaProtected()
+	public void serveReports(HttpServerRequest request) {
+		// getAuthenticatedUserInfos already answers 401 when there is no user
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+			.onSuccess(user -> adminFilter.authorize(request, null, user, isAdmin -> {
+				if (Boolean.TRUE.equals(isAdmin)) {
+					renderView(request, new JsonObject(), "moderation.html", null);
+				} else {
+					unauthorized(request);
+				}
+			}));
 	}
 }

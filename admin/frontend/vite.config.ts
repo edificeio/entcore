@@ -21,7 +21,9 @@ export default ({ mode }: { mode: string }) => {
   });
 
   return defineConfig({
-    base: mode === 'production' ? '/admin' : '',
+    // In production, assets are served by the admin module from public/dist/moderation
+    // (see buildAdminModerationFrontend in the root build.sh).
+    base: mode === 'production' ? '/admin/public/dist/moderation/' : '',
     root: import.meta.dirname,
     cacheDir: './node_modules/.vite/admin',
 
@@ -84,7 +86,7 @@ export default ({ mode }: { mode: string }) => {
       commonjsOptions: {
         transformMixedEsModules: true,
       },
-      assetsDir: 'public',
+      assetsDir: 'assets',
       chunkSizeWarningLimit: 4000,
     },
 

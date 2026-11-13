@@ -16,6 +16,8 @@ const PROXY_CONFIG = {
     "/workspace",
     "/cas",
     "/admin/public/dist/assets/trumbowyg",
+    "/admin/reports",
+    "/admin/public/dist/moderation",
     "/i18n",
     "/languages",
     "/zendeskGuide",
