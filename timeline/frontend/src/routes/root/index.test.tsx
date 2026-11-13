@@ -6,6 +6,7 @@ import { Root } from './index';
  * layout logic from the real PageLayout / homepage containers implementation.
  */
 const deployedWidgets = [
+  'carnet-de-bord',
   'communities-widget',
   'agenda-widget',
   'bookmark-widget',
@@ -104,6 +105,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   ),
   AgendaContainer: () => <div data-testid="agenda-container" />,
   FavoritesContainer: () => <div data-testid="favorites-container" />,
+  ToolsContainer: () => <div data-testid="tools-container" />,
   LastInfosContainer: () => <div data-testid="last-infos-container" />,
   NotificationListContainer: () => (
     <div data-testid="notification-list-container" />
@@ -116,6 +118,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   QwantContainer: () => <div data-testid="qwant-container" />,
   UniversalisContainer: () => <div data-testid="universalis-container" />,
   MediacentreContainer: () => <div data-testid="mediacentre-container" />,
+  CarnetDeBordContainer: () => <div data-testid="carnet-de-bord-container" />,
   GenerationHdfContainer: () => <div data-testid="generation-hdf-container" />,
   CantineContainer: () => <div data-testid="cantine-container" />,
   EdumalinContainer: () => <div data-testid="edumalin-container" />,
@@ -340,12 +343,13 @@ describe('Root - widgets', () => {
 
     expect(renderedWidgetIds()).toEqual([
       'communities-container',
+      'carnet-de-bord-container',
+      'mediacentre-container',
       'agenda-container',
       'useful-links-container',
       'briefme-container',
       'qwant-container',
       'universalis-container',
-      'mediacentre-container',
       'generation-hdf-container',
       'cantine-container',
       'edumalin-container',

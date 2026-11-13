@@ -14,6 +14,7 @@ vi.mock('@edifice.io/react/homepage', () => {
     RssContainer: stub,
     UniversalisContainer: stub,
     MediacentreContainer: stub,
+    CarnetDeBordContainer: stub,
     UsefulLinksContainer: stub,
   };
 });
