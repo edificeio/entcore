@@ -1,32 +1,270 @@
+import { Fragment, type ReactNode } from 'react';
+
+import { useDate, useDirectory } from '@edifice.io/react';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Divider from '@mui/material/Divider';
+import Link from '@mui/material/Link';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { type Case } from '~/models';
+import { useI18n } from '~/hooks/useI18n';
+import { type Case, type Decision, type Status } from '~/models';
+import { ReportCaseModuleChip } from './ReportCaseModuleChip';
+import { ReportCaseStatusChip } from './ReportCaseStatusChip';
+
+/** Shown instead of an empty value, so the row never reads as blank. */
+const EMPTY_VALUE = '—';
+
+/** Width of the left column (avatar and content info) in the Figma design. */
+const LEFT_COLUMN_WIDTH = 384;
+
+/** Statuses set by a moderation action, each told by a decision line on the card. */
+const ACTION_STATUSES: Status[] = [
+  'QUARANTINE',
+  'RESOURCE_KEPT',
+  'RESOURCE_DELETED',
+];
+
+/**
+ * Line height of the info rows: 24px of text plus the 8px Figma puts between
+ * rows and between the wrapped lines of a row.
+ */
+const INFO_LINE_HEIGHT = 32;
+
+/** Lines a row may take, label included, before it is cut with an ellipsis. */
+const REPORTERS_MAX_LINES = 2;
+
+/** User page of the admin console (Angular app served next to this one). */
+const adminUserURL = (structureId: string, userId: string) =>
+  `/admin/${structureId}/users/list/${userId}/details`;
 
 export interface ReportCaseCardProps {
   reportCase: Case;
   /** Id of the title, used to label the enclosing feed article. */
   titleId: string;
+  /** Structure the cases are moderated for, used to open the author page. */
+  structureId: string;
+}
+
+interface InfoRowProps {
+  label: string;
+  /** Cut the value with an ellipsis after this number of lines. */
+  maxLines?: number;
+  children: ReactNode;
 }
 
 /**
- * Minimal case card.
- * TODO: complete content and layout (dedicated branch).
+ * One "label : value" pair of the enclosing list. Term and description flow as
+ * one inline text, so a long value wraps after its label instead of below it.
  */
+const InfoRow = ({ label, maxLines, children }: InfoRowProps) => (
+  <Typography
+    component="div"
+    variant="body1"
+    sx={{
+      lineHeight: `${INFO_LINE_HEIGHT}px`,
+      overflowWrap: 'anywhere',
+      ...(maxLines && {
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        WebkitLineClamp: maxLines,
+        // Clipped, not removed: screen readers still read the whole value
+        overflow: 'hidden',
+      }),
+    }}
+  >
+    <Box
+      component="dt"
+      sx={{ display: 'inline', fontWeight: 'fontWeightBold' }}
+    >
+      {label}&nbsp;:
+    </Box>{' '}
+    <Box component="dd" sx={{ display: 'inline', m: 0 }}>
+      {children}
+    </Box>
+  </Typography>
+);
+
+/** Card of a reported case in the moderation list. */
 export const ReportCaseCard = ({
   reportCase,
   titleId,
-}: ReportCaseCardProps) => (
-  <Card variant="outlined" data-testid="reports-case-card">
-    <CardContent>
-      <Typography id={titleId} variant="subtitle1" component="h2">
-        {reportCase.title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {reportCase.module} · {reportCase.senderDisplayName} ·{' '}
-        {new Date(reportCase.createdAt).toLocaleDateString()}
-      </Typography>
-    </CardContent>
-  </Card>
-);
+  structureId,
+}: ReportCaseCardProps) => {
+  const { t, common_t } = useI18n();
+  const { formatDate } = useDate();
+  const { getAvatarURL, getUserbookURL } = useDirectory();
+
+  const reasons = [
+    ...new Set(reportCase.reports.map((report) => report.reason)),
+  ]
+    .map((reason) => t(`reports.reason.${reason}`, { defaultValue: reason }))
+    .join(', ');
+  // By reporter id: two homonyms are two reporters, and a person reporting twice is one
+  const reporters = [
+    ...new Map(
+      reportCase.reports.map((report) => [
+        report.reporterId,
+        report.displayName,
+      ]),
+    ),
+  ].filter(([, displayName]) => displayName);
+  // The latest decision drives both the status chip and the decision line,
+  // e.g. a quarantine followed by a deletion shows the deletion
+  const lastDecision = (reportCase.decisions ?? []).reduce<
+    Decision | undefined
+  >(
+    (latest, current) =>
+      !latest || Date.parse(current.createdAt) >= Date.parse(latest.createdAt)
+        ? current
+        : latest,
+    undefined,
+  );
+  const status = lastDecision?.status ?? reportCase.status;
+  const decision =
+    lastDecision && ACTION_STATUSES.includes(lastDecision.status)
+      ? lastDecision
+      : undefined;
+
+  return (
+    <Card elevation={4} sx={{ p: 1 }} data-testid="reports-case-card">
+      <CardHeader
+        title={t('reports.case.title', {
+          app: common_t(reportCase.module),
+          title: reportCase.title,
+        })}
+        slotProps={{
+          title: { id: titleId, variant: 'h3', component: 'h2' },
+          // From sm up, a long title wraps beside the chip instead of pushing it below
+          content: { sx: { flexBasis: { xs: 'auto', sm: 0 }, minWidth: 0 } },
+          // As in Figma: the chip sits 16px from the card top and right edges
+          // and overhangs the header bottom padding instead of growing it
+          action: { sx: { alignSelf: 'flex-start', m: 0, mr: -1, mb: -1 } },
+        }}
+        action={<ReportCaseStatusChip status={status} />}
+        // The status chip goes under the title on xs screens
+        sx={{ flexWrap: 'wrap', rowGap: 1 }}
+      />
+
+      <CardContent sx={{ px: 2, pt: 1, pb: 2 }}>
+        <Divider sx={{ mb: 2 }} />
+
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={3}
+          divider={
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ display: { xs: 'none', md: 'block' } }}
+            />
+          }
+        >
+          {/* Fixed width from md up, so the columns line up from one card to the next */}
+          <Stack
+            direction="row"
+            spacing={3}
+            sx={{ flex: { md: `0 0 ${LEFT_COLUMN_WIDTH}px` }, minWidth: 0 }}
+          >
+            <Avatar
+              src={getAvatarURL(reportCase.authorId, 'user')}
+              alt=""
+              sx={{ width: 64, height: 64 }}
+            />
+            {/* 8px + the 4px half-leading of the first row: 12px under the chip, as in Figma */}
+            <Stack spacing={1} sx={{ alignItems: 'flex-start', minWidth: 0 }}>
+              <ReportCaseModuleChip module={reportCase.module} />
+              <Box component="dl" sx={{ m: 0 }}>
+                <InfoRow label={t('reports.case.content.type')}>
+                  {t(`reports.case.type.${reportCase.type}`, {
+                    defaultValue: reportCase.type,
+                  })}
+                </InfoRow>
+                <InfoRow label={t('reports.case.content.title')}>
+                  {reportCase.title}
+                </InfoRow>
+                <InfoRow label={t('reports.case.author')}>
+                  <Link
+                    href={adminUserURL(structureId, reportCase.authorId)}
+                    data-testid="reports-case-author-link"
+                  >
+                    {reportCase.authorDisplayName}
+                  </Link>
+                </InfoRow>
+              </Box>
+            </Stack>
+          </Stack>
+
+          <Box
+            component="dl"
+            sx={{
+              m: 0,
+              flex: 1,
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <InfoRow label={t('reports.case.reasons')}>
+              {reasons || EMPTY_VALUE}
+            </InfoRow>
+            <InfoRow label={t('reports.case.date')}>
+              {formatDate(reportCase.createdAt, 'L')}
+            </InfoRow>
+            <InfoRow
+              label={t('reports.case.reporters')}
+              maxLines={REPORTERS_MAX_LINES}
+            >
+              {reporters.length > 0
+                ? reporters.map(([reporterId, displayName], index) => (
+                    <Fragment key={reporterId}>
+                      {index > 0 && ', '}
+                      <Link
+                        href={getUserbookURL(reporterId, 'user')}
+                        data-testid="reports-case-reporter-link"
+                      >
+                        {displayName}
+                      </Link>
+                    </Fragment>
+                  ))
+                : EMPTY_VALUE}
+            </InfoRow>
+          </Box>
+        </Stack>
+
+        {decision && (
+          <>
+            {/* 12px + the 4px half-leading of the last row: 16px, as in Figma */}
+            <Divider sx={{ mt: 1.5, mb: 1.5 }} />
+            <Typography variant="body1" data-testid="reports-case-decision">
+              {t(`reports.case.decision.${decision.status}`, {
+                date: formatDate(decision.createdAt, 'L'),
+                time: formatDate(decision.createdAt, 'LT'),
+                name: decision.displayName,
+              })}
+            </Typography>
+          </>
+        )}
+      </CardContent>
+
+      <CardActions sx={{ justifyContent: 'flex-end', p: 1 }}>
+        {/* TODO: open the case detail once its page exists */}
+        <Button
+          variant="contained"
+          // Same label on every card: the case title tells them apart
+          aria-describedby={titleId}
+          data-testid="reports-case-consult-button"
+        >
+          {t('reports.case.consult')}
+        </Button>
+      </CardActions>
+    </Card>
+  );
+};

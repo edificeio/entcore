@@ -15,12 +15,12 @@ describe('ReportList', () => {
   });
 
   it('renders the first page of cases as a feed', async () => {
-    render(<ReportList workflowState="PENDING" />);
+    render(<ReportList workflowState="PENDING" structureId="structure-1" />);
 
     const articles = await screen.findAllByRole('article');
     expect(articles).toHaveLength(20);
     expect(articles[0]).toHaveAttribute('aria-posinset', '1');
-    expect(articles[0]).toHaveAttribute('aria-setsize', '27');
+    expect(articles[0]).toHaveAttribute('aria-setsize', '31');
   });
 
   it('renders the empty state when there is no case', async () => {
@@ -30,25 +30,25 @@ describe('ReportList', () => {
       ),
     );
 
-    render(<ReportList workflowState="SETTLE" />);
+    render(<ReportList workflowState="SETTLE" structureId="structure-1" />);
 
     expect(await screen.findByTestId('reports-empty-state')).toBeVisible();
     expect(screen.queryByRole('feed')).not.toBeInTheDocument();
   });
 
   it('loads the next page when keyboard focus reaches the end of the list', async () => {
-    render(<ReportList workflowState="PENDING" />);
+    render(<ReportList workflowState="PENDING" structureId="structure-1" />);
     const articles = await screen.findAllByRole('article');
 
     articles[articles.length - 1].focus();
 
     await waitFor(() =>
-      expect(screen.getAllByRole('article')).toHaveLength(27),
+      expect(screen.getAllByRole('article')).toHaveLength(31),
     );
   });
 
   it('moves focus between cards with Page Down / Page Up', async () => {
-    render(<ReportList workflowState="PENDING" />);
+    render(<ReportList workflowState="PENDING" structureId="structure-1" />);
     const articles = await screen.findAllByRole('article');
 
     articles[0].focus();

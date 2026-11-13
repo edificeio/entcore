@@ -7,12 +7,7 @@ export type Reason =
   | 'OTHER';
 
 export type Status =
-  | 'OPEN'
-  | 'PENDING'
-  | 'QUARANTINE'
-  | 'RESOURCE_DELETED'
-  | 'RESOURCE_KEPT'
-  | 'CLOSED';
+  'OPEN' | 'PENDING' | 'QUARANTINE' | 'RESOURCE_DELETED' | 'RESOURCE_KEPT';
 
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];

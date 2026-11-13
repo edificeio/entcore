@@ -38,12 +38,12 @@ describe('moderationService (mocked API)', () => {
     const id = items![0].id;
 
     const { id: decisionId } = await moderationService.addDecision(id, {
-      status: 'CLOSED',
+      status: 'RESOURCE_KEPT',
       comment: 'pas un problème',
     });
 
     const updated = await moderationService.getCase(id);
-    expect(updated.status).toBe('CLOSED');
+    expect(updated.status).toBe('RESOURCE_KEPT');
     expect(updated.decisions?.at(-1)?.id).toBe(decisionId);
   });
 });

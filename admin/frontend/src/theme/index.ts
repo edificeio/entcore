@@ -264,17 +264,6 @@ const themeOptions: ThemeOptions = {
       defaultProps: {
         disableElevation: true,
       },
-      styleOverrides: {
-        root: {
-          padding: '8px 20px',
-        },
-        sizeSmall: {
-          padding: '4px 12px',
-        },
-        sizeLarge: {
-          padding: '12px 28px',
-        },
-      },
     },
     MuiIconButton: {
       styleOverrides: {
@@ -326,14 +315,6 @@ const themeOptions: ThemeOptions = {
             outline: `2px solid ${theme.palette.primary.main}`,
             outlineOffset: -2,
           },
-        }),
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: ({ theme }) => ({
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: (theme.shape.borderRadius as number) * 1.5,
         }),
       },
     },

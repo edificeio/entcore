@@ -12,10 +12,10 @@ export interface Case {
   modifiedAt: string;
   status: Status;
   title: string;
-  senderId: string;
-  senderDisplayName: string;
-  senderFirstName: string;
-  senderLastName: string;
+  authorId: string;
+  authorDisplayName: string;
+  authorFirstName: string;
+  authorLastName: string;
   references: string;
   body: JsonObject;
   reports: Report[];

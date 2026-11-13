@@ -6,6 +6,7 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import { useParams } from 'react-router-dom';
 
 import { ReportList } from '~/features/report-list';
 import { useI18n } from '~/hooks/useI18n';
@@ -33,6 +34,8 @@ const useCasesCount = (workflowState: WorkflowState) =>
 
 export const Component = () => {
   const { t } = useI18n();
+  // Always set: the route is reports/:structureid
+  const { structureid = '' } = useParams();
   const [currentTab, setCurrentTab] = useState(0);
   const counts: Record<WorkflowState, number | undefined> = {
     PENDING: useCasesCount('PENDING'),
@@ -97,7 +100,10 @@ export const Component = () => {
             >
               {currentTab === index && (
                 <Box sx={{ p: 3, bgcolor: 'background.paper' }}>
-                  <ReportList workflowState={workflowState} />
+                  <ReportList
+                    workflowState={workflowState}
+                    structureId={structureid}
+                  />
                 </Box>
               )}
             </div>

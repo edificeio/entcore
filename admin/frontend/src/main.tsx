@@ -5,9 +5,7 @@ import { createRoot } from 'react-dom/client';
 // Self-hosted Open Sans (variable, weights 300-800), bundled by Vite
 import '@fontsource-variable/open-sans';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider } from '@mui/material/styles';
 import { RouterProvider } from 'react-router-dom';
-import theme from './theme';
 
 import './i18n';
 import { Providers, queryClient } from './providers';
@@ -33,10 +31,8 @@ enableMocking().then(() =>
   root.render(
     <StrictMode>
       <Providers>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <RouterProvider router={router(queryClient)} />
-        </ThemeProvider>
+        <CssBaseline />
+        <RouterProvider router={router(queryClient)} />
       </Providers>
     </StrictMode>,
   ),
