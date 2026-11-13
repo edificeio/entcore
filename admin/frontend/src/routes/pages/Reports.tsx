@@ -1,108 +1,107 @@
-import { useState } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 
-import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
+import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-
-import { useTheme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-
-import emptyState from '~/assets/emptystate.svg';
-
-import TextareaAvecCompteur from '~/components/TextareaAvecCompteur';
+import { ReportList } from '~/features/report-list';
+import { useI18n } from '~/hooks/useI18n';
+import { usePageTitle } from '~/hooks/usePageTitle';
+import { type WorkflowState } from '~/models';
+import { useSearchCases } from '~/services';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
   return null;
 };
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  dir?: string;
-  index: number;
-  value: number;
-}
+const TABS: { workflowState: WorkflowState; labelKey: string }[] = [
+  { workflowState: 'PENDING', labelKey: 'reports.tab.pending' },
+  { workflowState: 'SETTLE', labelKey: 'reports.tab.settled' },
+];
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+const tabId = (workflowState: WorkflowState) => `reports-tab-${workflowState}`;
+const panelId = (workflowState: WorkflowState) =>
+  `reports-tabpanel-${workflowState}`;
 
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      tabIndex={0}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    'id': `full-width-tab-${index}`,
-    'aria-controls': `full-width-tabpanel-${index}`,
-  };
-}
+/** Total number of cases for a workflow state, read from the first page of its list. */
+const useCasesCount = (workflowState: WorkflowState) =>
+  useSearchCases(workflowState).data?.pages[0]?.totalCount;
 
 export const Component = () => {
-  const theme = useTheme();
-  const [value, setValue] = useState(0);
+  const { t } = useI18n();
+  const [currentTab, setCurrentTab] = useState(0);
+  const counts: Record<WorkflowState, number | undefined> = {
+    PENDING: useCasesCount('PENDING'),
+    SETTLE: useCasesCount('SETTLE'),
+  };
 
-  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+  usePageTitle(`${t('reports.page.title')} - ${t('admin.title')}`);
+
+  const handleChange = (_event: SyntheticEvent, newValue: number) => {
+    setCurrentTab(newValue);
   };
 
   return (
-    <Container>
+    <Container component="main">
       <Grid>
-        <Button component="a" href="/">
-          retour
-        </Button>
+        <Box>
+          <Tabs
+            value={currentTab}
+            onChange={handleChange}
+            indicatorColor="primary"
+            textColor="primary"
+            variant="fullWidth"
+            aria-label={t('reports.tabs.label')}
+          >
+            {TABS.map(({ workflowState, labelKey }) => {
+              const count = counts[workflowState];
+              return (
+                <Tab
+                  key={workflowState}
+                  id={tabId(workflowState)}
+                  aria-controls={panelId(workflowState)}
+                  label={
+                    count === undefined
+                      ? t(labelKey)
+                      : `${t(labelKey)} (${count})`
+                  }
+                  data-testid={`reports-tab-${workflowState.toLowerCase()}`}
+                />
+              );
+            })}
+          </Tabs>
 
-        <Box sx={{ bgcolor: 'background.paper' }}>
-          <AppBar position="static">
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              indicatorColor="secondary"
-              textColor="inherit"
-              variant="fullWidth"
-              aria-label="full width tabs example"
+          <Box sx={{ px: 3, pt: 3, bgcolor: 'background.paper' }}>
+            <Alert
+              severity="info"
+              variant="outlined"
+              // Static information, not a live alert
+              role="note"
+              data-testid="reports-retention-alert"
             >
-              <Tab label="À traiter (0)" {...a11yProps(0)} />
-              <Tab label="Traités (0)" {...a11yProps(1)} />
-            </Tabs>
-          </AppBar>
-          <TabPanel value={value} index={0} dir={theme.direction}>
-            <Grid
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
+              {t('reports.retention.info')}
+            </Alert>
+          </Box>
+
+          {TABS.map(({ workflowState }, index) => (
+            <div
+              key={workflowState}
+              role="tabpanel"
+              hidden={currentTab !== index}
+              id={panelId(workflowState)}
+              aria-labelledby={tabId(workflowState)}
             >
-              <Grid sx={{ textAlign: 'center' }}>
-                <img src={emptyState} />
-                <br />
-                Aucun traitement pour le moment
-              </Grid>
-            </Grid>
-          </TabPanel>
-          <TabPanel value={value} index={1} dir={theme.direction}>
-            <TextareaAvecCompteur />
-          </TabPanel>
+              {currentTab === index && (
+                <Box sx={{ p: 3, bgcolor: 'background.paper' }}>
+                  <ReportList workflowState={workflowState} />
+                </Box>
+              )}
+            </div>
+          ))}
         </Box>
       </Grid>
     </Container>

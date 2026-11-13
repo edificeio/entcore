@@ -1,9 +1,5 @@
-/*
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- This is a starter file and can be deleted.
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- Delete this file and get started with your project!
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
+import { createModerationService } from './moderationService';
 
-export const baseUrl = '/app';
+export const moderationBaseUrl = '/moderation/api/v1';
+
+export const moderationService = createModerationService(moderationBaseUrl);

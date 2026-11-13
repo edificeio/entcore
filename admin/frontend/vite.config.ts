@@ -17,13 +17,21 @@ export default ({ mode }: { mode: string }) => {
       '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)',
       '/explorer',
       '/admin',
+      '/moderation',
     ],
   });
 
   return defineConfig({
     base: mode === 'production' ? '/admin' : '',
     root: import.meta.dirname,
-    cacheDir: './node_modules/.vite/admin',
+    // Own cache for mock mode, so `dev` and `dev:mock` can run side by side
+    cacheDir:
+      mode === 'mock'
+        ? './node_modules/.vite/admin-mock'
+        : './node_modules/.vite/admin',
+
+    // msw/browser is lazily imported in mock mode: pre-bundle it to avoid a late re-optimization
+    optimizeDeps: mode === 'mock' ? { include: ['msw/browser'] } : undefined,
 
     resolve: {
       tsconfigPaths: true,
