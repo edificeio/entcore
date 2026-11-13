@@ -21,6 +21,7 @@ package org.entcore.infra.services;
 
 import java.util.List;
 
+import io.vertx.core.Future;
 import org.entcore.infra.services.impl.InfectedFile;
 
 import fr.wseduc.webutils.Either;
@@ -36,4 +37,5 @@ public interface AntivirusService {
 
 	void scan(String file);
 
+	public Future<List<String>> scanWithResult(String file);
 }

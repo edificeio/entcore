@@ -21,7 +21,9 @@ package org.entcore.infra.services.impl;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -29,6 +31,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -80,4 +83,25 @@ public class ClamAvService extends AbstractAntivirusService {
 		}));
 	}
 
+	@Override
+	public Future<List<String>> scanWithResult(String file) {
+		Promise<List<String>> promise = Promise.promise();
+		String command = "clamdscan -m --fdpass " + file;
+		JsonObject m = new JsonObject().put("command", command);
+		vertx.eventBus().request("exec.command", m, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if("ok".equals(event.body().getString("status"))) {
+					List<InfectedFile> infectedFiles = parse(event.body().getString("result"));
+					promise.complete(infectedFiles.stream().map(InfectedFile::getPath).collect(Collectors.toList()));
+					if (!infectedFiles.isEmpty()) {
+						launchReplace(infectedFiles);
+					}
+				} else {
+					promise.fail(event.body().getString("message"));
+				}
+			}
+		}));
+		return promise.future();
+	}
 }
