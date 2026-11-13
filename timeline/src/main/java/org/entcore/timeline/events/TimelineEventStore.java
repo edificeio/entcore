@@ -20,6 +20,7 @@
 package org.entcore.timeline.events;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.entcore.common.user.UserInfos;
@@ -47,6 +48,8 @@ public interface TimelineEventStore {
 
 	void get(UserInfos recipient, List<String> types, int offset, int limit,
 			JsonObject restrictionFilter, boolean mine, boolean both, boolean receivedOnly, String version, Handler<JsonObject> result);
+
+	void listReceivedSince(UserInfos user, Date since, JsonObject restrictionFilter, Handler<JsonObject> result);
 
 	void deleteSubResource(String resource, Handler<JsonObject> result);
 
