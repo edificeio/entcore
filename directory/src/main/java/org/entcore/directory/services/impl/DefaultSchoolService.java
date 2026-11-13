@@ -702,14 +702,14 @@ public class DefaultSchoolService implements SchoolService {
 	private void buildDuplicateQuery(String structureId, JsonArray targetUAIs, StatementsBuilder builder, String nodeType, String groupType) {
 		final JsonObject params = new JsonObject().put("structureId", structureId).put("uais", targetUAIs);
 		final String deleteExistingQuery = "MATCH (r:"+nodeType+")<-[a:AUTHORIZED]-(:"+groupType+")-[:DEPENDS]->(s:Structure) " +
-				"WHERE s.UAI in {uais} " +
+				"WHERE s.UAI in {uais} AND s.id <> {structureId} " +
 				"AND NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r) " +
 				"DELETE a";
 		builder.add(deleteExistingQuery, params);
 		final String duplicateQuery = "MATCH (s:Structure {id:{structureId}})<-[:DEPENDS]-(g1:"+groupType+")-[a:AUTHORIZED]->(r:"+nodeType+"), " +
 				"(s2:Structure)<-[:DEPENDS]-(g2:"+groupType+") " +
 				"WHERE NOT (:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r) " +
-				"AND s2.UAI IN {uais} AND g2.name ENDS WITH LAST(SPLIT(g1.name, '-')) AND g1.id <> g2.id " +
+				"AND s2.UAI IN {uais} AND s2.id <> s.id AND g2.name ENDS WITH LAST(SPLIT(g1.name, '-')) AND g1.id <> g2.id " +
 				"MERGE (g2)-[a2:AUTHORIZED]->(r)" +
 				"ON CREATE SET a2.mandatory = a.mandatory";
 		builder.add(duplicateQuery, params);
@@ -718,7 +718,7 @@ public class DefaultSchoolService implements SchoolService {
 	private void buildDuplicateDefaultAuthQuery(String structureId, JsonArray targetUAIs, StatementsBuilder builder) {
 		final JsonObject params = new JsonObject().put("structureId", structureId).put("uais", targetUAIs);
 		final String deleteExistingQuery = "MATCH (s2:Structure)-[:HAS_AUTH_DEFAULT]->(d:AuthDefault) " +
-				"WHERE s2.UAI IN {uais} " +
+				"WHERE s2.UAI IN {uais} AND s2.id <> {structureId} " +
 				"DETACH DELETE d";
 		builder.add(deleteExistingQuery, params);
 		final String duplicateQuery = "MATCH (s:Structure {id:{structureId}})-[:HAS_AUTH_DEFAULT]->(d:AuthDefault), (s2:Structure) " +
