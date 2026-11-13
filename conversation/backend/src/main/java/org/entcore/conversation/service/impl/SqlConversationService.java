@@ -716,7 +716,7 @@ public class SqlConversationService implements ConversationService{
 				" ORDER BY date DESC LIMIT "+ nbThread +" OFFSET "+ skip + ") " +
 
 				"SELECT "+ messagesFields +", unread FROM threads JOIN (SELECT m.thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) AS unread " +
-				"FROM threads, conversation.usermessages_v2 um JOIN conversation.messages m ON m.id = um.message_id::text and um.user_id= ?::UUID " +
+				"FROM threads, " + userMessageTable + " um JOIN conversation.messages m ON m.id = um.message_id::text and um.user_id= ?::UUID " +
 				"WHERE  um.trashed = false AND m.thread_id=threads.id GROUP BY m.thread_id) c ON threads.id = c.thread_id " +
 				"ORDER BY date DESC";
 			values.add(user.getUserId());
@@ -907,7 +907,7 @@ public class SqlConversationService implements ConversationService{
 				"FROM conversation.messages m " +
 				"WHERE m.state = 'SENT' AND m.thread_id IN (" +
 					"SELECT r.thread_id FROM conversation.messages r " +
-					"JOIN conversation.usermessages_v2 um ON um.message_id = r.id::UUID " +
+					"JOIN " + userMessageTable + " um ON um.message_id = r.id::UUID " +
 					"WHERE r.id IN " + Sql.listPrepared(messagesId.toArray()) + " AND um.user_id = ?::UUID AND r.state = 'SENT') " +
 				"ORDER BY m.thread_id, m.date DESC " +
 				"ON CONFLICT (id) DO NOTHING";
@@ -917,7 +917,7 @@ public class SqlConversationService implements ConversationService{
 		final String insertUserThread =
 				"INSERT INTO conversation.userthreads ( " +
 				"SELECT um.user_id as user_id, m.thread_id as thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
-				"FROM conversation.usermessages_v2 um " +
+				"FROM " + userMessageTable + " um " +
 				"JOIN conversation.messages m on m.id = um.message_id::text " +
 				"WHERE um.message_id IN " + Sql.listPrepared(messagesId.toArray(), "UUID") + " AND um.user_id = ?::UUID AND um.trashed = false AND m.state = 'SENT' " +
 				"GROUP BY user_id, m.thread_id) ON CONFLICT (user_id,thread_id) DO NOTHING";
@@ -977,7 +977,7 @@ public class SqlConversationService implements ConversationService{
 				"SET nb_unread = nb_unread - 1 " +
 				"WHERE user_id = ? AND thread_id = (" +
 					"SELECT m.thread_id " +
-					"FROM conversation.usermessages_v2 um " +
+					"FROM " + userMessageTable + " um " +
 					"JOIN conversation.messages m ON m.id = um.message_id::text " +
 					"WHERE um.user_id = ?::UUID AND um.message_id = ?::UUID AND um.unread = true) " +
 				"AND nb_unread > 0 ";
@@ -1388,7 +1388,7 @@ public class SqlConversationService implements ConversationService{
 				"SET nb_unread = g.unread " +
 				"FROM (" +
 					"SELECT um.user_id::TEXT as user_id, m.thread_id as thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
-					"FROM conversation.usermessages_v2 um " +
+					"FROM " + userMessageTable + " um " +
 					"JOIN conversation.messages m on um.message_id = m.id::UUID " +
 					"WHERE m.thread_id IN " + Sql.listPrepared(threadIds.toArray()) + " AND um.user_id = ?::UUID AND m.state = 'SENT' " +
 					"GROUP BY user_id, m.thread_id " +
@@ -1866,7 +1866,7 @@ public class SqlConversationService implements ConversationService{
 			"DELETE FROM conversation.userthreads " +
 			"WHERE user_id = ? AND thread_id NOT IN (" +
 				"SELECT DISTINCT m.thread_id " +
-				"FROM conversation.usermessages_v2 um " +
+				"FROM " + userMessageTable + " um " +
 				"LEFT JOIN conversation.messages m on m.id = um.message_id::text " +
 				"WHERE user_id = ?::UUID AND trashed = false " +
 			")";
@@ -2428,23 +2428,6 @@ public class SqlConversationService implements ConversationService{
 	///////////
 	/* Utils */
 
-	private String formatArray(JsonArray array){
-		return formatArray(array, ",", "{", "}");
-	}
-	private String formatArray(JsonArray array, String delimiter, String prefix, String postfix){
-		if(array.size() == 0){
-			return "{}";
-		}
-		StringBuilder builder = new StringBuilder(prefix);
-		for(Object obj : array){
-			builder.append(obj.toString() + delimiter);
-		}
-		if(array.size() > 0)
-			builder.delete(0, builder.length() - delimiter.length());
-		builder.append(postfix);
-		return builder.toString();
-	}
-
 	private String generateInVars(Collection<String> list, JsonArray values, String casting){
 		StringBuilder builder = new StringBuilder("(");
 
@@ -2452,8 +2435,9 @@ public class SqlConversationService implements ConversationService{
 			builder.append("?::").append(casting).append(",");
 			values.add(item);
 		}
-		if(list.size() > 0)
+		if(!list.isEmpty()) {
 			builder.deleteCharAt(builder.length() - 1);
+		}
 		builder.append(")");
 
 		return builder.toString();
@@ -2466,8 +2450,9 @@ public class SqlConversationService implements ConversationService{
 			builder.append("?,");
 			values.add(item);
 		}
-		if(list.size() > 0)
+		if(!list.isEmpty()) {
 			builder.deleteCharAt(builder.length() - 1);
+		}
 		builder.append(")");
 
 		return builder.toString();
