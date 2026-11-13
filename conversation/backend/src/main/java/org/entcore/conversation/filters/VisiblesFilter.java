@@ -68,8 +68,8 @@ public class VisiblesFilter implements ResourcesProvider{
 			String inReply =  request.params().get("In-Reply-To");
 			String query =
 					"SELECT count(distinct m) AS number FROM conversation.messages m " +
-							"JOIN conversation.usermessages um ON m.id = um.message_id " +
-							"WHERE um.user_id = ? AND um.message_id = ? ";
+							"JOIN conversation.usermessages_v2 um ON m.id = um.message_id::text " +
+							"WHERE um.user_id = ?::UUID AND um.message_id = ?::UUID ";
 
 			JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 					.add(user.getUserId())

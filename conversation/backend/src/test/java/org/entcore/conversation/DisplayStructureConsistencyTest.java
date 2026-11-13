@@ -41,8 +41,8 @@ public class DisplayStructureConsistencyTest {
 
     private static ConversationService conversationService;
 
-    private static final String READER_ID = "reader-consistency";
-    private static final String SENDER_ID = "sender-consistency";
+    private static final String READER_ID = "aaaaaaaa-1111-0000-0000-000000000001";
+    private static final String SENDER_ID = "aaaaaaaa-1111-0000-0000-000000000002";
     private static final String MESSAGE_ID = "11111111-2222-3333-4444-555555555555";
 
     /** Shared with the reader, so it must win — even though it is not the sender's preferred one. */
@@ -62,6 +62,9 @@ public class DisplayStructureConsistencyTest {
         stubDirectory();
         // Asynchronous: the Sql instance is only usable once this class setup has completed, hence the
         // message being inserted lazily by the first test rather than here.
+        // 027-fix-app-rights.sql grants default privileges for this role, which the test container does not have.
+        pgContainer.execInContainer("psql", "-U", pgContainer.getUsername(), "-d", pgContainer.getDatabaseName(),
+                "-c", "CREATE ROLE \"web-education\"");
         test.database().initPostgreSQL(context, pgContainer, schema);
     }
 
@@ -144,9 +147,10 @@ public class DisplayStructureConsistencyTest {
                 .add(System.currentTimeMillis());
 
         final String insertUserMessage =
-                "INSERT INTO conversation.usermessages (user_id, message_id, folder_id, trashed, unread) " +
-                "VALUES (?, ?, NULL, false, true)";
-        final JsonArray userMessageValues = new JsonArray().add(READER_ID).add(MESSAGE_ID);
+                "INSERT INTO conversation.usermessages_v2 " +
+                "(user_id, message_id, folder_id, trashed, unread, is_recipient, is_sender, msg_state, msg_date) " +
+                "VALUES (?::UUID, ?::UUID, NULL, false, true, true, false, 'SENT', ?)";
+        final JsonArray userMessageValues = new JsonArray().add(READER_ID).add(MESSAGE_ID).add(System.currentTimeMillis());
 
         Sql.getInstance().prepared(insertMessage, messageValues, res -> {
             if (!"ok".equals(res.body().getString("status"))) {

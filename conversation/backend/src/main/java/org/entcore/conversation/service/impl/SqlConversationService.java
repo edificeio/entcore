@@ -130,7 +130,7 @@ public class SqlConversationService implements ConversationService{
 		messageTable = schema + ".messages";
 		folderTable = schema + ".folders";
 		attachmentTable = schema + ".attachments";
-		userMessageTable = schema + ".usermessages";
+		userMessageTable = schema + ".usermessages_v2";
 		userMessageAttachmentTable = schema + ".usermessagesattachments";
 		originalMessageTable = schema + ".originalmessages";
 		absenceSettingsTable = schema + ".absence_settings";
@@ -214,7 +214,10 @@ public class SqlConversationService implements ConversationService{
 			// 2 - Link message to the user
 			builder.insert(userMessageTable, new JsonObject()
 					.put("user_id", user.getUserId())
-					.put("message_id", message.getString("id")));
+					.put("message_id", message.getString("id"))
+					.put("msg_date", System.currentTimeMillis())
+					.put("is_sender", true)
+					.put("msg_state", State.DRAFT.name()));
 
 			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 		}).onFailure(th -> {
@@ -239,9 +242,11 @@ public class SqlConversationService implements ConversationService{
 				.put("from", user.getUserId())
 				.put("id", messageId);
 		JsonObject m = Utils.validAndGet(message, UPDATE_DRAFT_FIELDS, UPDATE_DRAFT_REQUIRED_FIELDS);
-		if (validationError(user, m, result, messageId))
+		if (validationError(user, m, result, messageId)) {
 			return;
-
+		}
+		boolean isRecipient = m.getJsonArray("to", new JsonArray()).contains(user.getUserId()) ||
+							m.getJsonArray("cc", new JsonArray()).contains(user.getUserId());
 		updateMessageWithTransformedContent(message, !asDraft, request).onSuccess(event -> {
 			StringBuilder sb = new StringBuilder();
 			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
@@ -266,7 +271,18 @@ public class SqlConversationService implements ConversationService{
 							"WHERE id = ? AND state = ?";
 			values.add(messageId).add(State.DRAFT.name());
 
-			sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
+			SqlStatementsBuilder builder = new SqlStatementsBuilder();
+			builder.prepared(query, values);
+
+			String userMessageQuery = "UPDATE " + userMessageTable + " SET msg_date = ?, " +
+					" is_recipient = ? WHERE message_id = ?::UUID  AND msg_state = ?";
+			JsonArray userMessageValues = new JsonArray()
+							.add(System.currentTimeMillis())
+							.add(isRecipient)
+							.add(messageId)
+							.add(State.DRAFT);
+			builder.prepared(userMessageQuery, userMessageValues);
+			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(result));
 		}).onFailure(th -> {
 			String contentTransformationError = "Content transformation failed for message with id : " + message.getString("id");
 			log.error(contentTransformationError, th);
@@ -311,8 +327,8 @@ public class SqlConversationService implements ConversationService{
 			"JOIN " + userMessageAttachmentTable + " uma " +
 				"ON (att.id = uma.attachment_id) " +
 			"JOIN " + userMessageTable + " um " +
-				"ON um.user_id = uma.user_id AND um.message_id = uma.message_id " +
-			"WHERE um.user_id = ? AND um.message_id = ?";
+				"ON uma.user_id = um.user_id::text AND uma.message_id = um.message_id::text " +
+			"WHERE um.user_id = ?::UUID AND um.message_id = ?::UUID ";
 
 		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(senderId).add(messageId), SqlResult.validUniqueResultHandler(handler, "attachmentids"));
 	}
@@ -351,9 +367,11 @@ public class SqlConversationService implements ConversationService{
 			String updateMessage =
 			"SELECT update_message_with_state_transition(?, ?), id, subject, body, thread_id FROM " + messageTable + " WHERE id = ? ";
 
+			// is_recipient is computed from the stored message: a message sent without a draft update never went through updateDraft.
 			String updateUnread = "UPDATE " + userMessageTable + " " +
-			"SET unread = " + unread +
-			" WHERE user_id = ? AND message_id = ? ";
+			"SET unread = " + unread + ", " +
+			"is_recipient = EXISTS (SELECT 1 FROM " + messageTable + " m WHERE m.id = ? AND (m.to @> ?::jsonb OR m.cc @> ?::jsonb)) " +
+			" WHERE user_id = ?::UUID AND message_id = ?::UUID ";
 
 			State targetState = State.SENT;
 
@@ -362,7 +380,9 @@ public class SqlConversationService implements ConversationService{
 			}
 
 			builder.prepared(updateMessage, new JsonArray().add(draftId).add(targetState.name()).add(draftId));
-			builder.prepared(updateUnread, new JsonArray().add(user.getUserId()).add(draftId));
+			final String userIdAsJsonArray = new JsonArray().add(user.getUserId()).encode();
+			builder.prepared(updateUnread, new JsonArray().add(draftId).add(userIdAsJsonArray).add(userIdAsJsonArray)
+					.add(user.getUserId()).add(draftId));
 
             final String insertThread =
                     "INSERT INTO conversation.threads as t (" +
@@ -404,8 +424,9 @@ public class SqlConversationService implements ConversationService{
 	 * Skipped when a message is scheduled : recipients are only populated once the schedule date is reached.
 	 */
 	private void addRecipientStatements(SqlStatementsBuilder builder, JsonArray ids, JsonArray attachmentIds, long totalQuota, String draftId, String threadId, UserInfos user) {
+		Long date = System.currentTimeMillis();
 		String insertUserThreadBase = "INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES ";
-		String insertUserMessage = "INSERT INTO " + userMessageTable + "(user_id, message_id, total_quota) VALUES ";
+		String insertUserMessage = "INSERT INTO " + userMessageTable + "(user_id, message_id, total_quota, is_sender, is_recipient, msg_state, msg_date) VALUES ";
 		String insertUserAttachment = "INSERT INTO " + userMessageAttachmentTable + "(user_id, message_id, attachment_id) VALUES ";
 		StringBuilder insertUserThreadBuilder = new StringBuilder(insertUserThreadBase);
 
@@ -424,7 +445,7 @@ public class SqlConversationService implements ConversationService{
 			if (toObj.equals(user.getUserId())) continue;
 
 			userMessageValueCount++;
-			insertUserMessageBuilder.append(String.format("('%s', '%s', %s ),", toObj, draftId, totalQuota));
+			insertUserMessageBuilder.append(String.format("('%s'::UUID, '%s'::UUID, %s, false, true, 'SENT', " + date + "),", toObj, draftId, totalQuota));
 			if (userMessageValueCount >= conversationBatchSize) {
 				builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length() - 1).toString(), new JsonArray());
 				insertUserMessageBuilder = new StringBuilder(insertUserMessage);
@@ -477,20 +498,30 @@ public class SqlConversationService implements ConversationService{
 		}
 	}
 
+	/**
+	 * Recalls the message and the state copied on its usermessages_v2 links, in one statement:
+	 * folder listings read msg_state, not messages.state.
+	 */
 	@Override
 	public Future<Void> recallMessage(String id, UserInfos user) {
 		final Promise<Void> promise = Promise.promise();
 		String query =
-				"UPDATE " + messageTable + " SET \"state\" = ? " +
-				"WHERE id = ? AND \"state\" = ? AND \"date\" >= ? AND \"from\" = ? "+
-				"RETURNING id";
+				"WITH recalled AS (" +
+					"UPDATE " + messageTable + " SET \"state\" = ? " +
+					"WHERE id = ? AND \"state\" = ? AND \"date\" >= ? AND \"from\" = ? " +
+					"RETURNING id" +
+				"), links AS (" +
+					"UPDATE " + userMessageTable + " um SET msg_state = ? " +
+					"FROM recalled WHERE um.message_id = recalled.id::UUID" +
+				") SELECT id FROM recalled";
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 			.add(State.RECALL.name())
 			.add(id)
 			.add(State.SENT.name())
 			.add(System.currentTimeMillis() - (recallDelayInMinutes * 60 * 1000))
-			.add(user.getUserId());
+			.add(user.getUserId())
+			.add(State.RECALL.name());
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(either -> {
 			if (either.isRight()) {
@@ -524,6 +555,12 @@ public class SqlConversationService implements ConversationService{
 		list(folder, restrain, unread, user, page, pageSize, searchText, EnumSet.of(State.SENT), results);
 	}
 
+	/**
+	 * Lists one page of a folder with two queries run in parallel.
+	 * The page query filters and sorts on usermessages_v2 alone (its partial indexes cover each system folder)
+	 * and joins messages only on the selected rows. The count query gives the total, which the front reads
+	 * from the `count` field of each row; COUNT(*) OVER() forced reading every matching row.
+	 */
 	protected void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, EnumSet<State> states, Handler<Either<String, JsonArray>> results)
 	{
 		if(page < 0)
@@ -534,43 +571,64 @@ public class SqlConversationService implements ConversationService{
 		if(LIST_LIMIT<pageSize || pageSize<1) pageSize = LIST_LIMIT;
 		int skip = page * pageSize;
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
-		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.\"noReply\" ";
+		final JsonArray whereValues = new JsonArray().add(user.getUserId());
+		String where = "um.user_id = ?::UUID " + addCompleteFolderCondition(whereValues, restrain, unread, folder, user, states);
+		where += addMessageConditionUnread(folder, whereValues, unread, user);
 
-		values.add(user.getUserId()).add(user.getUserId()).add(State.SENT.name()).add(State.RECALL.name()).add(user.getUserId());
-		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user, states);
-
+		String searchJoin = "";
 		if(searchText != null){
-			additionalWhere += " AND m.text_searchable  @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
-			values.add(StringUtils.join(checkAndComposeWordFromSearchText(searchText), " & "));
+			searchJoin = " JOIN " + messageTable + " m ON m.id = um.message_id::text ";
+			where += " AND m.text_searchable @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
+			whereValues.add(StringUtils.join(checkAndComposeWordFromSearchText(searchText), " & "));
 		}
-		String query = "SELECT "+messagesFields+", um.unread as unread, " +
-				"   EXISTS (" +
-				"      SELECT 1 " +
-				"      FROM conversation.messages r " +
-				"      WHERE r.parent_id = m.id " +
-				"         AND r.from = ? " +
-				"         AND r.state IN ('SENT','RECALL') " +
-				"      ) AS response," +
-				"  COUNT(*) OVER() as count, " +
-				"  EXISTS (" +
-				"      SELECT 1 " +
-				"      FROM conversation.usermessagesattachments uma " +
-				"      WHERE uma.user_id = ? " +
-				"         AND uma.message_id = m.id" +
-				"   ) AS \"hasAttachment\" " +
-				"FROM " + userMessageTable + " um LEFT JOIN " +
-				userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
-				messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") LEFT JOIN " +
-				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state IN (?,?) " +
-				"WHERE um.user_id = ? " + additionalWhere + " " +
-				"GROUP BY m.id, unread " +
-				"ORDER BY m.date DESC LIMIT " + pageSize + " OFFSET " + skip;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(
-			hideSensitiveDataFromRecalled(user.getUserId(), results), 
-			"attachments", "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
+		final String pageQuery =
+				"WITH page AS (" +
+				"  SELECT um.message_id::text AS message_id, um.msg_state, um.msg_date, um.unread " +
+				"  FROM " + userMessageTable + " um " + searchJoin +
+				"  WHERE " + where +
+				"  ORDER BY um.msg_date DESC LIMIT " + pageSize + " OFFSET " + skip +
+				") " +
+				"SELECT m.id, m.subject, m.from, p.msg_state AS state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", " +
+				"  m.cci, m.\"cciName\", m.\"displayNames\", p.msg_date AS date, m.\"noReply\", p.unread, " +
+				"  EXISTS (SELECT 1 FROM " + messageTable + " r " +
+				"          WHERE r.parent_id = m.id AND r.from = ? AND r.state IN (?,?)) AS response, " +
+				"  EXISTS (SELECT 1 FROM " + userMessageAttachmentTable + " uma " +
+				"          WHERE uma.user_id = ? AND uma.message_id = m.id) AS \"hasAttachment\" " +
+				"FROM page p JOIN " + messageTable + " m ON m.id = p.message_id " +
+				"ORDER BY p.msg_date DESC";
+		final JsonArray pageValues = whereValues.copy()
+				.add(user.getUserId()).add(State.SENT.name()).add(State.RECALL.name())
+				.add(user.getUserId());
+
+		final String countQuery = "SELECT count(*) AS count FROM " + userMessageTable + " um " + searchJoin + " WHERE " + where;
+
+		final Promise<JsonArray> pagePromise = Promise.promise();
+		final Promise<JsonArray> countPromise = Promise.promise();
+		sql.prepared(pageQuery, pageValues, SqlResult.validResultHandler(toPromise(pagePromise),
+				"to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
+		sql.prepared(countQuery, whereValues, SqlResult.validResultHandler(toPromise(countPromise)));
+
+		final Handler<Either<String, JsonArray>> handler = hideSensitiveDataFromRecalled(user.getUserId(), results);
+		Future.all(pagePromise.future(), countPromise.future())
+				.onSuccess(done -> {
+					final JsonArray messages = pagePromise.future().result();
+					final Long count = countPromise.future().result().getJsonObject(0).getLong("count");
+					messages.forEach(m -> ((JsonObject) m).put("count", count));
+					handler.handle(new Either.Right<>(messages));
+				})
+				.onFailure(th -> handler.handle(new Either.Left<>(th.getMessage())));
+	}
+
+	/** Adapts an Either handler, as expected by SqlResult, to a promise. */
+	private static <T> Handler<Either<String, T>> toPromise(final Promise<T> promise) {
+		return either -> {
+			if (either.isRight()) {
+				promise.complete(either.right().getValue());
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		};
 	}
 
 	//TODO : add to utils (similar function in SearchEngineController)
@@ -664,12 +722,12 @@ public class SqlConversationService implements ConversationService{
 			query =
 				" WITH threads AS ( " +
 				" SELECT * from (SELECT  DISTINCT ON (m.thread_id) thread_id AS "+messagesFields+ " FROM " + userMessageTable + " um " +
-				" JOIN "+messageTable+" m ON um.message_id = m.id " +
-				" WHERE um.user_id = ? AND m.state = 'SENT' AND um.trashed = false ORDER BY m.thread_id, m.date DESC) a "+
+				" JOIN "+messageTable+" m ON m.id = um.message_id::text " +
+				" WHERE um.user_id = ?::UUID AND um.msg_state = 'SENT' AND um.trashed = false ORDER BY m.thread_id, m.date DESC) a "+
 				" ORDER BY date DESC LIMIT "+ nbThread +" OFFSET "+ skip + ") " +
 
 				"SELECT "+ messagesFields +", unread FROM threads JOIN (SELECT m.thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) AS unread " +
-				"FROM threads, conversation.usermessages um JOIN conversation.messages m ON um.message_id = m.id and um.user_id= ? " +
+				"FROM threads, " + userMessageTable + " um JOIN conversation.messages m ON m.id = um.message_id::text and um.user_id= ?::UUID " +
 				"WHERE  um.trashed = false AND m.thread_id=threads.id GROUP BY m.thread_id) c ON threads.id = c.thread_id " +
 				"ORDER BY date DESC";
 			values.add(user.getUserId());
@@ -692,12 +750,12 @@ public class SqlConversationService implements ConversationService{
 				"SELECT "+messagesFields+", um.unread as unread, " +
 				" CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 				" FROM " +userMessageTable + " as um" +
-				" JOIN "+messageTable+" as m ON um.message_id = m.id " +
-				" LEFT JOIN " + userMessageAttachmentTable + " uma USING (user_id, message_id) " +
+				" JOIN "+messageTable+" as m ON um.message_id = m.id::UUID " +
+				" LEFT JOIN " + userMessageAttachmentTable + " uma ON uma.user_id = um.user_id::text AND uma.message_id = um.message_id::text " +
 				" LEFT JOIN " + attachmentTable + " att " +
 				" ON att.id = uma.attachment_id " +
-				" WHERE um.user_id = ? AND m.thread_id = ? " +
-				" AND m.state = 'SENT' AND um.trashed = false " +
+				" WHERE um.user_id = ?::UUID AND m.thread_id = ? " +
+				" AND um.msg_state = 'SENT' AND um.trashed = false " +
 				" GROUP BY m.id, um.unread " +
 				" ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
@@ -780,13 +838,13 @@ public class SqlConversationService implements ConversationService{
 				" SELECT "+messagesFields+", um.unread as unread, " +
 				" CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 				" FROM element, " +userMessageTable + " as um " +
-				" JOIN "+messageTable+" as m ON um.message_id = m.id " +
-				" LEFT JOIN " + userMessageAttachmentTable + " uma USING (user_id, message_id) " +
+				" JOIN "+messageTable+" as m ON um.message_id = m.id::UUID " +
+				" LEFT JOIN " + userMessageAttachmentTable + " uma ON uma.user_id = um.user_id::text AND uma.message_id = um.message_id::text " +
 				" LEFT JOIN " + attachmentTable + " att " +
 				" ON att.id = uma.attachment_id " +
-				" WHERE um.user_id = ? AND m.thread_id = element.thread_id " +
+				" WHERE um.user_id = ?::UUID AND m.thread_id = element.thread_id " +
 				" AND " + condition +
-				" AND m.state = 'SENT' AND um.trashed = false " +
+				" AND um.msg_state = 'SENT' AND um.trashed = false " +
 				" GROUP BY m.id, um.unread " +
 				" ORDER BY m.date DESC" + limit;
 
@@ -819,7 +877,7 @@ public class SqlConversationService implements ConversationService{
 					"WHERE m.thread_id IN ");
 
 		query.append(generateInVars(threadIds, values));
-		query.append(" AND um.user_id = ? AND um.trashed = false AND um.message_id = m.id ");
+		query.append(" AND um.user_id = ?::UUID AND um.trashed = false AND um.message_id = m.id::UUID ");
 		values.add(user.getUserId());
 
 		final String deleteUserThreads =
@@ -844,11 +902,11 @@ public class SqlConversationService implements ConversationService{
 		StringBuilder query = new StringBuilder(
 			"UPDATE " + userMessageTable + " " +
 			"SET trashed = false " +
-			"WHERE trashed = true AND user_id = ? AND message_id IN ");
+			"WHERE trashed = true AND user_id = ?::UUID AND message_id IN ");
 
 		values.add(user.getUserId());
 
-		query.append(generateInVars(messagesId, values));
+		query.append(generateInVars(messagesId, values, "UUID"));
 
 		// DeleteOrphan removes a thread once every participant has trashed it, while its messages stay in the trashes.
 		// Recreate it from its last sent message, as sending does, before linking the user back to it : otherwise
@@ -860,8 +918,8 @@ public class SqlConversationService implements ConversationService{
 				"FROM conversation.messages m " +
 				"WHERE m.state = 'SENT' AND m.thread_id IN (" +
 					"SELECT r.thread_id FROM conversation.messages r " +
-					"JOIN conversation.usermessages um ON um.message_id = r.id " +
-					"WHERE r.id IN " + Sql.listPrepared(messagesId.toArray()) + " AND um.user_id = ? AND r.state = 'SENT') " +
+					"JOIN " + userMessageTable + " um ON um.message_id = r.id::UUID " +
+					"WHERE r.id IN " + Sql.listPrepared(messagesId.toArray()) + " AND um.user_id = ?::UUID AND r.state = 'SENT') " +
 				"ORDER BY m.thread_id, m.date DESC " +
 				"ON CONFLICT (id) DO NOTHING";
 		// A copy : JsonArray wraps the list it is given, and the add would also land in messagesId, read again below.
@@ -870,9 +928,9 @@ public class SqlConversationService implements ConversationService{
 		final String insertUserThread =
 				"INSERT INTO conversation.userthreads ( " +
 				"SELECT um.user_id as user_id, m.thread_id as thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
-				"FROM conversation.usermessages um " +
-				"JOIN conversation.messages m on um.message_id = m.id " +
-				"WHERE um.message_id IN " + Sql.listPrepared(messagesId.toArray()) + " AND um.user_id = ? AND um.trashed = false AND m.state = 'SENT' " +
+				"FROM " + userMessageTable + " um " +
+				"JOIN conversation.messages m on m.id = um.message_id::text " +
+				"WHERE um.message_id IN " + Sql.listPrepared(messagesId.toArray(), "UUID") + " AND um.user_id = ?::UUID AND um.trashed = false AND m.state = 'SENT' " +
 				"GROUP BY user_id, m.thread_id) ON CONFLICT (user_id,thread_id) DO NOTHING";
 		JsonArray values2 = new JsonArray(messagesId).add(user.getUserId());
 
@@ -894,17 +952,17 @@ public class SqlConversationService implements ConversationService{
 
 		String getTotalQuota =
 			"SELECT coalesce(sum(um.total_quota), 0)::bigint AS totalQuota FROM " + userMessageTable + " um " +
-			"WHERE um.user_id = ? AND um.trashed = true";
+			"WHERE um.user_id = ?::UUID AND um.trashed = true";
 
 		String deleteUserMessages =
 			"DELETE FROM " + userMessageTable + " um " +
-			"WHERE um.user_id = ? AND um.trashed = true";
+			"WHERE um.user_id = ?::UUID AND um.trashed = true";
 
 		if (!deleteAll) {
 			getTotalQuota += " AND um.message_id IN ";
-			getTotalQuota += (generateInVars(messagesId, values2));
+			getTotalQuota += (generateInVars(messagesId, values2, "UUID"));
 			deleteUserMessages += " AND um.message_id IN ";
-			deleteUserMessages += (generateInVars(messagesId, values3));
+			deleteUserMessages += (generateInVars(messagesId, values3, "UUID"));
 		}
 
 		builder.prepared(getTotalQuota, values2);
@@ -930,9 +988,9 @@ public class SqlConversationService implements ConversationService{
 				"SET nb_unread = nb_unread - 1 " +
 				"WHERE user_id = ? AND thread_id = (" +
 					"SELECT m.thread_id " +
-					"FROM conversation.usermessages um " +
-					"JOIN conversation.messages m on um.message_id = m.id " +
-					"WHERE um.user_id = ? AND um.message_id = ? AND um.unread = true) " +
+					"FROM " + userMessageTable + " um " +
+					"JOIN conversation.messages m ON m.id = um.message_id::text " +
+					"WHERE um.user_id = ?::UUID AND um.message_id = ?::UUID AND um.unread = true) " +
 				"AND nb_unread > 0 ";
 		final JsonArray tValues = new fr.wseduc.webutils.collections.JsonArray()
 			.add(user.getUserId())
@@ -941,7 +999,7 @@ public class SqlConversationService implements ConversationService{
 	
 		String updateQuery = "UPDATE " + userMessageTable + " " +
 			"SET unread = false " +
-			"WHERE user_id = ? AND message_id = ? ";
+			"WHERE user_id = ?::UUID AND message_id = ?::UUID ";
 		JsonArray updValues = new fr.wseduc.webutils.collections.JsonArray()
 			.add(user.getUserId())
 			.add(messageId);
@@ -959,13 +1017,13 @@ public class SqlConversationService implements ConversationService{
 				"CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 			"FROM " + messageTable + " m " +
 			"JOIN " + userMessageTable + " um " +
-				"ON m.id = um.message_id " +
-			"LEFT JOIN " + userMessageAttachmentTable + " uma USING (user_id, message_id) " +
+				"ON m.id::UUID = um.message_id " +
+			"LEFT JOIN " + userMessageAttachmentTable + " uma ON uma.user_id = um.user_id::text AND uma.message_id = um.message_id::text " +
 			"LEFT JOIN " + attachmentTable + " att " +
 				"ON att.id = uma.attachment_id " +
 			"LEFT JOIN " + originalMessageTable + " om " +
 				"ON m.id = om.message_id " +
-			"WHERE um.user_id = ? AND m.id = ?  " +
+			"WHERE um.user_id = ?::UUID AND m.id = ?  " +
 			(apiVersion>0 ? "GROUP BY m.id, um.folder_id, um.trashed, um.unread, om.message_id" : "GROUP BY m.id");
 		JsonArray selValues = new fr.wseduc.webutils.collections.JsonArray()
 			.add(user.getUserId())
@@ -1200,20 +1258,16 @@ public class SqlConversationService implements ConversationService{
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
-		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 		values.add(user.getUserId());
+		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 
-		String query = "SELECT count(*) as count FROM " + userMessageTable + " um JOIN " +
-			messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") " +
-			"WHERE user_id = ? ";
+		String query = "SELECT count(*) as count FROM " + userMessageTable + " um "+
+			"WHERE um.user_id = ?::UUID " + messageConditionUnread;
 
 		query += addCompleteFolderCondition(values, restrain, unread, folder, user, EnumSet.of(State.SENT));
 
 		if(restrain != null && unread){
-			query += " AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ";
-			values.add(user.getUserId());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
+			query += " AND is_recipient ";
 		}
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
@@ -1296,7 +1350,7 @@ public class SqlConversationService implements ConversationService{
 				JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 				String query = "UPDATE " + userMessageTable + " " +
 						"SET unread = ? " +
-						"WHERE user_id = ? AND message_id IN "  + Sql.listPrepared(messagesIds.toArray());
+						"WHERE user_id = ?::UUID AND message_id IN "  + Sql.listPrepared(messagesIds.toArray(), "UUID");
 
 				values.add(unread);
 				values.add(user.getUserId());
@@ -1331,7 +1385,7 @@ public class SqlConversationService implements ConversationService{
 						"WHERE m.thread_id IN ");
 		values.add(unread);
 		query.append(generateInVars(threadIds, values));
-		query.append(" AND um.user_id = ? AND um.message_id = m.id ");
+		query.append(" AND um.user_id = ?::UUID AND um.message_id = m.id::UUID ");
 		values.add(user.getUserId());
 
 		builder.prepared(query.toString(), values);
@@ -1344,10 +1398,10 @@ public class SqlConversationService implements ConversationService{
 				"UPDATE conversation.userthreads as ut " +
 				"SET nb_unread = g.unread " +
 				"FROM (" +
-					"SELECT um.user_id as user_id, m.thread_id as thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
-					"FROM conversation.usermessages um " +
-					"JOIN conversation.messages m on um.message_id = m.id " +
-					"WHERE m.thread_id IN " + Sql.listPrepared(threadIds.toArray()) + " AND um.user_id = ? AND m.state = 'SENT' " +
+					"SELECT um.user_id::TEXT as user_id, m.thread_id as thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) as unread " +
+					"FROM " + userMessageTable + " um " +
+					"JOIN conversation.messages m on um.message_id = m.id::UUID " +
+					"WHERE m.thread_id IN " + Sql.listPrepared(threadIds.toArray()) + " AND um.user_id = ?::UUID AND m.state = 'SENT' " +
 					"GROUP BY user_id, m.thread_id " +
 				") as g " +
 				"WHERE ut.user_id = g.user_id AND ut.thread_id = g.thread_id ";
@@ -1458,8 +1512,7 @@ public class SqlConversationService implements ConversationService{
 		.append("WITH sub AS (")
 		.append(" SELECT COUNT(um.message_id) as nb_messages, COALESCE(SUM(CASE WHEN um.unread = TRUE THEN 1 ELSE 0 END), 0) as nb_unread, um.folder_id")
 		.append(" FROM ").append(userMessageTable).append(" um ")
-		.append(" INNER JOIN ").append(messageTable).append(" m ON (um.message_id = m.id AND m.state='SENT')")
-		.append(" WHERE um.folder_id IS NOT NULL AND um.trashed = FALSE AND um.user_id = ? ")
+		.append(" WHERE um.folder_id IS NOT NULL AND um.trashed = FALSE AND um.user_id = ?::UUID AND um.msg_state='SENT' ")
 		.append(" GROUP BY um.folder_id")
 		.append(") ")
 		.append(" SELECT f.id, f.parent_id, f.name, f.depth")
@@ -1548,13 +1601,9 @@ public class SqlConversationService implements ConversationService{
 		final JsonArray subValues = new JsonArray();
 		final StringBuilder subQuery = new StringBuilder();
 		subQuery.append("SELECT count(*) as count,um.folder_id  FROM ").append(userMessageTable).append(" um ");
-		subQuery.append(" INNER JOIN ").append(messageTable).append(" m ON (um.message_id = m.id) ");
-		subQuery.append(" WHERE um.user_id = ?  AND m.state='SENT' ");
-		subQuery.append(" AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ");
+		subQuery.append(" WHERE um.user_id = ?::UUID  AND um.msg_state='SENT' ");
+		subQuery.append(" AND um.is_recipient ");
 		subValues.add(user.getUserId());
-		subValues.add(user.getUserId());
-		subValues.add(new JsonArray().add(user.getUserId()).toString());
-		subValues.add(new JsonArray().add(user.getUserId()).toString());
 		if(unread != null && unread){
 			subQuery.append(" AND um.unread = ").append(unread ? " TRUE " : " FALSE ");
 		}
@@ -1600,13 +1649,13 @@ public class SqlConversationService implements ConversationService{
 		String query =
 			"UPDATE " + userMessageTable + " AS um " +
 			"SET folder_id = ? " +
-			"WHERE um.user_id = ? AND um.message_id IN ";
+			"WHERE um.user_id = ?::UUID AND um.message_id IN ";
 
 		values
 			.add(folderId)
 			.add(user.getUserId());
 
-		query += generateInVars(messageIds, values);
+		query += generateInVars(messageIds, values, "UUID");
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
@@ -1621,11 +1670,11 @@ public class SqlConversationService implements ConversationService{
 		String query =
 			"UPDATE " + userMessageTable + " AS um " +
 			"SET folder_id = NULL " +
-			"WHERE um.user_id = ? AND um.message_id IN ";
+			"WHERE um.user_id = ?::UUID AND um.message_id IN ";
 
 		values.add(user.getUserId());
 
-		query += generateInVars(messageIds, values);
+		query += generateInVars(messageIds, values, "UUID");
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
 
@@ -1698,7 +1747,7 @@ public class SqlConversationService implements ConversationService{
 					recursiveTerm +
 			") " +
 			"SELECT COALESCE(sum(um.total_quota), 0)::bigint AS totalQuota FROM parents JOIN " +
-			userMessageTable + " um ON um.folder_id = parents.id AND um.user_id = parents.user_id ";
+			userMessageTable + " um ON um.folder_id = parents.id AND um.user_id = parents.user_id::UUID ";
 
 		builder.prepared(quotaRecursion, recursiveValues);
 
@@ -1757,7 +1806,7 @@ public class SqlConversationService implements ConversationService{
 			"trashed AS (" +
 				"UPDATE " + userMessageTable + " um " +
 				"SET trashed = true, folder_id = NULL " +
-				"WHERE um.user_id = ? " +
+				"WHERE um.user_id = ?::UUID " +
 				"AND (um.trashed = false OR um.folder_id IS NOT NULL) " +
 				"AND um.folder_id IN (SELECT id FROM userFolders) " +
 				"RETURNING um.message_id" +
@@ -1765,7 +1814,7 @@ public class SqlConversationService implements ConversationService{
 			"affected_threads AS (" +
 				"SELECT DISTINCT m.thread_id " +
 				"FROM trashed t " +
-				"INNER JOIN " + messageTable + " m ON m.id = t.message_id " +
+				"INNER JOIN " + messageTable + " m ON m.id = t.message_id::text " +
 				"WHERE m.thread_id IS NOT NULL" +
 			"), " +
 			"deleted_threads AS (" +
@@ -1774,8 +1823,8 @@ public class SqlConversationService implements ConversationService{
 				"AND ut.thread_id IN (SELECT thread_id FROM affected_threads) " +
 				"AND NOT EXISTS (" +
 					"SELECT 1 FROM " + userMessageTable + " um2 " +
-					"INNER JOIN " + messageTable + " m2 ON um2.message_id = m2.id " +
-					"WHERE um2.user_id = ? " +
+					"INNER JOIN " + messageTable + " m2 ON m2.id = um2.message_id::text " +
+					"WHERE um2.user_id = ?::UUID " +
 					"AND um2.trashed = false " +
 					"AND m2.thread_id = ut.thread_id " +
 					"AND NOT EXISTS (SELECT 1 FROM trashed t3 WHERE t3.message_id = um2.message_id)" +
@@ -1820,17 +1869,17 @@ public class SqlConversationService implements ConversationService{
 		} else {
 			query.append("WHERE trashed = false ");
 		}
-		query.append("AND user_id = ? ");
+		query.append("AND user_id = ?::UUID ");
 		values.add(user.getUserId());
-		query.append("AND message_id IN ").append(generateInVars(messageIds, values));
+		query.append("AND message_id IN ").append(generateInVars(messageIds, values, "UUID"));
 
 		final String deleteUserThreads =
 			"DELETE FROM conversation.userthreads " +
 			"WHERE user_id = ? AND thread_id NOT IN (" +
 				"SELECT DISTINCT m.thread_id " +
-				"FROM conversation.usermessages um " +
-				"LEFT JOIN conversation.messages m on um.message_id = m.id " +
-				"WHERE user_id = ? AND trashed = false " +
+				"FROM " + userMessageTable + " um " +
+				"LEFT JOIN conversation.messages m on m.id = um.message_id::text " +
+				"WHERE user_id = ?::UUID AND trashed = false " +
 			")";
 		final JsonArray values2 = new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(user.getUserId());
 
@@ -1868,7 +1917,7 @@ public class SqlConversationService implements ConversationService{
 		String query =
 			"UPDATE " + userMessageTable + " AS um " +
 			"SET total_quota = total_quota + ? " +
-			"WHERE um.user_id = ? AND um.message_id = ?";
+			"WHERE um.user_id = ?::UUID AND um.message_id = ?::UUID ";
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 			.add(attachmentSize)
 			.add(user.getUserId())
@@ -1888,6 +1937,13 @@ public class SqlConversationService implements ConversationService{
 				.add(System.currentTimeMillis())
 				.add(messageId)
 				.add(State.DRAFT.name())
+		);
+		builder.prepared(
+				"UPDATE "+ userMessageTable +" AS m SET \"msg_date\" = ? WHERE m.message_id = ?::UUID AND m.msg_state = ?",
+				new fr.wseduc.webutils.collections.JsonArray()
+						.add(System.currentTimeMillis())
+						.add(messageId)
+						.add(State.DRAFT.name())
 		);
 	}
 
@@ -1954,7 +2010,7 @@ public class SqlConversationService implements ConversationService{
 			") " +
 			"UPDATE " + userMessageTable + " AS um " +
 			"SET total_quota = um.total_quota - (SELECT SUM(DISTINCT attachment.size) FROM attachment) " +
-			"WHERE um.message_id = ? AND um.user_id = ?";
+			"WHERE um.message_id = ?::UUID AND um.user_id = ?::UUID ";
 		JsonArray values3 = new fr.wseduc.webutils.collections.JsonArray()
 				.add(attachmentId)
 				.add(messageId)
@@ -2116,11 +2172,9 @@ public class SqlConversationService implements ConversationService{
 	@Override
 	public Future<JsonArray> listMessageRecipients(String messageId, String excludeUserId) {
 		final Promise<JsonArray> promise = Promise.promise();
-		// No ORDER BY : the whole set is read in one pass through idx_usermessages_message_id, and pacing
-		// happens later in memory. Sorting would cost a sort of every recipient for no benefit here.
 		final String query =
 				"SELECT user_id AS \"userId\" FROM " + userMessageTable +
-				" WHERE message_id = ? AND user_id <> ?";
+				" WHERE message_id = ?::UUID AND user_id <> ?::UUID ";
 		sql.prepared(query, new JsonArray().add(messageId).add(excludeUserId),
 				SqlResult.validResultHandler(either -> {
 					if (either.isRight()) {
@@ -2227,15 +2281,10 @@ public class SqlConversationService implements ConversationService{
 		final String query =
 			"WITH deleted AS (" +
 				"DELETE FROM " + userMessageTable + " um " +
-				"USING " + messageTable + " m " +
-				"WHERE um.message_id = m.id " +
-				"AND um.folder_id IS NULL " +
-				"AND m.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
-				"AND (um.user_id, um.message_id) IN (" +
+				"WHERE (um.user_id, um.message_id) IN (" +
 					"SELECT um2.user_id, um2.message_id FROM " + userMessageTable + " um2 " +
-					"JOIN " + messageTable + " m2 ON um2.message_id = m2.id " +
 					"WHERE um2.folder_id IS NULL " +
-					"AND m2.date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
+					"AND um2.msg_date < (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400)) * 1000 " +
 					"LIMIT ?) " +
 				"RETURNING um.user_id, um.total_quota" +
 			") " +
@@ -2254,12 +2303,20 @@ public class SqlConversationService implements ConversationService{
 	 */
 	private Future<Void> refreshProtectedMessages(final String protectedSubject, final int timeout) {
 		final String update = "UPDATE " + messageTable + " SET date = (EXTRACT(EPOCH FROM NOW())::bigint) * 1000 WHERE subject = ?;";
+		// The purge filters on usermessages_v2.msg_date: the links must be refreshed too, or the protection is lost.
+		final String updateLinks = "UPDATE " + userMessageTable + " um SET msg_date = (EXTRACT(EPOCH FROM NOW())::bigint) * 1000 " +
+				"FROM " + messageTable + " m WHERE m.subject = ? AND um.message_id = m.id::UUID";
+		final SqlStatementsBuilder builder = new SqlStatementsBuilder()
+				.prepared(update, new JsonArray().add(protectedSubject))
+				.prepared(updateLinks, new JsonArray().add(protectedSubject));
 		final DeliveryOptions deliveryOptions = new DeliveryOptions();
 		deliveryOptions.setSendTimeout(timeout);
 		final Promise<Void> promise = Promise.promise();
-		sql.prepared(update, new JsonArray().add(protectedSubject), deliveryOptions, result -> {
+		sql.transaction(builder.build(), deliveryOptions, result -> {
 			if ("ok".equals(result.body().getString(STATUS_FIELD))) {
-				log.info("Refreshed date of " + result.body().getInteger("rows", 0) + " protected supervision message(s)");
+				final JsonArray results = result.body().getJsonArray("results", new JsonArray());
+				final int rows = results.isEmpty() ? 0 : results.getJsonObject(0).getInteger("rows", 0);
+				log.info("Refreshed date of " + rows + " protected supervision message(s)");
 				promise.complete();
 			} else {
 				final String error = result.body().getString("message", "Unknown error");
@@ -2382,20 +2439,18 @@ public class SqlConversationService implements ConversationService{
 	///////////
 	/* Utils */
 
-	private String formatArray(JsonArray array){
-		return formatArray(array, ",", "{", "}");
-	}
-	private String formatArray(JsonArray array, String delimiter, String prefix, String postfix){
-		if(array.size() == 0){
-			return "{}";
+	private String generateInVars(Collection<String> list, JsonArray values, String casting){
+		StringBuilder builder = new StringBuilder("(");
+
+		for(String item : list){
+			builder.append("?::").append(casting).append(",");
+			values.add(item);
 		}
-		StringBuilder builder = new StringBuilder(prefix);
-		for(Object obj : array){
-			builder.append(obj.toString() + delimiter);
+		if(!list.isEmpty()) {
+			builder.deleteCharAt(builder.length() - 1);
 		}
-		if(array.size() > 0)
-			builder.delete(0, builder.length() - delimiter.length());
-		builder.append(postfix);
+		builder.append(")");
+
 		return builder.toString();
 	}
 
@@ -2406,8 +2461,9 @@ public class SqlConversationService implements ConversationService{
 			builder.append("?,");
 			values.add(item);
 		}
-		if(list.size() > 0)
+		if(!list.isEmpty()) {
 			builder.deleteCharAt(builder.length() - 1);
+		}
 		builder.append(")");
 
 		return builder.toString();
@@ -2417,25 +2473,20 @@ public class SqlConversationService implements ConversationService{
 		String additionalWhere = "";
 		switch(folder.toUpperCase()){
 			case "INBOX":
-				additionalWhere = "AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) AND m.state IN ("
+				additionalWhere = "AND um.is_recipient AND um.msg_state IN ("
 					+ states.stream().map(state->"?").collect(Collectors.joining(","))
 					+") AND um.trashed = false AND um.folder_id IS NULL";
-				values.add(userId);
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
 				states.stream().forEach(state-> values.add(state.name()));
 				break;
 			case "OUTBOX":
-				additionalWhere = "AND m.from = ? AND m.state IN ("
+				additionalWhere = "AND um.is_sender AND um.msg_state IN ("
 					+ states.stream().map(state->"?").collect(Collectors.joining(","))
 					+") AND um.trashed = false AND um.folder_id IS NULL";
-				values.add(userId);
 				states.stream().forEach(state-> values.add(state.name()));
 				break;
 			case "DRAFT":
-				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
+				additionalWhere = "AND um.is_sender AND um.msg_state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
-				values.add(userId);
 				values.add(State.DRAFT.name());
 				break;
 			case "TRASH":
@@ -2448,7 +2499,7 @@ public class SqlConversationService implements ConversationService{
 	private String addCompleteFolderCondition(JsonArray values, String restrain, Boolean unread, String folder, UserInfos user, EnumSet<State> states) {
 		String additionalWhere = "";
 		if(unread != null && unread){
-			additionalWhere += "AND unread = ? ";
+			additionalWhere += "AND um.unread = ? ";
 			values.add(unread);
 		}
 		if(restrain != null){
@@ -2469,7 +2520,7 @@ public class SqlConversationService implements ConversationService{
 
 			// Only for user folders and trash
 			if (!upFolder.equals("INBOX") && !upFolder.equals("OUTBOX") && !upFolder.equals("DRAFT")) {
-				messageConditionUnread = " AND m.state = ?";
+				messageConditionUnread = " AND um.msg_state = ?";
 				values.add(State.SENT.name());
 			}
 		}
