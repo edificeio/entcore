@@ -275,11 +275,12 @@ public class SqlConversationService implements ConversationService{
 			builder.prepared(query, values);
 
 			String userMessageQuery = "UPDATE " + userMessageTable + " SET msg_date = ?, " +
-					" is_recipient = ? WHERE message_id = ?::UUID ";
+					" is_recipient = ? WHERE message_id = ?::UUID  AND msg_state = ?";
 			JsonArray userMessageValues = new JsonArray()
 							.add(System.currentTimeMillis())
 							.add(isRecipient)
-							.add(messageId);
+							.add(messageId)
+							.add(State.DRAFT);
 			builder.prepared(userMessageQuery, userMessageValues);
 			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(result));
 		}).onFailure(th -> {
@@ -497,20 +498,30 @@ public class SqlConversationService implements ConversationService{
 		}
 	}
 
+	/**
+	 * Recalls the message and the state copied on its usermessages_v2 links, in one statement:
+	 * folder listings read msg_state, not messages.state.
+	 */
 	@Override
 	public Future<Void> recallMessage(String id, UserInfos user) {
 		final Promise<Void> promise = Promise.promise();
 		String query =
-				"UPDATE " + messageTable + " SET \"state\" = ? " +
-				"WHERE id = ? AND \"state\" = ? AND \"date\" >= ? AND \"from\" = ? "+
-				"RETURNING id";
+				"WITH recalled AS (" +
+					"UPDATE " + messageTable + " SET \"state\" = ? " +
+					"WHERE id = ? AND \"state\" = ? AND \"date\" >= ? AND \"from\" = ? " +
+					"RETURNING id" +
+				"), links AS (" +
+					"UPDATE " + userMessageTable + " um SET msg_state = ? " +
+					"FROM recalled WHERE um.message_id = recalled.id::UUID" +
+				") SELECT id FROM recalled";
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 			.add(State.RECALL.name())
 			.add(id)
 			.add(State.SENT.name())
 			.add(System.currentTimeMillis() - (recallDelayInMinutes * 60 * 1000))
-			.add(user.getUserId());
+			.add(user.getUserId())
+			.add(State.RECALL.name());
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(either -> {
 			if (either.isRight()) {
