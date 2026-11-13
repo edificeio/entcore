@@ -63,8 +63,8 @@ public class MultipleMessageUserFilter implements ResourcesProvider  {
 
     protected void checkMessages(final HttpServerRequest request, final List<String> messageIds, UserInfos user,final Handler<Boolean> handler){
         String query =
-                "SELECT count(distinct um) AS number FROM conversation.usermessages um " +
-                        "WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
+                "SELECT count(distinct um) AS number FROM conversation.usermessages_v2 um " +
+                        "WHERE um.user_id = ?::UUID AND um.message_id IN " + Sql.listPrepared(messageIds.toArray(), "UUID");
 
         JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId());
         messageIds.forEach(id -> values.add(id));

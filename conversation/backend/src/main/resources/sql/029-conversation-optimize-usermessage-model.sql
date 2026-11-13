@@ -35,7 +35,7 @@ BEGIN
     ALTER TABLE conversation.usermessages_v2 ADD CONSTRAINT usermessages_v2_folder_id_fkey
         FOREIGN KEY (folder_id) REFERENCES conversation.folders ON DELETE CASCADE;
 
-    ALTER TABLE conversation.usermessagesattachments DROP CONSTRAINT IF EXISTS usermessagesattachments_user_id_fkey;
+    ALTER TABLE conversation.usermessagesattachments DROP CONSTRAINT IF EXISTS usermessagesattachments_user_id_message_id_fkey;
     ALTER TABLE conversation.usermessages DROP CONSTRAINT IF EXISTS usermessages_folder_id_fkey;
     ALTER TABLE conversation.usermessages DROP CONSTRAINT IF EXISTS usermessages_message_id_fkey;
 
@@ -88,3 +88,18 @@ DROP TRIGGER IF EXISTS deleteUserAttachements_trigger ON conversation.usermessag
 DROP TRIGGER IF EXISTS deleteUserAttachments_trigger ON conversation.usermessages_v2;
 CREATE TRIGGER deleteUserAttachments_trigger AFTER DELETE ON conversation.usermessages_v2
     FOR EACH ROW EXECUTE PROCEDURE conversation.deleteUserAttachments();
+
+CREATE OR REPLACE FUNCTION conversation.flagOrphanMessage() RETURNS TRIGGER AS $$
+BEGIN
+        IF NOT EXISTS (SELECT 1 FROM conversation.usermessages_v2 WHERE message_id = OLD.message_id) THEN
+UPDATE conversation.messages SET orphan = TRUE WHERE id = OLD.message_id::TEXT;
+END IF;
+RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS flagOrphanMessage_trigger ON conversation.usermessages;
+DROP TRIGGER IF EXISTS flagOrphanMessage_trigger ON conversation.usermessages_v2;
+CREATE TRIGGER flagOrphanMessage_trigger
+    AFTER DELETE ON conversation.usermessages_v2
+    FOR EACH ROW EXECUTE PROCEDURE conversation.flagOrphanMessage();

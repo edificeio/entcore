@@ -119,6 +119,11 @@ public class DeleteOrphanRelinkTest {
         return promise.future();
     }
 
+    /** Message and user ids are UUIDs since usermessages_v2. */
+    private static final String U1 = "dddddddd-0000-0000-0000-000000000001";
+    private static final String M_LINKED = "eeeeeeee-0000-0000-0000-000000000001";
+    private static final String M_ORPHAN = "eeeeeeee-0000-0000-0000-000000000002";
+
     @Test
     public void deleteOrphanShouldKeepWhatIsLinkedAgain(TestContext context) {
         final Async async = context.async();
@@ -127,13 +132,13 @@ public class DeleteOrphanRelinkTest {
                 + "('t-relinked', 1, 'u', '[]', true), ('t-orphan', 1, 'u', '[]', true)")
             .compose(v -> raw("INSERT INTO conversation.userthreads (user_id, thread_id) VALUES ('u1', 't-relinked')"))
             .compose(v -> raw("INSERT INTO conversation.messages (id, body, \"from\", \"to\", state, date, orphan) VALUES "
-                + "('m-linked', 'b', 'u', '[]', 'SENT', 1, true), ('m-orphan', 'b', 'u', '[]', 'SENT', 1, true)"))
-            .compose(v -> raw("INSERT INTO conversation.usermessages (user_id, message_id) VALUES ('u1', 'm-linked')"))
+                + "('" + M_LINKED + "', 'b', 'u', '[]', 'SENT', 1, true), ('" + M_ORPHAN + "', 'b', 'u', '[]', 'SENT', 1, true)"))
+            .compose(v -> raw("INSERT INTO conversation.usermessages_v2 (user_id, message_id) VALUES ('" + U1 + "', '" + M_LINKED + "')"))
             .compose(v -> raw("INSERT INTO conversation.attachments (id, name, charset, filename, \"contentType\", "
                 + "\"contentTransferEncoding\", size, orphan) VALUES "
                 + "('a-linked', 'n', 'c', 'f', 't', 'e', 1, true), ('a-orphan', 'n', 'c', 'f', 't', 'e', 1, true)"))
             .compose(v -> raw("INSERT INTO conversation.usermessagesattachments (user_id, message_id, attachment_id) "
-                + "VALUES ('u1', 'm-linked', 'a-linked')"))
+                + "VALUES ('" + U1 + "', '" + M_LINKED + "', 'a-linked')"))
             .compose(v -> runDeleteOrphan())
             .compose(v -> raw("SELECT id, orphan FROM conversation.threads ORDER BY id"))
             .compose(threads -> {
@@ -146,7 +151,7 @@ public class DeleteOrphanRelinkTest {
                 return raw("SELECT id FROM conversation.messages ORDER BY id");
             })
             .compose(messages -> {
-                context.assertEquals(new JsonArray().add(new JsonArray().add("m-linked")), messages);
+                context.assertEquals(new JsonArray().add(new JsonArray().add(M_LINKED)), messages);
                 return raw("SELECT id FROM conversation.attachments ORDER BY id");
             })
             .onSuccess(attachments -> {
