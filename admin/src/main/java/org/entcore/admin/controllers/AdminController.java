@@ -77,18 +77,14 @@ public class AdminController extends BaseController {
 	@SecuredAction(REPORTS_TREAT_RIGHT)
 	@MfaProtected()
 	public void serveReports(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			if (user == null) {
-				unauthorized(request);
-				return;
-			}
-			adminFilter.authorize(request, null, user, isAdmin -> {
+		// getAuthenticatedUserInfos already answers 401 when there is no user
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+			.onSuccess(user -> adminFilter.authorize(request, null, user, isAdmin -> {
 				if (Boolean.TRUE.equals(isAdmin)) {
 					renderView(request, new JsonObject(), "moderation.html", null);
 				} else {
 					unauthorized(request);
 				}
-			});
-		});
+			}));
 	}
 }
