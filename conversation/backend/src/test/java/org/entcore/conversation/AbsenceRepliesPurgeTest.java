@@ -62,6 +62,9 @@ public class AbsenceRepliesPurgeTest {
         Config.getInstance().setConfig(new JsonObject());
         conversationService = new SqlConversationService(test.vertx(), schema, IContentTransformerClient.noop,
                 IContentTransformerEventRecorder.noop);
+        // 027-fix-app-rights.sql grants default privileges for this role, which the test container does not have.
+        pgContainer.execInContainer("psql", "-U", pgContainer.getUsername(), "-d", pgContainer.getDatabaseName(),
+                "-c", "CREATE ROLE \"web-education\"");
         test.database().initPostgreSQL(context, pgContainer, schema);
     }
 

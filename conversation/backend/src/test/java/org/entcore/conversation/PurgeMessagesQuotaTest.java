@@ -97,22 +97,31 @@ public class PurgeMessagesQuotaTest {
     public void purgeShouldGiveBackTheStorageOfPurgedMessages(TestContext context) {
         final Async async = context.async();
         final long now = System.currentTimeMillis();
-        raw("INSERT INTO conversation.messages (id, body, \"from\", \"to\", state, date) VALUES "
-                + "('p-old1', 'b', 'x', '[]', 'SENT', 0), ('p-old2', 'b', 'x', '[]', 'SENT', 0), "
-                + "('p-filed', 'b', 'x', '[]', 'SENT', 0), ('p-recent', 'b', 'x', '[]', 'SENT', " + now + ")")
-            .compose(v -> raw("INSERT INTO conversation.folders (id, user_id, name) VALUES ('p-folder', 'u-p1', 'kept')"))
-            .compose(v -> raw("INSERT INTO conversation.usermessages (user_id, message_id, folder_id, total_quota) VALUES "
-                + "('u-p1', 'p-old1', NULL, 100), ('u-p1', 'p-old2', NULL, 50), ('u-p2', 'p-old1', NULL, 30), "
-                + "('u-p3', 'p-old2', NULL, 0), ('u-p1', 'p-recent', NULL, 70), ('u-p1', 'p-filed', 'p-folder', 999)"))
+        // Ids are UUIDs since usermessages_v2.
+        final String u1 = "00000000-0000-0000-0001-000000000001", u2 = "00000000-0000-0000-0001-000000000002",
+                u3 = "00000000-0000-0000-0001-000000000003";
+        final String old1 = "00000000-0000-0000-0002-000000000001", old2 = "00000000-0000-0000-0002-000000000002",
+                filed = "00000000-0000-0000-0002-000000000003", recent = "00000000-0000-0000-0002-000000000004",
+                persdir = "00000000-0000-0000-0002-000000000005";
+        raw("INSERT INTO conversation.messages (id, body, \"from\", \"to\", state, date, subject) VALUES "
+                + "('" + old1 + "', 'b', 'x', '[]', 'SENT', 0, 's'), ('" + old2 + "', 'b', 'x', '[]', 'SENT', 0, 's'), "
+                + "('" + filed + "', 'b', 'x', '[]', 'SENT', 0, 's'), ('" + recent + "', 'b', 'x', '[]', 'SENT', " + now + ", 's'), "
+                + "('" + persdir + "', 'b', 'x', '[]', 'SENT', 0, 'Message de persdir')")
+            .compose(v -> raw("INSERT INTO conversation.folders (id, user_id, name) VALUES ('p-folder', '" + u1 + "', 'kept')"))
+            .compose(v -> raw("INSERT INTO conversation.usermessages_v2 (user_id, message_id, folder_id, total_quota, msg_state, msg_date) VALUES "
+                + "('" + u1 + "', '" + old1 + "', NULL, 100, 'SENT', 0), ('" + u1 + "', '" + old2 + "', NULL, 50, 'SENT', 0), "
+                + "('" + u2 + "', '" + old1 + "', NULL, 30, 'SENT', 0), ('" + u3 + "', '" + old2 + "', NULL, 0, 'SENT', 0), "
+                + "('" + u1 + "', '" + recent + "', NULL, 70, 'SENT', " + now + "), ('" + u1 + "', '" + filed + "', 'p-folder', 999, 'SENT', 0), "
+                + "('" + u1 + "', '" + persdir + "', NULL, 10, 'SENT', 0)"))
             .compose(v -> conversationService.purgeMessages())
-            .compose(v -> raw("SELECT user_id || '/' || message_id FROM conversation.usermessages "
-                + "WHERE user_id LIKE 'u-p%' ORDER BY 1"))
+            .compose(v -> raw("SELECT message_id::text FROM conversation.usermessages_v2 ORDER BY 1"))
             .onSuccess(kept -> {
-                context.assertEquals(new JsonArray().add(new JsonArray().add("u-p1/p-filed")).add(new JsonArray().add("u-p1/p-recent")),
-                    kept, "Only the recent message and the one filed in a folder must stay");
-                context.assertEquals(-150L, released.get("u-p1"), "u-p1 gets back the storage of its two purged messages");
-                context.assertEquals(-30L, released.get("u-p2"));
-                context.assertFalse(released.containsKey("u-p3"), "Nothing to give back when the purged rows weighed nothing");
+                context.assertEquals(new JsonArray().add(new JsonArray().add(filed)).add(new JsonArray().add(recent))
+                        .add(new JsonArray().add(persdir)).encode(), kept.encode(),
+                    "Only the recent message, the one filed in a folder and the protected supervision message must stay");
+                context.assertEquals(-150L, released.get(u1), "u1 gets back the storage of its two purged messages");
+                context.assertEquals(-30L, released.get(u2));
+                context.assertFalse(released.containsKey(u3), "Nothing to give back when the purged rows weighed nothing");
                 async.complete();
             })
             .onFailure(context::fail);

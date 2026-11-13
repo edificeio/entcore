@@ -140,17 +140,19 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 			final HashMap<String, JsonArray> queries = new HashMap<String, JsonArray>();
 
 			final String attachmentTable = "conversation.attachments", foldersTable = "conversation.folders",
-					messagesTable = "conversation.messages", usermessagesTable = "conversation.usermessages",
+					messagesTable = "conversation.messages", usermessagesTable = "conversation.usermessages_v2",
 					usermessagesattachmentsTable = "conversation.usermessagesattachments";
 
 			JsonArray userIdParam = new JsonArray().add(userId);
 			JsonArray resourcesIdsAndUserIdParams = userIdParam;
 			String resourcesList = "";
+			String resourceListWithCast = "";
 
 			if(resourcesIds != null)
 			{
 				resourcesIdsAndUserIdParams = new JsonArray().addAll(resourcesIds).add(userId);
 				resourcesList = Sql.listPrepared(resourcesIds);
+				resourceListWithCast = Sql.listPrepared(resourcesIds.getList().toArray(), "UUID");
 			}
 
 			String queryAttachments = "SELECT DISTINCT att.* " +
@@ -169,7 +171,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 			String queryMessages =  "SELECT DISTINCT mess.* " +
 															"FROM " + messagesTable + " mess " +
-															"LEFT JOIN " + usermessagesTable + " umess ON mess.id = umess.message_id " +
+															"LEFT JOIN " + usermessagesTable + " umess ON mess.id = umess.message_id::text " +
 															"WHERE " +
 																(resourcesIds != null ? ("mess.id IN " + resourcesList + " AND ") : "") +
 																"umess.user_id = ?";
@@ -178,8 +180,8 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 			String queryUserMessages =  "SELECT DISTINCT umess.* " +
 																	"FROM " + usermessagesTable + " umess " +
 																	"WHERE " +
-																		(resourcesIds != null ? ("umess.message_id IN " + resourcesList + " AND ") : "") +
-																	  "umess.user_id = ?";
+																		(resourcesIds != null ? ("umess.message_id IN " + resourceListWithCast + " AND ") : "") +
+																	  "umess.user_id = ?::UUID ";
 			queries.put(usermessagesTable, new SqlStatementsBuilder().prepared(queryUserMessages, resourcesIdsAndUserIdParams).build());
 
 			String queryUserMessagesAttachments = "SELECT DISTINCT umessatt.* " +
@@ -213,10 +215,10 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	public void importResources(String importId, String userId, String userLogin, String username, String importPath, String locale,
 		String host, boolean forceImportAsDuplication, Handler<JsonObject> handler)
 	{
-		fs.readFile(importPath + File.separator + "conversation.usermessages", result -> {
+		fs.readFile(importPath + File.separator + "conversation.usermessages_v2", result -> {
 			if (result.failed()) {
 				log.error(title
-						+ " : Failed to read table conversation.usermessages in archive.");
+						+ " : Failed to read table conversation.usermessages_v2 in archive.");
 				handler.handle(new JsonObject().put("status", "error"));
 			} else {
 
@@ -228,7 +230,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 				uuidReplacement.put(userId, new HashMap<>());
 
 				List<String> tables = new ArrayList<>(Arrays.asList("messages", "attachments", "folders",
-						"usermessages", "usermessagesattachments"));
+						"usermessages_v2", "usermessagesattachments"));
 
 				importTables(importPath, "conversation", tables, new HashMap<>(), userId, username, locale,
 					new SqlStatementsBuilder(), forceImportAsDuplication, done -> {
@@ -268,7 +270,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 		}
 		//
 
-		List<String> list = Arrays.asList("folders", "usermessages", "usermessagesattachments");
+		List<String> list = Arrays.asList("folders", "usermessages_v2", "usermessagesattachments");
 
 		if (list.contains(table)) {
 			int index = fields.getList().indexOf("user_id");
@@ -439,8 +441,8 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 		builder.prepared(deleteFolder, userIds);
 
 		String deleteUserMessages =
-			"DELETE FROM conversation.usermessages um " +
-			"WHERE um.user_id IN " + Sql.listPrepared(userIds.getList());
+			"DELETE FROM conversation.usermessages_v2 um " +
+			"WHERE um.user_id IN " + Sql.listPrepared(userIds.getList().toArray(), "UUID");
 		builder.prepared(deleteUserMessages, userIds);
 
 		String deleteAbsenceSettings =
