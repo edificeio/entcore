@@ -2,22 +2,22 @@ import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { resetModerationMocks } from '~/mocks/moderation/handlers';
-import { server } from '~/mocks/server';
 import { renderWithRouter } from '~/mocks/renderWithRouter';
+import { server } from '~/mocks/server';
 import { fireEvent, screen, waitFor } from '~/mocks/setup';
 import { type WorkflowState } from '~/models';
 import { queryClient } from '~/providers';
 import { moderationBaseUrl } from '~/services/api';
-import { ReportList } from './ReportList';
+import { ReportCaseList } from './ReportCaseList';
 
 /** The cards link to the case detail page: the list needs a router around it. */
 const renderList = (workflowState: WorkflowState) =>
   renderWithRouter(
     '/',
-    <ReportList workflowState={workflowState} structureId="structure-1" />,
+    <ReportCaseList workflowState={workflowState} structureId="structure-1" />,
   );
 
-describe('ReportList', () => {
+describe('ReportCaseList', () => {
   beforeEach(() => {
     resetModerationMocks();
     queryClient.clear();

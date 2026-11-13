@@ -11,6 +11,9 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import visuallyHidden from '@mui/utils/visuallyHidden';
 
 import { ReportCaseCard } from '~/components/ReportCaseCard';
+import { DecisionsHistory } from '~/features/decisions-history';
+import { ReportContent } from '~/features/report-content';
+import { ReportList } from '~/features/report-list';
 import { useI18n } from '~/hooks/useI18n';
 import { useCase } from '~/services';
 
@@ -134,7 +137,9 @@ export function ReportCaseDetails({
                     mt: theme.spacing(4),
                   })}
                 >
-                  {key}-{index}
+                  {key === 'received' && <ReportList />}
+                  {key === 'content' && <ReportContent />}
+                  {key === 'history' && <DecisionsHistory />}
                 </Box>
               )}
             </div>
