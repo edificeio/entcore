@@ -175,6 +175,10 @@ buildFrontend () {
   fi
   
   for module in "${modules[@]}"; do
+    # admin's React front is built after the Angular one (see buildAdminModerationFrontend)
+    if [ "$module" = "admin" ]; then
+      continue
+    fi
     if [ -e ./"$module"/frontend ]; then
       echo -e "[Build React] Build react frontend for module $module"
       cd ./"$module"/frontend
@@ -228,6 +232,43 @@ buildFrontend () {
         docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
+
+  # --- Build admin's React front (moderation app, embedded in the Angular console)
+  # Must run AFTER the Angular build : its gulp "clean" task wipes public/dist entirely.
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+    buildAdminModerationFrontend
+  fi
+}
+
+# Builds admin/frontend and copies :
+#  - JS/CSS assets  -> admin/src/main/resources/public/dist/moderation/
+#  - index.html     -> admin/src/main/resources/view/moderation.html
+buildAdminModerationFrontend() {
+  echo -e "[Build React] Build react frontend for module admin (moderation)"
+  cd ./admin/frontend
+  if [ "$NO_DOCKER" = "true" ] ; then
+    ./build.sh --no-docker clean init build
+  else
+    ./build.sh clean init build
+  fi
+  if [ $? -ne 0 ]; then
+    echo "Error while building React frontend for module admin"
+    exit 1
+  fi
+
+  moderation_resources_dir="../src/main/resources"
+  moderation_assets_dir="$moderation_resources_dir/public/dist/moderation"
+  moderation_view_dir="$moderation_resources_dir/view"
+
+  rm -rf "$moderation_assets_dir"
+  mkdir -p "$moderation_assets_dir" "$moderation_view_dir"
+  mv ./dist/index.html "$moderation_view_dir/moderation.html"
+  cp -R ./dist/. "$moderation_assets_dir/"
+
+  # Clean up
+  rm -rf ./dist
+  cd ../..
+  unset moderation_resources_dir moderation_assets_dir moderation_view_dir
 }
 
 buildBackend () {
