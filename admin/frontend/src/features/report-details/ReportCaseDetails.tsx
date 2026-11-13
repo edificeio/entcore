@@ -109,7 +109,7 @@ export function ReportCaseDetails({
             ))}
           </Tabs>
 
-          {/* Empty shells for now: each tab content comes with its own feature */}
+          {/* Each tab content comes with its own feature */}
           {TABS.map(({ key }, index) => (
             <div
               key={key}
@@ -118,16 +118,6 @@ export function ReportCaseDetails({
               id={panelId(key)}
               aria-labelledby={tabId(key)}
               data-testid={`report-case-tabpanel-${key}`}
-            />
-          ))}
-
-          {TABS.map(({ key }, index) => (
-            <div
-              key={key}
-              role="tabpanel"
-              hidden={currentTab !== index}
-              id={panelId(key)}
-              aria-labelledby={tabId(key)}
             >
               {currentTab === index && (
                 <Box
