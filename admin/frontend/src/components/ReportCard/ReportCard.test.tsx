@@ -52,10 +52,33 @@ describe('ReportCard', () => {
   it('shows a dash without link for a reporter without name', async () => {
     render(<ReportCard report={buildReport({ displayName: '' })} />);
 
-    await screen.findByTestId('reports-report-card');
+    expect(
+      await screen.findByTestId('reports-report-reporter'),
+    ).toHaveTextContent('—');
     expect(
       screen.queryByTestId('reports-report-reporter-link'),
     ).not.toBeInTheDocument();
+  });
+
+  it('puts the comment under its label', async () => {
+    render(<ReportCard report={buildReport()} />);
+
+    const comment = await screen.findByTestId('reports-report-comment');
+    const label = comment.previousElementSibling;
+    expect(label).toHaveTextContent('Commentaire :');
+    // Both are blocks: the comment starts on the line after its label
+    expect(label).not.toHaveStyle({ display: 'inline' });
+    expect(comment).not.toHaveStyle({ display: 'inline' });
+  });
+
+  it('draws a horizontal separator on small screens', async () => {
+    // No matchMedia in jsdom: the card renders as on screens below md
+    render(<ReportCard report={buildReport()} />);
+
+    expect(await screen.findByRole('separator')).not.toHaveAttribute(
+      'aria-orientation',
+      'vertical',
+    );
   });
 
   it('shows an unknown reason as is', async () => {

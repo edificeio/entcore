@@ -14,14 +14,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router-dom';
 
-import { InfoRow } from '~/components/InfoRow';
+import { EMPTY_VALUE, InfoRow } from '~/components/InfoRow';
 import { useI18n } from '~/hooks/useI18n';
 import { type Case, type Decision, type Status } from '~/models';
 import { ReportCaseModuleChip } from './ReportCaseModuleChip';
 import { ReportCaseStatusChip } from './ReportCaseStatusChip';
-
-/** Shown instead of an empty value, so the row never reads as blank. */
-const EMPTY_VALUE = '—';
 
 /** Width of the left column (avatar and content info) in the Figma design. */
 const LEFT_COLUMN_WIDTH = 384;

@@ -3,6 +3,9 @@ import { type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
+/** Shown instead of an empty value, so the row never reads as blank. */
+export const EMPTY_VALUE = '—';
+
 /**
  * Line height of the info rows: 24px of text plus the 8px Figma puts between
  * rows and between the wrapped lines of a row.

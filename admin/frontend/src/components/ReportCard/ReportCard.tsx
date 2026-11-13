@@ -6,14 +6,13 @@ import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
+import { type Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
-import { InfoRow } from '~/components/InfoRow';
+import { EMPTY_VALUE, InfoRow } from '~/components/InfoRow';
 import { useI18n } from '~/hooks/useI18n';
 import { type Report } from '~/models';
-
-/** Shown instead of an empty value, so the row never reads as blank. */
-const EMPTY_VALUE = '—';
 
 /** Width of the left column (reporter and report info) in the Figma design. */
 const LEFT_COLUMN_WIDTH = 315;
@@ -27,6 +26,8 @@ export const ReportCard = ({ report }: ReportCardProps) => {
   const { t } = useI18n();
   const { formatDate } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
+  // The columns sit side by side from md up, one under the other below
+  const isWide = useMediaQuery((theme: Theme) => theme.breakpoints.up('md'));
 
   return (
     <Card variant="outlined" data-testid="reports-report-card">
@@ -36,13 +37,8 @@ export const ReportCard = ({ report }: ReportCardProps) => {
           spacing={2}
           divider={
             <Divider
-              orientation="vertical"
+              orientation={isWide ? 'vertical' : 'horizontal'}
               flexItem
-              // Vertical line between the columns from md up, horizontal one below
-              sx={{
-                borderRightWidth: { xs: 0, md: 'thin' },
-                borderBottomWidth: { xs: 'thin', md: 0 },
-              }}
             />
           }
         >
@@ -64,6 +60,7 @@ export const ReportCard = ({ report }: ReportCardProps) => {
               <Typography
                 variant="body1"
                 sx={{ minWidth: 0, overflowWrap: 'anywhere' }}
+                data-testid="reports-report-reporter"
               >
                 {report.displayName ? (
                   <Link
@@ -92,17 +89,24 @@ export const ReportCard = ({ report }: ReportCardProps) => {
             </Box>
           </Stack>
 
+          {/* Unlike the info rows, the comment starts on the line after its label */}
           <Box component="dl" sx={{ m: 0, flex: 1, minWidth: 0 }}>
-            <InfoRow label={t('reports.report.comment')}>
-              {/* Keep the line breaks the reporter typed */}
-              <Box
-                component="span"
-                sx={{ whiteSpace: 'pre-line' }}
-                data-testid="reports-report-comment"
-              >
-                {report.comment || EMPTY_VALUE}
-              </Box>
-            </InfoRow>
+            <Typography
+              component="dt"
+              variant="body1"
+              sx={{ fontWeight: 'fontWeightBold' }}
+            >
+              {t('reports.report.comment')}&nbsp;:
+            </Typography>
+            <Typography
+              component="dd"
+              variant="body1"
+              // Keep the line breaks the reporter typed, and wrap long words such as URLs
+              sx={{ m: 0, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
+              data-testid="reports-report-comment"
+            >
+              {report.comment || EMPTY_VALUE}
+            </Typography>
           </Box>
         </Stack>
       </CardContent>
