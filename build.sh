@@ -67,18 +67,18 @@ else
 fi
 
 #try jenkins branch name => then local git branch name => then jenkins params
-echo "[buildNode] Get branch name from jenkins env..."
+echo "[buildFrontend] Get branch name from jenkins env..."
 BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
 if [ "$BRANCH_NAME" = "" ]; then
-  echo "[buildNode] Get branch name from git..."
+  echo "[buildFrontend] Get branch name from git..."
   BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
 fi
 if [ ! -z "$FRONT_TAG" ]; then
-  echo "[buildNode] Get tag name from jenkins param... $FRONT_TAG"
+  echo "[buildFrontend] Get tag name from jenkins param... $FRONT_TAG"
   BRANCH_NAME="$FRONT_TAG"
 fi
 if [ "$BRANCH_NAME" = "" ]; then
-  echo "[buildNode] Branch name should not be empty!"
+  echo "[buildFrontend] Branch name should not be empty!"
   exit -1
 fi
 
@@ -140,12 +140,31 @@ syncReactFrontendBuildToResources() {
   unset sync_target_root sync_resources_dir sync_public_dir sync_view_dir file file_name html_file
 }
 
+# Copies admin/frontend build (run from admin/frontend) :
+#  - JS/CSS assets  -> admin/src/main/resources/public/dist/moderation/
+#  - index.html     -> admin/src/main/resources/view/moderation.html
+syncAdminModerationBuildToResources() {
+  moderation_resources_dir="../src/main/resources"
+  moderation_assets_dir="$moderation_resources_dir/public/dist/moderation"
+  moderation_view_dir="$moderation_resources_dir/view"
+
+  rm -rf "$moderation_assets_dir"
+  mkdir -p "$moderation_assets_dir" "$moderation_view_dir"
+  mv ./dist/index.html "$moderation_view_dir/moderation.html"
+  cp -R ./dist/. "$moderation_assets_dir/"
+
+  unset moderation_resources_dir moderation_assets_dir moderation_view_dir
+}
+
 buildFrontend () {
 
   # --- Build angularJS-based frontends
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ] || [ "$MODULE" = "timeline" ] || [ "$MODULE" = "auth" ]; then
+  # Only for modules having an AngularJS front (same list as `apps` in gulpfile.js) :
+  # gulp builds ALL of them when --module is not in that list.
+  case "$MODULE" in
+  ""|archive|auth|directory|timeline|workspace)
     if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
-        echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
+        echo "[buildFrontend] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
             docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
@@ -154,7 +173,7 @@ buildFrontend () {
             docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     else
-        echo "[buildNode] Use entcore tag $BRANCH_NAME"
+        echo "[buildFrontend] Use entcore tag $BRANCH_NAME"
         docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
         case `uname -s` in
           MINGW*)
@@ -164,6 +183,25 @@ buildFrontend () {
             docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
+    ;;
+  *)
+    # No AngularJS frontend to build :
+    # - backend-only modules (app-registry, audience, cas, communication, feeder, infra)
+    # - React-only (conversation, portal) or Angular (admin) modules, built below
+    echo "[buildFrontend] No AngularJS frontend to build for module $MODULE"
+    ;;
+  esac
+
+  # --- Build angular-based frontends (admin)
+  # Must run BEFORE admin's React front : its gulp "clean" task wipes public/dist entirely.
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+    case `uname -s` in
+      MINGW*)
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        ;;
+      *)
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+    esac
   fi
 
   # --- Build react-based frontends
@@ -175,10 +213,6 @@ buildFrontend () {
   fi
   
   for module in "${modules[@]}"; do
-    # admin's React front is built after the Angular one (see buildAdminModerationFrontend)
-    if [ "$module" = "admin" ]; then
-      continue
-    fi
     if [ -e ./"$module"/frontend ]; then
       echo -e "[Build React] Build react frontend for module $module"
       cd ./"$module"/frontend
@@ -193,12 +227,19 @@ buildFrontend () {
       fi
 
       # Create directory structure and copy frontend build files.
-      if [ "$module" = "timeline" ] || [ "$module" = "auth" ]; then
-        # compatibility mode : preserve legacy frontends files in ../src
-        syncReactFrontendBuildToResources ".."
-      else
-        syncReactFrontendBuildToResources "../backend"
-      fi
+      case "$module" in
+        admin)
+          # moderation app, embedded in the Angular console
+          syncAdminModerationBuildToResources
+          ;;
+        timeline|auth)
+          # compatibility mode : preserve legacy frontends files in ../src
+          syncReactFrontendBuildToResources ".."
+          ;;
+        *)
+          syncReactFrontendBuildToResources "../backend"
+          ;;
+      esac
 
       # Clean up
       rm -rf ./dist
@@ -221,54 +262,6 @@ buildFrontend () {
       cd ../..
     fi
   done
-
-  # --- Build angular-based frontends
-  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
-    case `uname -s` in
-      MINGW*)
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
-        ;;
-      *)
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
-    esac
-  fi
-
-  # --- Build admin's React front (moderation app, embedded in the Angular console)
-  # Must run AFTER the Angular build : its gulp "clean" task wipes public/dist entirely.
-  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
-    buildAdminModerationFrontend
-  fi
-}
-
-# Builds admin/frontend and copies :
-#  - JS/CSS assets  -> admin/src/main/resources/public/dist/moderation/
-#  - index.html     -> admin/src/main/resources/view/moderation.html
-buildAdminModerationFrontend() {
-  echo -e "[Build React] Build react frontend for module admin (moderation)"
-  cd ./admin/frontend
-  if [ "$NO_DOCKER" = "true" ] ; then
-    ./build.sh --no-docker clean init build
-  else
-    ./build.sh clean init build
-  fi
-  if [ $? -ne 0 ]; then
-    echo "Error while building React frontend for module admin"
-    exit 1
-  fi
-
-  moderation_resources_dir="../src/main/resources"
-  moderation_assets_dir="$moderation_resources_dir/public/dist/moderation"
-  moderation_view_dir="$moderation_resources_dir/view"
-
-  rm -rf "$moderation_assets_dir"
-  mkdir -p "$moderation_assets_dir" "$moderation_view_dir"
-  mv ./dist/index.html "$moderation_view_dir/moderation.html"
-  cp -R ./dist/. "$moderation_assets_dir/"
-
-  # Clean up
-  rm -rf ./dist
-  cd ../..
-  unset moderation_resources_dir moderation_assets_dir moderation_view_dir
 }
 
 buildBackend () {
