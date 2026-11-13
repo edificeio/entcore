@@ -82,6 +82,7 @@ public class SSOAzure extends AbstractSSOProvider {
 	private final JsonObject profilesAllowedToDefaultStructure;
 	private final JsonObject defaultGroupId;
 	private final JsonObject functionsAllowedToGroup;
+	private final JsonObject rootPrivateUai;
 
 	public SSOAzure() {
 		this(
@@ -89,17 +90,19 @@ public class SSOAzure extends AbstractSSOProvider {
 			Vertx.currentContext().config().getJsonObject("azure-default-structure-id"),
 			Vertx.currentContext().config().getJsonObject("azure-profiles-allowed-to-default-structure"),
 			Vertx.currentContext().config().getJsonObject("azure-default-group-id"),
-			Vertx.currentContext().config().getJsonObject("azure-functions-allowed-to-group")
+			Vertx.currentContext().config().getJsonObject("azure-functions-allowed-to-group"),
+			Vertx.currentContext().config().getJsonObject("azure-root-private-uai")
 		);
 	}
 
 	public SSOAzure(JsonObject issuerAcademiePrefix, JsonObject defaultStructureId, JsonObject profilesAllowedToDefaultStructure,
-					JsonObject defaultGroupId, JsonObject functionsAllowedToGroup) {
+					JsonObject defaultGroupId, JsonObject functionsAllowedToGroup, JsonObject rootPrivateUai) {
 		this.issuerAcademiePrefix = issuerAcademiePrefix;
 		this.defaultStructureId = defaultStructureId;
 		this.profilesAllowedToDefaultStructure = profilesAllowedToDefaultStructure;
 		this.defaultGroupId = defaultGroupId;
 		this.functionsAllowedToGroup = functionsAllowedToGroup;
+		this.rootPrivateUai = rootPrivateUai;
 		this.neo4j = Neo4j.getInstance();
 		this.eb = this.neo4j.getEventBus();
 	}
@@ -108,40 +111,54 @@ public class SSOAzure extends AbstractSSOProvider {
 	public void execute(Assertion assertion, Handler<Either<String, Object>> handler) {
 		if (!validConditions(assertion, handler)) return;
 
-		createOrMergeUserIfNeeded(assertion, ar -> {
-			if (ar.succeeded()) {
-				final String entPersonJointure = getAttribute(assertion, ENTPERSONJOINTURE_ATTTRIBUTE);
-				if (isNotEmpty(entPersonJointure)) {
-					final String externalId = getExternalId(assertion, entPersonJointure);
-					executeQueryWithUpdateIfNeeded("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", externalId),
-							assertion, handler);
-				} else if ("Student".equals(getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE)))) {
-					final String externalId = getAttribute(assertion, ID_ATTTRIBUTE);
-					if (isEmpty(externalId)) {
-						handler.handle(new Either.Left<>("invalid.externalId"));
-						return;
-					}
-					executeQuery("MATCH (u:User {externalId:{externalId}}) ",
-							new JsonObject().put("externalId", externalId),
-							assertion, handler);
-				} else {
-					final String mail = getAttribute(assertion, EMAIL_ATTTRIBUTE);
-					if (isEmpty(mail)) {
-						handler.handle(new Either.Left<>("invalid.email"));
-						return;
-					}
-					if (StringValidation.isEmail(mail)) {
-						executeQueryWithUpdateIfNeeded("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().put("email", mail),
-								assertion, handler);
+		final String uai = getOrElse(getAttribute(assertion, UAI_ATTTRIBUTE), DEFAULT_NOT_EXISTS);
+		final String rootPrivateUai = getRootPrivateUai(assertion);
+		final String queryIsPrivateUai = "MATCH (p:Structure {UAI:{privateUAI}})<-[:HAS_ATTACHMENT]-(s:Structure {UAI:{uai}}) return s.UAI";
+
+		Neo4j.getInstance().execute(queryIsPrivateUai, new JsonObject().put("privateUAI", rootPrivateUai).put("uai",uai),
+				Neo4jResult.validResultHandler(event -> {
+					if (event.isRight()) {
+						final boolean isPrivateUser = event.right().getValue() != null && event.right().getValue().size() == 1;
+
+						createOrMergeUserIfNeeded(assertion, isPrivateUser, ar -> {
+							if (ar.succeeded()) {
+								final String entPersonJointure = getAttribute(assertion, ENTPERSONJOINTURE_ATTTRIBUTE);
+								if (isNotEmpty(entPersonJointure) && !isPrivateUser) {
+									final String externalId = getExternalId(assertion, entPersonJointure);
+									executeQueryWithUpdateIfNeeded("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", externalId),
+											assertion, handler);
+								} else if ("Student".equals(getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE))) || isPrivateUser) {
+									final String externalId = getAttribute(assertion, ID_ATTTRIBUTE);
+									if (isEmpty(externalId)) {
+										handler.handle(new Either.Left<>("invalid.externalId"));
+										return;
+									}
+									executeQuery("MATCH (u:User {externalId:{externalId}}) ",
+											new JsonObject().put("externalId", externalId),
+											assertion, handler);
+								} else {
+									final String mail = getAttribute(assertion, EMAIL_ATTTRIBUTE);
+									if (isEmpty(mail)) {
+										handler.handle(new Either.Left<>("invalid.email"));
+										return;
+									}
+									if (StringValidation.isEmail(mail)) {
+										executeQueryWithUpdateIfNeeded("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().put("email", mail),
+												assertion, handler);
+									} else {
+										handler.handle(new Either.Left<>("invalid.email"));
+									}
+								}
+							} else {
+								log.error("Error when try create or merge sso user : ", ar.cause());
+								handler.handle(new Either.Left<>("invalid.user"));
+							}
+						});
 					} else {
-						handler.handle(new Either.Left<>("invalid.email"));
+						log.error("Error when try to know if UAI is private : ", event.left().getValue());
+						handler.handle(new Either.Left<>("invalid.check.uai"));
 					}
-				}
-			} else {
-				log.error("Error when try create or merge sso user : ", ar.cause());
-				handler.handle(new Either.Left<>("invalid.user"));
-			}
-		});
+				}));
 	}
 
 	private void executeQueryWithUpdateIfNeeded(String query, final JsonObject params, final Assertion assertion,
@@ -183,7 +200,7 @@ public class SSOAzure extends AbstractSSOProvider {
 		return issuerAcademiePrefix.getString(assertion.getIssuer().getValue(), "") + entPersonJointure;
 	}
 
-	private void createOrMergeUserIfNeeded(Assertion assertion, Handler<AsyncResult<Void>> handler) {
+	private void createOrMergeUserIfNeeded(Assertion assertion, Boolean isPrivateUser, Handler<AsyncResult<Void>> handler) {
 		final String queryStructure =
 				"MATCH (s:Structure {UAI: {uai}}) " +
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
@@ -201,7 +218,7 @@ public class SSOAzure extends AbstractSSOProvider {
 			.add(queryUser, new JsonObject().put("externalId", getOrElse(getAttribute(assertion, ID_ATTTRIBUTE), DEFAULT_NOT_EXISTS)));
 
 		final String entPersonJointure = getAttribute(assertion, ENTPERSONJOINTURE_ATTTRIBUTE);
-		if (isNotEmpty(entPersonJointure)) {
+		if (isNotEmpty(entPersonJointure) && !isPrivateUser) {
 			statements.add(queryUserAAF, new JsonObject().put("joinKey", getExternalId(assertion, entPersonJointure)));
 		}
 		Neo4j.getInstance().executeTransaction(statements.build(), null, true, Neo4jResult.validResultsHandler(res -> {
@@ -327,6 +344,14 @@ public class SSOAzure extends AbstractSSOProvider {
 		}
 	}
 
+	protected String getRootPrivateUai(Assertion assertion) {
+		if (rootPrivateUai != null) {
+			return rootPrivateUai.getString(assertion.getIssuer().getValue(), DEFAULT_NOT_EXISTS);
+		} else {
+			return DEFAULT_NOT_EXISTS;
+		}
+	}
+
 	private void createUserIfNeeded(Assertion assertion, JsonArray results, Handler<AsyncResult<Void>> handler) {
 		final JsonArray ssoUsers = results.getJsonArray(1);
 		if (ssoUsers != null && ssoUsers.size() == 1) {
@@ -350,7 +375,7 @@ public class SSOAzure extends AbstractSSOProvider {
 		}
 
 		JsonArray structures = results.getJsonArray(0);
-		if (structures == null || structures.size() == 0) {
+		if (structures == null || structures.isEmpty()) {
 			final String defaultSId = getDefaultStructureId(assertion);
 			if (isNotEmpty(defaultSId) && getProfilesAllowedToDefaultStructure(assertion).contains(profile)) {
 				structures = new JsonArray().add(new JsonObject().put("structureId", defaultSId));
@@ -411,8 +436,7 @@ public class SSOAzure extends AbstractSSOProvider {
 	private JsonArray getClassesNames(Assertion assertion) {
 		final String classes = getAttribute(assertion, CLASSES_ATTTRIBUTE);
 		if (isNotEmpty(classes)) {
-			final JsonArray classesNames = new JsonArray(Arrays.asList(classes.split(",")));
-			return classesNames;
+			return new JsonArray(Arrays.asList(classes.split(",")));
 		}
 		return null;
 	}
