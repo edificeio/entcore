@@ -29,6 +29,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class SplitTimelineEventStore implements TimelineEventStore {
@@ -154,6 +155,11 @@ public class SplitTimelineEventStore implements TimelineEventStore {
     public void get(UserInfos recipient, List<String> types, int offset, int limit, JsonObject restrictionFilter,
             boolean mine, boolean both, boolean receivedOnly, String version, Handler<JsonObject> result) {
         original.get(recipient, types, offset, limit, restrictionFilter, mine, both, receivedOnly, version, result);
+    }
+
+    @Override
+    public void listReceivedSince(UserInfos user, Date since, JsonObject restrictionFilter, Handler<JsonObject> result) {
+        original.listReceivedSince(user, since, restrictionFilter, result);
     }
 
     @Override

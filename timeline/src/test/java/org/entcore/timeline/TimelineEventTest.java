@@ -24,9 +24,13 @@ package org.entcore.timeline;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 import org.entcore.common.user.UserInfos;
 import org.entcore.test.TestHelper;
@@ -268,5 +272,113 @@ public class TimelineEventTest {
                 .compose(v -> getResources("RECEIVEDONLY_FILTER", true))
                 .onComplete(context.asyncAssertSuccess(resources ->
                         context.assertEquals(Arrays.asList("A", "C", "D"), resources)));
+    }
+
+    private static final long HOUR = 3600 * 1000L;
+
+    private JsonObject dateFromNow(long offsetMillis) {
+        return new JsonObject().put("$date", formatUtcDateTime(System.currentTimeMillis() + offsetMillis));
+    }
+
+    private JsonObject notifAt(String userId, String resource, String type, String eventType, long offsetMillis) {
+        return event(type, eventType, new JsonArray().add(recipient(userId)))
+                .put("resource", resource)
+                .put("date", dateFromNow(offsetMillis));
+    }
+
+    private Future<Void> saveRaw(JsonObject doc) {
+        final Promise<Void> promise = Promise.promise();
+        // comme DefaultTimelineEventStore.add, sinon le filtre sur created exclurait le doc pour une autre raison
+        doc.put("created", doc.getJsonObject("date"));
+        MongoDb.getInstance().save("timeline", doc, res -> {
+            if ("ok".equals(res.body().getString("status"))) {
+                promise.complete();
+            } else {
+                promise.fail(res.body().encode());
+            }
+        });
+        return promise.future();
+    }
+
+    private Future<JsonArray> listSince(String userId, long sinceOffsetMillis, JsonObject restrictionFilter) {
+        final Promise<JsonArray> promise = Promise.promise();
+        final UserInfos user = new UserInfos();
+        user.setUserId(userId);
+        store.listReceivedSince(user, new Date(System.currentTimeMillis() + sinceOffsetMillis), restrictionFilter, res -> {
+            if ("ok".equals(res.getString("status"))) {
+                promise.complete(res.getJsonArray("results"));
+            } else {
+                promise.fail(res.encode());
+            }
+        });
+        return promise.future();
+    }
+
+    private List<String> resources(JsonArray results) {
+        return results.stream().map(JsonObject.class::cast).map(n -> n.getString("resource")).collect(Collectors.toList());
+    }
+
+    @Test
+    public void testListReceivedSinceShouldReturnOnlyMineAndRecentNewestFirst(TestContext context) {
+        addAll(Arrays.asList(
+                notifAt("since-u1", "OLD", "T", "E", -3 * HOUR),
+                notifAt("since-u1", "NEW1", "T", "E", -HOUR),
+                notifAt("since-u1", "NEW2", "T", "E", -HOUR / 2),
+                notifAt("since-other", "OTHER", "T", "E", -HOUR)))
+                .compose(v -> listSince("since-u1", -2 * HOUR, null))
+                .onComplete(context.asyncAssertSuccess(results ->
+                        context.assertEquals(Arrays.asList("NEW2", "NEW1"), resources(results))));
+    }
+
+    @Test
+    public void testListReceivedSinceShouldExcludeFutureNotifications(TestContext context) {
+        addAll(Arrays.asList(
+                notifAt("since-u2", "PAST", "T", "E", -HOUR),
+                notifAt("since-u2", "FUTURE", "T", "E", 24 * HOUR)))
+                .compose(v -> listSince("since-u2", -2 * HOUR, null))
+                .onComplete(context.asyncAssertSuccess(results ->
+                        context.assertEquals(Collections.singletonList("PAST"), resources(results))));
+    }
+
+    @Test
+    public void testListReceivedSinceShouldExcludeDeletedAndReportedDeleted(TestContext context) {
+        final JsonObject deleted = notifAt("since-u3", "DELETED", "T", "E", -HOUR).put("deleted", 1);
+        final JsonObject reportedDeleted = notifAt("since-u3", "REPORTED", "T", "E", -HOUR)
+                .put("reportAction", new JsonObject().put("action", "DELETE"));
+        saveRaw(deleted)
+                .compose(v -> saveRaw(reportedDeleted))
+                .compose(v -> addAll(Collections.singletonList(notifAt("since-u3", "OK", "T", "E", -HOUR))))
+                .compose(v -> listSince("since-u3", -2 * HOUR, null))
+                .onComplete(context.asyncAssertSuccess(results ->
+                        context.assertEquals(Collections.singletonList("OK"), resources(results))));
+    }
+
+    @Test
+    public void testListReceivedSinceShouldApplyRestrictionFilter(TestContext context) {
+        final JsonObject restriction = new JsonObject().put("TYPE_A", new JsonArray().add("EV1"));
+        addAll(Arrays.asList(
+                notifAt("since-u4", "RESTRICTED", "TYPE_A", "EV1", -HOUR),
+                notifAt("since-u4", "OTHER_EVENT", "TYPE_A", "EV2", -HOUR),
+                notifAt("since-u4", "OTHER_TYPE", "TYPE_B", "EV1", -HOUR)))
+                .compose(v -> listSince("since-u4", -2 * HOUR, restriction))
+                .onComplete(context.asyncAssertSuccess(results ->
+                        context.assertEquals(new HashSet<>(Arrays.asList("OTHER_EVENT", "OTHER_TYPE")),
+                                new HashSet<>(resources(results)))));
+    }
+
+    @Test
+    public void testListReceivedSinceShouldReturnOnlyLightFields(TestContext context) {
+        addAll(Arrays.asList(
+                notifAt("since-u5", "R", "T", "E", -HOUR),
+                notifAt("since-u5", "R_SUB", "T", "E", -HOUR / 2).put("sub-resource", "S")))
+                .compose(v -> listSince("since-u5", -2 * HOUR, null))
+                .onComplete(context.asyncAssertSuccess(results -> {
+                    context.assertEquals(2, results.size());
+                    context.assertEquals(new HashSet<>(Arrays.asList("_id", "resource", "sub-resource", "date", "type", "event-type")),
+                            new HashSet<>(results.getJsonObject(0).fieldNames()));
+                    context.assertEquals("S", results.getJsonObject(0).getString("sub-resource"));
+                    context.assertEquals(new HashSet<>(Arrays.asList("_id", "resource", "date", "type", "event-type")),
+                            new HashSet<>(results.getJsonObject(1).fieldNames()));
+                }));
     }
 }
