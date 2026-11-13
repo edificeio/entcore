@@ -34,6 +34,8 @@ export default ({ mode }: { mode: string }) => {
           '^/actualites/api/',
           '^/communities/',
           '^/mediacentre/',
+          '^/video/',
+          '^/lool/',
         ],
   });
 

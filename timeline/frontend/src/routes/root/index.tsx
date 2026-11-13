@@ -12,6 +12,7 @@ import {
   MessageFlashListContainer,
   NotificationListContainer,
   SchoolSpaceContainer,
+  ToolsContainer,
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { useState } from 'react';
@@ -72,7 +73,15 @@ export const Root = () => {
           <BetaSwitchContainer />
           {md && <MessageFlashListContainer />}
           <UserSpaceContainer onCustomizeWidgetsClick={openWidgetsPanel}>
-            <FavoritesContainer />
+            <div
+              className="d-grid gap-16"
+              style={{
+                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+              }}
+            >
+              <FavoritesContainer />
+              <ToolsContainer />
+            </div>
           </UserSpaceContainer>
           <Masonry columns={columns} gap="16">
             {displayedWidgets.map(({ name, fullWidth, Component }) => (

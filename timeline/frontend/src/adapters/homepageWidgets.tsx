@@ -2,6 +2,7 @@ import {
   AgendaContainer,
   BriefMeContainer,
   CantineContainer,
+  CarnetDeBordContainer,
   CommunitiesContainer,
   EdumalinContainer,
   GenerationHdfContainer,
@@ -26,6 +27,7 @@ export interface HomepageWidget {
 }
 
 const WIDGET_COMPONENTS: Record<string, ComponentType> = {
+  'carnet-de-bord': CarnetDeBordContainer,
   'communities-widget': CommunitiesContainer,
   'agenda-widget': AgendaContainer,
   // "Liens utiles" is backed by the bookmark API
