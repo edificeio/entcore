@@ -21,7 +21,7 @@ public final class AbsenceReplySender {
 	 * The timeline notification reads the display name (title of the push) and the profile (directory link)
 	 * on it : left empty, they would come out as {@code null} and {@code #null}.
 	 * @param userId the absent user
-	 * @param identity {@code {username, type}} as resolved from the directory, possibly null
+	 * @param identity {@code {username, profile}} as resolved from the directory, possibly null
 	 * @return the sender, holding at least the user id
 	 */
 	public static UserInfos absentSender(final String userId, final JsonObject identity) {
