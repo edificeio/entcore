@@ -275,6 +275,9 @@ export const folderPicker2 = ng.directive("folderPicker2", [
             scope.folderProps.manageSubmit &&
             scope.folderProps.manageSubmit(scope.selectedFolder)
           ) {
+            if (scope.folderProps.submit) {
+              scope.folderProps.submit(scope.selectedFolder);
+            }
             return;
           }
 

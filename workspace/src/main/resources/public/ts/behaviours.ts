@@ -63,7 +63,7 @@ Behaviours.register('workspace', {
 		viewRights: ["org-entcore-workspace-controllers-WorkspaceController|copyDocuments", "org-entcore-workspace-controllers-WorkspaceController|getDocument"]
 	},
 	loadResourcesWithFilter: function(search: string, callback){
-		http().get(`/workspace/documents?filter=all&hierarchical=true&search=${search}`).done(function (documents) {
+		http().get(`/workspace/documents?filter=all&hierarchical=true&search=${encodeURIComponent(search)}`).done(function (documents) {
 			const results = documents.filter((doc)=> !doc.deleted ).map((doc) => {
 				if (doc.metadata['content-type'] && doc.metadata['content-type'].indexOf('image') !== -1) {
 					doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
