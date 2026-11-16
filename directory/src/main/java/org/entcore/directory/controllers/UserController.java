@@ -200,7 +200,7 @@ public class UserController extends BaseController {
 											});
 
 											if (userBeforeUpdate != null && userBeforeUpdate.result() != null) {
-												sendEmailOrMobileUpdateNotifications(request, userBeforeUpdate.result(), body);
+												sendEmailOrMobileUpdateNotifications(request, userId, userBeforeUpdate.result(), body);
 											}
 										} else {
 											final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());
@@ -217,8 +217,9 @@ public class UserController extends BaseController {
 	/*
 		Send update notifications if email or mobile phone number has been updated
 	 */
-	private void sendEmailOrMobileUpdateNotifications(final HttpServerRequest request, final JsonObject user, final JsonObject submittedValues) {
+	private void sendEmailOrMobileUpdateNotifications(final HttpServerRequest request, final String userId, final JsonObject user, final JsonObject submittedValues) {
 		final UserInfos userInfos = new UserInfos();
+		userInfos.setUserId(userId);
 		userInfos.setFirstName(user.getString("firstName"));
 		userInfos.setLastName(user.getString("lastName"));
 		userInfos.setEmail(user.getString("email"));
