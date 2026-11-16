@@ -38,7 +38,14 @@ export const CollapsibleCard = ({
   const headerId = useId();
 
   return (
-    <Card variant="outlined" data-testid={testId}>
+    <Card
+      variant="outlined"
+      data-testid={testId}
+      // Figma common/black/_states/outlinedborder, darker than the default divider
+      sx={(theme) => ({
+        borderColor: theme.palette.common._states.black.outlinedBorder,
+      })}
+    >
       <CardContent sx={{ 'p': 1.5, '&:last-child': { pb: 1.5 } }}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}

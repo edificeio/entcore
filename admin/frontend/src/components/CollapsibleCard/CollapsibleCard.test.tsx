@@ -67,6 +67,15 @@ describe('CollapsibleCard', () => {
     ).toHaveAccessibleDescription('Titre');
   });
 
+  it('uses the design outlined border colour', async () => {
+    render(renderCard({ testId: 'card' }));
+
+    // Figma common/black/_states/outlinedborder, darker than MUI's divider
+    expect(await screen.findByTestId('card')).toHaveStyle({
+      borderColor: 'rgba(0, 0, 0, 0.5)',
+    });
+  });
+
   it('opens with defaultExpanded', async () => {
     render(renderCard({ defaultExpanded: true }));
 
