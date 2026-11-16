@@ -720,8 +720,8 @@ public class WorkspaceController extends BaseController {
 		// search
 		if (!StringUtils.isEmpty(search)) {
 			if(disableFullTextSearch) {
-				// full text search is disabled because $text bypasses the rights indexes: fallback on a name filter.
-				// The regex is only evaluated on the documents selected by the rights indexes (owner, inheritedShares),
+				// full text search is disabled because $text bypasses indexes: fallback on a name filter.
+				// The regex is only evaluated on the documents selected by indexes (owner, inheritedShares),
 				// the same scan as before when the search was ignored, but far fewer documents are returned
 				final Document nameFilter = DocumentNameSearch.toNameFilter(search);
 				if (nameFilter != null) {
