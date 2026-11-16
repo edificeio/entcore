@@ -92,6 +92,7 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 import org.entcore.conversation.util.AbsenceValidator;
+import org.entcore.conversation.util.AbsenceReplySender;
 import org.entcore.conversation.util.AsyncUtil;
 import org.entcore.conversation.util.DecodedDisplayName;
 
@@ -2078,7 +2079,7 @@ public class ConversationController extends BaseController {
 	 * @param subject its subject, quoted in the reply prefix
 	 * @param timezone expeditor timezone, absent for mobile clients that predate the field
 	 * @param sender the expeditor, who receives the replies
-	 * @param request the request the send came from, only read for its host
+	 * @param request the request the send came from, only read for its host and scheme
 	 */
 	private void dispatchAbsenceReplies(final String messageId, final String subject, final String timezone,
 			final UserInfos sender, final HttpServerRequest request) {
@@ -2087,7 +2088,8 @@ public class ConversationController extends BaseController {
 				.put("subject", getOrElse(subject, ""))
 				.put("senderId", sender.getUserId())
 				.put("timezone", getOrElse(timezone, TimeZone.getDefault().getID(), false))
-				.put("host", getHost(request)));
+				.put("host", getHost(request))
+				.put("proto", getScheme(request)));
 	}
 
 	/**
@@ -2163,8 +2165,8 @@ public class ConversationController extends BaseController {
 						if (clearedIds.isEmpty()) {
 							return Future.succeededFuture(0);
 						}
-						return userService.findUsersLanguages(clearedIds, batchSize)
-							.compose(languages -> emitAbsenceRepliesOneByOne(work, byUserId, clearedIds, languages, 0));
+						return userService.findUsersIdentities(clearedIds, batchSize)
+							.compose(identities -> emitAbsenceRepliesOneByOne(work, byUserId, clearedIds, identities, 0));
 					});
 			})
 			.compose(sentInSlice -> AsyncUtil.pause(vertx, pause)
@@ -2177,42 +2179,35 @@ public class ConversationController extends BaseController {
 	 * @return a {@link Future} of how many replies the slice emitted
 	 */
 	private Future<Integer> emitAbsenceRepliesOneByOne(final JsonObject work, final Map<String, JsonObject> byUserId,
-			final List<String> clearedIds, final JsonObject languages, final int index) {
+			final List<String> clearedIds, final JsonObject identities, final int index) {
 		if (index >= clearedIds.size()) {
 			return Future.succeededFuture(clearedIds.size());
 		}
 		final String absentUserId = clearedIds.get(index);
-		return emitAbsenceReply(work, byUserId.get(absentUserId),
-					languages.getString(absentUserId, Neo4jConversationService.DEFAULT_LANGUAGE))
+		return emitAbsenceReply(work, byUserId.get(absentUserId), identities.getJsonObject(absentUserId))
 				.recover(th -> {
 					// The daily slot is already spent : one lost reply must not cost the whole slice.
 					LOGGER.error("Failed sending absence reply from " + absentUserId, th);
 					return Future.succeededFuture();
 				})
-				.compose(v -> emitAbsenceRepliesOneByOne(work, byUserId, clearedIds, languages, index + 1));
+				.compose(v -> emitAbsenceRepliesOneByOne(work, byUserId, clearedIds, identities, index + 1));
 	}
 
 	/**
-	 * Emits one absence reply, from the absent user to the expeditor of the original message.
-	 * @param work the dispatched payload, holding the expeditor, the original subject and the host
+	 * Emits one absence reply, from the absent user to the expeditor of the original message, and notifies
+	 * the expeditor as the send route would have.
+	 * @param work the dispatched payload, holding the expeditor, the original subject, the host and the scheme
 	 * @param absence the absence settings, holding the body to reply with
-	 * @param language language of the absent user, used for the subject prefix
+	 * @param identity display name, profile and language of the absent user, possibly null
 	 * @return a {@link Future} completed once the reply is sent
 	 */
-	private Future<Void> emitAbsenceReply(final JsonObject work, final JsonObject absence, final String language) {
+	private Future<Void> emitAbsenceReply(final JsonObject work, final JsonObject absence, final JsonObject identity) {
 		final String absentUserId = absence.getString("userId");
-		// No session exists for the absent user : the save and send chain only ever reads getUserId().
-		final UserInfos absentUser = new UserInfos();
-		absentUser.setUserId(absentUserId);
-		// Same fabricated request the bus originated sends already rely on, the send flow needs one.
-		// X-Forwarded-For is not optional : the send records a transformation event, whose event store
-		// resolves the caller ip, and Renders.getIp throws without it. That throw would happen before the
-		// transformation promise completes, stalling the whole chain with no error surfaced.
-		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject()
-				.put("method", "POST")
-				.put("headers", new JsonObject()
-						.put("X-Forwarded-For", "127.0.0.1")
-						.put("Host", work.getString("host", ""))));
+		final String language = identity == null ? Neo4jConversationService.DEFAULT_LANGUAGE
+				: identity.getString("language", Neo4jConversationService.DEFAULT_LANGUAGE);
+		// No session exists for the absent user : rebuild what the send and the notification read on it.
+		final UserInfos absentUser = AbsenceReplySender.absentSender(absentUserId, identity);
+		final HttpServerRequest request = AbsenceReplySender.replyRequest(work, language);
 
 		final JsonObject reply = new JsonObject()
 			.put("subject", I18n.getInstance().translate("conversation.absence.reply.subject",
@@ -2226,7 +2221,18 @@ public class ConversationController extends BaseController {
 		userService.addDisplayNames(reply, null, named ->
 			saveAndSend(null, named, absentUser, null, null, either -> {
 				if (either.isRight()) {
+					// Completed first : a notification failure must neither fail the reply nor stall the slice.
 					promise.complete();
+					final JsonObject result = either.right().getValue();
+					timelineNotification(request, new JsonObject()
+							.put("subject", result.getString("subject"))
+							.put("body", StringUtils.stripHtmlTag(result.getString("body")))
+							.put("id", result.getString("id"))
+							.put("thread_id", result.getString("thread_id"))
+							.put("sentIds", named.getJsonArray("allUsers", new JsonArray()))
+							// Machine emission : the timeline anti-flood is keyed by sender, so the reply to a
+							// second expeditor within its delay would be silently dropped.
+							.put("disableAntiFlood", true), absentUser);
 				} else {
 					promise.fail(either.left().getValue());
 				}
