@@ -1,3 +1,4 @@
+import { IThemeDesc } from '@edifice.io/client';
 import { queryOptions } from '@tanstack/react-query';
 import { customizeService } from '../api/customizeService';
 
@@ -9,6 +10,16 @@ function reorderLanguages(languages: string[]): string[] {
     (code) => !priorityFirst.includes(code) && code !== 'co',
   );
   return [...priorityFirst, ...rest, ...last];
+}
+
+/** Reorders fonts so that 'default' comes always first, then sorts the rest by _id alphabetically. */
+export function reorderFonts(fonts: IThemeDesc[]): IThemeDesc[] {
+  return [
+    ...fonts.filter((font) => font._id === 'default'),
+    ...fonts
+      .filter((font) => font._id !== 'default')
+      .sort((a, b) => a._id.localeCompare(b._id)),
+  ];
 }
 
 /**
@@ -31,10 +42,8 @@ export const customizeQueryOptions = {
   getLanguages() {
     return queryOptions({
       queryKey: customizeQueryKeys.languages(),
-      queryFn: () =>
-        customizeService
-          .listLanguages()
-          .then((languages) => reorderLanguages(languages)),
+      queryFn: async () =>
+        reorderLanguages(await customizeService.listLanguages()),
       staleTime: Infinity,
     });
   },
@@ -44,7 +53,7 @@ export const customizeQueryOptions = {
   getFonts() {
     return queryOptions({
       queryKey: customizeQueryKeys.fonts(),
-      queryFn: () => customizeService.listFonts(),
+      queryFn: async () => reorderFonts(await customizeService.listFonts()),
       staleTime: Infinity,
     });
   },
