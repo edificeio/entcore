@@ -86,7 +86,7 @@ public class Neo4jConversationService {
 				final JsonObject user = (JsonObject) row;
 				final JsonObject identity = new JsonObject()
 						.put("username", user.getString("username"))
-						.put("type", user.getString("type"));
+						.put("profile", user.getString("profile"));
 				final String language = readLanguage(user.getString("id"), user.getString("language"));
 				if (language != null) {
 					identity.put("language", language);
