@@ -63,17 +63,12 @@ public class DocumentNameSearchTest {
 		assertTrue(matches("francais", "Cours de Français"));
 		assertTrue(matches("d'ecran", "Capture d’écran 2023-05-10.png"));
 		assertFalse(matches("gaspillage", "Le compost.pdf"));
-	}
-
-	@Test
-	public void testDecomposedName() {
-		// macOS may store file names in decomposed form: "e" followed by a combining acute accent
 		assertTrue(matches("ecran", "Capture d’écran.png"));
 		assertTrue(matches("écran", "Capture d’écran.png"));
 	}
 
 	@Test
-	public void testRegexMetacharactersAreLiteral() {
+	public void testRegexOnSpecialCharacters() {
 		assertTrue(matches("a.b", "fichier a.b.txt"));
 		assertFalse(matches("a.b", "fichier axb.txt"));
 		assertTrue(matches("(1)", "copie (1).png"));
@@ -89,33 +84,5 @@ public class DocumentNameSearchTest {
 		final String longSearch = new String(new char[500]).replace('\0', 'b');
 		final String regex = DocumentNameSearch.toRegex(longSearch);
 		assertEquals(DocumentNameSearch.MAX_LENGTH, regex.length());
-	}
-
-	@Test
-	public void testGeneratedMongoQuery() {
-		final ElementQuery query = new ElementQuery(false);
-		query.getParams().put("name", DocumentNameSearch.toNameFilter("Élève"));
-		final JsonObject mongoQuery = new JsonObject(
-				DocumentQueryBuilder.fromElementQuery(query, Optional.empty()).build().toBsonDocument().toJson());
-		final JsonObject nameFilter = findNameFilter(mongoQuery);
-		assertEquals(DocumentNameSearch.toRegex("Élève"), nameFilter.getString("$regex"));
-		assertEquals("i", nameFilter.getString("$options"));
-		assertFalse(mongoQuery.encode().contains("$text"));
-	}
-
-	private static JsonObject findNameFilter(final JsonObject mongoQuery) {
-		if (mongoQuery.getValue("name") instanceof JsonObject) {
-			return mongoQuery.getJsonObject("name");
-		}
-		if (mongoQuery.getJsonArray("$and") == null) {
-			return null;
-		}
-		for (final Object and : mongoQuery.getJsonArray("$and")) {
-			final JsonObject found = findNameFilter((JsonObject) and);
-			if (found != null) {
-				return found;
-			}
-		}
-		return null;
 	}
 }

@@ -29,19 +29,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Builds the name filter used by the documents search when Mongo full text search is disabled.
- * The filter is a "contains" regex, insensitive to case and accents, evaluated by Mongo after
- * the rights indexes (owner, inheritedShares): its cost is bounded by the documents the user can see.
+ * "Name contains" search, case and accent insensitive, used when Mongo full text search is disabled.
+ * Examples: 
+ * - {@code "eleve"} matches "Liste des ÉLÈVES.xlsx"
+ * - {@code "d'ecran"} matches "Capture d’écran.png",
+ * - {@code "a.b"} matches "a.b.txt" but not "axb.txt".
  */
 public final class DocumentNameSearch {
 
-	/** Searched text is truncated beyond this length to keep the regex cheap. */
+	/** Searched text is truncated beyond this length. */
 	public static final int MAX_LENGTH = 100;
-	/** Optional combining diacritical marks, for names stored in decomposed form (NFD). */
-	private static final String COMBINING_MARKS = "[̀-ͯ]*";
-	/**
-	 * Character classes matching a letter with or without its accents, and both apostrophes.
-	 * Accented upper cases are explicit: the case insensitive option is only guaranteed for ASCII.
+	/** 
+	 * Combining accents, for names stored decomposed
+	 * Example: "e" followed by U+0301 for "é". 
+	 */
+	private static final String COMBINING_MARKS = "[\u0300-\u036f]*";
+	/** 
+	 * Letter to its accented variants, upper cases included 
+	 * Example: ({@code 'e'} → {@code [eèéêëÈÉÊË]}) + apostrophes. 
 	 */
 	private static final Map<Character, String> EQUIVALENTS = new HashMap<>();
 
@@ -62,10 +67,11 @@ public final class DocumentNameSearch {
 	}
 
 	/**
-	 * Builds a Mongo regex matching names that contain the searched text, ignoring case and accents.
+	 * Builds the regex: accents and case normalized, then special chars escaped
+	 * Example: {@code "copie (1)"} → {@code c[oò…]pie\ \(1\)}.
 	 *
 	 * @param search the text typed by the user
-	 * @return the regex pattern, or null when there is nothing to search
+	 * @return the regex, or null when the search is blank
 	 */
 	public static String toRegex(final String search) {
 		if (StringUtils.isEmpty(search)) {
@@ -92,10 +98,11 @@ public final class DocumentNameSearch {
 	}
 
 	/**
-	 * Builds the Mongo filter value to apply on the document name.
+	 * Builds the mongo filter for the {@code name} field: 
+	 * {"$regex": <toRegex(search)>, "$options": "i"}
 	 *
 	 * @param search the text typed by the user
-	 * @return the {@code $regex} filter, or null when there is nothing to search
+	 * @return the filter, or null when the search is blank
 	 */
 	public static Document toNameFilter(final String search) {
 		final String regex = toRegex(search);
