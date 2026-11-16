@@ -43,6 +43,7 @@ import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.http.renders.TemplatedEmailRenders;
+import org.entcore.common.http.renders.ZonedDateLambda;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
@@ -426,7 +427,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	}
 
 	private void sendPasswordModificationMail(final HttpServerRequest request, String email, String firstName,
-										 String login, String profile, JsonArray functions, final boolean reset) {
+										 String login, String profile, JsonArray functions, String timezone, final boolean reset) {
 		if (StringUtils.isEmpty(email)) {
 			log.error("Fail to send password change email, user email is undefined");
 			return;
@@ -478,7 +479,8 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 
 		JsonObject templateParams = new JsonObject()
 				.put("displayName", firstName)
-				.put("date", System.currentTimeMillis());
+				.put("date", System.currentTimeMillis())
+				.put(ZonedDateLambda.TIMEZONE_PARAM, timezone);
 
 		final String emailTemplate = reset ? "email/resetPassword.html" : "email/changedPassword.html";
 		final String i18nKey = reset ? "email.password.reset.subject" : "email.password.change.subject";
@@ -647,11 +649,13 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 					"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
 					"OPTIONAL MATCH (n)-[:IN]->(f:FunctionGroup) " +
 					"OPTIONAL MATCH (n)-[:HAS_FUNCTION]->(func:Function) " +
+					"OPTIONAL MATCH (n)-[:PREFERS]->(uac:UserAppConf) " +
 					"SET n.password = {password}, n.resetCode = null, n.resetDate = null, n.changePw = null," +
 					"    n.oldPasswords = {oldPasswords} " +
 					"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 					"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
-					"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName AS firstName";
+					"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName AS firstName, " +
+					"head(COLLECT(uac.timezone)) AS timezone";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", login);
 			params.put("resetCode", resetCode);
@@ -664,7 +668,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
           String userLogin = user.getString("login");
           String profile = user.getString("profile");
           JsonArray functions = user.getJsonArray("functions");
-		  sendPasswordModificationMail(request, email, firstName, userLogin, profile, functions, true);
+		  sendPasswordModificationMail(request, email, firstName, userLogin, profile, functions, user.getString("timezone"), true);
           handler.handle(user.getString("id")); // Ignore email failures: email is optional
         }
         else
@@ -725,10 +729,12 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
 				"OPTIONAL MATCH (n)-[:IN]->(f:FunctionGroup) " +
 				"OPTIONAL MATCH (n)-[:HAS_FUNCTION]->(func:Function) " +
+				"OPTIONAL MATCH (n)-[:PREFERS]->(uac:UserAppConf) " +
 				"SET n.password = {password}, n.changePw = null, n.oldPasswords = {oldPasswords} " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 				"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
-				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName as firstName";
+				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName as firstName, " +
+				"head(COLLECT(uac.timezone)) AS timezone";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		updatePassword(user -> {
@@ -739,7 +745,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				String profile = user.getString("profile");
 				JsonArray functions = user.getJsonArray("functions");
 
-				sendPasswordModificationMail(request, email, firstName, login1, profile, functions, false);
+				sendPasswordModificationMail(request, email, firstName, login1, profile, functions, user.getString("timezone"), false);
 				handler.handle(user.getString("id")); // Ignore email failures: email is optional
 			} else
 				handler.handle(user != null ? user.getString("id") : null);

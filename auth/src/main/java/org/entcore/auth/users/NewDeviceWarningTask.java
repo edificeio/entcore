@@ -41,6 +41,7 @@ import io.vertx.sqlclient.RowSet;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.pgclient.PgConnectOptions;
 import org.entcore.common.http.renders.TemplatedEmailRenders;
+import org.entcore.common.http.renders.ZonedDateLambda;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
@@ -246,7 +247,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
         String getUsersEmail = "MATCH (u:User) WHERE u.id IN {users} " +
                                 "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
                                 "RETURN u.id AS id, u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, u.federated AS federated, " +
-                                "uac.theme AS theme, uac.language AS language";
+                                "uac.theme AS theme, uac.language AS language, uac.timezone AS timezone";
 		Neo4j.getInstance().execute(getUsersEmail, new JsonObject().put("users", new JsonArray(new ArrayList(users.keySet()))), new Handler<Message<JsonObject>>()
         {
 			@Override
@@ -269,7 +270,9 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
                         String userScheme = neoUser.getString("lastScheme", "http");
                         boolean federated = neoUser.getBoolean("federated", false);
 
-                        users.get(neoUser.getString("id")).setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme, federated);
+                        LoginEventUser evtUser = users.get(neoUser.getString("id"));
+                        evtUser.setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme, federated);
+                        evtUser.timezone = neoUser.getString("timezone");
                     }
                     scoreConnections(users);
                 }
@@ -382,6 +385,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
             .put("displayName", user.displayName)
             .put("device", c.device.toString())
             .put("date", LocalDateTime.parse(c.date).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+            .put(ZonedDateLambda.TIMEZONE_PARAM, user.timezone)
             .put("ip", c.ip.indexOf("/") > -1 ? c.ip.substring(0, c.ip.indexOf("/")) : c.ip)
             .put("changePasswordLink", user.scheme + "://" + user.host);
 
@@ -430,7 +434,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
                 String getUserEmail = "MATCH (u:User{id:{user}}) " +
                     "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
                     "RETURN u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, u.federated AS federated, " +
-                    "uac.theme AS theme, uac.language AS language";
+                    "uac.theme AS theme, uac.language AS language, uac.timezone AS timezone";
                 Neo4j.getInstance().execute(getUserEmail, new JsonObject().put("user",user.getUserId()), new Handler<Message<JsonObject>>() {
                     @Override
                     public void handle(Message<JsonObject> r) {
@@ -457,6 +461,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
                                 boolean federated = neoUser.getBoolean("federated", false);
 
                                 evtUser.setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme, federated);
+                                evtUser.timezone = neoUser.getString("timezone");
                             }
 
                             // The fake connection
@@ -693,6 +698,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
         String email;
         String theme;
         String language;
+        String timezone;
         String scheme;
         String host;
         boolean federated;
