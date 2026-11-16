@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment } from 'react';
 
 import { useDate, useDirectory } from '@edifice.io/react';
 import Avatar from '@mui/material/Avatar';
@@ -14,13 +14,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from 'react-router-dom';
 
+import { EMPTY_VALUE, InfoRow } from '~/components/InfoRow';
 import { useI18n } from '~/hooks/useI18n';
 import { type Case, type Decision, type Status } from '~/models';
 import { ReportCaseModuleChip } from './ReportCaseModuleChip';
 import { ReportCaseStatusChip } from './ReportCaseStatusChip';
-
-/** Shown instead of an empty value, so the row never reads as blank. */
-const EMPTY_VALUE = '—';
 
 /** Width of the left column (avatar and content info) in the Figma design. */
 const LEFT_COLUMN_WIDTH = 384;
@@ -31,12 +29,6 @@ const ACTION_STATUSES: Status[] = [
   'RESOURCE_KEPT',
   'RESOURCE_DELETED',
 ];
-
-/**
- * Line height of the info rows: 24px of text plus the 8px Figma puts between
- * rows and between the wrapped lines of a row.
- */
-const INFO_LINE_HEIGHT = 32;
 
 /** Lines a row may take, label included, before it is cut with an ellipsis. */
 const REPORTERS_MAX_LINES = 2;
@@ -56,45 +48,6 @@ export interface ReportCaseCardProps {
   /** Heading level of the title: h2 in the list, h1 on the case detail page. */
   titleComponent?: 'h1' | 'h2';
 }
-
-interface InfoRowProps {
-  label: string;
-  /** Cut the value with an ellipsis after this number of lines. */
-  maxLines?: number;
-  children: ReactNode;
-}
-
-/**
- * One "label : value" pair of the enclosing list. Term and description flow as
- * one inline text, so a long value wraps after its label instead of below it.
- */
-const InfoRow = ({ label, maxLines, children }: InfoRowProps) => (
-  <Typography
-    component="div"
-    variant="body1"
-    sx={{
-      lineHeight: `${INFO_LINE_HEIGHT}px`,
-      overflowWrap: 'anywhere',
-      ...(maxLines && {
-        display: '-webkit-box',
-        WebkitBoxOrient: 'vertical',
-        WebkitLineClamp: maxLines,
-        // Clipped, not removed: screen readers still read the whole value
-        overflow: 'hidden',
-      }),
-    }}
-  >
-    <Box
-      component="dt"
-      sx={{ display: 'inline', fontWeight: 'fontWeightBold' }}
-    >
-      {label}&nbsp;:
-    </Box>{' '}
-    <Box component="dd" sx={{ display: 'inline', m: 0 }}>
-      {children}
-    </Box>
-  </Typography>
-);
 
 /** Card of a reported case in the moderation list. */
 export const ReportCaseCard = ({

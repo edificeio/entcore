@@ -127,7 +127,9 @@ export function ReportCaseDetails({
                     mt: theme.spacing(4),
                   })}
                 >
-                  {key === 'received' && <ReportList />}
+                  {key === 'received' && (
+                    <ReportList reports={reportCase.reports} />
+                  )}
                   {key === 'content' && <ReportContent />}
                   {key === 'history' && <DecisionsHistory />}
                 </Box>
