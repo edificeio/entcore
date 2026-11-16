@@ -66,6 +66,9 @@ describe('DecisionsHistory', () => {
     expect(
       screen.queryByRole('heading', { name: 'Historique des traitements' }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId('reports-empty-state').querySelector('img'),
+    ).toHaveAttribute('src', expect.stringContaining('emptystate-history'));
   });
 
   it('expands each decision independently', async () => {

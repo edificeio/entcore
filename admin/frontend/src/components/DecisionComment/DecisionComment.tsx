@@ -37,7 +37,7 @@ export const DecisionComment = ({
       )}
       {/* Plain text: unlike report comments, typed line breaks are not kept */}
       <Typography
-        sx={{ mt: 1, whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+        sx={{ mt: 1.5, whiteSpace: 'normal', overflowWrap: 'anywhere' }}
         data-testid="reports-decision-comment-text"
       >
         {comment || t('reports.decision.comment.empty')}

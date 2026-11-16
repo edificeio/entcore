@@ -56,6 +56,7 @@ export const CollapsibleCard = ({
           <Button
             type="button"
             variant="text"
+            size="large"
             aria-expanded={expanded}
             aria-controls={panelId}
             aria-describedby={headerId}
@@ -77,7 +78,7 @@ export const CollapsibleCard = ({
         </Stack>
         <Collapse in={expanded} unmountOnExit>
           <Box id={panelId} data-testid={testId && `${testId}-panel`}>
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 3 }} />
             {children}
           </Box>
         </Collapse>

@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import emptyHistory from '~/assets/emptystate-history.png';
 import { DecisionCard } from '~/components/DecisionCard';
 import { ReportCaseEmptyState } from '~/components/ReportCaseEmptyState';
 import { useI18n } from '~/hooks/useI18n';
@@ -20,6 +21,9 @@ export function DecisionsHistory({ decisions }: DecisionsHistoryProps) {
       <ReportCaseEmptyState
         title={t('reports.history.empty.title')}
         message={t('reports.history.empty.text')}
+        image={emptyHistory}
+        // Exported at 2x for sharp rendering on high density screens
+        imageWidth={310}
       />
     );
   }
