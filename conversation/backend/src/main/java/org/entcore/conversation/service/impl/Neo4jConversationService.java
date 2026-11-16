@@ -75,7 +75,7 @@ public class Neo4jConversationService {
 		final String query =
 			"MATCH (u:User) WHERE u.id IN {userIds} " +
 			"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
-			"RETURN u.id as id, uac.language as language, u.displayName as username, HEAD(u.profiles) as type";
+			"RETURN u.id as id, uac.language as language, u.displayName as username, HEAD(u.profiles) as profile";
 		final JsonObject params = new JsonObject().put("userIds", new JsonArray(new ArrayList<>(batch)));
 		neo.execute(query, params, event -> {
 			if (!"ok".equals(event.body().getString("status"))) {
