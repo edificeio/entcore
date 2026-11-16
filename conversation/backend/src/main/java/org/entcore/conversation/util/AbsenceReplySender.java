@@ -29,7 +29,7 @@ public final class AbsenceReplySender {
 		sender.setUserId(userId);
 		if (identity != null) {
 			sender.setUsername(identity.getString("username"));
-			sender.setType(identity.getString("type"));
+			sender.setProfile(identity.getString("profile"));
 		}
 		return sender;
 	}
