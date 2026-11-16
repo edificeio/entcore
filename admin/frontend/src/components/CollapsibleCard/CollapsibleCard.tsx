@@ -35,6 +35,7 @@ export const CollapsibleCard = ({
 }: CollapsibleCardProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const panelId = useId();
+  const headerId = useId();
 
   return (
     <Card variant="outlined" data-testid={testId}>
@@ -47,13 +48,17 @@ export const CollapsibleCard = ({
             alignItems: { xs: 'flex-start', sm: 'center' },
           }}
         >
-          <Box sx={{ minWidth: 0 }}>{header}</Box>
-          {/* Native button: Enter and Space toggle it without extra code */}
+          <Box id={headerId} sx={{ minWidth: 0 }}>
+            {header}
+          </Box>
+          {/* Native button: Enter and Space toggle it without extra code.
+              Described by the header, so cards with the same label stay distinct. */}
           <Button
             type="button"
             variant="text"
             aria-expanded={expanded}
             aria-controls={panelId}
+            aria-describedby={headerId}
             onClick={() => setExpanded((value) => !value)}
             endIcon={
               <ExpandMoreIcon

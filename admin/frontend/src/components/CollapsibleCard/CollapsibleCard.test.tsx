@@ -59,6 +59,14 @@ describe('CollapsibleCard', () => {
     expect(toggle).toHaveAttribute('type', 'button');
   });
 
+  it('describes its toggle with the header, so identical labels stay distinct', async () => {
+    render(renderCard());
+
+    expect(
+      await screen.findByRole('button', { name: 'Afficher' }),
+    ).toHaveAccessibleDescription('Titre');
+  });
+
   it('opens with defaultExpanded', async () => {
     render(renderCard({ defaultExpanded: true }));
 
