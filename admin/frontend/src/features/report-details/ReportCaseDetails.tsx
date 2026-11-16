@@ -131,7 +131,9 @@ export function ReportCaseDetails({
                     <ReportList reports={reportCase.reports} />
                   )}
                   {key === 'content' && <ReportContent />}
-                  {key === 'history' && <DecisionsHistory />}
+                  {key === 'history' && (
+                    <DecisionsHistory decisions={reportCase.decisions ?? []} />
+                  )}
                 </Box>
               )}
             </div>
