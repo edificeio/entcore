@@ -17,6 +17,7 @@ import fr.wseduc.mongodb.MongoUpdateBuilder;
 
 import fr.wseduc.rs.*;
 import io.vertx.core.*;
+import org.bson.Document;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -40,6 +41,7 @@ import org.entcore.workspace.Workspace;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.WorkspaceService.Visibility;
+import org.entcore.workspace.util.DocumentNameSearch;
 import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
@@ -717,10 +719,16 @@ public class WorkspaceController extends BaseController {
 		}
 		// search
 		if (!StringUtils.isEmpty(search)) {
-			final List<String> searchs = StringUtils.split(search, "\\s+");
 			if(disableFullTextSearch) {
-				log.warn("Full text search is disabled for workspace");
+				// full text search is disabled because $text bypasses the rights indexes: fallback on a name filter.
+				// The regex is only evaluated on the documents selected by the rights indexes (owner, inheritedShares),
+				// the same scan as before when the search was ignored, but far fewer documents are returned
+				final Document nameFilter = DocumentNameSearch.toNameFilter(search);
+				if (nameFilter != null) {
+					query.getParams().put("name", nameFilter);
+				}
 			} else {
+				final List<String> searchs = StringUtils.split(search, "\\s+");
 				query.setFullTextSearch(searchs);
 			}
 			query.addSort("modified", ElementSort.Desc);
