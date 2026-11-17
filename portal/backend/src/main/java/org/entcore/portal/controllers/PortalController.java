@@ -245,7 +245,7 @@ public class PortalController extends BaseController {
 				}
 			});
 		} else {
-			sendWithLastModified(request, path, true);
+			sendWithLastModified(request, path, path, true, true);
 		}
 	}
 
@@ -259,7 +259,8 @@ public class PortalController extends BaseController {
 				}
 			});
 		} else {
-			sendWithLastModified(request, path, true);
+			// The file depends on the theme cookie, the session preferences and the host: never shared.
+			sendWithLastModified(request, path, path, true, false);
 		}
 	}
 
@@ -297,31 +298,37 @@ public class PortalController extends BaseController {
 		}
 	}
 
-	private void sendWithLastModified(final HttpServerRequest request, final String path, final boolean decodeIfNeeded) {
+	/**
+	 * @param cacheKey key of the Last-Modified / decoded path caches: the resolved file path (not the URI), so
+	 *                 that /current/assets URLs, which resolve to a different file per theme, do not collide
+	 * @param shared   false when the file depends on the user (served as private)
+	 */
+	private void sendWithLastModified(final HttpServerRequest request, final String path, final String cacheKey,
+			final boolean decodeIfNeeded, final boolean shared) {
 		if (!isPathUnder(assetsPath, path)) {
 			notFound(request);
 			return;
 		}
-		if (staticRessources.containsKey(request.uri())) {
-			final String safePath = fixResources.getOrDefault(request.uri(), path);
-			final String modifiedDate = staticRessources.get(request.uri());
-			StaticResource.serveRessource(request,safePath,modifiedDate, dev);
+		if (staticRessources.containsKey(cacheKey)) {
+			final String safePath = fixResources.getOrDefault(cacheKey, path);
+			final String modifiedDate = staticRessources.get(cacheKey);
+			StaticResource.serveRessource(request, safePath, modifiedDate, dev, shared);
 		} else {
 			vertx.fileSystem().props(path, af -> {
 				if (af.succeeded()) {
 					final String lastModified = StaticResource.formatDate(af.result().lastModifiedTime());
-					staticRessources.put(request.uri(), lastModified);
-					StaticResource.serveRessource(request,path,lastModified, dev);
+					staticRessources.put(cacheKey, lastModified);
+					StaticResource.serveRessource(request, path, lastModified, dev, shared);
 				} else {
 					if(decodeIfNeeded && af.cause() instanceof FileSystemException && af.cause().getCause() != null && af.cause().getCause() instanceof NoSuchFileException){
 						try {
 							final String decoded = URLDecoder.decode(path, "UTF-8");
-							if (!isPathUnder(assetsPath, decoded)) { 
+							if (!isPathUnder(assetsPath, decoded)) {
 								notFound(request);
 								return;
 							}
-							fixResources.put(request.uri(), decoded);
-							sendWithLastModified(request, decoded, false);
+							fixResources.put(cacheKey, decoded);
+							sendWithLastModified(request, decoded, cacheKey, false, shared);
 							return;
 						} catch (UnsupportedEncodingException e) {}
 					}
