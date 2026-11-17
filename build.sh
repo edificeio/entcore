@@ -31,26 +31,28 @@ SPRINGBOARD="recette"
 # Initialize MODULE from env; --module=/-m= overrides it.
 MODULE="${MODULE:-}"
 MVN_OPTS="-Duser.home=/var/maven -T 4"
+# Options are accepted at any position: they are removed from the positional
+# parameters, and only the commands (init, clean, install...) are kept.
+COMMANDS=()
 for i in "$@"
 do
 case $i in
   --no-docker*)
     NO_DOCKER="true"
     MVN_OPTS=""
-    shift
     ;;
   -s=*|--springboard=*)
     SPRINGBOARD="${i#*=}"
-    shift
     ;;
   -m=*|--module=*)
     MODULE="${i#*=}"
-    shift
     ;;
   *)
+    COMMANDS+=("$i")
     ;;
 esac
 done
+set -- "${COMMANDS[@]}"
 
 if [ "$MODULE" = "" ]; then
     GRADLE_OPTION=""
@@ -85,6 +87,16 @@ fi
 echo "======================"
 echo "BRANCH_NAME = $BRANCH_NAME"
 echo "======================"
+
+# Logs how long a build phase took, measured from the given start ($SECONDS),
+# and returns the exit status of the command run just before, so that wrapping
+# a phase does not change how its failures are handled.
+# Usage: start=$SECONDS; <phase>; timing "<label>" $start
+timing () {
+  local status=$?
+  echo "[timing] $1: $((SECONDS - $2))s"
+  return $status
+}
 
 init() {
   me=`id -u`:`id -g`
@@ -144,6 +156,7 @@ buildFrontend () {
 
   # --- Build angularJS-based frontends
   if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ] || [ "$MODULE" = "timeline" ] || [ "$MODULE" = "auth" ]; then
+    angularjs_start=$SECONDS
     if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
@@ -164,6 +177,7 @@ buildFrontend () {
             docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
+    timing "front AngularJS (npm install + gulp)" $angularjs_start
   fi
 
   # --- Build react-based frontends
@@ -178,11 +192,13 @@ buildFrontend () {
     if [ -e ./"$module"/frontend ]; then
       echo -e "[Build React] Build react frontend for module $module"
       cd ./"$module"/frontend
+      react_start=$SECONDS
       if [ "$NO_DOCKER" = "true" ] ; then
         ./build.sh --no-docker clean init build
-      else 
+      else
         ./build.sh clean init build
       fi
+      timing "front React $module/frontend (clean + install + build)" $react_start
       if [ $? -ne 0 ]; then
         echo "Error while building React frontend for module $module"
         exit 1
@@ -203,11 +219,13 @@ buildFrontend () {
     if [ -e ./"$module"/frontend-crna ]; then
       echo -e "[Build React] Build react frontend-crna for module $module"
       cd ./"$module"/frontend-crna
+      react_start=$SECONDS
       if [ "$NO_DOCKER" = "true" ] ; then
         ./build.sh --no-docker clean init build
       else
         ./build.sh clean init build
       fi
+      timing "front React $module/frontend-crna (clean + install + build)" $react_start
       if [ $? -ne 0 ]; then
         echo "Error while building React frontend-crna for module $module"
         exit 1
@@ -220,6 +238,7 @@ buildFrontend () {
 
   # --- Build angular-based frontends
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+    admin_start=$SECONDS
     case `uname -s` in
       MINGW*)
         docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
@@ -227,19 +246,24 @@ buildFrontend () {
       *)
         docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
+    timing "front Angular admin (npm install + build)" $admin_start
   fi
 }
 
 buildBackend () {
+  maven_start=$SECONDS
   if [ "$NO_DOCKER" = "true" ] ; then
     mvn $MVN_OPTS install -DskipTests
   else
     docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests -U
   fi
+  timing "backend maven install" $maven_start
 }
 
 install () {
+  maven_start=$SECONDS
   docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests -U
+  timing "backend maven clean install" $maven_start
   cd broker-parent/broker-client/quarkus
   ./build.sh install
   cd -
@@ -376,6 +400,7 @@ fi
 
 for param in "$@"
 do
+  command_start=$SECONDS
   case $param in
     '--no-user')
       ;;
@@ -427,7 +452,9 @@ do
     *)
       echo "Invalid argument : $param"
   esac
+  timing "command $param" $command_start
   if [ ! $? -eq 0 ]; then
     exit 1
   fi
 done
+echo "[timing] total: ${SECONDS}s"
