@@ -675,6 +675,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					final int nbColumns = columns.size();
 					String[] strings;
 					int i = 1;
+					final CsvExternalIds externalIds = new CsvExternalIds();
 					csvParserWhile : while ((strings = csvParser.readNext()) != null) {
 						if (emptyLine(strings)) {
 							i++;
@@ -799,7 +800,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							if ("Relative".equals(profile)) {
 								generateRelativeUserExternalId(user, structure);
 							} else {
-								generateUserExternalId(user, ca, structure, seed);
+								externalIds.generateIfAbsent(user, structure.getExternalId(), profile);
 							}
 							state = State.NEW;
 						} else {
