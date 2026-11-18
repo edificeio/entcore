@@ -28,10 +28,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Import AAF du harnais de comparaison feeder / referential (POC referential, étape 2).
- * Importe (AafFeeder, ou Aaf1dFeeder si {@code harness.aaf.source=AAF1D}) le dossier {@code harness.aaf.path} dans le Neo4j {@code harness.neo4j.uri}, après le schéma de l'infra
- * (contraintes, DeleteGroup) sauf si {@code harness.neo4j.schema=false} : un import successif rejoue sur la même base.
- * Ignoré sans ces deux propriétés : seul le script du dépôt referential (harness/aaf2d-snapshot.sh) le lance.
+ * AAF import of the feeder / referential comparison harness (referential POC, step 2).
+ * Imports (AafFeeder, or Aaf1dFeeder if {@code harness.aaf.source=AAF1D}) the folder {@code harness.aaf.path} into the Neo4j {@code harness.neo4j.uri}, after the infra schema
+ * (constraints, DeleteGroup) unless {@code harness.neo4j.schema=false}: a successive import replays on the same database.
+ * Skipped without these two properties: only the script of the referential repository (harness/aaf2d-snapshot.sh) runs it.
  */
 @RunWith(VertxUnitRunner.class)
 public class AafHarnessImportTest {
@@ -39,12 +39,12 @@ public class AafHarnessImportTest {
     private static final String NEO4J_URI = "harness.neo4j.uri";
     private static final String AAF_PATH = "harness.aaf.path";
     private static final String APPLY_SCHEMA = "harness.neo4j.schema";
-    /** Flux d'import : AAF (2D, défaut) ou AAF1D. */
+    /** Import flow: AAF (2D, default) or AAF1D. */
     private static final String SOURCE = "harness.aaf.source";
     private static final List<String> SCHEMA_FILES = Arrays.asList("001-schema-index.cypher", "002-schema.cypher");
     private static final String SCHEMA_DIR = "../infra/src/main/resources/neo4j";
 
-    /** L'import complet du jeu AAF dépasse le délai par défaut de vertx-unit (2 min). */
+    /** The full import of the AAF set exceeds the default vertx-unit timeout (2 min). */
     @Rule
     public Timeout timeout = Timeout.seconds(1800);
 
@@ -82,7 +82,7 @@ public class AafHarnessImportTest {
             }));
     }
 
-    /** Une instruction par ligne non vide des fichiers de schéma de l'infra, sans le « ; » final. */
+    /** One statement per non-empty line of the infra schema files, without the trailing ";". */
     static List<String> schemaStatements() throws IOException {
         final List<String> statements = new ArrayList<>();
         for (String file : SCHEMA_FILES) {
@@ -97,7 +97,7 @@ public class AafHarnessImportTest {
         return statements;
     }
 
-    /** Une transaction par instruction : Neo4j refuse de mêler schéma et données dans une même transaction. */
+    /** One transaction per statement: Neo4j refuses to mix schema and data in a single transaction. */
     static void applySchema(TestContext context, Neo4j neo4j, List<String> statements, int index,
             Runnable next) {
         if (index == statements.size()) {

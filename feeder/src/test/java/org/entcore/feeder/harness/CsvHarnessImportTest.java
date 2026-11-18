@@ -81,7 +81,7 @@ public class CsvHarnessImportTest {
                     new DuplicateUsers(true, true, vertx.eventBus()), feederConfig) {
                     @Override
                     public void execute() {
-                        // dernier maillon du lanceur : le vrai post-import, puis la fin du test
+                        // last link of the launcher: the real post-import, then the end of the test
                         execute(null, (Set<String>) null, v -> async.complete());
                     }
                 };
