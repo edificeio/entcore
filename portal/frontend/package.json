@@ -80,14 +80,20 @@
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "2.1.9"
   },
-  "packageManager": "pnpm@9.12.2",
   "engines": {
-    "node": "20"
+    "node": ">=24 <25",
+    "pnpm": ">=10"
   },
   "nx": {},
   "pnpm": {
     "overrides": {
       "rollup": "4.68.5"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "core-js",
+      "esbuild",
+      "msw",
+      "nx"
+    ]
   }
 }

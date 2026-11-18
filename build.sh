@@ -269,13 +269,13 @@ buildFrontend () {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     admin_start=$SECONDS
     admin_dir=admin/src/main/ts
-    node_run node16 $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
+    node_run node-admin $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
     # Same fallback as the AngularJS frontends when the libs have no tag for
     # this branch. Before, the whole admin build failed in that case.
-    node_run node16 $admin_dir "npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME" \
+    node_run node-admin $admin_dir "npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME" \
       || {
         echo "[buildNode] WARNING: no '$BRANCH_NAME' tag for ngx-ode-core, ngx-ode-sijil or ngx-ode-ui: using the versions of package.json (set FRONT_TAG to choose a tag)"
-        node_run node16 $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
+        node_run node-admin $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
       }
     timing "front Angular admin install" $admin_start
     admin_build_start=$SECONDS
@@ -286,7 +286,7 @@ buildFrontend () {
     else
       admin_build_script=build-docker-prod
     fi
-    node_run node16 $admin_dir "npm run $admin_build_script" || die "admin: build failed"
+    node_run node-admin $admin_dir "npm run $admin_build_script" || die "admin: build failed"
     timing "front Angular admin build" $admin_build_start
     timing "front Angular admin (npm install + build)" $admin_start
   fi
@@ -346,7 +346,7 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node16 sh -c "npm run dev"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node-admin sh -c "npm run dev"
 }
 
 infra () {
