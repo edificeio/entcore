@@ -60,7 +60,7 @@ export default ({ mode }: { mode: string }) => {
       serveLocalCgu(__dirname),
       rewriteWayfV2(),
       react(),
-      tsconfigPaths(),
+      tsconfigPaths({ root: '.' }),
     ],
 
     build: {

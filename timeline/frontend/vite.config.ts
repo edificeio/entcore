@@ -128,7 +128,7 @@ export default ({ mode }: { mode: string }) => {
         },
       },
       react(),
-      tsconfigPaths(),
+      tsconfigPaths({ root: '.' }),
     ],
 
     build: {

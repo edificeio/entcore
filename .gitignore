@@ -85,7 +85,6 @@ conversation/src/main/resources/view/
 
 # Ignore some files in React-based frontends
 .pnpm-store
-**/pnpm-lock.yaml
 **/*.tsbuildinfo
 **/.nx
 **/frontend/.env*

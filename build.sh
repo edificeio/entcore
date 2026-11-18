@@ -12,15 +12,10 @@ then
   CI_OPTION=" -T "
 fi
 
-NPM_INSTALL="npm install"
 case `uname -s` in
   MINGW* | Darwin*)
     USER_UID=1000
     GROUP_GID=1000
-    case `uname -s` in
-      # npm cannot create the bin links on Windows.
-      MINGW*) NPM_INSTALL="npm install --no-bin-links" ;;
-    esac
     ;;
   *)
     if [ -z ${USER_UID:+x} ]
@@ -179,116 +174,99 @@ syncReactFrontendBuildToResources() {
   unset sync_target_root sync_resources_dir sync_public_dir sync_view_dir file file_name html_file
 }
 
-buildFrontend () {
+# Installs the pnpm workspace (pnpm-workspace.yaml) once for every frontend:
+# - the committed lockfile pins every dependency (--frozen-lockfile);
+# - update:edifice moves the internal dependencies (catalog dist-tags) to their
+#   latest publication, without touching package.json nor the catalog;
+# - the legacy libs take the dist-tag of the branch (or FRONT_TAG) when they
+#   publish one (scripts/front-legacy-tags.sh).
+installFrontend () {
+  install_start=$SECONDS
+  # The pnpm store lives outside the workspace, which the Jenkins checkout
+  # cleans (git clean -ffdx). Created here, so that docker does not create the
+  # mounted directory as root.
+  mkdir -p "${PNPM_STORE_DIR:-$HOME/.pnpm-store}" || die "cannot create the pnpm store"
+  node_run node . "pnpm install --frozen-lockfile && pnpm run update:edifice" || die "frontends: pnpm install failed"
+  if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ] || [ "$BRANCH_NAME" = 'release' ]; then
+    echo "[buildNode] Use the catalog versions of the legacy libs ($BRANCH_NAME)"
+  else
+    node_run node . "sh scripts/front-legacy-tags.sh $BRANCH_NAME" || die "frontends: cannot apply the '$BRANCH_NAME' tag to the legacy libs"
+  fi
+  timing "front install (pnpm workspace)" $install_start
+}
 
-  # --- Build angularJS-based frontends
-  # The gulpfile builds every module that has a webpack.config.js (archive,
-  # auth, directory, timeline, workspace). With any other module, gulp would
-  # silently fall back to building all of them.
+buildFrontend () {
+  # --- What this build needs
+  # The gulpfile builds the AngularJS frontends of the modules that have a
+  # webpack.config.js (archive, auth, directory, timeline, workspace).
+  local build_angularjs="" build_admin="" react_dirs=() modules module dir
   if [ "$MODULE" = "" ] || [ -e ./"$MODULE"/webpack.config.js ]; then
-    angularjs_start=$SECONDS
+    build_angularjs=true
+  fi
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+    build_admin=true
+  fi
+  if [ "$MODULE" = "" ]; then
+    modules=($(ls -d */ | cut -f1 -d'/'))
+  else
+    modules=($MODULE)
+  fi
+  for module in "${modules[@]}"; do
+    for dir in frontend frontend-crna; do
+      if [ -e ./"$module"/$dir/package.json ]; then
+        react_dirs+=("$module/$dir")
+      fi
+    done
+  done
+  if [ -z "$build_angularjs" ] && [ -z "$build_admin" ] && [ ${#react_dirs[@]} -eq 0 ]; then
+    echo "[buildNode] No frontend to build for module $MODULE"
+    return 0
+  fi
+
+  installFrontend
+
+  # --- AngularJS frontends (gulp)
+  if [ -n "$build_angularjs" ]; then
     if [ "$NO_DOCKER" = "true" ]; then
       springboard_path="../$SPRINGBOARD"
     else
       springboard_path="/home/node/$SPRINGBOARD"
     fi
-    if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
-      echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
-      node_run node . "$NPM_INSTALL && npm update entcore" || die "AngularJS frontends: npm install failed"
-    else
-      echo "[buildNode] Use entcore tag $BRANCH_NAME"
-      # A feature branch has no tag of its own on these libs unless FRONT_TAG
-      # is set: the versions of package.json are then kept, as before, but the
-      # build now says so instead of ignoring the error.
-      node_run node . "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME" \
-        || echo "[buildNode] WARNING: no '$BRANCH_NAME' tag for entcore, ode-ts-client or ode-ngjs-front: using the versions of package.json (set FRONT_TAG to choose a tag)"
-      node_run node . "$NPM_INSTALL" || die "AngularJS frontends: npm install failed"
-    fi
-    timing "front AngularJS install" $angularjs_start
     gulp_start=$SECONDS
     node_run node . "node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=$springboard_path" || die "AngularJS frontends: gulp build failed"
     timing "front AngularJS gulp build" $gulp_start
-    timing "front AngularJS (npm install + gulp)" $angularjs_start
   fi
 
-  # --- Build react-based frontends
-  local modules
-  if [ "$MODULE" = "" ]; then
-    modules=($(ls -d */ | cut -f1 -d'/'))
-  else 
-    modules=($MODULE)
+  # --- React frontends, built concurrently by pnpm (4 at a time by default)
+  if [ ${#react_dirs[@]} -gt 0 ]; then
+    react_start=$SECONDS
+    filters=""
+    for dir in "${react_dirs[@]}"; do
+      filters="$filters --filter ./$dir"
+    done
+    node_run node . "pnpm $filters run build" || die "React frontends: build failed (${react_dirs[*]})"
+    timing "front React build (${react_dirs[*]})" $react_start
+    # Copy each build into the resources of its module: <module>/backend for
+    # the modules whose backend lives there (conversation, portal), the module
+    # itself otherwise (compatibility with the legacy frontends of auth and
+    # timeline).
+    for dir in "${react_dirs[@]}"; do
+      module=${dir%%/*}
+      if [ -e ./"$module"/backend ]; then
+        sync_target="../backend"
+      else
+        sync_target=".."
+      fi
+      (cd ./"$dir" && syncReactFrontendBuildToResources "$sync_target" && rm -rf ./dist) \
+        || die "cannot copy the build of $dir"
+    done
   fi
-  
-  for module in "${modules[@]}"; do
-    if [ -e ./"$module"/frontend ]; then
-      echo -e "[Build React] Build react frontend for module $module"
-      cd ./"$module"/frontend || die "cannot enter $module/frontend"
-      react_start=$SECONDS
-      if [ "$NO_DOCKER" = "true" ] ; then
-        ./build.sh --no-docker clean init build
-      else
-        ./build.sh clean init build
-      fi
-      timing "front React $module/frontend (clean + install + build)" $react_start
-      if [ $? -ne 0 ]; then
-        die "Error while building React frontend for module $module"
-      fi
 
-      # Create directory structure and copy frontend build files.
-      if [ "$module" = "timeline" ] || [ "$module" = "auth" ]; then
-        # compatibility mode : preserve legacy frontends files in ../src
-        syncReactFrontendBuildToResources ".." || die "cannot copy the build of $module/frontend"
-      else
-        syncReactFrontendBuildToResources "../backend" || die "cannot copy the build of $module/frontend"
-      fi
-
-      # Clean up
-      rm -rf ./dist
-      cd ../..
-    fi
-    if [ -e ./"$module"/frontend-crna ]; then
-      echo -e "[Build React] Build react frontend-crna for module $module"
-      cd ./"$module"/frontend-crna || die "cannot enter $module/frontend-crna"
-      react_start=$SECONDS
-      if [ "$NO_DOCKER" = "true" ] ; then
-        ./build.sh --no-docker clean init build
-      else
-        ./build.sh clean init build
-      fi
-      timing "front React $module/frontend-crna (clean + install + build)" $react_start
-      if [ $? -ne 0 ]; then
-        die "Error while building React frontend-crna for module $module"
-      fi
-      syncReactFrontendBuildToResources ".." || die "cannot copy the build of $module/frontend-crna"
-      rm -rf ./dist
-      cd ../..
-    fi
-  done
-
-  # --- Build angular-based frontends
-  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+  # --- Angular admin
+  if [ -n "$build_admin" ]; then
     admin_start=$SECONDS
-    admin_dir=admin/src/main/ts
-    node_run node-admin $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
-    # Same fallback as the AngularJS frontends when the libs have no tag for
-    # this branch. Before, the whole admin build failed in that case.
-    node_run node-admin $admin_dir "npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME" \
-      || {
-        echo "[buildNode] WARNING: no '$BRANCH_NAME' tag for ngx-ode-core, ngx-ode-sijil or ngx-ode-ui: using the versions of package.json (set FRONT_TAG to choose a tag)"
-        node_run node-admin $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
-      }
-    timing "front Angular admin install" $admin_start
-    admin_build_start=$SECONDS
-    # Outside docker, admin/src/main/ts and admin/ are not mounted on
-    # /home/node/app and /home/node/base: the relative paths of build-prod apply.
-    if [ "$NO_DOCKER" = "true" ]; then
-      admin_build_script=build-prod
-    else
-      admin_build_script=build-docker-prod
-    fi
-    node_run node-admin $admin_dir "npm run $admin_build_script" || die "admin: build failed"
-    timing "front Angular admin build" $admin_build_start
-    timing "front Angular admin (npm install + build)" $admin_start
+    node_run node . "pnpm --filter admin-app run build-prod" || die "admin: build failed"
+    timing "front Angular admin build" $admin_start
   fi
 }
 
@@ -346,7 +324,7 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node-admin sh -c "npm run dev"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node sh -c "pnpm --filter admin-app run dev"
 }
 
 infra () {

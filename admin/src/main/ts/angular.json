@@ -48,7 +48,6 @@
             "buildOptimizer": false,
             "optimization": false,
             "namedChunks": true,
-            "preserveSymlinks": true,
             "allowedCommonJsDependencies": [
               "rxjs",
               "rxjs-compat",

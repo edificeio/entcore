@@ -117,7 +117,7 @@ export default ({ mode }: { mode: string }) => {
         rootDir: __dirname,
       }),
       react(),
-      tsconfigPaths(),
+      tsconfigPaths({ root: '.' }),
       hashEdificeBootstrap({
         hash: queryHashVersion,
       }),
