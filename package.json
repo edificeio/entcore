@@ -24,6 +24,7 @@
     "url": "https://github.com/entcore/entcore/issues"
   },
   "private": true,
+  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=24 <25",
     "pnpm": ">=10"
