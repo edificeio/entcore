@@ -31,6 +31,20 @@ catalog:
   ode-ngjs-front: develop-enabling
   ode-ts-client: develop-enabling
 
+# Third-party tooling shared by the 5 React frontends (`catalog:react-fronts`),
+# kept apart from the internal dependencies above, which the release tooling
+# rewrites. One version each: with two, the types are duplicated in the
+# workspace (two vite, two vitest, two @types/react) and typecheck fails
+# (ENABLING-1397, D51).
+catalogs:
+  react-fronts:
+    '@types/react': 18.3.27
+    '@types/react-dom': 18.3.7
+    '@vitest/coverage-v8': 2.1.9
+    '@vitest/ui': 2.1.9
+    vite: 5.4.21
+    vitest: 2.1.9
+
 # Dependencies that some packages use without declaring them. npm hoisted them
 # to the top of node_modules, which hid the problem; pnpm does not.
 # The packages below (all used by admin) require rxjs: declared as a peer, they

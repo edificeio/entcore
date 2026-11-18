@@ -59,11 +59,11 @@
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.1",
     "@types/node": "18.19.130",
-    "@types/react": "18.3.27",
-    "@types/react-dom": "18.3.7",
+    "@types/react": "catalog:react-fronts",
+    "@types/react-dom": "catalog:react-fronts",
     "@vitejs/plugin-react": "4.7.0",
-    "@vitest/coverage-v8": "2.1.9",
-    "@vitest/ui": "2.1.9",
+    "@vitest/coverage-v8": "catalog:react-fronts",
+    "@vitest/ui": "catalog:react-fronts",
     "eslint": "9.39.2",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.26",
@@ -76,9 +76,9 @@
     "prettier": "3.8.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.54.0",
-    "vite": "5.4.21",
+    "vite": "catalog:react-fronts",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "2.1.9"
+    "vitest": "catalog:react-fronts"
   },
   "packageManager": "pnpm@10.34.5",
   "engines": {
