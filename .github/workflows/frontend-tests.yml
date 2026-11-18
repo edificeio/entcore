@@ -1,0 +1,100 @@
+# Unit tests (vitest) of the React frontends, run on pull requests.
+# Modelled on the tests workflow of edifice-frontend-framework: one job per
+# frontend, always present (so that it can be a required check), whose steps
+# only run when the frontend, or what it depends on, changed.
+name: 'Frontend tests'
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+# A new push to the pull request cancels the run in progress.
+concurrency:
+  group: frontend-tests-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect relevant changes
+    runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.filter.outputs.auth }}
+      conversation: ${{ steps.filter.outputs.conversation }}
+      portal: ${{ steps.filter.outputs.portal }}
+      timeline: ${{ steps.filter.outputs.timeline }}
+      timeline-crna: ${{ steps.filter.outputs.timeline-crna }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # Every frontend also depends on the workspace files (lockfile,
+          # catalog of the internal dependencies) and on this workflow.
+          filters: |
+            workspace: &workspace
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/frontend-tests.yml'
+            auth:
+              - *workspace
+              - 'auth/frontend/**'
+            conversation:
+              - *workspace
+              - 'conversation/frontend/**'
+            portal:
+              - *workspace
+              - 'portal/frontend/**'
+            timeline:
+              - *workspace
+              - 'timeline/frontend/**'
+            timeline-crna:
+              - *workspace
+              - 'timeline/frontend-crna/**'
+
+  test:
+    name: 'Tests ${{ matrix.frontend.name }}'
+    needs: changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        frontend:
+          - { name: auth, dir: auth/frontend }
+          - { name: conversation, dir: conversation/frontend }
+          - { name: portal, dir: portal/frontend }
+          - { name: timeline, dir: timeline/frontend }
+          - { name: timeline-crna, dir: timeline/frontend-crna }
+    env:
+      CHANGED: ${{ needs.changes.outputs[matrix.frontend.name] }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.CHANGED == 'true'
+      # Uses the pnpm version pinned by packageManager in package.json.
+      - uses: pnpm/action-setup@v4
+        if: env.CHANGED == 'true'
+      - uses: actions/setup-node@v4
+        if: env.CHANGED == 'true'
+        with:
+          node-version: 24
+          cache: pnpm
+      # Same install as build.sh: the lockfile, then the latest publication of
+      # the internal dependencies (dist-tags of the catalog).
+      - name: Install
+        if: env.CHANGED == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run update:edifice
+      - name: Test (coverage)
+        if: env.CHANGED == 'true'
+        run: pnpm --filter ./${{ matrix.frontend.dir }} run test:coverage
+      - name: Upload coverage report
+        if: env.CHANGED == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.frontend.name }}
+          path: ${{ matrix.frontend.dir }}/coverage/
+          retention-days: 14
+          if-no-files-found: ignore

@@ -7,7 +7,6 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "karma start ./karma.conf.js",
     "legacy:watch": "node node_modules/gulp/bin/gulp.js watch-dev",
     "legacy:server": "node dev-server.js",
     "legacy:dev": "concurrently --kill-others-on-fail -n webpack,serve -c blue,green \"npm run legacy:watch\" \"npm run legacy:server\"",
@@ -46,7 +45,6 @@
   "devDependencies": {
     "@types/angular": "1.8.3",
     "@types/core-js": "0.9.36",
-    "@types/jasmine": "~2.5.53",
     "@types/jquery": "^3.2.1",
     "@types/node": "~6.0.60",
     "browser-sync": "^3.0.4",
@@ -59,14 +57,6 @@
     "gulp-rev": "9.0.0",
     "html-loader": "^0.4.5",
     "http-proxy": "^1.18.1",
-    "jasmine-core": "~2.6.2",
-    "jasmine-spec-reporter": "~4.1.0",
-    "karma": "~1.7.0",
-    "karma-chrome-launcher": "~2.1.1",
-    "karma-cli": "~1.0.1",
-    "karma-coverage-istanbul-reporter": "^1.2.1",
-    "karma-jasmine": "~1.1.0",
-    "karma-jasmine-html-reporter": "^0.2.2",
     "merge2": "^1.0.3",
     "ode-ngjs-front": "catalog:",
     "ode-ts-client": "catalog:",

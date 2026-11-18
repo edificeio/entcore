@@ -28,17 +28,8 @@ pipeline {
         sh './build.sh $BUILD_SH_EXTRA_PARAM init clean install'
       }
     }
-    stage('Test') {
-      steps {
-        script {
-          sh 'sleep 6'
-/*            try {
-            sh './build.sh $BUILD_SH_EXTRA_PARAM test'
-          } catch (err) {
-          }*/
-        }
-      }
-    }
+    // No Test stage: the frontend unit tests run on pull requests
+    // (.github/workflows/frontend-tests.yml).
     stage('Publish') {
       steps {
         sh "NPM_TOKEN=$NPM_PUBLIC_TOKEN DRY_RUN=false ./build.sh \$BUILD_SH_EXTRA_PARAM publish"
