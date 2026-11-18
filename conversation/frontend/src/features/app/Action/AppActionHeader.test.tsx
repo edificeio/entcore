@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '~/mocks/setup';
 import { AppActionHeader } from './AppActionHeader';
@@ -8,6 +9,17 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('~/hooks/useRights', () => ({
   useRights: mocks.useRights,
+}));
+
+// The tiptap `Editor` of the absence modal focuses itself asynchronously. In
+// jsdom (no layout, no `Range.getClientRects`) that throws, sometimes after the
+// test has ended, and vitest then fails the run. These tests only check that
+// the modal opens, so the editor is stubbed, as in `AbsenceModalForm.test.tsx`.
+vi.mock('@edifice.io/react/editor', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@edifice.io/react/editor')>()),
+  Editor: forwardRef(function EditorStub() {
+    return <div data-testid="absence-editor-stub" />;
+  }),
 }));
 
 describe('AppActionHeader', () => {
