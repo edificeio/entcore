@@ -580,9 +580,9 @@ export function testAddLinkBetweenRelativeAndStudent(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkNotEquals(`${testName} response contains number field`, undefined, body.number);
-    checkEquals(`${testName} number is a number`, "number", typeof body.number);
-    checkGte(`${testName} number is >= 0`, 0, body.number);
+    checkNotEquals(`${testName} response contains count field`, undefined, body.count);
+    checkEquals(`${testName} count is a number`, "number", typeof body.count);
+    checkGte(`${testName} count is >= 0`, 0, body.count);
   });
 
   group('[Endpoints] addLinkBetweenRelativeAndStudent - direction INCOMING', () => {
@@ -605,7 +605,7 @@ export function testAddLinkBetweenRelativeAndStudent(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkEquals(`${testName} number is a number`, "number", typeof body.number);
+    checkEquals(`${testName} count is a number`, "number", typeof body.count);
   });
 
   group('[Endpoints] addLinkBetweenRelativeAndStudent - direction OUTGOING', () => {
@@ -628,7 +628,7 @@ export function testAddLinkBetweenRelativeAndStudent(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkEquals(`${testName} number is a number`, "number", typeof body.number);
+    checkEquals(`${testName} count is a number`, "number", typeof body.count);
   });
 }
 
@@ -659,9 +659,9 @@ export function testRemoveLinkBetweenRelativeAndStudent(data: InitData) {
     const body = JSON.parse(<string>res.body);
     console.log("body is",body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkNotEquals(`${testName} response contains number field`, undefined, body.number);
-    checkEquals(`${testName} number is a number`, "number", typeof body.number);
-    checkGte(`${testName} number is >= 0`, 0, body.number);
+    checkNotEquals(`${testName} response contains count field`, undefined, body.count);
+    checkEquals(`${testName} count is a number`, "number", typeof body.count);
+    checkGte(`${testName} count is >= 0`, 0, body.count);
   });
 
   group('[Endpoints] removeLinkBetweenRelativeAndStudent - remove INCOMING only', () => {
@@ -684,7 +684,7 @@ export function testRemoveLinkBetweenRelativeAndStudent(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkTrue(`${testName} number is a number`, typeof body.number === "number");
+    checkTrue(`${testName} count is a number`, typeof body.count === "number");
   });
 }
 
@@ -1074,8 +1074,8 @@ export function testProcessAddLinkAndChangeDirection(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkEquals(`${testName} start direction is INCOMING`, 'INCOMING', body[group1.id]);
-    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body[group2.id]);
+    checkEquals(`${testName} start direction is INCOMING`, 'INCOMING', body.directions[group1.id]);
+    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body.directions[group2.id]);
 
     // Verify link was actually created
     const verifyRes = http.get(
@@ -1109,8 +1109,8 @@ export function testProcessAddLinkAndChangeDirection(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkEquals(`${testName} start direction upgraded to BOTH`, 'BOTH', body[group1.id]);
-    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body[group2.id]);
+    checkEquals(`${testName} start direction upgraded to BOTH`, 'BOTH', body.directions[group1.id]);
+    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body.directions[group2.id]);
 
     // tear down
     deleteGroupOrFail(group1);
@@ -1137,8 +1137,8 @@ export function testProcessAddLinkAndChangeDirection(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkTrue(`${testName} start not in response (no change needed)`, body[group1.id] === undefined);
-    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body[group2.id]);
+    checkTrue(`${testName} start not in response (no change needed)`, body.directions[group1.id] === undefined);
+    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body.directions[group2.id]);
 
     // tear down
     deleteGroupOrFail(group1);
@@ -1164,8 +1164,8 @@ export function testProcessAddLinkAndChangeDirection(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkTrue(`${testName} start not in response (no change needed)`, body[group1.id] === undefined);
-    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body[group2.id]);
+    checkTrue(`${testName} start not in response (no change needed)`, body.directions[group1.id] === undefined);
+    checkEquals(`${testName} end direction is OUTGOING`, 'OUTGOING', body.directions[group2.id]);
 
     // tear down
     deleteGroupOrFail(group1);
@@ -1191,8 +1191,8 @@ export function testProcessAddLinkAndChangeDirection(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkEquals(`${testName} start direction is INCOMING`, 'INCOMING', body[group1.id]);
-    checkEquals(`${testName} end direction upgraded to BOTH`, 'BOTH', body[group2.id]);
+    checkEquals(`${testName} start direction is INCOMING`, 'INCOMING', body.directions[group1.id]);
+    checkEquals(`${testName} end direction upgraded to BOTH`, 'BOTH', body.directions[group2.id]);
 
     // tear down
     deleteGroupOrFail(group1);
@@ -1219,8 +1219,8 @@ export function testProcessAddLinkAndChangeDirection(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkEquals(`${testName} start direction is INCOMING`, 'INCOMING', body[group1.id]);
-    checkTrue(`${testName} end not in response (no change needed)`, body[group2.id] === undefined);
+    checkEquals(`${testName} start direction is INCOMING`, 'INCOMING', body.directions[group1.id]);
+    checkTrue(`${testName} end not in response (no change needed)`, body.directions[group2.id] === undefined);
 
     // tear down
     deleteGroupOrFail(group1);
@@ -1249,8 +1249,8 @@ export function testProcessAddLinkAndChangeDirection(data: InitData) {
     );
     const body = JSON.parse(<string>res.body);
     checkEquals(`${testName} returns 200`, 200, res.status);
-    checkTrue(`${testName} start not in response (no change needed)`, body[group1.id] === undefined);
-    checkTrue(`${testName} end not in response (no change needed)`, body[group2.id] === undefined);
+    checkTrue(`${testName} start not in response (no change needed)`, body.directions[group1.id] === undefined);
+    checkTrue(`${testName} end not in response (no change needed)`, body.directions[group2.id] === undefined);
 
     // Verify the link was still created even though no direction changed
     const verifyRes = http.get(
