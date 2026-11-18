@@ -19,7 +19,6 @@ services:
       # workspace (git clean -ffdx). PNPM_STORE_DIR overrides the location.
       - ${PNPM_STORE_DIR:-~/.pnpm-store}:/home/node/.pnpm-store
       - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
-      - ../infra-front:/home/node/infra-front
     environment:
       - npm_config_store_dir=/home/node/.pnpm-store
       - NG_CLI_ANALYTICS=false
@@ -38,12 +37,3 @@ services:
       ADMC_PASSWORD: password
       DEFAULT_PASSWORD: password
       RECREATE_STRUCTURES: false # Set to 'true' if you want to run the tests on brand new structures
-  node22:
-    image: opendigitaleducation/node:22-alpine-pnpm
-    working_dir: /home/node/app
-    volumes:
-      - ./broker-parent/broker-client/nest:/home/node/app
-      - ~/.npm:/.npm
-      - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
-    environment:
-      - NG_CLI_ANALYTICS=false

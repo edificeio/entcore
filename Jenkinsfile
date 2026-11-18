@@ -44,7 +44,7 @@ pipeline {
   }
   post {
     cleanup {
-      sh 'docker-compose down'
+      sh 'docker compose down'
     }
   }
 }

@@ -12,6 +12,15 @@ then
   CI_OPTION=" -T "
 fi
 
+# Maven -U (force the update of the SNAPSHOT dependencies) only in CI (Jenkins
+# sets JENKINS_URL): locally, it slows every build down for nothing.
+MVN_UPDATE_OPTION=""
+if [ "$CI" = "true" ] || [ -n "$JENKINS_URL" ]
+then
+  MVN_UPDATE_OPTION="-U"
+  echo "[buildNode] CI build: maven updates the SNAPSHOT dependencies (-U)"
+fi
+
 case `uname -s` in
   MINGW* | Darwin*)
     USER_UID=1000
@@ -58,10 +67,8 @@ done
 set -- "${COMMANDS[@]}"
 
 if [ "$MODULE" = "" ]; then
-    GRADLE_OPTION=""
     NODE_OPTION=""
 else
-  GRADLE_OPTION=":$MODULE:"
   NODE_OPTION="--module $MODULE"
   if [ -e "$MODULE/backend" ]; then
     echo "BACKEND SUB-PROJECT $MODULE/backend DETECTED"
@@ -136,8 +143,8 @@ services:
     user: "$DEFAULT_DOCKER_USER"
 EOF
   	# Copy /root/edifice from edifice-cli container to host machine
-  	docker compose -f build.compose.yaml create edifice-cli || die "init: cannot create the edifice-cli container"
-  	docker compose -f build.compose.yaml cp edifice-cli:/root/edifice ./edifice || die "init: cannot copy edifice-cli"
+  	docker compose -f build.compose.yaml create edifice-cli || { rm -f build.compose.yaml; die "init: cannot create the edifice-cli container"; }
+  	docker compose -f build.compose.yaml cp edifice-cli:/root/edifice ./edifice || { docker compose -f build.compose.yaml rm -fsv edifice-cli; rm -f build.compose.yaml; die "init: cannot copy edifice-cli"; }
   	docker compose -f build.compose.yaml rm -fsv edifice-cli
   	rm -f build.compose.yaml
   	chmod +x edifice
@@ -148,7 +155,7 @@ clean () {
   if [ "$NO_DOCKER" = "true" ] ; then
     mvn $MVN_OPTS clean
   else
-    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS clean
+    docker compose run --rm maven mvn $MVN_OPTS clean
   fi
 }
 
@@ -275,14 +282,14 @@ buildBackend () {
   if [ "$NO_DOCKER" = "true" ] ; then
     mvn $MVN_OPTS install -DskipTests
   else
-    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests -U
+    docker compose run --rm maven mvn $MVN_OPTS install -DskipTests $MVN_UPDATE_OPTION
   fi
   timing "backend maven install" $maven_start
 }
 
 install () {
   maven_start=$SECONDS
-  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests -U
+  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests $MVN_UPDATE_OPTION
   timing "backend maven clean install" $maven_start || die "maven build failed"
   # The final `cd -` used to hide the result of the broker client build.
   cd broker-parent/broker-client/quarkus || die "cannot enter broker-parent/broker-client/quarkus"
@@ -299,23 +306,16 @@ test () {
   fi
 }
 
-localDep () {
-  for dep in ode-ts-client ode-ngjs-front ; do
-    if [ -e $PWD/../$dep ]; then
-      rm -rf $dep.tar $dep.tar.gz
-      mkdir $dep.tar && mkdir $dep.tar/dist \
-        && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
-      tar cfzh $dep.tar.gz $dep.tar
-      docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-save $dep.tar.gz"
-      rm -rf $dep.tar $dep.tar.gz
-    fi
-  done
+# localDep and infra used to `npm install` a local build of a legacy lib
+# (ode-ts-client, ode-ngjs-front, infra-front) into the root node_modules, which
+# npm cannot do since pnpm manages them (ENABLING-1397).
+removedLocalLibCommand () {
+  die "'$1' has been removed: npm cannot install into the pnpm workspace. To test a local build of a legacy lib: \`pnpm link ../<lib>\` at the root, build with --no-docker (the lib is not mounted in the node container), then come back with \`git checkout -- package.json pnpm-workspace.yaml pnpm-lock.yaml && pnpm install\`."
 }
 
 watch () {
-  docker compose run --rm maven sh -c "mvn $MVN_OPTS help:evaluate -Dexpression=project.groupId -q -DforceStdout -pl $MODULE && echo -n '~$MODULE~' &&  mvn $MVN_OPTS help:evaluate -Dexpression=project.version -pl $MODULE -q -DforceStdout" > .version.properties  
+  docker compose run --rm maven sh -c "mvn $MVN_OPTS help:evaluate -Dexpression=project.groupId -q -DforceStdout -pl $MODULE && echo -n '~$MODULE~' &&  mvn $MVN_OPTS help:evaluate -Dexpression=project.version -pl $MODULE -q -DforceStdout" > .version.properties
   docker compose run --rm \
-    $USER_OPTION \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD "
   rm -f .version.properties
@@ -327,12 +327,8 @@ ngWatch () {
   docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node sh -c "pnpm --filter admin-app run dev"
 }
 
-infra () {
-  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install /home/node/infra-front"
-}
-
 publish() {
-  version=`docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
+  version=`docker compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
   level=`echo $version | cut -d'-' -f3`
   case "$level" in
     *SNAPSHOT) export nexusRepository='snapshots' ;;
@@ -415,7 +411,9 @@ itTests() {
   exit $exit_code
 }
 
-if [ ! -e .env ]; then
+# Skipped when the first command is init (Jenkins: `init clean install`), which
+# would otherwise run twice in a row.
+if [ ! -e .env ] && [ "$1" != "init" ]; then
   # Run in a subshell so that a failure does not stop the build: this
   # automatic init writes .env first, and edifice-cli is only needed by
   # `image`. The image has no arm64 variant, so it fails on Apple Silicon.
@@ -449,8 +447,8 @@ do
     buildBack)
       install
       ;;
-    localDep)
-      localDep
+    localDep|infra)
+      removedLocalLibCommand "$param"
       ;;
     watch)
       watch
@@ -463,9 +461,6 @@ do
       ;;
     itTests)
       itTests
-      ;;
-    infra)
-      infra
       ;;
     publish)
       publish
