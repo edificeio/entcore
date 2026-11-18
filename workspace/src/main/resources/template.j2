@@ -66,6 +66,11 @@
       "bucket": "{{ s3iacaption_bucket }}"
     },
     {% endif %}
+    {% if workspaceTransferPrefix is defined and workspaceTransferPrefix %}
+    "transfert-storage": {
+      "prefix-s3": "{{ workspaceTransferPrefix }}"
+    },
+    {% endif %}
     "publicConf": {
       "lazy-mode": {{ workspaceLazyMode | default('true') }},
       {% if workspaceEnableNextCloud is defined and workspaceEnableNextCloud and workspaceEnableGoogleDrive is defined and workspaceEnableGoogleDrive %}"folder-service": ["nextcloud", "google-drive"],
