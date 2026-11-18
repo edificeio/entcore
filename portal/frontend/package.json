@@ -84,5 +84,10 @@
   "engines": {
     "node": "20"
   },
-  "nx": {}
+  "nx": {},
+  "pnpm": {
+    "overrides": {
+      "rollup": "4.68.5"
+    }
+  }
 }
