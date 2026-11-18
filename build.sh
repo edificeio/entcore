@@ -12,15 +12,23 @@ then
   CI_OPTION=" -T "
 fi
 
+NPM_INSTALL="npm install"
 case `uname -s` in
   MINGW* | Darwin*)
     USER_UID=1000
-    GROUP_UID=1000
+    GROUP_GID=1000
+    case `uname -s` in
+      # npm cannot create the bin links on Windows.
+      MINGW*) NPM_INSTALL="npm install --no-bin-links" ;;
+    esac
     ;;
   *)
     if [ -z ${USER_UID:+x} ]
     then
       USER_UID=`id -u`
+    fi
+    if [ -z ${GROUP_GID:+x} ]
+    then
       GROUP_GID=`id -g`
     fi
 esac
@@ -98,6 +106,25 @@ timing () {
   return $status
 }
 
+# Stops the whole build with an explicit message. Used instead of `set -e`,
+# which bash ignores inside functions called from a `&&` list, such as
+# `buildFrontend && buildBackend`.
+die () {
+  echo "[error] $*" >&2
+  exit 1
+}
+
+# Runs a shell command with Node: in the given docker compose service, or
+# directly in the given directory with --no-docker.
+# Usage: node_run <service> <local directory> <command>
+node_run () {
+  if [ "$NO_DOCKER" = "true" ]; then
+    (cd "$2" && sh -c "$3")
+  else
+    docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION "$1" sh -c "$3"
+  fi
+}
+
 init() {
   me=`id -u`:`id -g`
   echo "DEFAULT_DOCKER_USER=$me" > .env
@@ -114,8 +141,8 @@ services:
     user: "$DEFAULT_DOCKER_USER"
 EOF
   	# Copy /root/edifice from edifice-cli container to host machine
-  	docker compose -f build.compose.yaml create edifice-cli
-  	docker compose -f build.compose.yaml cp edifice-cli:/root/edifice ./edifice
+  	docker compose -f build.compose.yaml create edifice-cli || die "init: cannot create the edifice-cli container"
+  	docker compose -f build.compose.yaml cp edifice-cli:/root/edifice ./edifice || die "init: cannot copy edifice-cli"
   	docker compose -f build.compose.yaml rm -fsv edifice-cli
   	rm -f build.compose.yaml
   	chmod +x edifice
@@ -137,16 +164,16 @@ syncReactFrontendBuildToResources() {
   sync_view_dir="$sync_resources_dir/view"
 
   # Move dist to resources dir
-  cp -R ./dist/* "$sync_resources_dir/"
+  cp -R ./dist/* "$sync_resources_dir/" || return 1
 
   # Create resources/view directory if needed
-  mkdir -p "$sync_view_dir"
+  mkdir -p "$sync_view_dir" || return 1
 
   # Move generated HTML entrypoints into the view directory when present.
   for html_file in "$sync_resources_dir"/*.html; do
     [ -f "$html_file" ] || continue
     echo "...moving HTML file $html_file to $sync_view_dir/"
-    mv "$html_file" "$sync_view_dir/"
+    mv "$html_file" "$sync_view_dir/" || return 1
   done
 
   unset sync_target_root sync_resources_dir sync_public_dir sync_view_dir file file_name html_file
@@ -155,28 +182,32 @@ syncReactFrontendBuildToResources() {
 buildFrontend () {
 
   # --- Build angularJS-based frontends
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ] || [ "$MODULE" = "timeline" ] || [ "$MODULE" = "auth" ]; then
+  # The gulpfile builds every module that has a webpack.config.js (archive,
+  # auth, directory, timeline, workspace). With any other module, gulp would
+  # silently fall back to building all of them.
+  if [ "$MODULE" = "" ] || [ -e ./"$MODULE"/webpack.config.js ]; then
     angularjs_start=$SECONDS
-    if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
-        echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
-        case `uname -s` in
-          MINGW*)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
-            ;;
-          *)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
-        esac
+    if [ "$NO_DOCKER" = "true" ]; then
+      springboard_path="../$SPRINGBOARD"
     else
-        echo "[buildNode] Use entcore tag $BRANCH_NAME"
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
-        case `uname -s` in
-          MINGW*)
-            docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
-            ;;
-          *)
-            docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
-        esac
+      springboard_path="/home/node/$SPRINGBOARD"
     fi
+    if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
+      echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
+      node_run node . "$NPM_INSTALL && npm update entcore" || die "AngularJS frontends: npm install failed"
+    else
+      echo "[buildNode] Use entcore tag $BRANCH_NAME"
+      # A feature branch has no tag of its own on these libs unless FRONT_TAG
+      # is set: the versions of package.json are then kept, as before, but the
+      # build now says so instead of ignoring the error.
+      node_run node . "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME" \
+        || echo "[buildNode] WARNING: no '$BRANCH_NAME' tag for entcore, ode-ts-client or ode-ngjs-front: using the versions of package.json (set FRONT_TAG to choose a tag)"
+      node_run node . "$NPM_INSTALL" || die "AngularJS frontends: npm install failed"
+    fi
+    timing "front AngularJS install" $angularjs_start
+    gulp_start=$SECONDS
+    node_run node . "node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=$springboard_path" || die "AngularJS frontends: gulp build failed"
+    timing "front AngularJS gulp build" $gulp_start
     timing "front AngularJS (npm install + gulp)" $angularjs_start
   fi
 
@@ -191,7 +222,7 @@ buildFrontend () {
   for module in "${modules[@]}"; do
     if [ -e ./"$module"/frontend ]; then
       echo -e "[Build React] Build react frontend for module $module"
-      cd ./"$module"/frontend
+      cd ./"$module"/frontend || die "cannot enter $module/frontend"
       react_start=$SECONDS
       if [ "$NO_DOCKER" = "true" ] ; then
         ./build.sh --no-docker clean init build
@@ -200,16 +231,15 @@ buildFrontend () {
       fi
       timing "front React $module/frontend (clean + install + build)" $react_start
       if [ $? -ne 0 ]; then
-        echo "Error while building React frontend for module $module"
-        exit 1
+        die "Error while building React frontend for module $module"
       fi
 
       # Create directory structure and copy frontend build files.
       if [ "$module" = "timeline" ] || [ "$module" = "auth" ]; then
         # compatibility mode : preserve legacy frontends files in ../src
-        syncReactFrontendBuildToResources ".."
+        syncReactFrontendBuildToResources ".." || die "cannot copy the build of $module/frontend"
       else
-        syncReactFrontendBuildToResources "../backend"
+        syncReactFrontendBuildToResources "../backend" || die "cannot copy the build of $module/frontend"
       fi
 
       # Clean up
@@ -218,7 +248,7 @@ buildFrontend () {
     fi
     if [ -e ./"$module"/frontend-crna ]; then
       echo -e "[Build React] Build react frontend-crna for module $module"
-      cd ./"$module"/frontend-crna
+      cd ./"$module"/frontend-crna || die "cannot enter $module/frontend-crna"
       react_start=$SECONDS
       if [ "$NO_DOCKER" = "true" ] ; then
         ./build.sh --no-docker clean init build
@@ -227,10 +257,9 @@ buildFrontend () {
       fi
       timing "front React $module/frontend-crna (clean + install + build)" $react_start
       if [ $? -ne 0 ]; then
-        echo "Error while building React frontend-crna for module $module"
-        exit 1
+        die "Error while building React frontend-crna for module $module"
       fi
-      syncReactFrontendBuildToResources ".."
+      syncReactFrontendBuildToResources ".." || die "cannot copy the build of $module/frontend-crna"
       rm -rf ./dist
       cd ../..
     fi
@@ -239,13 +268,26 @@ buildFrontend () {
   # --- Build angular-based frontends
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     admin_start=$SECONDS
-    case `uname -s` in
-      MINGW*)
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
-        ;;
-      *)
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
-    esac
+    admin_dir=admin/src/main/ts
+    node_run node16 $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
+    # Same fallback as the AngularJS frontends when the libs have no tag for
+    # this branch. Before, the whole admin build failed in that case.
+    node_run node16 $admin_dir "npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME" \
+      || {
+        echo "[buildNode] WARNING: no '$BRANCH_NAME' tag for ngx-ode-core, ngx-ode-sijil or ngx-ode-ui: using the versions of package.json (set FRONT_TAG to choose a tag)"
+        node_run node16 $admin_dir "$NPM_INSTALL" || die "admin: npm install failed"
+      }
+    timing "front Angular admin install" $admin_start
+    admin_build_start=$SECONDS
+    # Outside docker, admin/src/main/ts and admin/ are not mounted on
+    # /home/node/app and /home/node/base: the relative paths of build-prod apply.
+    if [ "$NO_DOCKER" = "true" ]; then
+      admin_build_script=build-prod
+    else
+      admin_build_script=build-docker-prod
+    fi
+    node_run node16 $admin_dir "npm run $admin_build_script" || die "admin: build failed"
+    timing "front Angular admin build" $admin_build_start
     timing "front Angular admin (npm install + build)" $admin_start
   fi
 }
@@ -263,10 +305,11 @@ buildBackend () {
 install () {
   maven_start=$SECONDS
   docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests -U
-  timing "backend maven clean install" $maven_start
-  cd broker-parent/broker-client/quarkus
-  ./build.sh install
-  cd -
+  timing "backend maven clean install" $maven_start || die "maven build failed"
+  # The final `cd -` used to hide the result of the broker client build.
+  cd broker-parent/broker-client/quarkus || die "cannot enter broker-parent/broker-client/quarkus"
+  ./build.sh install || die "broker client build failed"
+  cd - > /dev/null
 }
 
 test () {
@@ -395,7 +438,10 @@ itTests() {
 }
 
 if [ ! -e .env ]; then
-  init
+  # Run in a subshell so that a failure does not stop the build: this
+  # automatic init writes .env first, and edifice-cli is only needed by
+  # `image`. The image has no arm64 variant, so it fails on Apple Silicon.
+  (init) || echo "[buildNode] WARNING: automatic init failed, .env is written but edifice-cli is unavailable (only needed by the image command)"
 fi
 
 for param in "$@"
@@ -450,7 +496,8 @@ do
       image
       ;;
     *)
-      echo "Invalid argument : $param"
+      # A typo used to do nothing and still end the build successfully.
+      die "Invalid argument : $param"
   esac
   timing "command $param" $command_start
   if [ ! $? -eq 0 ]; then
