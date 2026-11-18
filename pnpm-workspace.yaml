@@ -1,4 +1,4 @@
-# pnpm workspace of the entcore frontends (ENABLING-1397).
+# pnpm workspace of the entcore frontends.
 # The repository root (AngularJS frontends, gulp) is the workspace root.
 # pnpm settings live here rather than in package.json: pnpm >= 11 no longer
 # reads the "pnpm" field of package.json.
@@ -34,8 +34,7 @@ catalog:
 # Third-party tooling shared by the 5 React frontends (`catalog:react-fronts`),
 # kept apart from the internal dependencies above, which the release tooling
 # rewrites. One version each: with two, the types are duplicated in the
-# workspace (two vite, two vitest, two @types/react) and typecheck fails
-# (ENABLING-1397, D51).
+# workspace (two vite, two vitest, two @types/react) and typecheck fails.
 catalogs:
   react-fronts:
     '@types/react': 18.3.27

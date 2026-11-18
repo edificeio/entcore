@@ -308,7 +308,7 @@ test () {
 
 # localDep and infra used to `npm install` a local build of a legacy lib
 # (ode-ts-client, ode-ngjs-front, infra-front) into the root node_modules, which
-# npm cannot do since pnpm manages them (ENABLING-1397).
+# npm cannot do since pnpm manages them.
 removedLocalLibCommand () {
   die "'$1' has been removed: npm cannot install into the pnpm workspace. To test a local build of a legacy lib: \`pnpm link ../<lib>\` at the root, build with --no-docker (the lib is not mounted in the node container), then come back with \`git checkout -- package.json pnpm-workspace.yaml pnpm-lock.yaml && pnpm install\`."
 }

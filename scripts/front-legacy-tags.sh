@@ -6,8 +6,7 @@
 #
 # These libs publish one dist-tag per branch (entcore@feat-XXX...). A build uses
 # the tag of its branch when a lib publishes it, and the catalog tag otherwise.
-# FRONT_TAG (Jenkins parameter) replaces the branch name. See D9 in
-# ENABLING-1397-DECISIONS.md.
+# FRONT_TAG (Jenkins parameter) replaces the branch name.
 #
 # Usage: scripts/front-legacy-tags.sh <tag>
 
