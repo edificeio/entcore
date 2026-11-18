@@ -83,7 +83,7 @@ public class AafHarnessImportTest {
     }
 
     /** Une instruction par ligne non vide des fichiers de schéma de l'infra, sans le « ; » final. */
-    private static List<String> schemaStatements() throws IOException {
+    static List<String> schemaStatements() throws IOException {
         final List<String> statements = new ArrayList<>();
         for (String file : SCHEMA_FILES) {
             final Path schema = Paths.get(SCHEMA_DIR, file);
@@ -98,7 +98,7 @@ public class AafHarnessImportTest {
     }
 
     /** Une transaction par instruction : Neo4j refuse de mêler schéma et données dans une même transaction. */
-    private static void applySchema(TestContext context, Neo4j neo4j, List<String> statements, int index,
+    static void applySchema(TestContext context, Neo4j neo4j, List<String> statements, int index,
             Runnable next) {
         if (index == statements.size()) {
             next.run();
