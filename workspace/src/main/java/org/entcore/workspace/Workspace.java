@@ -40,6 +40,7 @@ import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
+import org.entcore.workspace.controllers.TransferController;
 import org.entcore.workspace.controllers.AudioRecorderHandler;
 import org.entcore.workspace.controllers.CaptionController;
 import org.entcore.workspace.controllers.QuotaController;
@@ -147,6 +148,8 @@ public class Workspace extends BaseServer {
                                                                          storage, config);
         CaptionController captionController = new CaptionController(captionService);
         addController(captionController);
+
+		addController(new TransferController(new DefaultTransferService(vertx, config)));
 
         if (config.getInteger("wsPort") != null) {
 			vertx.deployVerticle(AudioRecorderWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
