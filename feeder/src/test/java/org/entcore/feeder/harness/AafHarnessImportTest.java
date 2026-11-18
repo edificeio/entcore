@@ -7,7 +7,9 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Timeout;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.feeder.Feed;
 import org.entcore.feeder.aaf.AafFeeder;
+import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
@@ -27,7 +29,7 @@ import java.util.List;
 
 /**
  * Import AAF du harnais de comparaison feeder / referential (POC referential, étape 2).
- * Importe le dossier {@code harness.aaf.path} dans le Neo4j {@code harness.neo4j.uri}, après le schéma de l'infra
+ * Importe (AafFeeder, ou Aaf1dFeeder si {@code harness.aaf.source=AAF1D}) le dossier {@code harness.aaf.path} dans le Neo4j {@code harness.neo4j.uri}, après le schéma de l'infra
  * (contraintes, DeleteGroup) sauf si {@code harness.neo4j.schema=false} : un import successif rejoue sur la même base.
  * Ignoré sans ces deux propriétés : seul le script du dépôt referential (harness/aaf2d-snapshot.sh) le lance.
  */
@@ -37,6 +39,8 @@ public class AafHarnessImportTest {
     private static final String NEO4J_URI = "harness.neo4j.uri";
     private static final String AAF_PATH = "harness.aaf.path";
     private static final String APPLY_SCHEMA = "harness.neo4j.schema";
+    /** Flux d'import : AAF (2D, défaut) ou AAF1D. */
+    private static final String SOURCE = "harness.aaf.source";
     private static final List<String> SCHEMA_FILES = Arrays.asList("001-schema-index.cypher", "002-schema.cypher");
     private static final String SCHEMA_DIR = "../infra/src/main/resources/neo4j";
 
@@ -62,10 +66,12 @@ public class AafHarnessImportTest {
         applySchema(context, neo4j, schema, 0, () ->
             Validator.initLogin(neo4j, vertx, v -> {
                 final Importer importer = Importer.getInstance();
-                importer.init(neo4j, vertx, "AAF", "fr", false, false, false, init -> {
+                final String source = System.getProperty(SOURCE, "AAF");
+                importer.init(neo4j, vertx, source, "fr", false, false, false, init -> {
                     context.assertEquals("ok", init.body().getString("status"), init.body().encode());
                     try {
-                        new AafFeeder(vertx, path).launch(importer, res -> {
+                        final Feed feeder = "AAF1D".equals(source) ? new Aaf1dFeeder(vertx, path) : new AafFeeder(vertx, path);
+                        feeder.launch(importer, res -> {
                             context.assertEquals("ok", res.body().getString("status"), res.body().encode());
                             async.complete();
                         });
