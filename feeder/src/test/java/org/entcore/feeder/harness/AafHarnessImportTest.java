@@ -27,15 +27,16 @@ import java.util.List;
 
 /**
  * Import AAF du harnais de comparaison feeder / referential (POC referential, étape 2).
- * Importe le dossier {@code harness.aaf.path} dans le Neo4j vide {@code harness.neo4j.uri}, après le schéma de
- * l'infra (contraintes, DeleteGroup). Ignoré sans ces deux propriétés : seul le script de génération du snapshot,
- * dans le dépôt referential (harness/aaf2d-snapshot.sh), le lance.
+ * Importe le dossier {@code harness.aaf.path} dans le Neo4j {@code harness.neo4j.uri}, après le schéma de l'infra
+ * (contraintes, DeleteGroup) sauf si {@code harness.neo4j.schema=false} : un import successif rejoue sur la même base.
+ * Ignoré sans ces deux propriétés : seul le script du dépôt referential (harness/aaf2d-snapshot.sh) le lance.
  */
 @RunWith(VertxUnitRunner.class)
 public class AafHarnessImportTest {
 
     private static final String NEO4J_URI = "harness.neo4j.uri";
     private static final String AAF_PATH = "harness.aaf.path";
+    private static final String APPLY_SCHEMA = "harness.neo4j.schema";
     private static final List<String> SCHEMA_FILES = Arrays.asList("001-schema-index.cypher", "002-schema.cypher");
     private static final String SCHEMA_DIR = "../infra/src/main/resources/neo4j";
 
@@ -56,7 +57,9 @@ public class AafHarnessImportTest {
         TransactionManager.getInstance().setNeo4j(neo4j);
 
         final Async async = context.async();
-        applySchema(context, neo4j, schemaStatements(), 0, () ->
+        final List<String> schema = Boolean.parseBoolean(System.getProperty(APPLY_SCHEMA, "true"))
+            ? schemaStatements() : new ArrayList<>();
+        applySchema(context, neo4j, schema, 0, () ->
             Validator.initLogin(neo4j, vertx, v -> {
                 final Importer importer = Importer.getInstance();
                 importer.init(neo4j, vertx, "AAF", "fr", false, false, false, init -> {
