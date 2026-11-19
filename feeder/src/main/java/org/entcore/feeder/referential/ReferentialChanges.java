@@ -14,7 +14,8 @@ import java.util.Map;
  */
 public final class ReferentialChanges {
 
-	private static final List<String> USER_KEYS = Arrays.asList("userId", "userIds", "users", "studentId", "relativeId");
+	private static final List<String> USER_KEYS = Arrays.asList("userId", "userIds", "users", "studentId", "relativeId",
+			"childrenIds");
 	private static final List<String> STRUCTURE_KEYS = Arrays.asList("structureId", "structureIds", "parentStructureId");
 	private static final List<String> GROUP_KEYS = Arrays.asList("classId", "classIds", "groupId", "groupIds");
 	private static final List<String> SUBJECT_KEYS = Arrays.asList("subjectId");

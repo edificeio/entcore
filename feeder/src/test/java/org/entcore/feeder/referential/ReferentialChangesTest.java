@@ -46,6 +46,15 @@ public class ReferentialChangesTest {
 	}
 
 	@Test
+	public void childrenOfACreatedRelative() {
+		final JsonObject body = new JsonObject().put("structureId", "s1")
+				.put("data", new JsonObject().put("childrenIds", new JsonArray().add("u7")));
+		final JsonObject reply = ok().put("result", new JsonArray().add(new JsonObject().put("id", "r1")));
+
+		assertEquals(Arrays.asList("u7", "r1"), ReferentialChanges.of("manual-create-user", body, reply).getUserIds());
+	}
+
+	@Test
 	public void functionCatalogChanges() {
 		assertTrue(ReferentialChanges.of("manual-create-function", new JsonObject(), ok()).isFunctions());
 	}
@@ -72,6 +81,20 @@ public class ReferentialChangesTest {
 
 		assertEquals("one success with known entities", 1, publisher.published.size());
 		assertEquals(Collections.singletonList("u1"), publisher.published.get(0).getUserIds());
+	}
+
+	/** The validation of a created user removes "childrenIds" from its data before the reply. */
+	@Test
+	public void idsAreReadInTheMessageAsReceived() {
+		final RecordingPublisher publisher = new RecordingPublisher();
+		final JsonObject body = new JsonObject().put("data", new JsonObject().put("childrenIds", new JsonArray().add("u7")));
+		final ReferentialNotifyingMessage message = new ReferentialNotifyingMessage(new FakeMessage(body), publisher,
+				"manual-create-user");
+
+		body.getJsonObject("data").remove("childrenIds");
+		message.reply(ok().put("result", new JsonArray().add(new JsonObject().put("id", "r1"))));
+
+		assertEquals(Arrays.asList("u7", "r1"), publisher.published.get(0).getUserIds());
 	}
 
 	private static JsonObject ok() {

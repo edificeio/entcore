@@ -3,7 +3,7 @@
  * used by the offline tests (_feeder-engine.test.ts) and by the k6 self test (_feeder-selftest.ts).
  */
 import type { Reporter } from "./_feeder-engine.ts";
-import type { CsvFiles, FeederGateway, PersonRow } from "./_feeder-gateway.ts";
+import type { CsvFiles, FeederGateway, PersonRow, ReferentialDiff } from "./_feeder-gateway.ts";
 import type { AAFFeeder, ImportSummary } from "../directory/_aaf-utils.ts";
 import type { GraphStructure, GraphUser } from "./_feeder-verify.ts";
 
@@ -135,6 +135,12 @@ export class FakePlatform implements FeederGateway {
   unlinkRelative(studentId: string, relativeId: string): void {
     const student = this.users.find((u) => u.id === studentId)!;
     student.parents = student.parents.filter((p) => p !== relativeId);
+  }
+  /** No referential behind the fake platform: always in sync. */
+  waitReferentialSync(): ReferentialDiff[] {
+    return [];
+  }
+  referentialReads(): void {
   }
 }
 

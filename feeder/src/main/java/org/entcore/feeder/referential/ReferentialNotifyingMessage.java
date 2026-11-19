@@ -22,11 +22,14 @@ public class ReferentialNotifyingMessage implements Message<JsonObject> {
 	private final Message<JsonObject> inner;
 	private final ReferentialPublisher publisher;
 	private final String action;
+	/** Copy of the message at its arrival: the action may alter it (the validation removes "childrenIds"). */
+	private final JsonObject request;
 
 	public ReferentialNotifyingMessage(Message<JsonObject> inner, ReferentialPublisher publisher, String action) {
 		this.inner = inner;
 		this.publisher = publisher;
 		this.action = action;
+		this.request = inner.body() == null ? new JsonObject() : inner.body().copy();
 	}
 
 	private void notifyReferential(Object reply) {
@@ -34,7 +37,7 @@ public class ReferentialNotifyingMessage implements Message<JsonObject> {
 			return;
 		}
 		try {
-			final EntityChangedDTO changes = ReferentialChanges.of(action, inner.body(), reply);
+			final EntityChangedDTO changes = ReferentialChanges.of(action, request, reply);
 			if (!changes.touchesNothing()) {
 				publisher.entityChanged(changes).onFailure(e -> log.warn("transmission_failed action=" + action));
 			}
