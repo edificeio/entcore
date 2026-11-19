@@ -25,6 +25,14 @@
       "org.entcore.common.http.health.Neo4jProbe",
       "org.entcore.common.http.health.MongoProbe",
       "org.entcore.common.http.health.RedisProbe"
+      {% if directoryFeederProbe is defined and directoryFeederProbe %},
+      {
+        "name": "org.entcore.directory.health.FeederProbe",
+        "config": {
+          "max-import-duration": {{ directoryFeederProbeMaxImportDuration | default('7200000') }}
+        }
+      }
+      {% endif %}
     ],
     "sql": true,
     "db-schema": "directory",
