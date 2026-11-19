@@ -4,7 +4,6 @@ const webpack = require('webpack-stream');
 const merge = require('merge2');
 const rev = require('gulp-rev');
 const clean = require('gulp-clean');
-const argv = require('yargs').argv;
 const fs = require('fs');
 const replace = require('gulp-replace');
 
@@ -95,9 +94,22 @@ function getModName(fileContent, app){
     return fileContent.trim();
 }
 
+// --springboard=<path> (or --springboard <path>), read from process.argv like
+// --module: yargs was used here without being declared in package.json, and
+// pnpm does not expose undeclared dependencies.
+function argValue(name) {
+    const index = process.argv.findIndex(arg => arg === '--' + name || arg.startsWith('--' + name + '='));
+    if (index === -1) {
+        return undefined;
+    }
+    const arg = process.argv[index];
+    return arg.includes('=') ? arg.slice(arg.indexOf('=') + 1) : process.argv[index + 1];
+}
+
 let springboardPath = '../recette';
-if (argv.springboard) {
-    springboardPath = argv.springboard;
+const springboardArg = argValue('springboard');
+if (springboardArg) {
+    springboardPath = springboardArg;
     console.log('Using springboard at ' + springboardPath);
 }
 

@@ -60,7 +60,7 @@ export default ({ mode }: { mode: string }) => {
       serveLocalCgu(__dirname),
       rewriteWayfV2(),
       react(),
-      tsconfigPaths(),
+      tsconfigPaths({ root: '.' }),
     ],
 
     build: {
@@ -83,7 +83,7 @@ export default ({ mode }: { mode: string }) => {
       environment: 'jsdom',
       globals: true,
       include: ['src/**/*.test.{ts,tsx}'],
-      setupFiles: ['./src/mocks/setup.ts'],
+      setupFiles: ['./src/mocks/setup.ts', './src/mocks/setup-fetch-signal.ts'],
       watch: false,
       clearMocks: true,
       restoreMocks: true,

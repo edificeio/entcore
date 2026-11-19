@@ -14,7 +14,7 @@ Bundle de **15 modules Maven** déclarés à la racine (`pom.xml`) : `admin`, `a
 | Famille | Outil | Où | Modules |
 | --- | --- | --- | --- |
 | **AngularJS legacy** | webpack + gulp (orchestré depuis la racine) | `<module>/src/main/resources/public/ts/` | `archive`, `workspace`, `directory` |
-| **React** | Vite + pnpm (standalone) | `<module>/frontend/` | `conversation`, `portal` |
+| **React** | Vite | `<module>/frontend/` | `conversation`, `portal` |
 | **Double front** | AngularJS legacy **+** React, les deux zones dans le même module | les deux zones | `auth`, `timeline` |
 | **Angular moderne (v14, Angular CLI)** | `ng` (angular.json) + gulp pour le packaging | `admin/src/main/ts/` | `admin` |
 | **Backend seul** | — (pas de front) | — | `app-registry`, `audience`, `cas`, `communication`, `feeder`, `infra` |
@@ -32,11 +32,18 @@ Bundle de **15 modules Maven** déclarés à la racine (`pom.xml`) : `admin`, `a
 | --- | --- |
 | Build complet | `./build.sh` (options réelles : `--module=<module>` / `-m=<module>`, `--springboard=<env>` / `-s=<env>` (défaut `recette`), `--no-docker`) |
 | Build d'un module | `./build.sh --module=<module>` ou `mvn clean install` dans le module |
-| Front React d'un module (`auth`, `conversation`, `portal`, `timeline`) | `cd <module>/frontend && pnpm install && pnpm dev` |
-| Front Angular moderne (`admin`) | `cd admin/src/main/ts && pnpm install && pnpm dev` (`ng serve --host 0.0.0.0`) ; `pnpm build` / `pnpm build-prod` ; `pnpm test` (`ng test`) ; `pnpm lint` |
+| Installer tous les fronts | `pnpm install` à la racine (une seule fois pour tout le workspace) |
+| Builder les fronts d'un module | `./build.sh -m=<module> buildFrontend`, ou `pnpm --filter ./<module>/frontend run build` |
+| Front React d'un module (`auth`, `conversation`, `portal`, `timeline`) | `cd <module>/frontend && pnpm dev` |
+| Front Angular moderne (`admin`) | `cd admin/src/main/ts && pnpm dev` (`ng serve --host 0.0.0.0`) ; `pnpm build` / `pnpm build-prod` ; `pnpm test` (`ng test`) ; `pnpm lint` |
 | Front AngularJS legacy (`archive`, `workspace`, `directory`) | orchestré par `gulp` / `build.sh` à la racine (`gulpfile.js`) |
 
-> Pas de lockfile front unique à la racine : chaque front React/Angular a son propre `node_modules` et son propre gestionnaire (pnpm, versions différentes selon le module — ex. `auth/frontend` en pnpm 9.12.2, `conversation/frontend` en pnpm 8.6.6). Le `pom.xml` racine garantit la cohérence des versions Maven ; il n'y a pas d'équivalent pour les fronts.
+> **Un seul workspace pnpm** (`pnpm-workspace.yaml`) réunit la racine (AngularJS), `admin/src/main/ts` et les 5 fronts React (`auth/frontend`, `conversation/frontend`, `portal/frontend`, `timeline/frontend`, `timeline/frontend-crna`), avec un seul `pnpm-lock.yaml` commité.
+> - Node 24 ; pnpm 10.34.5, imposé par `packageManager` (un pnpm ≥ 9.7 bascule dessus tout seul).
+> - La CI installe en `--frozen-lockfile` : tout changement de dépendance se commite **avec** `pnpm-lock.yaml`.
+> - `catalog:` porte les dépendances internes (`@edifice.io/*`, `entcore`, `ode-*`, `ngx-ode-*`) sur le tag de la branche d'équipe, que l'outillage de release réécrit. Au build, `pnpm run update:edifice` les passe à leur dernière publication sans modifier de fichier.
+> - `catalog:react-fronts` fixe vite, vitest, `@vitest/*` et `@types/react(-dom)` pour les 5 fronts React. Une montée se fait dans le catalog, jamais dans un seul front : deux versions dupliquent les types et cassent le typecheck.
+> - Les tests vitest des 5 fronts React tournent sur chaque PR (`.github/workflows/frontend-tests.yml`).
 
 ## Travailler dans UN module
 
@@ -63,6 +70,6 @@ Trois comportements de `org.entcore:common` qui échouent **silencieusement** et
 
 - ✅ Garder les changements **circonscrits à un module**.
 - ✅ Pour les zones AngularJS legacy : maintenance sans modernisation, sauf demande explicite.
-- ❌ Ne pas tenter d'unifier les chaînes de build front (webpack/gulp legacy vs Vite vs Angular CLI) : ce sont trois écosystèmes distincts, assumés comme tels dans ce repo.
+- ❌ Ne pas tenter d'unifier les chaînes de build front (webpack/gulp legacy vs Vite vs Angular CLI) : ce sont trois écosystèmes distincts, assumés comme tels dans ce repo. Ils partagent seulement le workspace pnpm (install et lockfile).
 - ❌ Ne pas présumer qu'un module ressemble à un autre : les fronts diffèrent fortement d'un module à l'autre (cf. table des familles).
 - ❌ Ne pas confondre `admin` (Angular moderne) avec de l'AngularJS legacy — les réflexes/conventions ne sont pas les mêmes.

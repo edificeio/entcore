@@ -9,24 +9,18 @@ services:
     environment:
       MAVEN_CONFIG: /var/maven/.m2
 
+  # Builds every frontend (pnpm workspace: AngularJS, React, admin).
   node:
-    image: opendigitaleducation/node:20-alpine-pnpm
+    image: opendigitaleducation/node:24-alpine-pnpm
     working_dir: /home/node/app
     volumes:
       - ./:/home/node/app
-      - ~/.npm:/.npm
-      - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
-      - ../infra-front:/home/node/infra-front
-
-  node16:
-    image: opendigitaleducation/node:16-alpine-pnpm
-    working_dir: /home/node/app
-    volumes:
-      - ./admin/src/main/ts:/home/node/app
-      - ./admin:/home/node/base
-      - ~/.npm:/.npm
+      # pnpm store, kept outside the workspace: the Jenkins checkout cleans the
+      # workspace (git clean -ffdx). PNPM_STORE_DIR overrides the location.
+      - ${PNPM_STORE_DIR:-~/.pnpm-store}:/home/node/.pnpm-store
       - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
     environment:
+      - npm_config_store_dir=/home/node/.pnpm-store
       - NG_CLI_ANALYTICS=false
 
   k6:
@@ -43,12 +37,3 @@ services:
       ADMC_PASSWORD: password
       DEFAULT_PASSWORD: password
       RECREATE_STRUCTURES: false # Set to 'true' if you want to run the tests on brand new structures
-  node22:
-    image: opendigitaleducation/node:22-alpine-pnpm
-    working_dir: /home/node/app
-    volumes:
-      - ./broker-parent/broker-client/nest:/home/node/app
-      - ~/.npm:/.npm
-      - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
-    environment:
-      - NG_CLI_ANALYTICS=false

@@ -12,7 +12,7 @@ import {
   IconRestore,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
@@ -165,11 +165,18 @@ export function MessageList() {
     }),
   );
 
+  // Stable reference: List (useCheckable) revalidates the selection whenever
+  // `data` changes, so a new array on every render loops with onSelectedItems.
+  const listData = useMemo(
+    () => messages?.map((message) => ({ ...message, _id: message.id })),
+    [messages],
+  );
+
   if (!messages?.length) return null;
   return (
     <div ref={listRef}>
       <List
-        data={messages.map((message) => ({ ...message, _id: message.id }))}
+        data={listData}
         items={toolbar}
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}

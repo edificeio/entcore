@@ -1,0 +1,81 @@
+# pnpm workspace of the entcore frontends.
+# The repository root (AngularJS frontends, gulp) is the workspace root.
+# pnpm settings live here rather than in package.json: pnpm >= 11 no longer
+# reads the "pnpm" field of package.json.
+packages:
+  - admin/src/main/ts
+  - auth/frontend
+  - conversation/frontend
+  - portal/frontend
+  - timeline/frontend
+  - timeline/frontend-crna
+
+# Internal dependencies, declared once for every package.
+# The dist-tags follow the squad branch: when the release tooling rewrites
+# them, the lockfile must be regenerated in the same commit
+# (`pnpm install --lockfile-only`), otherwise `--frozen-lockfile` fails.
+# The build resolves them to their latest publication with
+# `pnpm run update:edifice` (see build.sh).
+catalog:
+  '@edifice.io/bootstrap': develop-enabling
+  '@edifice.io/client': develop-enabling
+  '@edifice.io/react': develop-enabling
+  '@edifice.io/tiptap-extensions': develop-enabling
+  '@edifice.io/utilities': develop-enabling
+  entcore: develop-enabling
+  entcore-generic-icons: https://github.com/edificeio/generic-icons.git
+  entcore-toolkit: develop-enabling
+  ngx-ode-core: develop-enabling
+  ngx-ode-sijil: develop-enabling
+  ngx-ode-ui: develop-enabling
+  ode-ngjs-front: develop-enabling
+  ode-ts-client: develop-enabling
+
+# Third-party tooling shared by the 5 React frontends (`catalog:react-fronts`),
+# kept apart from the internal dependencies above, which the release tooling
+# rewrites. One version each: with two, the types are duplicated in the
+# workspace (two vite, two vitest, two @types/react) and typecheck fails.
+catalogs:
+  react-fronts:
+    '@types/react': 18.3.27
+    '@types/react-dom': 18.3.7
+    '@vitest/coverage-v8': 2.1.9
+    '@vitest/ui': 2.1.9
+    vite: 5.4.21
+    vitest: 2.1.9
+
+# Dependencies that some packages use without declaring them. npm hoisted them
+# to the top of node_modules, which hid the problem; pnpm does not.
+# The packages below (all used by admin) require rxjs: declared as a peer, they
+# share the rxjs 6 of admin. Otherwise Node resolution walks up to the rxjs 5
+# of the workspace root (AngularJS) and the admin build fails.
+packageExtensions:
+  ngx-infinite-scroll@14:
+    peerDependencies:
+      rxjs: ^6.0.0
+  ngx-ode-core: # any version: they are prereleases (4.7.4-develop-enabling.2)
+    peerDependencies:
+      rxjs: ^6.0.0
+  ngx-ode-ui:
+    peerDependencies:
+      rxjs: ^6.0.0
+  rxjs-compat@6:
+    peerDependencies:
+      rxjs: ^6.0.0
+
+overrides:
+  # rollup 4.68.6 breaks `vite build` on the Alpine images (2026-11-18).
+  # Remove once rollup ships a fix.
+  rollup: 4.68.5
+
+# Install scripts that pnpm >= 10 no longer runs by default and that the
+# builds do not need (checked on 2026-11-18).
+ignoredBuiltDependencies:
+  - core-js # banner only
+  - es5-ext # banner only
+  - esbuild # its binary comes as an optional dependency
+  - fsevents # native macOS watcher of old chokidar versions
+  - msw # rewrites public/mockServiceWorker.js, already committed
+  - nice-napi # optional native thread priority for piscina (Angular CLI)
+  - nx # not used by the builds
+  - uglifyjs-webpack-plugin # old post-install of the entcore lib

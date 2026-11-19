@@ -12,15 +12,27 @@ then
   CI_OPTION=" -T "
 fi
 
+# Maven -U (force the update of the SNAPSHOT dependencies) only in CI (Jenkins
+# sets JENKINS_URL): locally, it slows every build down for nothing.
+MVN_UPDATE_OPTION=""
+if [ "$CI" = "true" ] || [ -n "$JENKINS_URL" ]
+then
+  MVN_UPDATE_OPTION="-U"
+  echo "[buildNode] CI build: maven updates the SNAPSHOT dependencies (-U)"
+fi
+
 case `uname -s` in
   MINGW* | Darwin*)
     USER_UID=1000
-    GROUP_UID=1000
+    GROUP_GID=1000
     ;;
   *)
     if [ -z ${USER_UID:+x} ]
     then
       USER_UID=`id -u`
+    fi
+    if [ -z ${GROUP_GID:+x} ]
+    then
       GROUP_GID=`id -g`
     fi
 esac
@@ -31,32 +43,32 @@ SPRINGBOARD="recette"
 # Initialize MODULE from env; --module=/-m= overrides it.
 MODULE="${MODULE:-}"
 MVN_OPTS="-Duser.home=/var/maven -T 4"
+# Options are accepted at any position: they are removed from the positional
+# parameters, and only the commands (init, clean, install...) are kept.
+COMMANDS=()
 for i in "$@"
 do
 case $i in
   --no-docker*)
     NO_DOCKER="true"
     MVN_OPTS=""
-    shift
     ;;
   -s=*|--springboard=*)
     SPRINGBOARD="${i#*=}"
-    shift
     ;;
   -m=*|--module=*)
     MODULE="${i#*=}"
-    shift
     ;;
   *)
+    COMMANDS+=("$i")
     ;;
 esac
 done
+set -- "${COMMANDS[@]}"
 
 if [ "$MODULE" = "" ]; then
-    GRADLE_OPTION=""
     NODE_OPTION=""
 else
-  GRADLE_OPTION=":$MODULE:"
   NODE_OPTION="--module $MODULE"
   if [ -e "$MODULE/backend" ]; then
     echo "BACKEND SUB-PROJECT $MODULE/backend DETECTED"
@@ -86,6 +98,35 @@ echo "======================"
 echo "BRANCH_NAME = $BRANCH_NAME"
 echo "======================"
 
+# Logs how long a build phase took, measured from the given start ($SECONDS),
+# and returns the exit status of the command run just before, so that wrapping
+# a phase does not change how its failures are handled.
+# Usage: start=$SECONDS; <phase>; timing "<label>" $start
+timing () {
+  local status=$?
+  echo "[timing] $1: $((SECONDS - $2))s"
+  return $status
+}
+
+# Stops the whole build with an explicit message. Used instead of `set -e`,
+# which bash ignores inside functions called from a `&&` list, such as
+# `buildFrontend && buildBackend`.
+die () {
+  echo "[error] $*" >&2
+  exit 1
+}
+
+# Runs a shell command with Node: in the given docker compose service, or
+# directly in the given directory with --no-docker.
+# Usage: node_run <service> <local directory> <command>
+node_run () {
+  if [ "$NO_DOCKER" = "true" ]; then
+    (cd "$2" && sh -c "$3")
+  else
+    docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION "$1" sh -c "$3"
+  fi
+}
+
 init() {
   me=`id -u`:`id -g`
   echo "DEFAULT_DOCKER_USER=$me" > .env
@@ -102,8 +143,8 @@ services:
     user: "$DEFAULT_DOCKER_USER"
 EOF
   	# Copy /root/edifice from edifice-cli container to host machine
-  	docker compose -f build.compose.yaml create edifice-cli
-  	docker compose -f build.compose.yaml cp edifice-cli:/root/edifice ./edifice
+  	docker compose -f build.compose.yaml create edifice-cli || { rm -f build.compose.yaml; die "init: cannot create the edifice-cli container"; }
+  	docker compose -f build.compose.yaml cp edifice-cli:/root/edifice ./edifice || { docker compose -f build.compose.yaml rm -fsv edifice-cli; rm -f build.compose.yaml; die "init: cannot copy edifice-cli"; }
   	docker compose -f build.compose.yaml rm -fsv edifice-cli
   	rm -f build.compose.yaml
   	chmod +x edifice
@@ -114,7 +155,7 @@ clean () {
   if [ "$NO_DOCKER" = "true" ] ; then
     mvn $MVN_OPTS clean
   else
-    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS clean
+    docker compose run --rm maven mvn $MVN_OPTS clean
   fi
 }
 
@@ -125,124 +166,135 @@ syncReactFrontendBuildToResources() {
   sync_view_dir="$sync_resources_dir/view"
 
   # Move dist to resources dir
-  cp -R ./dist/* "$sync_resources_dir/"
+  cp -R ./dist/* "$sync_resources_dir/" || return 1
 
   # Create resources/view directory if needed
-  mkdir -p "$sync_view_dir"
+  mkdir -p "$sync_view_dir" || return 1
 
   # Move generated HTML entrypoints into the view directory when present.
   for html_file in "$sync_resources_dir"/*.html; do
     [ -f "$html_file" ] || continue
     echo "...moving HTML file $html_file to $sync_view_dir/"
-    mv "$html_file" "$sync_view_dir/"
+    mv "$html_file" "$sync_view_dir/" || return 1
   done
 
   unset sync_target_root sync_resources_dir sync_public_dir sync_view_dir file file_name html_file
 }
 
-buildFrontend () {
-
-  # --- Build angularJS-based frontends
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ] || [ "$MODULE" = "timeline" ] || [ "$MODULE" = "auth" ]; then
-    if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
-        echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
-        case `uname -s` in
-          MINGW*)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
-            ;;
-          *)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
-        esac
-    else
-        echo "[buildNode] Use entcore tag $BRANCH_NAME"
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
-        case `uname -s` in
-          MINGW*)
-            docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
-            ;;
-          *)
-            docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
-        esac
-    fi
+# Installs the pnpm workspace (pnpm-workspace.yaml) once for every frontend:
+# - the committed lockfile pins every dependency (--frozen-lockfile);
+# - update:edifice moves the internal dependencies (catalog dist-tags) to their
+#   latest publication, without touching package.json nor the catalog;
+# - the legacy libs take the dist-tag of the branch (or FRONT_TAG) when they
+#   publish one (scripts/front-legacy-tags.sh).
+installFrontend () {
+  install_start=$SECONDS
+  # The pnpm store lives outside the workspace, which the Jenkins checkout
+  # cleans (git clean -ffdx). Created here, so that docker does not create the
+  # mounted directory as root.
+  mkdir -p "${PNPM_STORE_DIR:-$HOME/.pnpm-store}" || die "cannot create the pnpm store"
+  node_run node . "pnpm install --frozen-lockfile && pnpm run update:edifice" || die "frontends: pnpm install failed"
+  if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ] || [ "$BRANCH_NAME" = 'release' ]; then
+    echo "[buildNode] Use the catalog versions of the legacy libs ($BRANCH_NAME)"
+  else
+    node_run node . "sh scripts/front-legacy-tags.sh $BRANCH_NAME" || die "frontends: cannot apply the '$BRANCH_NAME' tag to the legacy libs"
   fi
+  timing "front install (pnpm workspace)" $install_start
+}
 
-  # --- Build react-based frontends
-  local modules
+buildFrontend () {
+  # --- What this build needs
+  # The gulpfile builds the AngularJS frontends of the modules that have a
+  # webpack.config.js (archive, auth, directory, timeline, workspace).
+  local build_angularjs="" build_admin="" react_dirs=() modules module dir
+  if [ "$MODULE" = "" ] || [ -e ./"$MODULE"/webpack.config.js ]; then
+    build_angularjs=true
+  fi
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
+    build_admin=true
+  fi
   if [ "$MODULE" = "" ]; then
     modules=($(ls -d */ | cut -f1 -d'/'))
-  else 
+  else
     modules=($MODULE)
   fi
-  
   for module in "${modules[@]}"; do
-    if [ -e ./"$module"/frontend ]; then
-      echo -e "[Build React] Build react frontend for module $module"
-      cd ./"$module"/frontend
-      if [ "$NO_DOCKER" = "true" ] ; then
-        ./build.sh --no-docker clean init build
-      else 
-        ./build.sh clean init build
+    for dir in frontend frontend-crna; do
+      if [ -e ./"$module"/$dir/package.json ]; then
+        react_dirs+=("$module/$dir")
       fi
-      if [ $? -ne 0 ]; then
-        echo "Error while building React frontend for module $module"
-        exit 1
-      fi
-
-      # Create directory structure and copy frontend build files.
-      if [ "$module" = "timeline" ] || [ "$module" = "auth" ]; then
-        # compatibility mode : preserve legacy frontends files in ../src
-        syncReactFrontendBuildToResources ".."
-      else
-        syncReactFrontendBuildToResources "../backend"
-      fi
-
-      # Clean up
-      rm -rf ./dist
-      cd ../..
-    fi
-    if [ -e ./"$module"/frontend-crna ]; then
-      echo -e "[Build React] Build react frontend-crna for module $module"
-      cd ./"$module"/frontend-crna
-      if [ "$NO_DOCKER" = "true" ] ; then
-        ./build.sh --no-docker clean init build
-      else
-        ./build.sh clean init build
-      fi
-      if [ $? -ne 0 ]; then
-        echo "Error while building React frontend-crna for module $module"
-        exit 1
-      fi
-      syncReactFrontendBuildToResources ".."
-      rm -rf ./dist
-      cd ../..
-    fi
+    done
   done
+  if [ -z "$build_angularjs" ] && [ -z "$build_admin" ] && [ ${#react_dirs[@]} -eq 0 ]; then
+    echo "[buildNode] No frontend to build for module $MODULE"
+    return 0
+  fi
 
-  # --- Build angular-based frontends
-  if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
-    case `uname -s` in
-      MINGW*)
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
-        ;;
-      *)
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
-    esac
+  installFrontend
+
+  # --- AngularJS frontends (gulp)
+  if [ -n "$build_angularjs" ]; then
+    if [ "$NO_DOCKER" = "true" ]; then
+      springboard_path="../$SPRINGBOARD"
+    else
+      springboard_path="/home/node/$SPRINGBOARD"
+    fi
+    gulp_start=$SECONDS
+    node_run node . "node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=$springboard_path" || die "AngularJS frontends: gulp build failed"
+    timing "front AngularJS gulp build" $gulp_start
+  fi
+
+  # --- React frontends, built concurrently by pnpm (4 at a time by default)
+  if [ ${#react_dirs[@]} -gt 0 ]; then
+    react_start=$SECONDS
+    filters=""
+    for dir in "${react_dirs[@]}"; do
+      filters="$filters --filter ./$dir"
+    done
+    node_run node . "pnpm $filters run build" || die "React frontends: build failed (${react_dirs[*]})"
+    timing "front React build (${react_dirs[*]})" $react_start
+    # Copy each build into the resources of its module: <module>/backend for
+    # the modules whose backend lives there (conversation, portal), the module
+    # itself otherwise (compatibility with the legacy frontends of auth and
+    # timeline).
+    for dir in "${react_dirs[@]}"; do
+      module=${dir%%/*}
+      if [ -e ./"$module"/backend ]; then
+        sync_target="../backend"
+      else
+        sync_target=".."
+      fi
+      (cd ./"$dir" && syncReactFrontendBuildToResources "$sync_target" && rm -rf ./dist) \
+        || die "cannot copy the build of $dir"
+    done
+  fi
+
+  # --- Angular admin
+  if [ -n "$build_admin" ]; then
+    admin_start=$SECONDS
+    node_run node . "pnpm --filter admin-app run build-prod" || die "admin: build failed"
+    timing "front Angular admin build" $admin_start
   fi
 }
 
 buildBackend () {
+  maven_start=$SECONDS
   if [ "$NO_DOCKER" = "true" ] ; then
     mvn $MVN_OPTS install -DskipTests
   else
-    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests -U
+    docker compose run --rm maven mvn $MVN_OPTS install -DskipTests $MVN_UPDATE_OPTION
   fi
+  timing "backend maven install" $maven_start
 }
 
 install () {
-  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests -U
-  cd broker-parent/broker-client/quarkus
-  ./build.sh install
-  cd -
+  maven_start=$SECONDS
+  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests $MVN_UPDATE_OPTION
+  timing "backend maven clean install" $maven_start || die "maven build failed"
+  # The final `cd -` used to hide the result of the broker client build.
+  cd broker-parent/broker-client/quarkus || die "cannot enter broker-parent/broker-client/quarkus"
+  ./build.sh install || die "broker client build failed"
+  cd - > /dev/null
 }
 
 test () {
@@ -254,23 +306,16 @@ test () {
   fi
 }
 
-localDep () {
-  for dep in ode-ts-client ode-ngjs-front ; do
-    if [ -e $PWD/../$dep ]; then
-      rm -rf $dep.tar $dep.tar.gz
-      mkdir $dep.tar && mkdir $dep.tar/dist \
-        && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
-      tar cfzh $dep.tar.gz $dep.tar
-      docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-save $dep.tar.gz"
-      rm -rf $dep.tar $dep.tar.gz
-    fi
-  done
+# localDep and infra used to `npm install` a local build of a legacy lib
+# (ode-ts-client, ode-ngjs-front, infra-front) into the root node_modules, which
+# npm cannot do since pnpm manages them.
+removedLocalLibCommand () {
+  die "'$1' has been removed: npm cannot install into the pnpm workspace. To test a local build of a legacy lib: \`pnpm link ../<lib>\` at the root, build with --no-docker (the lib is not mounted in the node container), then come back with \`git checkout -- package.json pnpm-workspace.yaml pnpm-lock.yaml && pnpm install\`."
 }
 
 watch () {
-  docker compose run --rm maven sh -c "mvn $MVN_OPTS help:evaluate -Dexpression=project.groupId -q -DforceStdout -pl $MODULE && echo -n '~$MODULE~' &&  mvn $MVN_OPTS help:evaluate -Dexpression=project.version -pl $MODULE -q -DforceStdout" > .version.properties  
+  docker compose run --rm maven sh -c "mvn $MVN_OPTS help:evaluate -Dexpression=project.groupId -q -DforceStdout -pl $MODULE && echo -n '~$MODULE~' &&  mvn $MVN_OPTS help:evaluate -Dexpression=project.version -pl $MODULE -q -DforceStdout" > .version.properties
   docker compose run --rm \
-    $USER_OPTION \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD "
   rm -f .version.properties
@@ -279,15 +324,11 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node16 sh -c "npm run dev"
-}
-
-infra () {
-  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install /home/node/infra-front"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node sh -c "pnpm --filter admin-app run dev"
 }
 
 publish() {
-  version=`docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
+  version=`docker compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
   level=`echo $version | cut -d'-' -f3`
   case "$level" in
     *SNAPSHOT) export nexusRepository='snapshots' ;;
@@ -370,12 +411,18 @@ itTests() {
   exit $exit_code
 }
 
-if [ ! -e .env ]; then
-  init
+# Skipped when the first command is init (Jenkins: `init clean install`), which
+# would otherwise run twice in a row.
+if [ ! -e .env ] && [ "$1" != "init" ]; then
+  # Run in a subshell so that a failure does not stop the build: this
+  # automatic init writes .env first, and edifice-cli is only needed by
+  # `image`. The image has no arm64 variant, so it fails on Apple Silicon.
+  (init) || echo "[buildNode] WARNING: automatic init failed, .env is written but edifice-cli is unavailable (only needed by the image command)"
 fi
 
 for param in "$@"
 do
+  command_start=$SECONDS
   case $param in
     '--no-user')
       ;;
@@ -400,8 +447,8 @@ do
     buildBack)
       install
       ;;
-    localDep)
-      localDep
+    localDep|infra)
+      removedLocalLibCommand "$param"
       ;;
     watch)
       watch
@@ -415,9 +462,6 @@ do
     itTests)
       itTests
       ;;
-    infra)
-      infra
-      ;;
     publish)
       publish
       ;;
@@ -425,9 +469,12 @@ do
       image
       ;;
     *)
-      echo "Invalid argument : $param"
+      # A typo used to do nothing and still end the build successfully.
+      die "Invalid argument : $param"
   esac
+  timing "command $param" $command_start
   if [ ! $? -eq 0 ]; then
     exit 1
   fi
 done
+echo "[timing] total: ${SECONDS}s"

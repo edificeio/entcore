@@ -229,4 +229,18 @@ const defaultHandlers = [
  * MSW Handlers
  * Mock HTTP methods for your own application
  */
-export const handlers = [...defaultHandlers];
+export const handlers = [
+  ...defaultHandlers,
+  // Public configuration of the application, read by EdificeClientProvider.
+  http.get('/portal/conf/public', () => {
+    return HttpResponse.json({});
+  }),
+  // "My apps" preferences: selected tab (ToolbarCategories).
+  http.get('/userbook/preference/my-apps', () => {
+    return HttpResponse.json({ preference: '{"tab":"all"}' });
+  }),
+  // Onboarding modal of "My apps", already seen (key: false keeps it closed).
+  http.get('/userbook/preference/showOnboardingMyAppsActualitessss', () => {
+    return HttpResponse.json({ preference: '{"key":false}' });
+  }),
+];

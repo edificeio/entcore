@@ -85,7 +85,7 @@ export default ({ mode }: { mode: string }) => {
       host: 'localhost',
     },
 
-    plugins: [react(), tsconfigPaths()],
+    plugins: [react(), tsconfigPaths({ root: '.' })],
 
     build: {
       outDir: './dist',

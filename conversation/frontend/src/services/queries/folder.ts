@@ -8,7 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata, SYSTEM_FOLDER_ID } from '~/models';
 import { queryClient } from '~/providers';
@@ -236,14 +236,18 @@ export const useFolderMessages = (folderId: string, enabled = true) => {
     [query],
   );
 
-  let messages = query.data?.pages?.flatMap((page) => page || []) ?? [];
-
-  // #COCO-5434, do not display unread recalled messages in inbox folder
-  if (folderId === SYSTEM_FOLDER_ID.INBOX) {
-    messages = messages.filter(
-      (message) => message.state !== 'RECALL' || !message.unread,
-    );
-  }
+  // Memoized: a new array on every render makes the List of the message list
+  // revalidate its selection on every render, which loops (useCheckable).
+  const messages = useMemo(() => {
+    const allMessages = query.data?.pages?.flatMap((page) => page || []) ?? [];
+    // #COCO-5434, do not display unread recalled messages in inbox folder
+    if (folderId === SYSTEM_FOLDER_ID.INBOX) {
+      return allMessages.filter(
+        (message) => message.state !== 'RECALL' || !message.unread,
+      );
+    }
+    return allMessages;
+  }, [query.data, folderId]);
 
   return {
     ...query,

@@ -89,12 +89,12 @@ Lancer depuis le projet racine :
 Pour les modules buildés par `gulpfile.js` (`directory`, `archive`, `workspace`...), `dev-server.js` sert le dossier `public/` du module depuis le disque et proxifie tout le reste (vues serveur, `ng-app.js`, thème, API, `/assets/version`) vers une recette, avec la session d'un utilisateur connecté.
 
 ```shell
-npm install
+pnpm install
 cp .env.template .env        # puis dev-auth-fetcher connect (ou le skill auth-user-frontend)
-npm run dev:directory        # ouvre http://localhost:3000/userbook/mon-compte#/edit-me
+pnpm run dev:directory       # ouvre http://localhost:3000/userbook/mon-compte#/edit-me
 ```
 
-Autre module ou autre page : `MODULE=workspace START_PATH=/workspace/workspace npm run legacy:dev`. Port : variable `PORT` (défaut 3000).
+Autre module ou autre page : `MODULE=workspace START_PATH=/workspace/workspace pnpm run legacy:dev`. Port : variable `PORT` (défaut 3000).
 
 - Les `.ts` sont recompilés (webpack) et les templates `public/template/` rechargés automatiquement dans le navigateur.
 - Les clés de `i18n/fr.json` du module sont fusionnées par-dessus celles de la recette.

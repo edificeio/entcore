@@ -58,7 +58,9 @@ export default ({ mode }: { mode: string }) => {
       proxy,
       fs: {
         // Allow serving image files
-        allow: ['.', bootstrapImagesPath, linkedBootstrapImagesPath],
+        // '../../' is the workspace root: with the pnpm workspace, node_modules
+        // (and so the bootstrap images) live there, outside this folder.
+        allow: ['.', '../../', bootstrapImagesPath, linkedBootstrapImagesPath],
       },
     },
 
@@ -128,7 +130,7 @@ export default ({ mode }: { mode: string }) => {
         },
       },
       react(),
-      tsconfigPaths(),
+      tsconfigPaths({ root: '.' }),
     ],
 
     build: {
