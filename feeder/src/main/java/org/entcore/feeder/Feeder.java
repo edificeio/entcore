@@ -96,6 +96,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	public static final String USER_REPOSITORY = "user.repository";
 	public static final String FEEDER_ADDRESS = "entcore.feeder";
+	/** Event bus action answered without queueing, for health probes. */
+	public static final String PING_ACTION = "ping";
 	public static final String SUBJECT_SOURCE = "MANUAL";
 	private String defaultFeed;
 	private final Map<String, Feed> feeds = new HashMap<>();
@@ -357,6 +359,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	public void handle(Message<JsonObject> message)
 	{
 		String action = getOrElse(message.body().getString("action"), "");
+		if (PING_ACTION.equals(action)) {
+			replyPing(message);
+			return;
+		}
 		MessageReplyNotifier<JsonObject> queueMessage = messageToReplyNotifier(message);
 
 		if(!Importer.getInstance().isReady())
@@ -369,6 +375,24 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		
 		this.handleAction(queueMessage);
+	}
+
+	/**
+	 * Health information for probes: reports whether an import holds the importer and since when, and how many
+	 * actions are queued behind it. A long-running import means the feeder is stuck (e.g. an OutOfMemoryError
+	 * thrown in an import callback skips {@code importer.clear()} and every later action is queued forever).
+	 */
+	private void replyPing(Message<JsonObject> message) {
+		final long inUseSince = Importer.getInstance().getInUseSince();
+		final JsonObject result = new JsonObject()
+				.put("status", "ok")
+				.put("importInProgress", !Importer.getInstance().isReady())
+				.put("queuedActions", eventQueue.size());
+		if (inUseSince > 0) {
+			result.put("importStartedAt", inUseSince)
+					.put("importDuration", System.currentTimeMillis() - inUseSince);
+		}
+		message.reply(result);
 	}
 
 	private MessageReplyNotifier messageToReplyNotifier(Message msg)
