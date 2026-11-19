@@ -13,17 +13,19 @@ est en cours** : Neo4j fait foi, `~/project/sources/referential` (PG) suit.
 - Opérations manuelles : `ManualFeeder` + `dictionary/structures/{User,Group,Structure,Profile,Subject}`.
 - Contraintes d'unicité Neo4j : pas ici, dans `infra/src/main/resources/neo4j/001-schema-index.cypher`.
 
-## Coexistence avec referential (POC) en cible
-- **Toute action `manual-*` qui écrit dans Neo4j transmet ensuite une commande à
-  referential** (client généré `io.edifice.referential.v1`), avec les valeurs
-  **relues après écriture** (id, externalId, login, displayName, activationCode,
-  ids des ProfileGroup créés). Ne jamais transmettre le payload de l'appelant :
-  Class et Function réécrivent externalId et id.
-- Échec de transmission : journaliser (`transmission_failed`, action + ids, aucune
-  donnée personnelle), ne pas faire échouer l'action. La resynchro rattrape.
+## Coexistence avec referential (POC)
+- **Mode B (2026-11-19)** : avec l'option `referential-notify`, toute action `manual-*`
+  réussie publie `EntityChangedDTO` (ids touchés, Neo4j) sur `ext.referential.entity.changed`
+  (`referential/ReferentialNotifyingMessage`, `ReferentialChanges`) ; referential relit
+  ces entités dans Neo4j (resynchro ciblée). Option désactivée par défaut.
+- Nouvelle action `manual-*` : vérifier que ses ids sont dans les clés reconnues par
+  `ReferentialChanges` (message, `data`, ou `result[].id` d'une création), sinon l'ajouter.
+- Échec de publication : `transmission_failed action=…`, aucune donnée personnelle, l'action
+  n'échoue pas. La resynchro complète rattrape.
 - Les imports ne transmettent rien : referential rejoue les mêmes fichiers.
-- Nouvelle action bus : la classer (import / manuelle / cycle de vie / doublons /
-  export / timetable) et décider transmise ou resynchro seule.
+- Cible en fin de POC (option A) : commandes dédiées avec les valeurs relues après
+  écriture (Class et Function réécrivent externalId et id : ne jamais transmettre le
+  payload de l'appelant).
 
 ## Pièges
 - **État en mémoire entre étapes** : `GraphData`, `ImporterCachedStructure`
