@@ -98,6 +98,8 @@ public class Importer {
 	private PersEducNat persEducNat;
 	private boolean firstImport = false;
 	private AtomicBoolean isInUse = new AtomicBoolean(false);
+	/** Start time (epoch ms) of the import currently holding the importer, 0 when idle. */
+	private volatile long inUseSince = 0L;
 	private String currentSource;
 	private Neo4j neo4j;
 	private Source source;
@@ -134,6 +136,7 @@ public class Importer {
 	public void init(final Neo4j neo4j, final Vertx vertx, final String source, String acceptLanguage, boolean blockCreateByIne,
 			boolean supportPersEducnat1D2D, boolean checkStudentsRelationships, final Handler<Message<JsonObject>> handler) {
 		this.isInUse.set(true);
+		this.inUseSince = System.currentTimeMillis();
 		this.neo4j = neo4j;
 		this.currentSource = source;
 		this.source = Source.fromString(source);
@@ -338,11 +341,16 @@ public class Importer {
 		groupClasses.clear();
 		report = null;
 		transactionHelper = null;
+		this.inUseSince = 0L;
 		this.isInUse.set(false);
 	}
 
 	public boolean isReady() {
 		return this.isInUse.get() == false; //return transactionHelper == null;
+	}
+
+	public long getInUseSince() {
+		return inUseSince;
 	}
 
 	public void persist(final Handler<Message<JsonObject>> handler) {

@@ -29,7 +29,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -60,12 +59,20 @@ public class TransactionManager {
 		}
 	}
 
+	/**
+	 * Opens an anonymous transaction. It is NOT registered in {@link #transactions}.
+	 */
 	public TransactionHelper begin() throws TransactionException {
-		return begin(UUID.randomUUID().toString());
+		return newTransaction(null);
 	}
 
+	/** Anonymous transaction bound to an existing Neo4j transaction id. Not registered, see {@link #begin()}. */
 	public TransactionHelper begin(Integer transactionId) throws TransactionException {
-		return begin(UUID.randomUUID().toString(), transactionId);
+		return newTransaction(transactionId);
+	}
+
+	private TransactionHelper newTransaction(Integer transactionId) {
+		return new TransactionHelper(neo4j, Source.UNKNOWN, 1000, transactionId);
 	}
 
 	public TransactionHelper begin(String name) throws TransactionException {
@@ -76,7 +83,7 @@ public class TransactionManager {
 		if (transactions.containsKey(name)) {
 			throw new TransactionException("Concurrent transaction already in use");
 		}
-		TransactionHelper tx = new TransactionHelper(neo4j, Source.UNKNOWN, 1000, transactionId);
+		TransactionHelper tx = newTransaction(transactionId);
 		transactions.put(name, tx);
 		return tx;
 	}
@@ -107,7 +114,7 @@ public class TransactionManager {
 	}
 
 	public void flush(String name, Handler<Message<JsonObject>> handler) {
-		TransactionHelper transactionHelper = transactions.get("name");
+		TransactionHelper transactionHelper = transactions.get(name);
 		if (transactionHelper != null) {
 			transactionHelper.flush(handler);
 		}
