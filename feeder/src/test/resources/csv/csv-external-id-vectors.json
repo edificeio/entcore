@@ -1,0 +1,68 @@
+{
+  "description": "Shared test vectors of the deterministic CSV externalId (referential POC, step 3b): sha1(structure|profile|sanitized lastName|sanitized firstName|birthDate|rank). Lines are read in order as one file per (structure, profile); identical in the feeder and referential repositories.",
+  "vectors": [
+    {
+      "comment": "plain student",
+      "structureExternalId": "S1",
+      "profile": "Student",
+      "lastName": "MARTIN",
+      "firstName": "Léa",
+      "birthDate": "2015-03-02",
+      "externalId": "465a8eebfb5c8cbd25e2e438ef2606fc18fc4c7b"
+    },
+    {
+      "comment": "case, accents and spaces ignored: homonym of the first, rank 2",
+      "structureExternalId": "S1",
+      "profile": "Student",
+      "lastName": "  Martin ",
+      "firstName": "LEA",
+      "birthDate": "2015-03-02",
+      "externalId": "329cf66499b9017e16cb39583385a55ae778ed5f"
+    },
+    {
+      "comment": "third strict homonym of the file: rank 3",
+      "structureExternalId": "S1",
+      "profile": "Student",
+      "lastName": "Martin",
+      "firstName": "Léa",
+      "birthDate": "2015-03-02",
+      "externalId": "9370c3deff8afde5cbf38e7b49ce2235551264b9"
+    },
+    {
+      "comment": "hyphens, spaces and diaeresis",
+      "structureExternalId": "S1",
+      "profile": "Student",
+      "lastName": "Le Gall-Moreau",
+      "firstName": "Jean-Noël",
+      "birthDate": "2014-12-31",
+      "externalId": "76308ab7865ef5024fbfcc7552714aaeab324f25"
+    },
+    {
+      "comment": "staff without birth date, apostrophe",
+      "structureExternalId": "S1",
+      "profile": "Teacher",
+      "lastName": "D'Arc",
+      "firstName": "Jeanne",
+      "birthDate": "",
+      "externalId": "151ee65dfd04573c33519a0a5c5a81d380b03820"
+    },
+    {
+      "comment": "other structure",
+      "structureExternalId": "S2",
+      "profile": "Student",
+      "lastName": "MARTIN",
+      "firstName": "Léa",
+      "birthDate": "2015-03-02",
+      "externalId": "c062daccc283c0ebd2e4ae05f5ec88c496444cfd"
+    },
+    {
+      "comment": "other profile",
+      "structureExternalId": "S1",
+      "profile": "Personnel",
+      "lastName": "MARTIN",
+      "firstName": "Léa",
+      "birthDate": "",
+      "externalId": "d2d4722079483075d1a93ea40f2ca1ac8796e05b"
+    }
+  ]
+}

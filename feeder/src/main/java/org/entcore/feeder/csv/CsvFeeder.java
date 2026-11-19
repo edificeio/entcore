@@ -327,6 +327,7 @@ public class CsvFeeder implements Feed {
 			int nbColumns = 0;
 			String[] strings;
 			int i = 0;
+			final CsvExternalIds externalIds = new CsvExternalIds();
 			csvParserWhile : while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
 					columnsMapper.getColumsNames(profile, strings, columns, handler);
@@ -474,7 +475,7 @@ public class CsvFeeder implements Feed {
 							}
 						}
 					} else {
-						generateUserExternalId(user, ca, structure, seed);
+						externalIds.generateIfAbsent(user, structure.getExternalId(), profile);
 					}
 					if ("Student".equals(profile)) {
 						studentExternalIdMapping.put(getHashMapping(user, ca, structure, seed), user.getString("externalId"));
@@ -747,17 +748,6 @@ public class CsvFeeder implements Feed {
 			}
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
-		}
-	}
-
-	public static void generateUserExternalId(JsonObject props, String c, ImporterStructure structure, long seed) {
-		String externalId = props.getString("externalId");
-		if (externalId != null && !externalId.trim().isEmpty()) {
-			return;
-		}
-		String hash = getHashMapping(props, c, structure, seed);
-		if (hash != null) {
-			props.put("externalId", hash);
 		}
 	}
 

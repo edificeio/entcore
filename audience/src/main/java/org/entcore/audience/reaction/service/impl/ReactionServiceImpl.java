@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.audience.reaction.dao.ReactionDao;
 import org.entcore.audience.reaction.model.*;
 import org.entcore.audience.reaction.service.ReactionService;
+import org.entcore.audience.util.ReferentialAcl;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
@@ -81,6 +82,7 @@ public class ReactionServiceImpl implements ReactionService {
                 JsonObject responseBody = (JsonObject) response.result().body();
                 responseBody.forEach(entry -> displayNameByUserId.put(entry.getKey(), entry.getValue().toString()));
                 promise.complete(displayNameByUserId);
+                ReferentialAcl.compare(messageBody, responseBody);
             } else {
                 promise.fail(response.cause());
             }

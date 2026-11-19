@@ -19,6 +19,8 @@
 
 package org.entcore.directory;
 
+import org.entcore.directory.referential.ReferentialPublisher;
+import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Future;
@@ -222,6 +224,10 @@ public class Directory extends BaseServer {
         addController(new CalendarController());
 
 		UserPositionController userPositionController = new UserPositionController(userPositionService);
+		if (config.getBoolean("referential-notify", false)) {
+			userPositionController.setReferentialPublisher(
+					BrokerPublisherFactory.create(ReferentialPublisher.class, vertx));
+		}
 		addController(userPositionController);
 
 		UserLinkService userLinkService = new UserLinkServiceImpl();

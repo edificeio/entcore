@@ -12,6 +12,8 @@ import {
   lastImportStep,
   linkRelativeStep,
   relativeHasChildrenStep,
+  referentialInSyncStep,
+  referentialReadsImportStep,
   relativeHasNoChildStep,
   studentHasParentsStep,
 } from "./_feeder-engine.ts";
@@ -115,6 +117,16 @@ export class ScenarioBuilder {
     return new StudentExpectations(this, student);
   }
 
+  /** referential (POC Neo4j → PostgreSQL) reads what was imported, as if it had replayed the files. */
+  whenReferentialReadsImport(): this {
+    return this.add(referentialReadsImportStep("whenReferentialReadsImport()"));
+  }
+
+  /** referential (POC Neo4j → PostgreSQL) reread these users after the manual actions. */
+  thenReferential(...refs: (StudentHandle | RelativeRef)[]): ReferentialExpectations {
+    return new ReferentialExpectations(this, refs);
+  }
+
   /** What the last import reported. */
   get thenImport(): ImportExpectations {
     return new ImportExpectations(this);
@@ -181,6 +193,16 @@ export class StudentExpectations {
 
   hasParents(...parents: RelativeRef[]): ScenarioBuilder {
     return this.scenario.add(studentHasParentsStep(`thenStudent(student(${this.student.index})).hasParents(${parents.map(describeRef).join(", ")})`, this.student, parents));
+  }
+}
+
+export class ReferentialExpectations {
+  constructor(private scenario: ScenarioBuilder, private refs: (StudentHandle | RelativeRef)[]) {}
+
+  isInSync(): ScenarioBuilder {
+    const names = this.refs.map((ref) => typeof ref === "object" && (<StudentHandle>ref).kind === "student"
+      ? `student(${(<StudentHandle>ref).index})` : describeRef(<RelativeRef>ref));
+    return this.scenario.add(referentialInSyncStep(`thenReferential(${names.join(", ")}).isInSync()`, this.refs));
   }
 }
 

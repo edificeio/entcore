@@ -19,6 +19,10 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import java.util.List;
+import java.util.ArrayList;
+import org.entcore.feeder.referential.ReferentialPublisher;
+import org.entcore.feeder.referential.ReferentialChanges;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -256,8 +260,16 @@ public class Group {
 		}
 	}
 
+	/** Notifies referential of the groups whose members runLinkRules recomputed (referential POC), null if disabled. */
+	private static ReferentialPublisher referentialPublisher;
+
+	public static void setReferentialPublisher(ReferentialPublisher publisher) {
+		referentialPublisher = publisher;
+	}
+
 	public static Future<Void> runLinkRules() {
 		Promise p = Promise.promise();
+		final List<String> autolinkedGroupIds = new ArrayList<>();
 		try {
 			final TransactionHelper tx = TransactionManager.getInstance().begin(TX_RUN_LINK_RULES);
 			final String listAutolinkGroups =
@@ -273,6 +285,7 @@ public class Group {
 
 			tx.commit().compose(groups -> {
 				if (groups != null && groups.size() == 1 && groups.getJsonArray(0) != null) {
+					groups.getJsonArray(0).forEach(group -> autolinkedGroupIds.add(((JsonObject) group).getString("id")));
 					return groups.getJsonArray(0).stream().reduce(
 						Future.succeededFuture(new JsonArray()),
 						(previousFuture, group) -> previousFuture.compose(r ->
@@ -286,6 +299,10 @@ public class Group {
 				TransactionManager.getInstance().rollback(TX_RUN_LINK_RULES);
 				if (ar.succeeded()) {
 					log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
+					if (referentialPublisher != null && !autolinkedGroupIds.isEmpty()) {
+						referentialPublisher.entityChanged(ReferentialChanges.autolinkedGroups(autolinkedGroupIds))
+								.onFailure(e -> log.warn("transmission_failed action=manual-link-autogroups"));
+					}
 					p.complete();
 				} else {
 					log.error("PostImport | Failed to manualGroupLinkUsersAuto", ar.cause());

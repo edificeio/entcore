@@ -34,6 +34,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.bus.MessageReplyNotifier;
+import org.entcore.broker.api.publisher.BrokerPublisherFactory;
+import org.entcore.feeder.referential.ReferentialNotifyingMessage;
+import org.entcore.feeder.referential.ReferentialPublisher;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -104,6 +107,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private final Map<String, Feed> feeds = new HashMap<>();
 	private ManualFeeder manual;
 	private boolean allowManualActionsDuringFeeds = false;
+	/** Notifies referential of the entities touched by manual actions (referential POC), null if disabled. */
+	private ReferentialPublisher referentialPublisher;
 	private Neo4j neo4j;
 	private Exporter exporter;
 	private DuplicateUsers duplicateUsers;
@@ -158,6 +163,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
 		feeds.put("CSV", new CsvFeeder(vertx));
 		this.allowManualActionsDuringFeeds = config.getBoolean("allow-manual-actions-during-feeds", false);
+		if (config.getBoolean("referential-notify", false)) {
+			this.referentialPublisher = BrokerPublisherFactory.create(ReferentialPublisher.class, vertx);
+			Group.setReferentialPublisher(referentialPublisher);
+		}
 		final long deleteUserDelay = config.getLong("delete-user-delay", defaultDeleteUserDelay);
 		final long preDeleteUserDelay = config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay);
 
@@ -366,6 +375,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	public void handle(Message<JsonObject> message)
 	{
 		String action = getOrElse(message.body().getString("action"), "");
+		if (referentialPublisher != null && action.startsWith("manual-")) {
+			message = new ReferentialNotifyingMessage(message, referentialPublisher, action);
+		}
 		MessageReplyNotifier<JsonObject> queueMessage = messageToReplyNotifier(message);
 
 		if(!Importer.getInstance().isReady())

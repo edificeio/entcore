@@ -350,6 +350,43 @@ export function relativeHasChildrenStep(label: string, ref: RelativeRef, childre
   };
 }
 
+/**
+ * referential rereads the imported structures and their users: imports are not notified (it replays the same files),
+ * so a scenario starts from what it would have imported.
+ */
+export function referentialReadsImportStep(label: string): Step {
+  return {
+    label,
+    run: ({ world, gateway }) => {
+      const structures = world.structures.filter((s): s is NonNullable<typeof s> => !!s);
+      const users = structures.reduce((all: string[], _s, i) => all.concat(world.users(i).map((u) => u.id)), []);
+      gateway.referentialReads(structures.map((s) => s.id), users);
+    },
+  };
+}
+
+/**
+ * referential (POC Neo4j → PostgreSQL) reread the users after the manual actions: no unexplained gap between Neo4j
+ * and referential for them (field names only).
+ */
+export function referentialInSyncStep(label: string, refs: (StudentHandle | RelativeRef)[]): Step {
+  return {
+    label,
+    run: ({ world, gateway, fail }) => {
+      const ids = refs.map((ref) => isStudentHandle(ref) ? world.existingStudent(ref, label).user.id : world.relative(ref, label).id);
+      const diffs = gateway.waitReferentialSync(ids, 30);
+      if (diffs.length > 0) {
+        fail(new ExpectationFailed("referential à jour des actions manuelles",
+          diffs.map((d) => `${d.entityId} ${d.kind}${d.fields.length ? " [" + d.fields.join(", ") + "]" : ""}`).join(" ; ")));
+      }
+    },
+  };
+}
+
+function isStudentHandle(ref: StudentHandle | RelativeRef): ref is StudentHandle {
+  return typeof ref === "object" && (<StudentHandle>ref).kind === "student";
+}
+
 export function relativeHasNoChildStep(label: string, ref: RelativeRef): Step {
   return {
     label,

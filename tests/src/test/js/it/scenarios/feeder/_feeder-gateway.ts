@@ -4,6 +4,7 @@
  * (see _feeder-selftest.ts).
  */
 import http from "k6/http";
+import { sleep } from "k6";
 import {
   authenticateWeb,
   getHeaders,
@@ -15,9 +16,17 @@ import { describeHttpFailure, FeederScenarioError } from "./_feeder-errors.ts";
 import type { GraphStructure, GraphUser } from "./_feeder-verify.ts";
 
 const rootUrl = __ENV.ROOT_URL;
+/**
+ * referential (POC Neo4j → PostgreSQL), which rereads the entities touched by the manual actions: by default on the
+ * host of ROOT_URL, port 8108 (reachable the same way from the k6 container), REFERENTIAL_URL to override.
+ */
+const referentialUrl = __ENV.REFERENTIAL_URL || `${(rootUrl || "http://localhost").replace(/^(https?:\/\/[^/:]+).*$/, "$1")}:8108`;
 
 /** Content of the CSV files to import, by profile. */
 export type CsvFiles = { Teacher?: string; Student?: string; Relative?: string };
+
+/** Gap between Neo4j and referential for a user: field names only, no value. */
+export type ReferentialDiff = { entityId: string; kind: string; fields: string[]; explained: string | null };
 
 export type PersonRow = { id: string; externalId?: string; firstName?: string; lastName?: string; displayName?: string };
 
@@ -42,6 +51,13 @@ export interface FeederGateway {
   importCsv(structure: GraphStructure, files: CsvFiles): void;
   linkRelative(studentId: string, relativeId: string): void;
   unlinkRelative(studentId: string, relativeId: string): void;
+  /**
+   * Unexplained gaps between Neo4j and referential for the users, once referential had the time to reread them
+   * (polling up to {@code timeoutSeconds}): empty when referential is in sync.
+   */
+  waitReferentialSync(userIds: string[], timeoutSeconds: number): ReferentialDiff[];
+  /** Makes referential reread structures and users, as it would after replaying the same import files. */
+  referentialReads(structureIds: string[], userIds: string[]): void;
 }
 
 function expectStatus(method: string, route: string, res: { status: number; body: any }, ...accepted: number[]) {
@@ -151,5 +167,25 @@ export class HttpFeederGateway implements FeederGateway {
   unlinkRelative(studentId: string, relativeId: string): void {
     const route = `/directory/user/${studentId}/related/${relativeId}`;
     expectStatus("DELETE", route, http.del(`${rootUrl}${route}`, null, { headers: getHeaders() }), 200);
+  }
+
+  referentialReads(structureIds: string[], userIds: string[]): void {
+    const route = "/api/resync/changed";
+    const body = { action: "k6-import", userIds, structureIds, structureExternalIds: [], groupIds: [], subjectIds: [], positionIds: [], functions: false };
+    const res = http.post(`${referentialUrl}${route}`, JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
+    expectStatus("POST", `referential ${route}`, res, 200);
+  }
+
+  waitReferentialSync(userIds: string[], timeoutSeconds: number): ReferentialDiff[] {
+    const route = "/api/resync/compare/users";
+    let diffs: ReferentialDiff[] = [];
+    for (let elapsed = 0; elapsed <= timeoutSeconds; elapsed++) {
+      const res = http.post(`${referentialUrl}${route}`, JSON.stringify(userIds), { headers: { "Content-Type": "application/json" } });
+      expectStatus("POST", `referential ${route}`, res, 200);
+      diffs = (<ReferentialDiff[]>JSON.parse(<string>res.body)).filter((d) => !d.explained);
+      if (diffs.length === 0) return diffs;
+      sleep(1);
+    }
+    return diffs;
   }
 }
