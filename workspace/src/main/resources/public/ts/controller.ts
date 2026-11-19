@@ -300,10 +300,14 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				return filter !== "trash" && (!isFolder || filter !== "external")
 					&& !!item.myRights && !!item.myRights["manager"];
 			case "share":
-				// "Mes documents partagés" (filter "shared") holds items someone else shared with me —
-				// re-sharing them from here is no longer offered, only from "Mes documents" (owner).
-				return filter === "owner"
-					&& workspaceService.isActionAvailable("share", [item]);
+				// "shared" (backend WorkspaceController#queryFromRequest) means hasBeenShared=true, set
+				// for a document I OWN and shared out just as much as for one someone else shared with
+				// me — the tree filter alone can't tell the two apart. myRights.manager (true for the
+				// owner, or anyone granted manager rights) is the real gate. Mirrors canShareElements()
+				// (delegates/actions/share.ts).
+				return (filter === "owner" || filter === "shared")
+					&& workspaceService.isActionAvailable("share", [item])
+					&& !!item.myRights && !!item.myRights["manager"];
 			case "comment":
 				// Mirrors canComment() (delegates/comments.ts) — toolbar-only until now. The backend
 				// secures POST .../comment as a per-resource action (workspace.comment, WorkspaceController),

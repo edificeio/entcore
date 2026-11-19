@@ -129,15 +129,17 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
             return true;
         }
     }
-    // "Mes documents partagés" (filter "shared") holds items someone else shared with me — re-sharing
-    // them from here is no longer offered, only from "Mes documents" (owner). Matches isTileMenuActionVisible's
-    // own "share" case (controller.ts).
+    // "shared" (backend WorkspaceController#queryFromRequest) means hasBeenShared=true, which is set
+    // for a document I OWN and shared out just as much as for one someone else shared with me — the
+    // tree filter alone can't tell the two apart. myRights.manager (true for the owner, or anyone
+    // granted manager rights) is the real gate, same as isTileMenuActionVisible's "share" case (controller.ts).
     $scope.canShareElements = function () {
         const items = $scope.selectedItems()
         if(!workspaceService.isActionAvailable("share",items)){
             return false;
         }
-        return items.length > 0 && $scope.currentTree.filter == "owner"
+        return items.length > 0 && ($scope.currentTree.filter == "owner" || $scope.currentTree.filter == "shared")
+            && items.every(item => !!item.myRights && !!item.myRights["manager"]);
     };
     $scope.onCancelShare = function () {
         closeShareView()
