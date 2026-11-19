@@ -36,6 +36,14 @@ public final class ReferentialChanges {
 	private ReferentialChanges() {
 	}
 
+	/** Members recomputed by the autolink rules of the groups {@code groupIds} (end of Group.runLinkRules). */
+	public static EntityChangedDTO autolinkedGroups(List<String> groupIds) {
+		final EntityChangedDTO changes = new EntityChangedDTO("manual-link-autogroups");
+		changes.getGroupIds().addAll(groupIds);
+		changes.setGroupMembers(true);
+		return changes;
+	}
+
 	/** Changes of the successful action {@code action} with message {@code body} and reply {@code reply}. */
 	public static EntityChangedDTO of(String action, JsonObject body, Object reply) {
 		final EntityChangedDTO changes = new EntityChangedDTO(action);

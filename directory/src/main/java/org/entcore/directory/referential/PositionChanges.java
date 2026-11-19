@@ -25,6 +25,7 @@ public final class PositionChanges {
 		changes.put("subjectIds", Collections.emptyList());
 		changes.put("positionIds", ids(positionId));
 		changes.put("functions", false);
+		changes.put("groupMembers", false);
 		return changes;
 	}
 

@@ -55,6 +55,13 @@ public class ReferentialChangesTest {
 	}
 
 	@Test
+	public void autolinkedGroupsAskForTheirMembers() {
+		final EntityChangedDTO changes = ReferentialChanges.autolinkedGroups(Arrays.asList("g1", "g2"));
+		assertEquals(Arrays.asList("g1", "g2"), changes.getGroupIds());
+		assertTrue(changes.isGroupMembers());
+	}
+
+	@Test
 	public void functionCatalogChanges() {
 		assertTrue(ReferentialChanges.of("manual-create-function", new JsonObject(), ok()).isFunctions());
 	}
@@ -65,7 +72,7 @@ public class ReferentialChangesTest {
 		final String json = new com.fasterxml.jackson.databind.ObjectMapper()
 				.writeValueAsString(new EntityChangedDTO("manual-add-user"));
 		assertEquals(new java.util.TreeSet<>(Arrays.asList("action", "userIds", "structureIds", "structureExternalIds",
-				"groupIds", "subjectIds", "positionIds", "functions")), new JsonObject(json).fieldNames());
+				"groupIds", "subjectIds", "positionIds", "functions", "groupMembers")), new JsonObject(json).fieldNames());
 	}
 
 	@Test

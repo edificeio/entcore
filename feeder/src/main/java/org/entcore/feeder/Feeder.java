@@ -165,6 +165,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		this.allowManualActionsDuringFeeds = config.getBoolean("allow-manual-actions-during-feeds", false);
 		if (config.getBoolean("referential-notify", false)) {
 			this.referentialPublisher = BrokerPublisherFactory.create(ReferentialPublisher.class, vertx);
+			Group.setReferentialPublisher(referentialPublisher);
 		}
 		final long deleteUserDelay = config.getLong("delete-user-delay", defaultDeleteUserDelay);
 		final long preDeleteUserDelay = config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay);

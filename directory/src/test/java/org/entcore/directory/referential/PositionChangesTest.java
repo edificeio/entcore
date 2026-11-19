@@ -20,7 +20,7 @@ public class PositionChangesTest {
 		final JsonObject json = new JsonObject(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(changes));
 
 		assertEquals(new TreeSet<>(Arrays.asList("action", "userIds", "structureIds", "structureExternalIds",
-				"groupIds", "subjectIds", "positionIds", "functions")), json.fieldNames());
+				"groupIds", "subjectIds", "positionIds", "functions", "groupMembers")), json.fieldNames());
 		assertEquals(Collections.singletonList("p1"), json.getJsonArray("positionIds").getList());
 		assertEquals(Collections.singletonList("s1"), json.getJsonArray("structureIds").getList());
 	}

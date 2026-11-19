@@ -17,6 +17,7 @@ public class EntityChangedDTO {
 	private List<String> subjectIds = new ArrayList<>();
 	private List<String> positionIds = new ArrayList<>();
 	private boolean functions;
+	private boolean groupMembers;
 
 	public EntityChangedDTO() {
 	}
@@ -93,5 +94,14 @@ public class EntityChangedDTO {
 
 	public void setFunctions(boolean functions) {
 		this.functions = functions;
+	}
+
+	/** True if the members of {@code groupIds} changed (autolink rules recomputed by runLinkRules). */
+	public boolean isGroupMembers() {
+		return groupMembers;
+	}
+
+	public void setGroupMembers(boolean groupMembers) {
+		this.groupMembers = groupMembers;
 	}
 }
