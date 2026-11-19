@@ -11,6 +11,7 @@ import org.entcore.audience.reaction.service.impl.ReactionServiceImpl;
 import org.entcore.audience.services.AudienceService;
 import org.entcore.audience.services.impl.AudienceRepositoryEvents;
 import org.entcore.audience.services.impl.AudienceServiceImpl;
+import org.entcore.audience.util.ReferentialAcl;
 import org.entcore.audience.view.dao.ViewDao;
 import org.entcore.audience.view.dao.impl.ViewDaoImpl;
 import org.entcore.audience.view.service.ViewService;
@@ -36,6 +37,7 @@ public class Audience extends BaseServer {
 	public Future<Void> initAudience() {
 
 		final ISql isql = Sql.getInstance();
+		ReferentialAcl.init(vertx, config);
 		final ReactionDao reactionDao = new ReactionDaoImpl(isql);
 		final ReactionService reactionService = new ReactionServiceImpl(vertx.eventBus(), reactionDao);
 		final ViewDao viewDao = new ViewDaoImpl(isql);
