@@ -669,4 +669,37 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
 
         return promise.future();
     }
+
+    /**
+     * Retrieves the group ids a user belongs to (see {@code UserService.getGroups} Neo4j query).
+     *
+     * @param request The request containing the user's ENT id
+     * @return Response with that user's group ids
+     */
+    @Override
+    public Future<GetUserGroupIdsResponseDTO> getUserGroupIds(GetUserGroupIdsRequestDTO request) {
+        final Promise<GetUserGroupIdsResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUserGroupIds: " + request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        userService.getGroups(request.getUserId(), event -> {
+            if (event.isRight()) {
+                final JsonArray groupsArray = event.right().getValue();
+                final List<String> groupIds = new ArrayList<>();
+                for (int i = 0; i < groupsArray.size(); i++) {
+                    groupIds.add(groupsArray.getJsonObject(i).getString("id"));
+                }
+                promise.complete(new GetUserGroupIdsResponseDTO(groupIds));
+            } else {
+                log.error("Error getting groups for user " + request.getUserId() + ": " + event.left().getValue());
+                promise.fail(event.left().getValue());
+            }
+        });
+
+        return promise.future();
+    }
 }
