@@ -262,6 +262,7 @@ public class MessageUtil {
             JsonArray res = event.body().getJsonArray("result", new JsonArray());
             if ("ok".equals(event.body().getString("status")) && res != null) {
                 promise.complete(res);
+                ReferentialAcl.compare(action, res);
             } else {
                 promise.fail("User not found");
             }
@@ -308,6 +309,7 @@ public class MessageUtil {
                 log.warn("Unable to resolve senders structures, messages will be listed without it : "
                         + event.result().body().getString("message"));
             } else {
+                ReferentialAcl.compare(action, event.result().body().getJsonArray("result", new JsonArray()));
                 event.result().body().getJsonArray("result", new JsonArray()).stream()
                         .filter(entry -> entry instanceof JsonObject)
                         .map(JsonObject.class::cast)
@@ -474,6 +476,7 @@ public class MessageUtil {
             JsonArray res = event.body().getJsonArray("result", new JsonArray());
             if ("ok".equals(event.body().getString("status")) && res != null) {
                 promise.complete(res);
+                ReferentialAcl.compare(action, res);
             } else {
                 promise.fail("Groups not found");
             }

@@ -19,6 +19,7 @@
 
 package org.entcore.conversation;
 
+import org.entcore.conversation.util.ReferentialAcl;
 import java.text.ParseException;
 
 import static org.entcore.common.editor.ContentTransformerConfig.getContentTransformerConfig;
@@ -71,6 +72,7 @@ public class Conversation extends BaseServer {
 		final Storage storage = storageFactory.getStorage();
 
 		ContentTransformerFactoryProvider.init(vertx);
+		ReferentialAcl.init(vertx, config);
 		final JsonObject contentTransformerConfig = getContentTransformerConfig(vertx).orElse(null);
 		final IContentTransformerClient contentTransformerClient = ContentTransformerFactoryProvider.getFactory("conversation", contentTransformerConfig).create();
 		final IContentTransformerEventRecorder contentTransformerEventRecorder = new ContentTransformerEventRecorderFactory("conversation", contentTransformerConfig).create();
