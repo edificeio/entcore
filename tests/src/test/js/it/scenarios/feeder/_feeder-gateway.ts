@@ -171,7 +171,7 @@ export class HttpFeederGateway implements FeederGateway {
 
   referentialReads(structureIds: string[], userIds: string[]): void {
     const route = "/api/resync/changed";
-    const body = { action: "k6-import", userIds, structureIds, structureExternalIds: [], groupIds: [], subjectIds: [], functions: false };
+    const body = { action: "k6-import", userIds, structureIds, structureExternalIds: [], groupIds: [], subjectIds: [], positionIds: [], functions: false };
     const res = http.post(`${referentialUrl}${route}`, JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
     expectStatus("POST", `referential ${route}`, res, 200);
   }

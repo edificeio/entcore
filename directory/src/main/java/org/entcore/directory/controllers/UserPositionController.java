@@ -16,10 +16,14 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.position.UserPositionSource;
 import org.entcore.common.user.position.UserPositionService;
+import org.entcore.directory.referential.PositionChanges;
+import org.entcore.directory.referential.ReferentialPublisher;
 
 public class UserPositionController extends BaseController {
 
 	private final UserPositionService userPositionService;
+	/** Notifies referential of the positions written (referential POC), null if disabled. */
+	private ReferentialPublisher referentialPublisher;
 
 	public UserPositionController(UserPositionService userPositionService) {
 		this.userPositionService = userPositionService;
@@ -68,7 +72,10 @@ public class UserPositionController extends BaseController {
 				final String positionName = jsonBody.getString("name");
 				final String structureId = jsonBody.getString("structureId");
 				userPositionService.createUserPosition(positionName, structureId, UserPositionSource.MANUAL, adminInfos)
-						.onSuccess(userPosition -> Renders.render(request, userPosition, 201))
+						.onSuccess(userPosition -> {
+							notifyReferential("directory-create-position", userPosition.getId(), userPosition.getStructureId());
+							Renders.render(request, userPosition, 201);
+						})
 						.onFailure(th -> {
 							final String message;
 							final JsonObject body = new JsonObject();
@@ -101,7 +108,10 @@ public class UserPositionController extends BaseController {
 			RequestUtils.bodyToJson(request, jsonBody -> {
 				final String name = jsonBody.getString("name");
 				userPositionService.renameUserPosition(name, positionId, adminInfos)
-						.onSuccess(userPosition -> Renders.render(request, userPosition))
+						.onSuccess(userPosition -> {
+							notifyReferential("directory-rename-position", userPosition.getId(), userPosition.getStructureId());
+							Renders.render(request, userPosition);
+						})
 						.onFailure(th -> {
 							log.warn("An error occurred while renaming user position with id : " + positionId + " and name : " + name, th);
 							final String message;
@@ -123,6 +133,14 @@ public class UserPositionController extends BaseController {
 
 	}
 
+	/** A failed notification is only logged (action name, no data): the next resync catches up. */
+	private void notifyReferential(String action, String positionId, String structureId) {
+		if (referentialPublisher != null) {
+			referentialPublisher.entityChanged(PositionChanges.of(action, positionId, structureId))
+					.onFailure(e -> Renders.log.warn("transmission_failed action=" + action));
+		}
+	}
+
 	@Delete("/positions/:positionId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
@@ -130,12 +148,19 @@ public class UserPositionController extends BaseController {
 		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
 			final String positionId = request.getParam("positionId");
 			userPositionService.deleteUserPosition(positionId, adminInfos)
-					.onSuccess(event -> Renders.ok(request))
+					.onSuccess(event -> {
+						notifyReferential("directory-delete-position", positionId, null);
+						Renders.ok(request);
+					})
 					.onFailure(th -> {
 						Renders.log.warn("An error occurred while fetching user position with id : " + positionId, th);
 						Renders.renderError(request);
 					});
 		});
+	}
+
+	public void setReferentialPublisher(ReferentialPublisher referentialPublisher) {
+		this.referentialPublisher = referentialPublisher;
 	}
 
 }

@@ -19,6 +19,7 @@ public final class ReferentialChanges {
 	private static final List<String> STRUCTURE_KEYS = Arrays.asList("structureId", "structureIds", "parentStructureId");
 	private static final List<String> GROUP_KEYS = Arrays.asList("classId", "classIds", "groupId", "groupIds");
 	private static final List<String> SUBJECT_KEYS = Arrays.asList("subjectId");
+	private static final List<String> POSITION_KEYS = Arrays.asList("positionId", "positionIds", "userPositionIds");
 	private static final List<String> FUNCTION_ACTIONS = Arrays.asList("manual-create-function",
 			"manual-delete-function");
 	/** Kind of entity created by an action, whose id is in the reply. */
@@ -47,6 +48,7 @@ public final class ReferentialChanges {
 			collect(source, Arrays.asList("structureExternalId"), changes.getStructureExternalIds());
 			collect(source, GROUP_KEYS, changes.getGroupIds());
 			collect(source, SUBJECT_KEYS, changes.getSubjectIds());
+			collect(source, POSITION_KEYS, changes.getPositionIds());
 		}
 		changes.setFunctions(FUNCTION_ACTIONS.contains(action));
 		final String created = CREATED.get(action);

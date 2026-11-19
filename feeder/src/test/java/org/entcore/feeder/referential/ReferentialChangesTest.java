@@ -65,7 +65,7 @@ public class ReferentialChangesTest {
 		final String json = new com.fasterxml.jackson.databind.ObjectMapper()
 				.writeValueAsString(new EntityChangedDTO("manual-add-user"));
 		assertEquals(new java.util.TreeSet<>(Arrays.asList("action", "userIds", "structureIds", "structureExternalIds",
-				"groupIds", "subjectIds", "functions")), new JsonObject(json).fieldNames());
+				"groupIds", "subjectIds", "positionIds", "functions")), new JsonObject(json).fieldNames());
 	}
 
 	@Test

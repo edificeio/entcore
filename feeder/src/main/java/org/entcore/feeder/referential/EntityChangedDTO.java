@@ -15,6 +15,7 @@ public class EntityChangedDTO {
 	private List<String> structureExternalIds = new ArrayList<>();
 	private List<String> groupIds = new ArrayList<>();
 	private List<String> subjectIds = new ArrayList<>();
+	private List<String> positionIds = new ArrayList<>();
 	private boolean functions;
 
 	public EntityChangedDTO() {
@@ -27,7 +28,7 @@ public class EntityChangedDTO {
 	/** True if the action touched no known entity (not a getter: not serialized). */
 	public boolean touchesNothing() {
 		return userIds.isEmpty() && structureIds.isEmpty() && structureExternalIds.isEmpty() && groupIds.isEmpty()
-				&& subjectIds.isEmpty() && !functions;
+				&& subjectIds.isEmpty() && positionIds.isEmpty() && !functions;
 	}
 
 	public String getAction() {
@@ -76,6 +77,14 @@ public class EntityChangedDTO {
 
 	public void setSubjectIds(List<String> subjectIds) {
 		this.subjectIds = subjectIds;
+	}
+
+	public List<String> getPositionIds() {
+		return positionIds;
+	}
+
+	public void setPositionIds(List<String> positionIds) {
+		this.positionIds = positionIds;
 	}
 
 	public boolean isFunctions() {
