@@ -23,7 +23,7 @@ est en cours** : Neo4j fait foi, `~/project/sources/referential` (PG) suit.
 - Échec de publication : `transmission_failed action=…`, aucune donnée personnelle, l'action
   n'échoue pas. La resynchro complète rattrape.
 - Les imports ne transmettent rien : referential rejoue les mêmes fichiers.
-- Cible en fin de POC (option A) : commandes dédiées avec les valeurs relues après
+- Cible (étape 9 du plan, famille par famille) : commandes dédiées avec les valeurs relues après
   écriture (Class et Function réécrivent externalId et id : ne jamais transmettre le
   payload de l'appelant).
 
