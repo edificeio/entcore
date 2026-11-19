@@ -88,7 +88,9 @@ export default ({ mode }: { mode: string }) => {
          * Allow the server to access the node_modules folder (for the images)
          * This is a solution to allow the server to access the images and fonts of the bootstrap package for 1D theme
          */
-        allow: ['.', bootstrapImagesPath, linkedBootstrapImagesPath],
+        // '../../' is the workspace root: with the pnpm workspace, node_modules
+        // (and so the bootstrap images) live there, outside this folder.
+        allow: ['.', '../../', bootstrapImagesPath, linkedBootstrapImagesPath],
       },
       proxy: proxyConfig,
       port: 4200,
