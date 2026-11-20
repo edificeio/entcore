@@ -4,7 +4,7 @@ import {
   useParams,
 } from 'react-router-dom';
 import { HttpResponse, http } from 'msw';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetModerationMocks } from '~/mocks/moderation/handlers';
 import { server } from '~/mocks/server';
@@ -288,6 +288,22 @@ describe('ReportCaseProcess decision', () => {
       'RAS',
     );
     expect(screen.queryByText('reports list')).not.toBeInTheDocument();
+  });
+
+  it('opens the reports list at the top of the page', async () => {
+    const scrollTo = vi
+      .spyOn(window, 'scrollTo')
+      .mockImplementation(() => undefined);
+    renderProcess();
+
+    await chooseDecision('Conserver le contenu');
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Valider le traitement' }),
+    );
+
+    await screen.findByText('reports list');
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    scrollTo.mockRestore();
   });
 
   it('sends a single request on a double click', async () => {

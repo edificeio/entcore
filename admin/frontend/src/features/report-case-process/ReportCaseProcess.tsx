@@ -125,6 +125,9 @@ export function ReportCaseProcess({
             severity: 'success',
             message: t(`reports.process.success.${option.status}`),
           });
+          // The app restores no scroll position: without this, the list would
+          // open as far down as the submit button was
+          window.scrollTo(0, 0);
           navigate(
             `/reports/${structureId}?tab=${reportsTabParam(option.tab)}`,
           );
