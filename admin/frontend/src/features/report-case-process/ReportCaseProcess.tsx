@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -9,7 +9,12 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import visuallyHidden from '@mui/utils/visuallyHidden';
-import { Navigate, Link as RouterLink, useNavigate } from 'react-router-dom';
+import {
+  Navigate,
+  Link as RouterLink,
+  useBlocker,
+  useNavigate,
+} from 'react-router-dom';
 
 import { ReportCaseCard } from '~/components/ReportCaseCard';
 import { useI18n } from '~/hooks/useI18n';
@@ -17,6 +22,7 @@ import { reportsTabParam } from '~/routes/pages/reportsTab';
 import { useAddDecision, useCase } from '~/services';
 import { showToast } from '~/store/toast';
 import { DecisionOptions } from './DecisionOptions';
+import { LeaveProcessDialog } from './LeaveProcessDialog';
 import {
   PROCESS_OPTIONS,
   canProcess,
@@ -52,10 +58,37 @@ export function ReportCaseProcess({
   // Set synchronously: the mutation state only updates after a re-render, too
   // late to ignore a second click on submit
   const submittingRef = useRef(false);
+  // Set once the decision is saved, so that the navigation that follows is not blocked
+  const savedRef = useRef(false);
   const detailHref = `/reports/${structureId}/cases/${caseId}`;
+  const processable = !reportCase || canProcess(reportCase.status);
+  // A chosen decision is lost when leaving the page (unless the case can no
+  // longer be processed: the page then redirects to the case detail)
+  const hasUnsavedDecision = decision !== null && processable;
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedDecision &&
+      !savedRef.current &&
+      currentLocation.pathname !== nextLocation.pathname,
+  );
+
+  // Leaving the app (reload, closed tab, console links) only allows the
+  // browser's own confirmation
+  useEffect(() => {
+    if (!hasUnsavedDecision) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      if (savedRef.current) return;
+      event.preventDefault();
+      // Still required by some browsers to show the confirmation
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [hasUnsavedDecision]);
 
   // Reached by URL on a case that can no longer be processed (deleted content)
-  if (reportCase && !canProcess(reportCase.status)) {
+  if (!processable) {
     return <Navigate to={detailHref} replace />;
   }
 
@@ -68,6 +101,7 @@ export function ReportCaseProcess({
       { id: caseId, payload: { status: option.status, comment: note.trim() } },
       {
         onSuccess: () => {
+          savedRef.current = true;
           showToast({
             severity: 'success',
             message: t(`reports.process.success.${option.status}`),
@@ -179,6 +213,12 @@ export function ReportCaseProcess({
         {isPending ? t('reports.detail.loading') : ''}
       </Box>
       {renderContent()}
+
+      <LeaveProcessDialog
+        open={blocker.state === 'blocked'}
+        onLeave={() => blocker.proceed?.()}
+        onStay={() => blocker.reset?.()}
+      />
 
       {/* Always rendered: cancel is the only way back, even when loading fails */}
       <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end' }}>

@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { resetModerationMocks } from '~/mocks/moderation/handlers';
 import { server } from '~/mocks/server';
-import { act, fireEvent, render, screen } from '~/mocks/setup';
+import { act, fireEvent, render, screen, waitFor, within } from '~/mocks/setup';
 import { queryClient } from '~/providers';
 import { moderationBaseUrl } from '~/services/api';
 import { useToastStore } from '~/store/toast';
@@ -289,5 +289,91 @@ describe('ReportCaseProcess decision', () => {
 
     await screen.findByText('reports list');
     expect(bodies).toHaveLength(1);
+  });
+});
+
+describe('ReportCaseProcess leave guard', () => {
+  beforeEach(() => {
+    resetModerationMocks();
+    queryClient.clear();
+  });
+
+  it('leaves without asking when no decision is chosen', async () => {
+    renderProcess();
+
+    fireEvent.click(await screen.findByRole('link', { name: 'annuler' }));
+
+    expect(await screen.findByText('detail page')).toBeVisible();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('asks before leaving with a chosen decision, and stays on "Poursuivre"', async () => {
+    renderProcess();
+    await chooseDecision('Supprimer le contenu');
+    fireEvent.change(screen.getByRole('textbox', { name: 'Note interne' }), {
+      target: { value: 'À revoir' },
+    });
+
+    fireEvent.click(screen.getByRole('link', { name: 'annuler' }));
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Abandonner le traitement ?',
+    });
+    expect(dialog).toHaveAccessibleDescription(
+      'La décision sélectionnée ne sera pas appliquée et les commentaires saisis seront perdus. Le signalement restera inchangé.',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Poursuivre' }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole('radio', { name: 'Supprimer le contenu' }),
+    ).toBeChecked();
+    expect(screen.getByRole('textbox', { name: 'Note interne' })).toHaveValue(
+      'À revoir',
+    );
+    expect(screen.queryByText('detail page')).not.toBeInTheDocument();
+  });
+
+  it('leaves on "Abandonner"', async () => {
+    renderProcess();
+    await chooseDecision('Conserver le contenu');
+
+    fireEvent.click(screen.getByRole('link', { name: 'annuler' }));
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: 'Abandonner',
+      }),
+    );
+
+    expect(await screen.findByText('detail page')).toBeVisible();
+  });
+
+  it('asks on a browser back navigation', async () => {
+    const { router } = renderProcess(CASE_ID, [caseUrl(CASE_ID)]);
+    await chooseDecision('Conserver le contenu');
+
+    act(() => {
+      router.navigate(-1);
+    });
+
+    expect(await screen.findByRole('dialog')).toBeVisible();
+    expect(router.state.location.pathname).toBe(`${caseUrl(CASE_ID)}/process`);
+  });
+
+  it('warns the browser before unloading, only with a chosen decision', async () => {
+    renderProcess();
+    await screen.findAllByRole('radio');
+
+    const before = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(before);
+    expect(before.defaultPrevented).toBe(false);
+
+    await chooseDecision('Conserver le contenu');
+    const after = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(after);
+    expect(after.defaultPrevented).toBe(true);
   });
 });
