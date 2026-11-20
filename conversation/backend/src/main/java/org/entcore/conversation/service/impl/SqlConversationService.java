@@ -280,8 +280,8 @@ public class SqlConversationService implements ConversationService{
 							.add(System.currentTimeMillis())
 							.add(isRecipient)
 							.add(messageId)
-							.add(user.getUserId())
-							.add(State.DRAFT.name());
+							.add(State.DRAFT.name())
+							.add(user.getUserId());
 			builder.prepared(userMessageQuery, userMessageValues);
 			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(result));
 		}).onFailure(th -> {
