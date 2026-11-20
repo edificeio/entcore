@@ -55,7 +55,7 @@ public class DeleteOrphan implements Handler<Long> {
 		"DELETE FROM conversation.messages WHERE id IN " +
 		"(SELECT id FROM conversation.messages m " +
 		"WHERE m.orphan = TRUE " +
-		"AND NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
+		"AND NOT EXISTS (SELECT 1 FROM conversation.usermessages_v2 um WHERE um.message_id = m.id::UUID) " +
 		"LIMIT ?);";
 
 	private static final String DELETE_ORPHAN_THREAD =

@@ -50,8 +50,8 @@ public class MessageOwnerFilter implements ResourcesProvider {
 
 		String query =
 			"SELECT count(distinct m) AS number FROM conversation.messages m " +
-			"JOIN conversation.usermessages um ON m.id = um.message_id " +
-			"WHERE um.user_id = ? AND um.message_id = ? AND m.from = ?";
+			"JOIN conversation.usermessages_v2 um ON m.id = um.message_id::text " +
+			"WHERE um.user_id = ?::UUID AND um.message_id = ?::UUID AND m.from = ?";
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 			.add(user.getUserId())

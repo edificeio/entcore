@@ -55,11 +55,17 @@ public class FolderTest {
     @ClassRule
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer();
     static ConversationService conversationService;
+    /** Users who exchange messages need UUID ids since usermessages_v2. */
+    private static final String SENDER_ID = "ffffffff-1111-0000-0000-000000000001";
+    private static final String RECIPIENT_ID = "ffffffff-1111-0000-0000-000000000002";
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
         Config.getInstance().setConfig(new JsonObject());
         conversationService = new SqlConversationService(test.vertx(), schema, IContentTransformerClient.noop, IContentTransformerEventRecorder.noop);
+        // 027-fix-app-rights.sql grants default privileges for this role, which the test container does not have.
+        pgContainer.execInContainer("psql", "-U", pgContainer.getUsername(), "-d", pgContainer.getDatabaseName(),
+                "-c", "CREATE ROLE \"web-education\"");
         test.database().initPostgreSQL(context, pgContainer, schema);
     }
 
@@ -246,8 +252,8 @@ public class FolderTest {
     @Test
     public void testConversationServiceShouldListRootFolders(TestContext context) {
         final Async async = context.async();
-        final UserInfos from = test.http().sessionUser();
-        final UserInfos dest = test.directory().generateUser("user2");
+        final UserInfos from = test.directory().generateUser(SENDER_ID);
+        final UserInfos dest = test.directory().generateUser(RECIPIENT_ID);
         conversationService.createFolder("folder8", null, dest, res1 -> {
             context.assertTrue(res1.isRight());
             final String folderId = res1.right().getValue().getString("id");
@@ -291,8 +297,8 @@ public class FolderTest {
     @Test
     public void testConversationServiceShouldListChildFolders(TestContext context) {
         final Async async = context.async();
-        final UserInfos from = test.http().sessionUser();
-        final UserInfos dest = test.directory().generateUser("user2");
+        final UserInfos from = test.directory().generateUser(SENDER_ID);
+        final UserInfos dest = test.directory().generateUser(RECIPIENT_ID);
         conversationService.createFolder("folder10", null, dest, res0 -> {
             context.assertTrue(res0.isRight());
             final String rootId = res0.right().getValue().getString("id");
