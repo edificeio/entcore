@@ -275,12 +275,13 @@ public class SqlConversationService implements ConversationService{
 			builder.prepared(query, values);
 
 			String userMessageQuery = "UPDATE " + userMessageTable + " SET msg_date = ?, " +
-					" is_recipient = ? WHERE message_id = ?::UUID  AND msg_state = ?";
+					" is_recipient = ? WHERE message_id = ?::UUID  AND msg_state = ? AND user_id = ?::UUID";
 			JsonArray userMessageValues = new JsonArray()
 							.add(System.currentTimeMillis())
 							.add(isRecipient)
 							.add(messageId)
-							.add(State.DRAFT);
+							.add(user.getUserId())
+							.add(State.DRAFT.name());
 			builder.prepared(userMessageQuery, userMessageValues);
 			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(result));
 		}).onFailure(th -> {

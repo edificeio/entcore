@@ -13,7 +13,7 @@ BEGIN
                                              trashed BOOLEAN NOT NULL DEFAULT FALSE,
                                              unread BOOLEAN NOT NULL DEFAULT TRUE,
                                              total_quota BIGINT NOT NULL DEFAULT 0,
-                                             is_recipient BOOLEAN,
+                                             is_recipient BOOLEAN NOT NULL DEFAULT FALSE,
                                              is_sender    BOOLEAN,
                                              msg_state    VARCHAR(10),
                                              msg_date     BIGINT );
@@ -103,3 +103,5 @@ DROP TRIGGER IF EXISTS flagOrphanMessage_trigger ON conversation.usermessages_v2
 CREATE TRIGGER flagOrphanMessage_trigger
     AFTER DELETE ON conversation.usermessages_v2
     FOR EACH ROW EXECUTE PROCEDURE conversation.flagOrphanMessage();
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON conversation.usermessages_v2 TO "apps";
