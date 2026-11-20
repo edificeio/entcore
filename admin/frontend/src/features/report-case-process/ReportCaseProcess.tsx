@@ -85,17 +85,30 @@ export function ReportCaseProcess({
             </Box>
           </Grid>
         </Grid>
+      </Stack>
+    );
+  };
 
-        <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end' }}>
-          <Button
-            component={RouterLink}
-            to={`/reports/${structureId}/cases/${caseId}`}
-            variant="text"
-            data-testid="report-case-process-cancel"
-          >
-            {t('reports.process.cancel')}
-          </Button>
-          {/* Enabled once a decision can be chosen (next iteration) */}
+  return (
+    <Stack spacing={4}>
+      {/* Status message (RGAA 7.5): always rendered so that updates are announced */}
+      <Box role="status" sx={visuallyHidden}>
+        {isPending ? t('reports.detail.loading') : ''}
+      </Box>
+      {renderContent()}
+
+      {/* Always rendered: cancel is the only way back, even when loading fails */}
+      <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end' }}>
+        <Button
+          component={RouterLink}
+          to={`/reports/${structureId}/cases/${caseId}`}
+          variant="text"
+          data-testid="report-case-process-cancel"
+        >
+          {t('reports.process.cancel')}
+        </Button>
+        {reportCase && (
+          // Enabled once a decision can be chosen (next iteration)
           <Button
             variant="contained"
             disabled
@@ -103,18 +116,8 @@ export function ReportCaseProcess({
           >
             {t('reports.process.submit')}
           </Button>
-        </Stack>
+        )}
       </Stack>
-    );
-  };
-
-  return (
-    <>
-      {/* Status message (RGAA 7.5): always rendered so that updates are announced */}
-      <Box role="status" sx={visuallyHidden}>
-        {isPending ? t('reports.detail.loading') : ''}
-      </Box>
-      {renderContent()}
-    </>
+    </Stack>
   );
 }

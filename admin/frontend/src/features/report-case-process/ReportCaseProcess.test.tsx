@@ -92,5 +92,10 @@ describe('ReportCaseProcess', () => {
     expect(
       screen.queryByRole('button', { name: 'Valider le traitement' }),
     ).not.toBeInTheDocument();
+    // Still a way back to the case detail page
+    expect(screen.getByRole('link', { name: 'annuler' })).toHaveAttribute(
+      'href',
+      '/reports/structure-1/cases/unknown-case',
+    );
   });
 });
