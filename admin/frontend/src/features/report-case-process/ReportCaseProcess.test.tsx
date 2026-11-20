@@ -420,6 +420,9 @@ describe('ReportCaseProcess while the case changes', () => {
 
   it('opens the processed tab after a deletion, even when the list is slow to load', async () => {
     const { router } = renderProcess(CASE_ID, [], 300);
+    // Every page reached, including those quickly replaced
+    const visited: string[] = [];
+    router.subscribe((state) => visited.push(state.location.pathname));
 
     await chooseDecision('Supprimer le contenu');
     fireEvent.click(
@@ -431,6 +434,8 @@ describe('ReportCaseProcess while the case changes', () => {
     ).toBeVisible();
     expect(router.state.location.pathname).toBe('/reports/structure-1');
     expect(router.state.location.search).toBe('?tab=settled');
+    // The refetch of the now deleted case must not redirect to its detail first
+    expect(visited).not.toContain(caseUrl(CASE_ID));
   });
 
   it('disables cancel while the decision is being sent', async () => {

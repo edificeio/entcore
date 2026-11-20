@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -98,9 +99,11 @@ export function ReportCaseProcess({
   }, [hasUnsavedDecision]);
 
   // Reached by URL on a case that can no longer be processed (deleted content).
-  // Not once our own decision is saved: the refetch it triggers would send the
-  // administrator to the detail page instead of the reports list
-  if (!processable && !saved) {
+  // Not for our own decision: the mutation awaits the refetch it triggers
+  // before its success callback, so the case may already show as deleted while
+  // it is still pending; redirecting then would land on the detail page
+  // instead of the reports list
+  if (!processable && !saved && !addDecision.isPending) {
     return <Navigate to={detailHref} replace />;
   }
 
@@ -114,7 +117,10 @@ export function ReportCaseProcess({
       {
         onSuccess: () => {
           savedRef.current = true;
-          setSaved(true);
+          // Committed right away: the refetch of the now processed case comes
+          // through a synchronous store update, which would otherwise render
+          // before this state and redirect to the case detail
+          flushSync(() => setSaved(true));
           showToast({
             severity: 'success',
             message: t(`reports.process.success.${option.status}`),
