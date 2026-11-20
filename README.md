@@ -59,6 +59,17 @@ Accéder à l'application dans un navigateur à l'URL:
 
 	http://localhost:8090
 
+# Montée de version majeure
+
+## Conversation : nouveau modèle `usermessages_v2`
+
+La table `conversation.usermessages` est remplacée par `conversation.usermessages_v2`. Ce changement est incompatible avec les versions précédentes : il impose une montée de version majeure d'entcore.
+
+- **Schéma** : `user_id` et `message_id` passent en `UUID`. La table porte aussi des colonnes recopiées de `messages` (`is_recipient`, `is_sender`, `msg_state`, `msg_date`), qui permettent de lister les dossiers sans lire `messages`.
+- **Migration automatique** (`029-conversation-optimize-usermessage-model.sql`) : elle n'est prévue que pour les environnements locaux et les installations open source. Elle ne copie que les lignes dont les identifiants sont des UUID valides : les autres liens utilisateur–message ne sont pas repris. Elle s'exécute en une seule transaction au démarrage du module, ce qui peut être long sur un volume important.
+- **Ancienne table** : `conversation.usermessages` n'est pas supprimée, mais n'est plus ni lue ni écrite.
+- **Archives** : une archive de messagerie exportée avant cette version ne peut pas être réimportée.
+
 # Développer
 
 ## Configuration

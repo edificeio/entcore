@@ -24,6 +24,8 @@ package org.entcore.conversation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import fr.wseduc.transformer.IContentTransformerClient;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
@@ -90,8 +92,8 @@ public class RestoreTest {
     private Future<Void> restore(String userId, String... messageIds) {
         final Promise<Void> promise = Promise.promise();
         final UserInfos user = new UserInfos();
-        user.setUserId(userId);
-        conversationService.restore(new ArrayList<>(Arrays.asList(messageIds)), user, res -> {
+        user.setUserId(id(userId));
+        conversationService.restore(Arrays.stream(messageIds).map(RestoreTest::id).collect(Collectors.toCollection(ArrayList::new)), user, res -> {
             if (res.isRight()) {
                 promise.complete();
             } else {
@@ -101,13 +103,19 @@ public class RestoreTest {
         return promise.future();
     }
 
+    /** User and message ids are UUIDs since usermessages_v2: readable names are mapped to stable UUIDs. */
+    private static String id(String name) {
+        return UUID.nameUUIDFromBytes(name.getBytes()).toString();
+    }
+
     /** Two sent messages of the same thread, both in the trash of the user. The thread row itself is not created. */
     private Future<JsonArray> trashedThread(String prefix, String userId) {
         return raw("INSERT INTO conversation.messages (id, body, \"from\", \"to\", state, date, subject, thread_id) VALUES "
-                + "('" + prefix + "-m1', 'b', 'sender', '[]', 'SENT', 1000, 'first', '" + prefix + "-t'),"
-                + "('" + prefix + "-m2', 'b', 'sender', '[]', 'SENT', 2000, 'last', '" + prefix + "-t')")
-            .compose(v -> raw("INSERT INTO conversation.usermessages (user_id, message_id, trashed) VALUES "
-                + "('" + userId + "', '" + prefix + "-m1', true), ('" + userId + "', '" + prefix + "-m2', true)"));
+                + "('" + id(prefix + "-m1") + "', 'b', 'sender', '[]', 'SENT', 1000, 'first', '" + prefix + "-t'),"
+                + "('" + id(prefix + "-m2") + "', 'b', 'sender', '[]', 'SENT', 2000, 'last', '" + prefix + "-t')")
+            .compose(v -> raw("INSERT INTO conversation.usermessages_v2 (user_id, message_id, trashed, is_recipient, msg_state, msg_date) VALUES "
+                + "('" + id(userId) + "', '" + id(prefix + "-m1") + "', true, true, 'SENT', 1000), "
+                + "('" + id(userId) + "', '" + id(prefix + "-m2") + "', true, true, 'SENT', 2000)"));
     }
 
     private Future<JsonArray> thread(String id, long date, String subject) {
@@ -126,11 +134,11 @@ public class RestoreTest {
                 context.assertEquals("last", thread.getJsonArray(0).getString(0),
                     "The thread is rebuilt from its last sent message, as sending does");
                 context.assertEquals(2000L, thread.getJsonArray(0).getLong(1));
-                return raw("SELECT count(*) FROM conversation.userthreads WHERE user_id = 'del-u' AND thread_id = 'del-t'");
+                return raw("SELECT count(*) FROM conversation.userthreads WHERE user_id = '" + id("del-u") + "' AND thread_id = 'del-t'");
             })
             .compose(link -> {
                 context.assertEquals(1, link.getJsonArray(0).getInteger(0), "The user must find the thread in its list");
-                return raw("SELECT trashed FROM conversation.usermessages WHERE user_id = 'del-u' AND message_id = 'del-m1'");
+                return raw("SELECT trashed FROM conversation.usermessages_v2 WHERE user_id = '" + id("del-u") + "' AND message_id = '" + id("del-m1") + "'");
             })
             .onSuccess(trashed -> {
                 context.assertFalse(trashed.getJsonArray(0).getBoolean(0), "The message must be out of the trash");
@@ -149,7 +157,7 @@ public class RestoreTest {
             .compose(thread -> {
                 context.assertEquals("current", thread.getJsonArray(0).getString(0), "An existing thread is not rewritten");
                 context.assertEquals(5000L, thread.getJsonArray(0).getLong(1));
-                return raw("SELECT count(*) FROM conversation.userthreads WHERE user_id = 'keep-u' AND thread_id = 'keep-t'");
+                return raw("SELECT count(*) FROM conversation.userthreads WHERE user_id = '" + id("keep-u") + "' AND thread_id = 'keep-t'");
             })
             .onSuccess(link -> {
                 context.assertEquals(1, link.getJsonArray(0).getInteger(0));
@@ -166,10 +174,10 @@ public class RestoreTest {
             .compose(v -> trashedThread("mix2", "mix-u"))
             .compose(v -> thread("mix2-t", 2000, "last"))
             .compose(v -> restore("mix-u", "mix1-m2", "mix2-m2"))
-            .compose(v -> raw("SELECT count(*) FROM conversation.usermessages WHERE user_id = 'mix-u' AND trashed = false"))
+            .compose(v -> raw("SELECT count(*) FROM conversation.usermessages_v2 WHERE user_id = '" + id("mix-u") + "' AND trashed = false"))
             .compose(restored -> {
                 context.assertEquals(2, restored.getJsonArray(0).getInteger(0), "Both messages must be restored");
-                return raw("SELECT count(*) FROM conversation.userthreads WHERE user_id = 'mix-u'");
+                return raw("SELECT count(*) FROM conversation.userthreads WHERE user_id = '" + id("mix-u") + "'");
             })
             .onSuccess(links -> {
                 context.assertEquals(2, links.getJsonArray(0).getInteger(0), "Both threads must be back in the list");
