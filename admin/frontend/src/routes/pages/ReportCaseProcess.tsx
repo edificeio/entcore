@@ -29,7 +29,7 @@ export const Component = () => {
   return (
     <Container component="main" sx={{ py: 6 }}>
       <Stack spacing={4}>
-        <Typography component="h1" variant="h4">
+        <Typography component="h1" variant="h1">
           {t('reports.process.title')}
         </Typography>
 
