@@ -30,16 +30,34 @@ export const Component = () => {
   return (
     <Container component="main" sx={{ py: 6 }}>
       <Stack spacing={4} sx={{ alignItems: 'stretch' }}>
-        <Button
-          component={RouterLink}
-          to={`/reports/${structureid}`}
-          variant="text"
-          startIcon={<ChevronLeftIcon />}
-          sx={{ alignSelf: 'flex-start' }}
-          data-testid="report-case-back-link"
+        {/* As in Figma: back link on the left, process button on the right */}
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
         >
-          {t('reports.detail.back')}
-        </Button>
+          <Button
+            component={RouterLink}
+            to={`/reports/${structureid}`}
+            variant="text"
+            startIcon={<ChevronLeftIcon />}
+            data-testid="report-case-back-link"
+          >
+            {t('reports.detail.back')}
+          </Button>
+          <Button
+            component={RouterLink}
+            to={`/reports/${structureid}/cases/${caseId}/process`}
+            variant="contained"
+            data-testid="report-case-process-button"
+          >
+            {t('reports.detail.process')}
+          </Button>
+        </Stack>
 
         <ReportCaseDetails caseId={caseId} structureId={structureid} />
       </Stack>
