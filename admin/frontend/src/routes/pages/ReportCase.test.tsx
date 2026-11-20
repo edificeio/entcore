@@ -32,6 +32,19 @@ describe('ReportCase page', () => {
     ).toHaveAttribute('href', '/reports/structure-1');
   });
 
+  it('links to the processing page of the case', async () => {
+    renderPage();
+
+    const link = await screen.findByRole('link', {
+      name: 'Traiter le signalement',
+    });
+    expect(link).toHaveAttribute(
+      'href',
+      `/reports/structure-1/cases/${CASE_ID}/process`,
+    );
+    expect(link).toHaveAttribute('data-testid', 'report-case-process-button');
+  });
+
   it('loads the case from the URL and names the page after it', async () => {
     renderPage();
 
