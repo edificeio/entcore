@@ -14,10 +14,11 @@ import { MatListModule } from '@angular/material/list';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import { AlertesTraiteesListModalComponent} from './alertes-traitees-list-modal/alertes-traitees-list-modal.component';
 import { TraitementAlerteModalComponent } from './traitement-alerte-modal/traitement-alerte-modal.component';
+import { ReportedContentsComponent } from './reported-contents/reported-contents.component';
 
 
 @NgModule({
-    declarations: [AlertesComponent, AlerteComponent, AlertesListComponent, AlertesTraiteesListModalComponent, TraitementAlerteModalComponent],
+    declarations: [AlertesComponent, AlerteComponent, AlertesListComponent, AlertesTraiteesListModalComponent, TraitementAlerteModalComponent, ReportedContentsComponent],
     imports: [
         CommonModule,
         NgxOdeSijilModule.forChild(),

@@ -1,0 +1,8 @@
+.reported-contents-frame {
+  display: block;
+  width: 100%;
+  // Fixed height for now ; an auto-resize (postMessage from the React app) may come later.
+  height: calc(100vh - 240px);
+  min-height: 500px;
+  border: 0;
+}
