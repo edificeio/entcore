@@ -11,6 +11,8 @@ import { server } from '~/mocks/server';
 import { act, fireEvent, render, screen, waitFor, within } from '~/mocks/setup';
 import { queryClient } from '~/providers';
 import { moderationBaseUrl } from '~/services/api';
+import { moderationQueryKeys } from '~/services';
+import { type Case } from '~/models';
 import { useToastStore } from '~/store/toast';
 import { ReportCaseProcess } from './ReportCaseProcess';
 
@@ -27,14 +29,26 @@ const caseUrl = (caseId: string) => `/reports/structure-1/cases/${caseId}`;
  * Renders the feature on its real route, next to stand-ins for the pages it
  * leads to (case detail, reports list). `history` puts entries before it.
  */
-const renderProcess = (caseId = CASE_ID, history: string[] = []) => {
+const renderProcess = (
+  caseId = CASE_ID,
+  history: string[] = [],
+  // Stands in for the lazy route and loader of the real reports list
+  listLoadDelay = 0,
+) => {
   const ProcessRoute = () => {
     const { structureid = '', caseId: id = '' } = useParams();
     return <ReportCaseProcess caseId={id} structureId={structureid} />;
   };
   const router = createMemoryRouter(
     [
-      { path: 'reports/:structureid', element: <div>reports list</div> },
+      {
+        path: 'reports/:structureid',
+        loader: () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve(null), listLoadDelay),
+          ),
+        element: <div>reports list</div>,
+      },
       {
         path: 'reports/:structureid/cases/:caseId',
         element: <div>detail page</div>,
@@ -375,5 +389,70 @@ describe('ReportCaseProcess leave guard', () => {
     const after = new Event('beforeunload', { cancelable: true });
     window.dispatchEvent(after);
     expect(after.defaultPrevented).toBe(true);
+  });
+});
+
+describe('ReportCaseProcess while the case changes', () => {
+  beforeEach(() => {
+    resetModerationMocks();
+    queryClient.clear();
+  });
+
+  afterEach(() => {
+    act(() => useToastStore.getState().closeToast());
+  });
+
+  it('redirects without asking when the case gets deleted meanwhile', async () => {
+    renderProcess();
+    await chooseDecision('Conserver le contenu');
+
+    // Someone else deleted the content: a refetch brings the new status
+    act(() => {
+      queryClient.setQueryData<Case>(
+        moderationQueryKeys.detail(CASE_ID),
+        (current) => current && { ...current, status: 'RESOURCE_DELETED' },
+      );
+    });
+
+    expect(await screen.findByText('detail page')).toBeVisible();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens the processed tab after a deletion, even when the list is slow to load', async () => {
+    const { router } = renderProcess(CASE_ID, [], 300);
+
+    await chooseDecision('Supprimer le contenu');
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Valider le traitement' }),
+    );
+
+    expect(
+      await screen.findByText('reports list', {}, { timeout: 2000 }),
+    ).toBeVisible();
+    expect(router.state.location.pathname).toBe('/reports/structure-1');
+    expect(router.state.location.search).toBe('?tab=settled');
+  });
+
+  it('disables cancel while the decision is being sent', async () => {
+    server.use(
+      http.post(`${moderationBaseUrl}/cases/:id/decisions`, async () => {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        return HttpResponse.json({ id: 'decision-1' });
+      }),
+    );
+    renderProcess();
+
+    await chooseDecision('Conserver le contenu');
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Valider le traitement' }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'annuler' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      ),
+    );
+    expect(await screen.findByText('reports list')).toBeVisible();
   });
 });

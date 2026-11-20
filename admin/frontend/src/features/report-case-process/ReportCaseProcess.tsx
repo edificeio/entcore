@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -58,17 +58,27 @@ export function ReportCaseProcess({
   // Set synchronously: the mutation state only updates after a re-render, too
   // late to ignore a second click on submit
   const submittingRef = useRef(false);
-  // Set once the decision is saved, so that the navigation that follows is not blocked
+  // Set once the decision is saved: the ref is read synchronously by the
+  // navigation that follows, the state by the next renders
   const savedRef = useRef(false);
+  const [saved, setSaved] = useState(false);
   const detailHref = `/reports/${structureId}/cases/${caseId}`;
   const processable = !reportCase || canProcess(reportCase.status);
   // A chosen decision is lost when leaving the page (unless the case can no
   // longer be processed: the page then redirects to the case detail)
-  const hasUnsavedDecision = decision !== null && processable;
+  const hasUnsavedDecision = decision !== null && processable && !saved;
+
+  // useBlocker only picks up a new condition in a passive effect, after the
+  // <Navigate> below has already navigated: the live condition goes through a
+  // ref, updated by a layout effect, which runs before any passive effect
+  const shouldBlockRef = useRef(false);
+  useLayoutEffect(() => {
+    shouldBlockRef.current = hasUnsavedDecision;
+  }, [hasUnsavedDecision]);
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      hasUnsavedDecision &&
+      shouldBlockRef.current &&
       !savedRef.current &&
       currentLocation.pathname !== nextLocation.pathname,
   );
@@ -87,8 +97,10 @@ export function ReportCaseProcess({
     return () => window.removeEventListener('beforeunload', warn);
   }, [hasUnsavedDecision]);
 
-  // Reached by URL on a case that can no longer be processed (deleted content)
-  if (!processable) {
+  // Reached by URL on a case that can no longer be processed (deleted content).
+  // Not once our own decision is saved: the refetch it triggers would send the
+  // administrator to the detail page instead of the reports list
+  if (!processable && !saved) {
     return <Navigate to={detailHref} replace />;
   }
 
@@ -102,6 +114,7 @@ export function ReportCaseProcess({
       {
         onSuccess: () => {
           savedRef.current = true;
+          setSaved(true);
           showToast({
             severity: 'success',
             message: t(`reports.process.success.${option.status}`),
@@ -226,6 +239,8 @@ export function ReportCaseProcess({
           component={RouterLink}
           to={detailHref}
           variant="text"
+          // Once sent, the decision is applied: leaving cannot cancel it anymore
+          disabled={addDecision.isPending}
           data-testid="report-case-process-cancel"
         >
           {t('reports.process.cancel')}
