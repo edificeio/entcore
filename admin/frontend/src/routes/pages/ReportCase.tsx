@@ -4,6 +4,7 @@ import Stack from '@mui/material/Stack';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 
+import { canProcess } from '~/features/report-case-process';
 import { ReportCaseDetails } from '~/features/report-details';
 import { useI18n } from '~/hooks/useI18n';
 import { usePageTitle } from '~/hooks/usePageTitle';
@@ -49,14 +50,17 @@ export const Component = () => {
           >
             {t('reports.detail.back')}
           </Button>
-          <Button
-            component={RouterLink}
-            to={`/reports/${structureid}/cases/${caseId}/process`}
-            variant="contained"
-            data-testid="report-case-process-button"
-          >
-            {t('reports.detail.process')}
-          </Button>
+          {/* Only once the case is known: a deleted content cannot be processed again */}
+          {reportCase && canProcess(reportCase.status) && (
+            <Button
+              component={RouterLink}
+              to={`/reports/${structureid}/cases/${caseId}/process`}
+              variant="contained"
+              data-testid="report-case-process-button"
+            >
+              {t('reports.detail.process')}
+            </Button>
+          )}
         </Stack>
 
         <ReportCaseDetails caseId={caseId} structureId={structureid} />

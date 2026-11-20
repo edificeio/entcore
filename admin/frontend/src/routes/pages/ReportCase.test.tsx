@@ -8,10 +8,10 @@ import { Component } from './ReportCase';
 
 const CASE_ID = 'case-0000-4000-8000-000000000001';
 
-const renderPage = () => {
+const renderPage = (caseId = CASE_ID) => {
   const router = createMemoryRouter(
     [{ path: 'reports/:structureid/cases/:caseId', element: <Component /> }],
-    { initialEntries: [`/reports/structure-1/cases/${CASE_ID}`] },
+    { initialEntries: [`/reports/structure-1/cases/${caseId}`] },
   );
   return render(<RouterProvider router={router} />);
 };
@@ -43,6 +43,25 @@ describe('ReportCase page', () => {
       `/reports/structure-1/cases/${CASE_ID}/process`,
     );
     expect(link).toHaveAttribute('data-testid', 'report-case-process-button');
+  });
+
+  it('hides the process button once the content is deleted', async () => {
+    // Mock case n°4: its content is deleted
+    renderPage('case-0000-4000-8000-000000000004');
+
+    await screen.findByRole('heading', { level: 1 });
+    expect(
+      screen.queryByRole('link', { name: 'Traiter le signalement' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('offers the process button on a kept content', async () => {
+    // Mock case n°5: its content is kept
+    renderPage('case-0000-4000-8000-000000000005');
+
+    expect(
+      await screen.findByRole('link', { name: 'Traiter le signalement' }),
+    ).toBeVisible();
   });
 
   it('loads the case from the URL and names the page after it', async () => {

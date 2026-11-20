@@ -1,4 +1,8 @@
-import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import {
+  createMemoryRouter,
+  RouterProvider,
+  useParams,
+} from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { resetModerationMocks } from '~/mocks/moderation/handlers';
@@ -8,21 +12,35 @@ import { ReportCaseProcess } from './ReportCaseProcess';
 
 /** Mock case n°1: "Retour sur la kermesse #1" (blog), reported twice. */
 const CASE_ID = 'case-0000-4000-8000-000000000001';
+/** Mock case n°4, whose content is deleted. */
+const DELETED_CASE_ID = 'case-0000-4000-8000-000000000004';
 
-// Rendered in a router: the cancel button is a router link
-const renderProcess = (caseId = CASE_ID) => {
+const caseUrl = (caseId: string) => `/reports/structure-1/cases/${caseId}`;
+
+/**
+ * Renders the feature on its real route, next to stand-ins for the pages it
+ * leads to (case detail, reports list). `history` puts entries before it.
+ */
+const renderProcess = (caseId = CASE_ID, history: string[] = []) => {
+  const ProcessRoute = () => {
+    const { structureid = '', caseId: id = '' } = useParams();
+    return <ReportCaseProcess caseId={id} structureId={structureid} />;
+  };
   const router = createMemoryRouter(
     [
+      { path: 'reports/:structureid', element: <div>reports list</div> },
       {
-        path: '*',
-        element: (
-          <ReportCaseProcess caseId={caseId} structureId="structure-1" />
-        ),
+        path: 'reports/:structureid/cases/:caseId',
+        element: <div>detail page</div>,
+      },
+      {
+        path: 'reports/:structureid/cases/:caseId/process',
+        element: <ProcessRoute />,
       },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: [...history, `${caseUrl(caseId)}/process`] },
   );
-  return render(<RouterProvider router={router} />);
+  return { router, ...render(<RouterProvider router={router} />) };
 };
 
 describe('ReportCaseProcess', () => {
@@ -81,6 +99,14 @@ describe('ReportCaseProcess', () => {
     expect(
       await screen.findByRole('button', { name: 'Valider le traitement' }),
     ).toBeDisabled();
+  });
+
+  it('redirects to the case detail when the case cannot be processed', async () => {
+    // Mock case n°4: its content is deleted
+    const { router } = renderProcess(DELETED_CASE_ID);
+
+    expect(await screen.findByText('detail page')).toBeVisible();
+    expect(router.state.location.pathname).toBe(caseUrl(DELETED_CASE_ID));
   });
 
   it('shows an error when the case cannot be loaded', async () => {

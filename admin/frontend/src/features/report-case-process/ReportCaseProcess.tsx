@@ -6,11 +6,12 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import visuallyHidden from '@mui/utils/visuallyHidden';
-import { Link as RouterLink } from 'react-router-dom';
+import { Navigate, Link as RouterLink } from 'react-router-dom';
 
 import { ReportCaseCard } from '~/components/ReportCaseCard';
 import { useI18n } from '~/hooks/useI18n';
 import { useCase } from '~/services';
+import { canProcess } from './processOptions';
 
 export interface ReportCaseProcessProps {
   caseId: string;
@@ -28,6 +29,12 @@ export function ReportCaseProcess({
 }: ReportCaseProcessProps) {
   const { t } = useI18n();
   const { data: reportCase, isPending, isError } = useCase(caseId);
+  const detailHref = `/reports/${structureId}/cases/${caseId}`;
+
+  // Reached by URL on a case that can no longer be processed (deleted content)
+  if (reportCase && !canProcess(reportCase.status)) {
+    return <Navigate to={detailHref} replace />;
+  }
 
   const renderContent = () => {
     if (isPending) {
@@ -101,7 +108,7 @@ export function ReportCaseProcess({
       <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-end' }}>
         <Button
           component={RouterLink}
-          to={`/reports/${structureId}/cases/${caseId}`}
+          to={detailHref}
           variant="text"
           data-testid="report-case-process-cancel"
         >
