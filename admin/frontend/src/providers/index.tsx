@@ -10,6 +10,7 @@ import { ReactNode } from 'react';
 
 import { ThemeProvider } from '@mui/material/styles';
 
+import { Toaster } from '~/components/Toaster';
 import theme from '~/theme';
 
 export const queryClient = new QueryClient({
@@ -39,7 +40,11 @@ export const Providers = ({ children }: { children: ReactNode }) => {
         }}
       >
         {/* Here rather than in main.tsx so component tests get the app theme */}
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <ThemeProvider theme={theme}>
+          {children}
+          {/* Global: a toast survives the navigation that follows an action */}
+          <Toaster />
+        </ThemeProvider>
       </EdificeClientProvider>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>

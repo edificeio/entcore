@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent } from 'react';
+import { type SyntheticEvent } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -6,13 +6,18 @@ import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ReportCaseList } from '~/features/report-case-list';
 import { useI18n } from '~/hooks/useI18n';
 import { usePageTitle } from '~/hooks/usePageTitle';
 import { type WorkflowState } from '~/models';
 import { useSearchCases } from '~/services';
+import {
+  REPORTS_TAB_PARAM,
+  reportsTabParam,
+  workflowStateOfTab,
+} from './reportsTab';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -36,7 +41,12 @@ export const Component = () => {
   const { t } = useI18n();
   // Always set: the route is reports/:structureid
   const { structureid = '' } = useParams();
-  const [currentTab, setCurrentTab] = useState(0);
+  // The open tab lives in the URL, so that another page can open the processed one
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = TABS.findIndex(
+    ({ workflowState }) =>
+      workflowState === workflowStateOfTab(searchParams.get(REPORTS_TAB_PARAM)),
+  );
   const counts: Record<WorkflowState, number | undefined> = {
     PENDING: useCasesCount('PENDING'),
     SETTLE: useCasesCount('SETTLE'),
@@ -45,7 +55,10 @@ export const Component = () => {
   usePageTitle(`${t('reports.page.title')} - ${t('admin.title')}`);
 
   const handleChange = (_event: SyntheticEvent, newValue: number) => {
-    setCurrentTab(newValue);
+    setSearchParams(
+      { [REPORTS_TAB_PARAM]: reportsTabParam(TABS[newValue].workflowState) },
+      { replace: true },
+    );
   };
 
   return (
