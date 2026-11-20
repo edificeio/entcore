@@ -1,4 +1,4 @@
-import { type Case, type Reason, type Status } from '~/models';
+import { type Case, type Decision, type Reason, type Status } from '~/models';
 
 /** Authors of the reported contents. */
 const AUTHORS = [
@@ -48,6 +48,41 @@ const isoDate = (daysAgo: number) =>
     Date.UTC(2026, 10, 5, 10, 12, 36) - daysAgo * 86_400_000,
   ).toISOString();
 
+/**
+ * Several decisions for the history tab, listed out of order so the sort shows.
+ * The case status is the most recent one, as the case card displays it.
+ */
+const historyDecisions = (n: number, status: Status): Decision[] => {
+  const at = (hoursLater: number) =>
+    new Date(Date.parse(isoDate(n)) + hoursLater * 3_600_000).toISOString();
+  return [
+    {
+      id: uuid('dec2', n),
+      userId: 'a1b2c3d4',
+      displayName: 'Super adml',
+      status,
+      comment: 'Contenu conservé\naprès vérification\navec la direction.',
+      createdAt: at(5),
+    },
+    {
+      id: uuid('dec0', n),
+      userId: 'a1b2c3d4',
+      displayName: 'Super adml',
+      status: 'PENDING',
+      comment: '',
+      createdAt: at(1),
+    },
+    {
+      id: uuid('dec1', n),
+      userId: 'e5f6a7b8',
+      displayName: 'BENOIT Kiliane',
+      status: 'QUARANTINE',
+      comment: 'Masqué le temps de vérifier les propos signalés.',
+      createdAt: at(3),
+    },
+  ];
+};
+
 /** Build a deterministic fake case, so the mock data is stable between reloads. */
 const buildCase = (n: number): Case => {
   const author = AUTHORS[n % AUTHORS.length];
@@ -87,7 +122,9 @@ const buildCase = (n: number): Case => {
     decisions:
       status === 'OPEN'
         ? []
-        : [
+        : n === 3
+          ? historyDecisions(n, status)
+          : [
             {
               id: uuid('dec', n),
               userId: 'a1b2c3d4',

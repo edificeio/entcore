@@ -72,6 +72,26 @@ describe('ReportCaseDetails', () => {
     );
   });
 
+  it('shows the empty history of an open case', async () => {
+    renderDetails();
+
+    (await screen.findByRole('tab', { name: 'Historique' })).click();
+
+    expect(
+      await screen.findByText('Aucun historique pour le moment'),
+    ).toBeVisible();
+  });
+
+  it('shows the decisions of a processed case', async () => {
+    renderDetails('case-0000-4000-8000-000000000003');
+
+    (await screen.findByRole('tab', { name: 'Historique' })).click();
+
+    expect(await screen.findAllByTestId('reports-decision-card')).toHaveLength(
+      3,
+    );
+  });
+
   it('shows an error when the case cannot be loaded', async () => {
     renderDetails('unknown-case');
 
