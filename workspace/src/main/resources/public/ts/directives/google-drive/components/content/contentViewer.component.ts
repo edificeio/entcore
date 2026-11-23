@@ -433,8 +433,7 @@ export const workspaceGoogleDriveContentController = ng.controller(
               // Navigating away while a file is open in the viewer needs to switch back to the list/icon view.
               if ($scope.viewFile) {
                 $scope.viewFile = null;
-                const preference: GoogleDrivePreference = Me.preferences["google-drive"];
-                $scope.changeViewMode(preference.viewMode);
+                $scope.changeViewMode(googleDrivePreference.viewMode ?? ViewMode.ICONS);
               }
 
               if (res.documents && res.documents.length > 0) {
@@ -799,8 +798,8 @@ export const workspaceGoogleDriveContentController = ng.controller(
       };
 
       $scope.changeViewMode = async function (mode: ViewMode): Promise<void> {
-        let preference: GoogleDrivePreference = Me.preferences["google-drive"];
-        preference.viewMode = mode;
+        // Me.preferences["google-drive"] may be missing at runtime: rebuild it instead of mutating it
+        const preference: GoogleDrivePreference = { ...(Me.preferences?.["google-drive"] ?? {}), viewMode: mode };
         await googleDrivePreference.updatePreference(preference);
         $scope.documents.forEach((doc) => (doc.selected = false));
         $scope.selectedDocuments = [];
@@ -817,9 +816,8 @@ export const workspaceGoogleDriveContentController = ng.controller(
       };
 
       $scope.closeViewFile = function (): any {
-        const preference: GoogleDrivePreference = Me.preferences["google-drive"];
         $scope.viewFile = null;
-        $scope.changeViewMode(preference.viewMode);
+        $scope.changeViewMode(googleDrivePreference.viewMode ?? ViewMode.ICONS);
       };
 
       $scope.onOpenContent = function (document: GoogleDriveDocument): void {
