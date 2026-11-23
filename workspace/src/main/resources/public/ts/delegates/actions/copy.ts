@@ -94,7 +94,8 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             rootFolder.children = [myDocuments];
             try {
                 const documents = await nextcloudService.listDocument(model.me.userId);
-                myDocuments.children = documents.filter(doc => doc.isFolder);
+                // the listing also returns the user's root folder itself (path "/", named after the userId)
+                myDocuments.children = documents.filter(doc => doc.isFolder && doc.path !== "/");
             } catch (e) {
                 // Still show the entry (empty) rather than hiding it outright on a fetch failure.
                 console.error("Error loading Nextcloud folders", e);
