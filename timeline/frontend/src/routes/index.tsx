@@ -3,6 +3,7 @@ import { RouteObject, createBrowserRouter } from 'react-router-dom';
 
 import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
+import { HOME_PATH } from './paths';
 import { manageRedirections } from './redirections';
 
 const routes = (queryClient: QueryClient): RouteObject[] => {
@@ -16,7 +17,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
     },
     /* Main route */
     {
-      path: import.meta.env.PROD ? '/timeline' : '/',
+      path: HOME_PATH,
       async lazy() {
         const { loader, Root: Component } = await import('~/routes/root');
         return {

@@ -68,40 +68,48 @@ export function useCustomizationForm() {
     selectedBackground !== background ||
     selectedFont !== theme?.skinName;
 
-  const saveChanges = useCallback(async () => {
-    if (!selectedFont || !selectedLanguage || !selectedBackground || !theme) {
-      return;
-    }
-    setIsSaving(true);
-    try {
-      await savePreferences({
-        language: { 'default-domain': selectedLanguage },
-        background: selectedBackground,
-      });
-      await i18n.changeLanguage(selectedLanguage);
-      await sessionQuery.refetch();
-      await customizeService.saveSkin(theme.themeName, selectedFont);
-      try {
-        sessionStorage.setItem(SAVE_SUCCESS_KEY, 'true');
-      } catch {
-        // Storage unavailable: the toast is not essential.
+  /**
+   * Save the preferences then reload the page to apply them.
+   * `onBeforeReload` runs right before the reload, once everything is saved.
+   */
+  const saveChanges = useCallback(
+    async ({ onBeforeReload }: { onBeforeReload?: () => void } = {}) => {
+      if (!selectedFont || !selectedLanguage || !selectedBackground || !theme) {
+        return;
       }
-      // Reload to apply the new preferences (skin, language, background) everywhere.
-      window.location.reload();
-    } catch {
-      toast.error(t('homepage.customize.form.save.error'));
-      setIsSaving(false);
-    }
-  }, [
-    savePreferences,
-    selectedBackground,
-    selectedFont,
-    selectedLanguage,
-    sessionQuery,
-    theme,
-    toast,
-    t,
-  ]);
+      setIsSaving(true);
+      try {
+        await savePreferences({
+          language: { 'default-domain': selectedLanguage },
+          background: selectedBackground,
+        });
+        await i18n.changeLanguage(selectedLanguage);
+        await sessionQuery.refetch();
+        await customizeService.saveSkin(theme.themeName, selectedFont);
+        try {
+          sessionStorage.setItem(SAVE_SUCCESS_KEY, 'true');
+        } catch {
+          // Storage unavailable: the toast is not essential.
+        }
+        // Reload to apply the new preferences (skin, language, background) everywhere.
+        onBeforeReload?.();
+        window.location.reload();
+      } catch {
+        toast.error(t('homepage.customize.form.save.error'));
+        setIsSaving(false);
+      }
+    },
+    [
+      savePreferences,
+      selectedBackground,
+      selectedFont,
+      selectedLanguage,
+      sessionQuery,
+      theme,
+      toast,
+      t,
+    ],
+  );
 
   return {
     isLoadError,
