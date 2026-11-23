@@ -17,6 +17,7 @@ import { CustomizationForm } from '~/components/CustomizationForm';
 import { CustomizationPreview } from '~/components/CustomizationPreview/CustomizationPreview';
 import { useCustomizationForm } from '~/hooks/useCustomizationForm';
 import { useI18n } from '~/hooks/useI18n';
+import { useUnsavedChangesGuard } from '~/hooks/useUnsavedChangesGuard';
 import './customize.css';
 
 /** Check old format URL and redirect if needed */
@@ -35,6 +36,10 @@ export const Component = () => {
   const { isDirty, saveChanges, isSaving, ...form } = useCustomizationForm();
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const { selectedBackground, selectedFont, selectedLanguage } = form;
+  // Saving reloads the page: do not warn about the changes being saved.
+  const { blocker, bypass } = useUnsavedChangesGuard(isDirty && !isSaving);
+  const isNavigationBlocked = blocker.state === 'blocked';
+  const showLeaveModal = isLeaveModalOpen || isNavigationBlocked;
 
   if (!init) return <LoadingScreen position={false} />;
 
@@ -48,6 +53,21 @@ export const Component = () => {
       return;
     }
     goBack();
+  };
+
+  const handleLeaveConfirm = () => {
+    setIsLeaveModalOpen(false);
+    if (isNavigationBlocked) {
+      blocker.proceed();
+      return;
+    }
+    bypass();
+    goBack();
+  };
+
+  const handleLeaveCancel = () => {
+    setIsLeaveModalOpen(false);
+    if (isNavigationBlocked) blocker.reset();
   };
 
   const goBack = () => {
@@ -136,10 +156,10 @@ export const Component = () => {
       <Modal
         id="customize-leave-modal"
         size="m"
-        isOpen={isLeaveModalOpen}
-        onModalClose={() => setIsLeaveModalOpen(false)}
+        isOpen={showLeaveModal}
+        onModalClose={handleLeaveCancel}
       >
-        <Modal.Header onModalClose={() => setIsLeaveModalOpen(false)}>
+        <Modal.Header onModalClose={handleLeaveCancel}>
           {t('homepage.customize.leave.title')}
         </Modal.Header>
         <Modal.Body>{t('homepage.customize.leave.body')}</Modal.Body>
@@ -147,14 +167,14 @@ export const Component = () => {
           <Button
             data-testid="customize-leave-cancel-button"
             variant="ghost"
-            onClick={goBack}
+            onClick={handleLeaveConfirm}
           >
             {common_t('cancel')}
           </Button>
           <Button
             data-testid="customize-leave-back-button"
             variant="filled"
-            onClick={() => setIsLeaveModalOpen(false)}
+            onClick={handleLeaveCancel}
           >
             {t('homepage.customize.leave.back')}
           </Button>
