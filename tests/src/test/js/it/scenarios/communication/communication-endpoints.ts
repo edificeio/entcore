@@ -841,6 +841,13 @@ export function testSafelyAddLinksWithUsers(data: InitData) {
     checkTrue(`${testName} response contains users field`, body.users !== undefined);
     checkEquals(`${testName} users direction is BOTH`, "BOTH", body.users);
 
+    // GET /group/:groupId must expose the rule: the admin console reads it to display the members' communication switch
+    const groupRes = http.get(
+      `${rootUrl}/communication/group/${group1.id}`,
+      { headers: getHeaders() },
+    );
+    checkEquals(`${testName} group internalCommunicationRule is BOTH`, "BOTH", JSON.parse(<string>groupRes.body).internalCommunicationRule);
+
     // tear down
     deleteGroupOrFail(group1);
   });
