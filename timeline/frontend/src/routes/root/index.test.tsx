@@ -163,6 +163,8 @@ vi.mock(
 
 const preferences = (overrides: Record<string, unknown> = {}) => ({
   widgets: deployedWidgets,
+  // Right of the application behind `communities-widget`
+  workflows: ['community.access'],
   isVisible: () => true,
   isLocked: () => false,
   ...overrides,
@@ -404,5 +406,21 @@ describe('Root - widgets', () => {
 
     expect(screen.queryByTestId('agenda-container')).not.toBeInTheDocument();
     expect(screen.getByTestId('communities-container')).toBeInTheDocument();
+  });
+
+  it('hides a pinned widget without the right of its application', () => {
+    mocks.useWidgetPreferences.mockReturnValue(
+      preferences({
+        workflows: [],
+        isLocked: (name: string) => name === 'communities-widget',
+      }),
+    );
+
+    render(<Root />);
+
+    expect(
+      screen.queryByTestId('communities-container'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('agenda-container')).toBeInTheDocument();
   });
 });

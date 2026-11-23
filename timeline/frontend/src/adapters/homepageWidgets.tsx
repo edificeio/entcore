@@ -23,6 +23,11 @@ export interface HomepageWidget {
   fullWidth: boolean;
   /** Profiles it is displayed for by default, `undefined` for everyone. */
   defaultVisibleFor?: string[];
+  /**
+   * Workflow rights of the application behind the widget, one of which the
+   * user needs to get it. `undefined` when it depends on no application right.
+   */
+  requiredWorkflows?: string[];
   Component: ComponentType;
 }
 
@@ -42,6 +47,19 @@ const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'edumalin-widget': EdumalinContainer,
   'rss-widget': RssContainer,
   'screen-time-widget': ScreenTimeContainer,
+};
+
+/**
+ * The application right prevails over the widget one: an admin can grant (and
+ * pin) a widget to users who cannot access its application, and the platform
+ * catalog (`user.widgets`) keeps it when the widget is not linked to that
+ * application. The component then renders nothing, so the widget must be left
+ * out of the homepage and of the personalization panel. The rights are the
+ * ones each component checks by itself.
+ */
+const WIDGET_REQUIRED_WORKFLOWS: Record<string, string[]> = {
+  // Same rights as `CommunitiesContainer`
+  'communities-widget': ['community.access', 'community.create'],
 };
 
 /**
@@ -67,6 +85,7 @@ export const resolveHomepageWidgets = (
         name,
         fullWidth: fullWidth === true,
         defaultVisibleFor,
+        requiredWorkflows: WIDGET_REQUIRED_WORKFLOWS[name],
         Component: WIDGET_COMPONENTS[name],
       },
     ];

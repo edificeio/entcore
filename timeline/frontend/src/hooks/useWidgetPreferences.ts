@@ -31,6 +31,8 @@ export function useWidgetPreferences() {
   const queryClient = useQueryClient();
   const widgets = user?.widgets ?? [];
   const profiles = userDescription?.profiles ?? [];
+  // Names checked by `odeServices.rights().sessionHasWorkflowRights()`
+  const workflows = (user?.authorizedActions ?? []).map(({ name }) => name);
 
   const { data: preferences, isLoading } = useQuery(
     widgetPreferencesQueryOptions(),
@@ -73,5 +75,13 @@ export function useWidgetPreferences() {
     });
   };
 
-  return { widgets, profiles, isLoading, isVisible, isLocked, toggleWidget };
+  return {
+    widgets,
+    profiles,
+    workflows,
+    isLoading,
+    isVisible,
+    isLocked,
+    toggleWidget,
+  };
 }

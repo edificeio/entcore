@@ -113,4 +113,31 @@ describe('useWidgetPreferences', () => {
 
     expect(result.current.profiles).toEqual(['Relative']);
   });
+
+  it('exposes the workflow rights of the user, from the session', () => {
+    mocks.useUser.mockReturnValue({
+      user: {
+        widgets: [],
+        authorizedActions: [
+          {
+            name: 'community.access',
+            displayName: 'community.access',
+            type: 'SECURED_ACTION_WORKFLOW',
+          },
+        ],
+      },
+      avatar: '',
+      userDescription: {},
+    });
+
+    const { result } = renderHook(() => useWidgetPreferences(), { wrapper });
+
+    expect(result.current.workflows).toEqual(['community.access']);
+  });
+
+  it('exposes no workflow right when the session has none', () => {
+    const { result } = renderHook(() => useWidgetPreferences(), { wrapper });
+
+    expect(result.current.workflows).toEqual([]);
+  });
 });

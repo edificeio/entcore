@@ -74,4 +74,17 @@ describe('resolveHomepageWidgets', () => {
     expect(communities.defaultVisibleFor).toEqual(['Teacher']);
     expect(agenda.defaultVisibleFor).toBeUndefined();
   });
+
+  it('gives the application rights a widget depends on', () => {
+    const [communities, agenda] = resolveHomepageWidgets([
+      { name: 'communities-widget' },
+      { name: 'agenda-widget' },
+    ]);
+
+    expect(communities.requiredWorkflows).toEqual([
+      'community.access',
+      'community.create',
+    ]);
+    expect(agenda.requiredWorkflows).toBeUndefined();
+  });
 });
