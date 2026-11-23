@@ -35,6 +35,7 @@ import org.entcore.timeline.controllers.TimelineLambda;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.controllers.helper.QuietHoursHelper;
 import org.entcore.timeline.services.CronMailerService;
+import org.entcore.timeline.util.MongoUtil;
 import org.entcore.timeline.services.TimelineConfigService;
 
 import java.time.Instant;
@@ -839,8 +840,6 @@ public class PeriodicTimelineMailerService implements CronMailerService {
     }
 
     private Future<JsonArray> getRecipientsUsers(Date from, Date to) {
-        Promise<JsonArray> promise = Promise.promise();
-
         final JsonObject aggregation = new JsonObject();
         JsonArray pipeline = new JsonArray();
         aggregation
@@ -856,23 +855,12 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         pipeline.add(new JsonObject().put("$unwind", "$recipients"));
         pipeline.add(new JsonObject().put("$group", new JsonObject().put("_id", "$recipients.userId")));
         //
-        mongo.command(aggregation.encode(), new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT), event -> {
-            if ("error".equals(event.body().getString("status", "error"))) {
-                log.error("getRecipientsUsers failed: "+ event.body().encode());
-                promise.fail(event.body().encode());
-            } else {
-                JsonArray r = event.body().getJsonObject("result", new JsonObject())
-                        .getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch");
-                if (r != null && r.size() > 0) {
-                    final List<String> userIds = r.stream().map(e -> ((JsonObject)e).getString("_id")).filter(e -> !StringUtils.isEmpty(e)).collect(Collectors.toList());
-                   promise.complete(new JsonArray(userIds));
-                } else {
-                   promise.complete(new JsonArray());
-                }
-            }
-        });
-
-        return promise.future();
+        return MongoUtil.aggregateAll(mongo, aggregation, new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT))
+                .onFailure(t -> log.error("getRecipientsUsers failed: " + t.getMessage()))
+                .map(r -> new JsonArray(r.stream()
+                        .map(e -> ((JsonObject) e).getString("_id"))
+                        .filter(e -> !StringUtils.isEmpty(e))
+                        .collect(Collectors.toList())));
     }
 
      /**
@@ -922,15 +910,13 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         pipeline.add(new JsonObject().put("$group", grouper));
 
         StopWatch step5 = new StopWatch();
-        mongo.command(aggregation.toString(), event -> {
+        MongoUtil.aggregateAll(mongo, aggregation, null).onComplete(ar -> {
             log.info("[WeeklyMails][perf] getAggregatedUsersNotifications page " + page + " time " + step5.elapsedTimeMillis() + " ms");
-            if("error".equals(event.body().getString("status", "error"))){
+            if (ar.failed()) {
+                log.error("[WeeklyMails] getAggregatedUsersNotifications failed page " + page + " : " + ar.cause().getMessage());
                 promise.complete(NotificationContext.empty());
             } else {
-                JsonArray result = event.body().getJsonObject("result", new JsonObject())
-                        .getJsonObject("cursor", new JsonObject())
-                        .getJsonArray("firstBatch", new JsonArray());
-                promise.complete(new NotificationContext(userPreferences, result));
+                promise.complete(new NotificationContext(userPreferences, ar.result()));
             }
         });
 
@@ -976,15 +962,13 @@ public class PeriodicTimelineMailerService implements CronMailerService {
         pipeline.add(new JsonObject().put("$match", matcherPostUnwind));
         pipeline.add(new JsonObject().put("$project", transformer));
 
-        mongo.command(aggregation.toString(), event -> {
+        MongoUtil.aggregateAll(mongo, aggregation, null).onComplete(ar -> {
             log.info("[DailyMails][perf] getUsersNotifications page " + page + " time " + step5.elapsedTimeMillis() + " ms");
-            if("error".equals(event.body().getString("status", "error"))){
+            if (ar.failed()) {
+                log.error("[DailyMails] getUsersNotifications failed page " + page + " : " + ar.cause().getMessage());
                 promise.complete(NotificationContext.empty());
             } else {
-                JsonArray result = event.body().getJsonObject("result", new JsonObject())
-                        .getJsonObject("cursor", new JsonObject())
-                        .getJsonArray("firstBatch", new JsonArray());
-                promise.complete(new NotificationContext(userPreferences, result));
+                promise.complete(new NotificationContext(userPreferences, ar.result()));
             }
         });
         return promise.future();
