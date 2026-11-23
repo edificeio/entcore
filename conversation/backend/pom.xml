@@ -46,5 +46,10 @@
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
+        <dependency>
+            <groupId>io.edifice</groupId>
+            <artifactId>moderation-vertx-server</artifactId>
+            <version>${moderationServer.version}</version>
+        </dependency>
     </dependencies>
 </project>

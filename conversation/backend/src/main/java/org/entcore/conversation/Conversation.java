@@ -23,10 +23,12 @@ import java.text.ParseException;
 
 import static org.entcore.common.editor.ContentTransformerConfig.getContentTransformerConfig;
 
+import io.edifice.moderation.events.ModerationEventBrokerListener;
 import io.vertx.core.Future;
 import org.entcore.common.editor.ContentTransformerEventRecorderFactory;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.sql.Sql;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ApiController;
@@ -38,6 +40,7 @@ import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
 import org.entcore.conversation.service.impl.ConversationStorage;
 import org.entcore.conversation.service.impl.DeleteOrphan;
+import org.entcore.conversation.service.impl.ModerationBrokerListenerImpl;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
 import org.entcore.conversation.service.impl.SqlConversationService;
 
@@ -128,6 +131,11 @@ public class Conversation extends BaseServer {
 				log.error("Invalid purge messages cron expression.", e);
 			}
 		}
+		ModerationEventBrokerListener moderationListener = new ModerationBrokerListenerImpl(Sql.getInstance(), vertx, ModerationEventBrokerListener.Parameters.
+				builder()
+				.application("conversation")
+				.build());
+		moderationListener.start().onFailure((Throwable err) -> log.error("Could not start the Moderation broker listener", err));
 		return Future.succeededFuture();
 	}
 
