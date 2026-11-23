@@ -47,9 +47,9 @@ function generateRouterStateSnapshot(): RouterStateSnapshot {
     return {} as RouterStateSnapshot;
 }
 
-function generateCommunicationGroupResponse(users: InternalCommunicationRule): CommunicationGroupResponse {
+function generateCommunicationGroupResponse(internalCommunicationRule: InternalCommunicationRule): CommunicationGroupResponse {
     return {
-        users,
+        internalCommunicationRule,
         communiqueWith: [],
         displayNameSearchField: '',
         groupDisplayName: '',

@@ -10,7 +10,7 @@ export interface CommunicationGroupResponse {
     displayNameSearchField: string;
     name: string;
     id: string;
-    users: InternalCommunicationRule | undefined;
+    internalCommunicationRule?: InternalCommunicationRule;
     communiqueWith: Array<string>;
 }
 
@@ -33,7 +33,7 @@ export class GroupInternalCommunicationRuleResolver implements Resolve<GroupIdAn
         .pipe(
             map(response => ({
                 groupId: response.id,
-                internalCommunicationRule: response.users ? response.users : 'NONE'
+                internalCommunicationRule: response.internalCommunicationRule || 'NONE'
             }))
         );
     }
