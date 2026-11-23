@@ -38,15 +38,19 @@ const setPreferences = ({
   visible = (_name, defaultVisible) => defaultVisible,
   locked = () => false,
   profiles = ['Teacher'],
+  // Right of the application behind `communities-widget`
+  workflows = ['community.access'],
 }: {
   deployed: string[];
   visible?: (name: string, defaultVisible: boolean) => boolean;
   locked?: (name: string) => boolean;
   profiles?: string[];
+  workflows?: string[];
 }) =>
   mocks.useWidgetPreferences.mockReturnValue({
     widgets: deployed.map((name) => ({ name })),
     profiles,
+    workflows,
     isVisible: visible,
     isLocked: locked,
   });
@@ -169,6 +173,71 @@ describe('useHomepageWidgets', () => {
     const { result } = renderHook(() => useHomepageWidgets());
 
     expect(names(result.current.displayed)).toContain('agenda-widget');
+  });
+
+  describe('application right', () => {
+    beforeEach(() => setOrder(['communities-widget', 'agenda-widget']));
+
+    it('neither lists nor displays a widget without the right of its application', () => {
+      setPreferences({
+        deployed: ['communities-widget', 'agenda-widget'],
+        workflows: [],
+      });
+
+      const { result } = renderHook(() => useHomepageWidgets());
+
+      expect(names(result.current.available)).toEqual(['agenda-widget']);
+      expect(names(result.current.displayed)).toEqual(['agenda-widget']);
+    });
+
+    it('leaves it out even when an admin pinned it', () => {
+      setPreferences({
+        deployed: ['communities-widget', 'agenda-widget'],
+        workflows: [],
+        locked: (name) => name === 'communities-widget',
+      });
+
+      const { result } = renderHook(() => useHomepageWidgets());
+
+      expect(names(result.current.available)).toEqual(['agenda-widget']);
+      expect(names(result.current.displayed)).toEqual(['agenda-widget']);
+    });
+
+    it.each(['community.access', 'community.create'])(
+      'lists and displays it with the %s right',
+      (workflow) => {
+        setPreferences({
+          deployed: ['communities-widget'],
+          workflows: [workflow],
+        });
+
+        const { result } = renderHook(() => useHomepageWidgets());
+
+        expect(names(result.current.available)).toEqual(['communities-widget']);
+        expect(names(result.current.displayed)).toEqual(['communities-widget']);
+      },
+    );
+
+    it('keeps it displayed when pinned and the right is granted', () => {
+      setPreferences({
+        deployed: ['communities-widget'],
+        visible: () => false,
+        locked: (name) => name === 'communities-widget',
+      });
+
+      const { result } = renderHook(() => useHomepageWidgets());
+
+      expect(names(result.current.available)).toEqual(['communities-widget']);
+      expect(names(result.current.displayed)).toEqual(['communities-widget']);
+    });
+
+    it('does not require any right for a widget without application', () => {
+      setPreferences({ deployed: ['agenda-widget'], workflows: [] });
+
+      const { result } = renderHook(() => useHomepageWidgets());
+
+      expect(names(result.current.displayed)).toEqual(['agenda-widget']);
+    });
   });
 
   describe('default visibility by profile', () => {
