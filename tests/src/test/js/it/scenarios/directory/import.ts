@@ -18,8 +18,8 @@ import http from "k6/http";
 import {check, group, fail} from "k6";
 import {FormData} from "https://jslib.k6.io/formdata/0.0.2/index.js";
 
-/** UTF-8 encode a string (k6 has no TextEncoder). Returns an ArrayBuffer: k6 v2 http.file() rejects typed arrays. */
-function utf8(str: string): ArrayBuffer {
+/** UTF-8 encode a string (k6 has no TextEncoder). */
+function utf8(str: string): number[] {
   const bytes: number[] = [];
   for (let i = 0; i < str.length; i++) {
     let c = str.charCodeAt(i);
@@ -31,7 +31,15 @@ function utf8(str: string): ArrayBuffer {
     else if (c < 0x10000) bytes.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
     else bytes.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 0x3f), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
   }
-  return new Uint8Array(bytes).buffer;
+  return bytes;
+}
+
+/**
+ * File part for the FormData of jslib, UTF-8 encoded. http.file() is not used : k6 v2 rejects typed arrays
+ * and the FormData of jslib 0.0.2 only reads a string or an array of bytes (an ArrayBuffer gives an empty file).
+ */
+function csvFile(content: string, filename: string) {
+  return { data: utf8(content), filename, content_type: "application/octet-stream" };
 }
 
 
@@ -188,13 +196,13 @@ function buildImportFormData(
   if (opts.classesMapping !== undefined) fd.append("classesMapping", opts.classesMapping);
 
   if (opts.teachers !== undefined) {
-    fd.append("Teacher", http.file(utf8(opts.teachers), "enseignants.csv"));
+    fd.append("Teacher", csvFile(opts.teachers, "enseignants.csv"));
   }
   if (opts.students !== undefined) {
-    fd.append("Student", http.file(utf8(opts.students), "eleves.csv"));
+    fd.append("Student", csvFile(opts.students, "eleves.csv"));
   }
   if (opts.relatives !== undefined) {
-    fd.append("Relative", http.file(utf8(opts.relatives), "responsables.csv"));
+    fd.append("Relative", csvFile(opts.relatives, "responsables.csv"));
   }
   return fd;
 }
@@ -1360,7 +1368,7 @@ export function testClassImportAndVerify(data: InitData) {
       `"CLASSIMPORT";;"Eleve2";"2010-07-20";"H";;;;;;;;;"CYCLE II";"CE1";"k6-import-students-cls";"Non";"Oui";"Non";\n`;
 
     const fd = new FormData();
-    fd.append("Student", http.file(utf8(studentsCsv), "eleves.csv"));
+    fd.append("Student", csvFile(studentsCsv, "eleves.csv"));
     const headers = getHeaders();
     headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
     const res = http.post(`${rootUrl}/directory/import/Student/class/${classId}`, fd.body(), { headers });
@@ -1396,7 +1404,7 @@ export function testClassImportAndVerify(data: InitData) {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const fakeClassId = "00000000-0000-0000-0000-000000000000";
     const fd = new FormData();
-    fd.append("Student", http.file(utf8(STUDENTS_CSV), "eleves.csv"));
+    fd.append("Student", csvFile(STUDENTS_CSV, "eleves.csv"));
     const headers = getHeaders();
     headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
     const res = http.post(`${rootUrl}/directory/import/Student/class/${fakeClassId}`, fd.body(), { headers });
@@ -1425,7 +1433,7 @@ export function testClassImportAndVerify(data: InitData) {
       `"M.";;"CLASSIMPORTTEACH";"Pierre";;;;;;;;"non";"k6-import-teachers-cls"\n`;
 
     const fd = new FormData();
-    fd.append("Teacher", http.file(utf8(teachersCsv), "enseignants.csv"));
+    fd.append("Teacher", csvFile(teachersCsv, "enseignants.csv"));
     const headers = getHeaders();
     headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
     const res = http.post(`${rootUrl}/directory/import/Teacher/class/${classId}`, fd.body(), { headers });
@@ -1454,7 +1462,7 @@ export function testClassImportAndVerify(data: InitData) {
     if (student) {
       authenticateWeb(student.login);
       const fd = new FormData();
-      fd.append("Student", http.file(utf8(STUDENTS_CSV), "eleves.csv"));
+      fd.append("Student", csvFile(STUDENTS_CSV, "eleves.csv"));
       const headers = getHeaders();
       headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
       const res = http.post(`${rootUrl}/directory/import/Student/class/${classId}`, fd.body(), { headers });
@@ -1509,7 +1517,7 @@ export function testImportEdgeCases(data: InitData) {
     fd.append("structureId", data.structure.id);
     fd.append("structureExternalId", data.structure.externalId);
     // .txt extension should be rejected by the upload handler
-    fd.append("Teacher", http.file(utf8(TEACHERS_CSV), "enseignants.txt"));
+    fd.append("Teacher", csvFile(TEACHERS_CSV, "enseignants.txt"));
     const headers = getHeaders();
     headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
     const res = http.post(`${rootUrl}/directory/wizard/import`, fd.body(), { headers });
@@ -1590,7 +1598,7 @@ export function testImportEdgeCases(data: InitData) {
     fd.append("structureName", data.structure.name);
     fd.append("structureId", data.structure.id);
     fd.append("structureExternalId", data.structure.externalId);
-    fd.append("Teacher", http.file(utf8(TEACHERS_CSV), "enseignants.csv"));
+    fd.append("Teacher", csvFile(TEACHERS_CSV, "enseignants.csv"));
     const headers = getHeaders();
     headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
     const res = http.post(`${rootUrl}/directory/wizard/import`, fd.body(), { headers });

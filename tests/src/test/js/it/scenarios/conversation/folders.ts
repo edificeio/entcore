@@ -100,19 +100,21 @@ function checkCreateDraftOk(res, checkName) {
 }
 
 function checkDeleteFolderOk(res, draftId, checkName) {
-  const checks = {};
-  checks[`${checkName} - HTTP status`] = (r) => r.status === 200;
-  checks[`${checkName} - Draft in subfolder is trashed`] = (r) => {
-    const body = JSON.parse(r.body);
-    return (
-      body.trashedMessageIds instanceof Array &&
-      body.trashedMessageIds.length === 1 &&
-      body.trashedMessageIds[0] === draftId
-    );
-  };
-  const ok = check(res, checks);
-  if (!ok) {
+  const statusChecks = {};
+  statusChecks[`${checkName} - HTTP status`] = (r) => r.status === 200;
+  if (!check(res, statusChecks)) {
     console.error(checkName, res);
+  }
+  // The endpoint no longer returns the ids of the trashed messages (#COCO-4749) : read the draft back instead
+  const draft = getMessage(draftId, false);
+  const draftChecks = {};
+  draftChecks[`${checkName} - Draft in subfolder is trashed`] = (r) => {
+    if (r.status !== 200) return false;
+    const body = JSON.parse(r.body);
+    return body.trashed === true && !body.folder_id;
+  };
+  if (!check(draft, draftChecks)) {
+    console.error(`${checkName} - draft ${draftId}`, draft);
   }
 }
 
