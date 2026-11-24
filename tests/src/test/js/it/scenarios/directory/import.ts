@@ -18,8 +18,8 @@ import http from "k6/http";
 import {check, group, fail} from "k6";
 import {FormData} from "https://jslib.k6.io/formdata/0.0.2/index.js";
 
-/** UTF-8 encode a string (k6 has no TextEncoder). Returns an ArrayBuffer: k6 v2 http.file() rejects typed arrays. */
-function utf8(str: string): ArrayBuffer {
+/** UTF-8 encode a string (k6 has no TextEncoder). */
+function utf8(str: string): Uint8Array {
   const bytes: number[] = [];
   for (let i = 0; i < str.length; i++) {
     let c = str.charCodeAt(i);
@@ -31,7 +31,7 @@ function utf8(str: string): ArrayBuffer {
     else if (c < 0x10000) bytes.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
     else bytes.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 0x3f), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
   }
-  return new Uint8Array(bytes).buffer;
+  return new Uint8Array(bytes);
 }
 
 
