@@ -100,6 +100,20 @@ public class SqlConversationService implements ConversationService{
 	 */
 	private static final Set<String> TRANSPORT_ONLY_FIELDS = Collections.singleton("timezone");
 
+	/** Creates or refreshes the thread of a message from the stored message itself. */
+	private static final String INSERT_THREAD_FROM_MESSAGE =
+			"INSERT INTO conversation.threads as t (" +
+			"SELECT thread_id as id, date, subject, \"from\", \"to\", cc, cci, \"displayNames\" " +
+			"FROM conversation.messages m " +
+			"WHERE m.id = ?) " +
+			"ON CONFLICT (id) DO UPDATE SET date = EXCLUDED.date, subject = EXCLUDED.subject, \"from\" = EXCLUDED.\"from\", " +
+			"\"to\" = EXCLUDED.\"to\", cc = EXCLUDED.cc, cci = EXCLUDED.cci, \"displayNames\" = EXCLUDED.\"displayNames\" " +
+			"WHERE t.id = EXCLUDED.id ";
+
+	/** Columns stored for a message sent without sender: anything else in the payload is transport only. */
+	private static final List<String> SENDERLESS_MESSAGE_COLUMNS = Arrays.asList(
+			"subject", "body", "to", "cc", "cci", "fromName", "displayNames", "noReply");
+
 	/** Default retention of the anti-spam guard rows, in days. */
 	private static final int DEFAULT_ABSENCE_REPLIES_RETENTION_DAYS = 7;
 
@@ -385,15 +399,7 @@ public class SqlConversationService implements ConversationService{
 			builder.prepared(updateUnread, new JsonArray().add(draftId).add(userIdAsJsonArray).add(userIdAsJsonArray)
 					.add(user.getUserId()).add(draftId));
 
-            final String insertThread =
-                    "INSERT INTO conversation.threads as t (" +
-                    "SELECT thread_id as id, date, subject, \"from\", \"to\", cc, cci, \"displayNames\" " +
-                    "FROM conversation.messages m " +
-                    "WHERE m.id = ?) " +
-                    "ON CONFLICT (id) DO UPDATE SET date = EXCLUDED.date, subject = EXCLUDED.subject, \"from\" = EXCLUDED.\"from\", " +
-                    "\"to\" = EXCLUDED.\"to\", cc = EXCLUDED.cc, cci = EXCLUDED.cci, \"displayNames\" = EXCLUDED.\"displayNames\" " +
-                    "WHERE t.id = EXCLUDED.id ";
-            builder.prepared(insertThread, new fr.wseduc.webutils.collections.JsonArray().add(draftId));
+            builder.prepared(INSERT_THREAD_FROM_MESSAGE, new fr.wseduc.webutils.collections.JsonArray().add(draftId));
 
             final String insertUserThread =
                     "INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES (?,?,?) " +
@@ -404,7 +410,7 @@ public class SqlConversationService implements ConversationService{
             }
 
 			if(targetState != State.SCHEDULE) {
-				addRecipientStatements(builder, ids, attachmentIds, totalQuota, draftId, threadId, user);
+				addRecipientStatements(builder, ids, attachmentIds, totalQuota, draftId, threadId, user.getUserId());
 			} else {
 				builder.prepared("UPDATE conversation.messages SET schedule_at = ? WHERE id = ? ", new JsonArray().add(message.getString("scheduleAt")).add(draftId));
 			}
@@ -420,11 +426,40 @@ public class SqlConversationService implements ConversationService{
         });
 	}
 
+	@Override
+	public Future<JsonObject> sendWithoutSender(JsonObject message, JsonArray recipientIds, HttpServerRequest request) {
+		final String id = UUID.randomUUID().toString();
+		final JsonObject stored = new JsonObject();
+		SENDERLESS_MESSAGE_COLUMNS.stream().filter(message::containsKey).forEach(column -> stored.put(column, message.getValue(column)));
+		stored.put("id", id)
+				.put("thread_id", id)
+				.put("from", "")
+				.put("date", System.currentTimeMillis())
+				.put("state", State.SENT.name());
+
+		return updateMessageWithTransformedContent(stored, true, request).compose(v -> {
+			final SqlStatementsBuilder builder = new SqlStatementsBuilder();
+			builder.insert(messageTable, stored, "id, thread_id, subject, body");
+			builder.prepared(INSERT_THREAD_FROM_MESSAGE, new JsonArray().add(id));
+			addRecipientStatements(builder, recipientIds, new JsonArray(), 0, id, id, null);
+			final Promise<JsonObject> promise = Promise.promise();
+			sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, either -> {
+				if (either.isLeft()) {
+					log.error("Failed to send message without sender: " + either.left().getValue());
+					promise.fail(either.left().getValue());
+				} else {
+					promise.complete(either.right().getValue());
+				}
+			}));
+			return promise.future();
+		});
+	}
+
 	/**
 	 * Append the statements that deliver a message to its recipients (usermessages, userthreads and attachments links).
 	 * Skipped when a message is scheduled : recipients are only populated once the schedule date is reached.
 	 */
-	private void addRecipientStatements(SqlStatementsBuilder builder, JsonArray ids, JsonArray attachmentIds, long totalQuota, String draftId, String threadId, UserInfos user) {
+	private void addRecipientStatements(SqlStatementsBuilder builder, JsonArray ids, JsonArray attachmentIds, long totalQuota, String draftId, String threadId, String senderId) {
 		Long date = System.currentTimeMillis();
 		String insertUserThreadBase = "INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES ";
 		String insertUserMessage = "INSERT INTO " + userMessageTable + "(user_id, message_id, total_quota, is_sender, is_recipient, msg_state, msg_date) VALUES ";
@@ -443,7 +478,7 @@ public class SqlConversationService implements ConversationService{
 		// Optimisation de l'envois des messages: faire des requêtes unitaires est couteux pour postgresql notament
 		// au niveau de la gestion des locks et de son index. Les groupes en insert .. values est bcp plus efficace
 		for (Object toObj : ids) {
-			if (toObj.equals(user.getUserId())) continue;
+			if (toObj.equals(senderId)) continue;
 
 			userMessageValueCount++;
 			insertUserMessageBuilder.append(String.format("('%s'::UUID, '%s'::UUID, %s, false, true, 'SENT', " + date + "),", toObj, draftId, totalQuota));
@@ -482,7 +517,7 @@ public class SqlConversationService implements ConversationService{
 
 		// Pièces jointes
 		for (Object toObj : ids) {
-			if (toObj.equals(user.getUserId())) continue;
+			if (toObj.equals(senderId)) continue;
 
 			for (Object attachmentId : attachmentIds) {
 				userMessageAttachementCount++;
