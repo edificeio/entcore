@@ -54,45 +54,12 @@ export const options = {
   thresholds: {
     checks: ["rate == 1.00"],
   },
+  // A single scenario running the tests one after the other : the feeder does not support concurrent imports
+  // (overlapping imports fail with "Erreur lors du traitement du fichier")
   scenarios: {
-    testWizardImportAndVerifyData: {
+    testImportsSequentially: {
       executor: "per-vu-iterations",
-      exec: "testWizardImportAndVerifyData",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testWizardValidateFormat: {
-      executor: "per-vu-iterations",
-      exec: "testWizardValidateFormat",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testPreDeleteBehavior: {
-      executor: "per-vu-iterations",
-      exec: "testPreDeleteBehavior",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testTransitionBehavior: {
-      executor: "per-vu-iterations",
-      exec: "testTransitionBehavior",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testClassImportAndVerify: {
-      executor: "per-vu-iterations",
-      exec: "testClassImportAndVerify",
-      vus: 1,
-      maxDuration: maxDuration,
-      gracefulStop,
-    },
-    testImportEdgeCases: {
-      executor: "per-vu-iterations",
-      exec: "testImportEdgeCases",
+      exec: "testImportsSequentially",
       vus: 1,
       maxDuration: maxDuration,
       gracefulStop,
@@ -207,6 +174,12 @@ function buildImportFormData(
   return fd;
 }
 
+/** Id of the class of the structure with this name, created if needed : the structure is kept between runs. */
+function getOrCreateClassId(structureId: string, className: string): string {
+  const existing = getClassesOfStructureOrFail(structureId).find((c) => c.name === className);
+  return existing ? existing.id : createClassAndGetIdOrFail(structureId, className);
+}
+
 function postWizard(fd: any, path: string = "/directory/wizard/import") {
   const headers = getHeaders();
   headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
@@ -267,6 +240,29 @@ export function setup() {
 /*******************************************************************************************************
  *  Test: Import users and verify data integrity
  ******************************************************************************************************/
+/**
+ * Runs the tests one after the other. An exception in a test (fail()) is reported as a failed check and does not
+ * prevent the following tests from running.
+ */
+export function testImportsSequentially(data: InitData) {
+  const tests: Array<[string, (data: InitData) => void]> = [
+    ["testWizardImportAndVerifyData", testWizardImportAndVerifyData],
+    ["testWizardValidateFormat", testWizardValidateFormat],
+    ["testPreDeleteBehavior", testPreDeleteBehavior],
+    ["testTransitionBehavior", testTransitionBehavior],
+    ["testClassImportAndVerify", testClassImportAndVerify],
+    ["testImportEdgeCases", testImportEdgeCases],
+  ];
+  for (const [name, test] of tests) {
+    try {
+      test(data);
+    } catch (e) {
+      console.error(`${name} stopped by an exception: ${e}`);
+      check(null, { [`${name} - Exception raised "${e}"`]: () => false });
+    }
+  }
+}
+
 export function testWizardImportAndVerifyData(data: InitData) {
 
   group('[Import] POST /wizard/import - Import all profiles and verify user data', () => {
@@ -437,7 +433,8 @@ export function testWizardImportAndVerifyData(data: InitData) {
 
   group('[Import] POST /wizard/import - Unauthenticated request returns 401/302', () => {
     const headers: Record<string, string> = { "content-type": "multipart/form-data" };
-    const res = http.post(`${rootUrl}/directory/wizard/import`, "", { headers, redirects: 0 });
+    // empty cookie jar : the session cookies of the VU would make the request authenticated (403 invalid.xsrf.token)
+    const res = http.post(`${rootUrl}/directory/wizard/import`, "", { headers, redirects: 0, jar: new http.CookieJar() });
     check(res, {
       'unauthenticated import returns 401 or 302': (r) => r.status === 401 || r.status === 302,
     });
@@ -1348,7 +1345,7 @@ export function testClassImportAndVerify(data: InitData) {
 
   group('[Import] POST /import/Student/class/:classId - Import students and verify class membership', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const classId = createClassAndGetIdOrFail(data.structure.id, "k6-import-students-cls");
+    const classId = getOrCreateClassId(data.structure.id, "k6-import-students-cls");
 
     // Make teacher ADML so they can import
     const teacher = getRandomUserWithProfile(data.users, 'Teacher');
@@ -1415,7 +1412,7 @@ export function testClassImportAndVerify(data: InitData) {
 
   group('[Import] POST /import/Teacher/class/:classId - Import teachers and verify', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const classId = createClassAndGetIdOrFail(data.structure.id, "k6-import-teachers-cls");
+    const classId = getOrCreateClassId(data.structure.id, "k6-import-teachers-cls");
 
     const teacher = getRandomUserWithProfile(data.users, 'Teacher');
     const admlHeaders = getHeaders();
@@ -1455,7 +1452,7 @@ export function testClassImportAndVerify(data: InitData) {
 
   group('[Import] POST /import/Student/class/:classId - Non-teacher cannot import', () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const classId = createClassAndGetIdOrFail(data.structure.id, "k6-import-noperm-cls");
+    const classId = getOrCreateClassId(data.structure.id, "k6-import-noperm-cls");
 
     // Authenticate as a student (should not have permission)
     const student = getRandomUserWithProfile(data.users, 'Student');
