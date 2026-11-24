@@ -5,6 +5,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.dto.Preference;
 import org.entcore.common.user.dto.UserPreferenceDto;
 import org.entcore.common.user.mapper.UserPreferenceDtoMapper;
 import org.entcore.directory.services.PreferenceCacheService;
@@ -36,14 +37,16 @@ public class DefaultPreferenceService implements PreferenceService {
         StringBuilder merge = new StringBuilder(" ON MATCH SET ");
 
         for (UserPreferenceDto.Application appName : preference.getPreferences()) {
-            if (!preference.getPreference(appName).validate()) {
+            // A null preference (e.g. {"homePage": null}) resets it : the property is removed from UserAppConf
+            final Preference applicationPreference = preference.getPreference(appName);
+            if (applicationPreference != null && !applicationPreference.validate()) {
                 promise.fail("invalid.preference." + appName.getMappingName());
                 return promise.future();
             }
             String partialQuery = " uac."+ appName.getMappingName() +" = {"+ appName.getMappingName() +"},";
             create.append(partialQuery);
             merge.append(partialQuery);
-            params.put(appName.getMappingName(), preference.getPreference(appName).encode());
+            params.put(appName.getMappingName(), applicationPreference == null ? null : applicationPreference.encode());
         }
 
         create.deleteCharAt(create.length() - 1);

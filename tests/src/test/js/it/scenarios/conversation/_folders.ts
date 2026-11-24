@@ -49,7 +49,5 @@ export function checkMoveIntoFolderOk(
 }
 
 export function deleteFolder(folderId: string) {
-  return http.del(`${rootUrl}/conversation/api/folders/${folderId}`, null, {
-    headers: getHeaders(),
-  });
+  return http.del(`${rootUrl}/conversation/api/folders/${folderId}`);
 }
