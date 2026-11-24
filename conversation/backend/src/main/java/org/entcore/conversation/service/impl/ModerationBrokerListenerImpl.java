@@ -7,10 +7,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Answers the moderation application: can a user see a conversation resource?
@@ -46,12 +46,12 @@ public class ModerationBrokerListenerImpl extends ModerationEventBrokerListener 
         }
         final String userId = request.getUserId();
         final String messageId = path.substring(MESSAGE_PATH_PREFIX.length());
-        log.debug("Checking moderation right on message {} for user {}", messageId, userId);
+        log.debug(String.format("Checking moderation right on message %s for user %s", messageId, userId));
 
         final Promise<RightsOnResourceResponse> promise = Promise.promise();
         sql.prepared(HAS_RIGHT_QUERY, new JsonArray().add(userId).add(messageId), SqlResult.validUniqueResultHandler(result -> {
             if (result.isLeft()) {
-                log.error("Moderation right check failed on message {} for user {}: {}", messageId, userId, result.left().getValue());
+                log.error(String.format("Moderation right check failed on message %s for user %s: %s", messageId, userId, result.left().getValue()));
                 promise.complete(new RightsOnResourceResponse(false));
             } else {
                 promise.complete(new RightsOnResourceResponse(result.right().getValue().getBoolean("hasRight", false)));
