@@ -35,7 +35,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.tuple.Pair;
-import org.entcore.broker.api.dto.directory.ClassIncludeField;
+import io.edifice.directory.v1.ClassIncludeField;
+import io.edifice.directory.v1.UserField;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.DefaultFunctions;
@@ -88,6 +89,14 @@ public class DefaultUserService implements UserService {
 			new QueryFieldBaseFieldMapping(ClassIncludeField.STRUCTURE_ZIP_CODE, "zipCode"),
 			new QueryFieldBaseFieldMapping(ClassIncludeField.STRUCTURE_UAI, "UAI", "uai")
 	);
+	/** Property of the User node of each optional field of getUsersByIds, returned under the name of the field */
+	private static final Map<UserField, String> NEO4J_USER_FIELD_MAPPING = new EnumMap<>(UserField.class);
+	static {
+		NEO4J_USER_FIELD_MAPPING.put(UserField.firstName, "firstName");
+		NEO4J_USER_FIELD_MAPPING.put(UserField.lastName, "lastName");
+		NEO4J_USER_FIELD_MAPPING.put(UserField.login, "login");
+		NEO4J_USER_FIELD_MAPPING.put(UserField.email, "email");
+	}
 
 
 	public DefaultUserService(EmailSender notification, EventBus eb, JsonObject aUserBookData) {
@@ -1724,7 +1733,7 @@ public class DefaultUserService implements UserService {
 	}
 	
 	@Override
-	public Future<JsonArray> getUsersByIds(JsonArray userIds) {
+	public Future<JsonArray> getUsersByIds(JsonArray userIds, Set<UserField> fields) {
 		Promise<JsonArray> promise = Promise.promise();
 		
 		if (userIds == null || userIds.isEmpty()) {
@@ -1740,6 +1749,7 @@ public class DefaultUserService implements UserService {
 				"u.id as id, " +
 				"u.displayName as displayName, " +
 				"u.profiles as profiles, " +
+				getUserExtraFields(fields) +
 				"COLLECT(DISTINCT [f.externalId, rf.scope]) as functions ";
 		
 		JsonObject params = new JsonObject().put("userIds", userIds);
@@ -1756,6 +1766,24 @@ public class DefaultUserService implements UserService {
 		return promise.future();
 	}
 
+
+	/**
+	 * @param fields the optional fields asked for getUsersByIds
+	 * @return the part of the return statement that returns them : only properties of the closed mapping, never a value
+	 * received
+	 */
+	static String getUserExtraFields(Set<UserField> fields) {
+		if (fields == null) {
+			return "";
+		}
+		final StringBuilder builder = new StringBuilder();
+		NEO4J_USER_FIELD_MAPPING.forEach((field, property) -> {
+			if (fields.contains(field)) {
+				builder.append("u.").append(property).append(" as ").append(field.name()).append(", ");
+			}
+		});
+		return builder.toString();
+	}
 
 	private static class QueryFieldBaseFieldMapping {
 		private final ClassIncludeField queryFieldName;

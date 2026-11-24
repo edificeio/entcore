@@ -14,8 +14,14 @@
 
     <properties>
         <modPdfGeneratorVersion>2.1-SNAPSHOT</modPdfGeneratorVersion>
+        <eventsDefinitionVersion>1.1.4-SNAPSHOT</eventsDefinitionVersion>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>io.edifice</groupId>
+            <artifactId>directory-vertx-server</artifactId>
+            <version>${eventsDefinitionVersion}</version>
+        </dependency>
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>

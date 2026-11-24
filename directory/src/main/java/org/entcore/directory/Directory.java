@@ -30,7 +30,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
-import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
@@ -59,6 +58,8 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 public class Directory extends BaseServer {
+
+	private DirectoryBrokerListenerImpl brokerListener;
 
 	public static final String DIRECTORY_ADDRESS = "entcore.directory";
 
@@ -265,9 +266,16 @@ public class Directory extends BaseServer {
 			addController(remoteUserController);
 		}
 		// add the directory broker listener
-		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService, schoolService, classService), vertx);
-		BrokerProxyUtils.addBrokerProxy(new LoadTestProxyImpl(vertx), vertx);
-		return Future.succeededFuture();
+		brokerListener = new DirectoryBrokerListenerImpl(vertx, userService, schoolService, classService);
+		return brokerListener.start();
+	}
+
+	@Override
+	public void stop(final Promise<Void> stopPromise) throws Exception {
+		if (brokerListener != null) {
+			brokerListener.stop();
+		}
+		super.stop(stopPromise);
 	}
 
 }

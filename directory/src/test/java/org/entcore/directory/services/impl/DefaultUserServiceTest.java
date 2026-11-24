@@ -1,5 +1,6 @@
 package org.entcore.directory.services.impl;
 
+import io.edifice.directory.v1.UserField;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -29,6 +30,9 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -332,6 +336,38 @@ public class DefaultUserServiceTest {
                     testContext.assertEquals("User Two", usersDisplayName.getString("user.two"), "user.two display name should be User Two");
                     async.complete();
                 });
+    }
+
+    /**
+     * <h1>Goal</h1>
+     * <p>Ensures that getUsersByIds returns the optional fields that were asked for, and only them.</p>
+     */
+    @Test
+    public void testGetUsersByIdsReturnsOnlyTheFieldsAskedFor(final TestContext testContext) {
+        final JsonArray ids = new JsonArray().add(user0.getId());
+        defaultUserService.getUsersByIds(ids, EnumSet.noneOf(UserField.class))
+            .compose(users -> {
+                final JsonObject user = users.getJsonObject(0);
+                testContext.assertEquals(user0.getDisplayName(), user.getString("displayName"));
+                testContext.assertEquals(new HashSet<>(Arrays.asList("id", "displayName", "profiles", "functions")), user.fieldNames(),
+                    "Only the base fields should be returned when no optional field is asked for");
+                return defaultUserService.getUsersByIds(ids, EnumSet.of(UserField.login, UserField.firstName));
+            })
+            .onComplete(testContext.asyncAssertSuccess(users -> {
+                final JsonObject user = users.getJsonObject(0);
+                testContext.assertEquals(user0.getLogin(), user.getString("login"));
+                testContext.assertEquals(user0.getFirstName(), user.getString("firstName"));
+                testContext.assertFalse(user.containsKey("lastName"), "lastName was not asked for");
+                testContext.assertFalse(user.containsKey("email"), "email was not asked for");
+            }));
+    }
+
+    @Test
+    public void testGetUserExtraFieldsOnlyUsesTheMapping(final TestContext testContext) {
+        testContext.assertEquals("", DefaultUserService.getUserExtraFields(null));
+        testContext.assertEquals("", DefaultUserService.getUserExtraFields(EnumSet.noneOf(UserField.class)));
+        testContext.assertEquals("u.email as email, u.login as login, ",
+            DefaultUserService.getUserExtraFields(EnumSet.of(UserField.email, UserField.login)));
     }
 
     public static Future<Void> prepareData() {

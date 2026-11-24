@@ -2,6 +2,9 @@ package org.entcore.directory.listeners;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.edifice.events.vertx.BrokerResponseCodes;
+import io.edifice.directory.events.DirectoryBrokerListener;
+import io.edifice.directory.v1.*;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -9,28 +12,28 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.broker.api.dto.directory.*;
-import org.entcore.broker.api.dto.directory.user.UserProfileDTOStructure;
-import org.entcore.broker.api.dto.directory.user.UserProfileDTOClassAdmin;
-import org.entcore.broker.api.dto.directory.user.UserProfileDTOInClass;
-import org.entcore.broker.proxy.DirectoryBrokerListener;
-import org.entcore.directory.services.GroupService;
-import org.entcore.directory.services.UserService;
-import org.entcore.directory.services.SchoolService;
+import org.apache.commons.lang3.StringUtils;
 import org.entcore.directory.services.ClassService;
+import org.entcore.directory.services.GroupService;
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
- * Implementation of the DirectoryBrokerListener interface.
+ * Implementation of the DirectoryBrokerListener.
  * This class handles directory operations received through the message broker.
  */
-public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
-    
+public class DirectoryBrokerListenerImpl extends DirectoryBrokerListener {
+
     private static final Logger log = LoggerFactory.getLogger(DirectoryBrokerListenerImpl.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final GroupService groupService;
@@ -44,22 +47,46 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @param vertx The Vertx instance
      * @param userService The user service to handle user operations
      * @param structureService The structure service to handle structure operations
+     * @param classService The class service to handle class operations
      */
     public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService, SchoolService structureService, ClassService classService) {
-        this(new DefaultGroupService(vertx.eventBus()), userService, structureService, classService);
+        this(vertx, new DefaultGroupService(vertx.eventBus()), userService, structureService, classService);
     }
-    
+
     /**
      * Constructor for DirectoryBrokerListenerImpl.
      *
+     * @param vertx The Vertx instance
      * @param groupService The group service to handle group operations
      * @param userService The user service to handle user operations
+     * @param structureService The structure service to handle structure operations
+     * @param classService The class service to handle class operations
      */
-    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService, SchoolService structureService, ClassService classService) {
+    public DirectoryBrokerListenerImpl(Vertx vertx, GroupService groupService, UserService userService, SchoolService structureService, ClassService classService) {
+        super(vertx);
         this.groupService = groupService;
         this.userService = userService;
         this.structureService = structureService;
         this.classService = classService;
+    }
+
+    /**
+     * @return a failure with the code 400 for a request whose parameters are invalid
+     */
+    private static <T> Future<T> invalidRequest(final String method, final Object request) {
+        log.error("Invalid request for " + method + ": " + request);
+        return Future.failedFuture(new IllegalArgumentException(BrokerResponseCodes.INVALID_PARAMETERS));
+    }
+
+    /**
+     * @return the identifier of the group : the one of the request when it is given, otherwise the one of the group
+     * that has the external identifier of the request
+     */
+    private Future<String> getGroupId(final String groupId, final String groupExternalId) {
+        if (StringUtils.isNotBlank(groupId)) {
+            return Future.succeededFuture(groupId);
+        }
+        return groupService.getGroupByExternalId(groupExternalId).map(group -> group.getString("id"));
     }
 
     /**
@@ -69,15 +96,11 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with the created group information
      */
     @Override
-    public Future<CreateGroupResponseDTO> createManualGroup(CreateGroupRequestDTO request) {
-        final Promise<CreateGroupResponseDTO> promise = Promise.promise();
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for createManualGroup: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<CreateGroupResponse> onCreateManualGroup(CreateGroupRequest request) {
+        if (StringUtils.isBlank(request.getName())) {
+            return invalidRequest("createManualGroup", request);
         }
-
+        final Promise<CreateGroupResponse> promise = Promise.promise();
         // Create group data
         final JsonObject group = new JsonObject()
                 .put("name", request.getName())
@@ -97,26 +120,26 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         groupService.createOrUpdateManual(group, structureId, classId, event -> {
             if (event.isRight()) {
                 final String id = event.right().getValue().getString("id");
-                
+                final CreateGroupResponse response = new CreateGroupResponseBuilder().withId(id).build();
                 // Check if labels are provided in the request
                 if (request.getLabels() != null && !request.getLabels().isEmpty()) {
                     // Add the labels to the created group
                     groupService.addLabelsToGroup(id, request.getLabels())
                         .onSuccess(labelResult -> {
-                            log.debug("Successfully added labels {} to group {}", request.getLabels(), id);
-                            promise.complete(new CreateGroupResponseDTO(id));
+                            log.debug("Successfully added labels " + request.getLabels() + " to group " + id);
+                            promise.complete(response);
                         })
                         .onFailure(error -> {
-                            log.error("Failed to add labels {} to group {}: {}", request.getLabels(), id, error.getMessage());
+                            log.error("Failed to add labels " + request.getLabels() + " to group " + id + ": " + error.getMessage());
                             // We still consider the group creation as successful even if label addition fails
-                            promise.complete(new CreateGroupResponseDTO(id));
+                            promise.complete(response);
                         });
                 } else {
                     // No labels to add, complete directly
-                    promise.complete(new CreateGroupResponseDTO(id));
+                    promise.complete(response);
                 }
             } else {
-                log.error("Error creating group: {}", event.left().getValue());
+                log.error("Error creating group: " + event.left().getValue());
                 promise.fail(event.left().getValue());
             }
         });
@@ -131,23 +154,14 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with the update result
      */
     @Override
-    public Future<UpdateGroupResponseDTO> updateManualGroup(UpdateGroupRequestDTO request) {
-        final Promise<UpdateGroupResponseDTO> promise = Promise.promise();
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for updateManualGroup: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<UpdateGroupResponse> onUpdateManualGroup(UpdateGroupRequest request) {
+        if ((StringUtils.isBlank(request.getId()) && StringUtils.isBlank(request.getExternalId())) || StringUtils.isBlank(request.getName())) {
+            return invalidRequest("updateManualGroup", request);
         }
-        // If groupExternalId is provided, fetch the group ID from the database
-        final Future<String> groupIdFuture = request.getId() != null ? Future.succeededFuture(request.getId()) : groupService.getGroupByExternalId(request.getExternalId()).map(group -> group.getString("id"));
-        groupIdFuture.onSuccess(groupId -> {
+        return getGroupId(request.getId(), request.getExternalId()).compose(groupId -> {
+            final Promise<UpdateGroupResponse> promise = Promise.promise();
             // Create update data
-            final JsonObject group = new JsonObject().put("id", groupId);
-
-            if (request.getName() != null) {
-                group.put("name", request.getName());
-            }
+            final JsonObject group = new JsonObject().put("id", groupId).put("name", request.getName());
             // classId is needed only when creating
             final String classId = "";
             // structureId is needed only when creating
@@ -155,15 +169,14 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             // Update group using existing service
             groupService.createOrUpdateManual(group, structureId, classId, event -> {
                 if (event.isRight()) {
-                    promise.complete(new UpdateGroupResponseDTO(true));
+                    promise.complete(new UpdateGroupResponseBuilder().withUpdated(true).build());
                 } else {
-                    log.error("Error updating group: {}", event.left().getValue());
+                    log.error("Error updating group: " + event.left().getValue());
                     promise.fail(event.left().getValue());
                 }
             });
-        }).onFailure(promise::fail);
-
-        return promise.future();
+            return promise.future();
+        });
     }
 
     /**
@@ -173,30 +186,23 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with the deletion result
      */
     @Override
-    public Future<DeleteGroupResponseDTO> deleteManualGroup(DeleteGroupRequestDTO request) {
-        final Promise<DeleteGroupResponseDTO> promise = Promise.promise();
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for deleteManualGroup: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<DeleteGroupResponse> onDeleteManualGroup(DeleteGroupRequest request) {
+        if (StringUtils.isBlank(request.getId()) && StringUtils.isBlank(request.getExternalId())) {
+            return invalidRequest("deleteManualGroup", request);
         }
-        // If groupExternalId is provided, fetch the group ID from the database
-        final Future<String> groupIdFuture = request.getId() != null ? Future.succeededFuture(request.getId()) : groupService.getGroupByExternalId(request.getExternalId()).map(group -> group.getString("id"));
-
-        groupIdFuture.onSuccess(groupId -> {
+        return getGroupId(request.getId(), request.getExternalId()).compose(groupId -> {
+            final Promise<DeleteGroupResponse> promise = Promise.promise();
             // Delete group using existing service
             groupService.deleteManual(groupId, event -> {
                 if (event.isRight()) {
-                    promise.complete(new DeleteGroupResponseDTO(true));
+                    promise.complete(new DeleteGroupResponseBuilder().withDeleted(true).build());
                 } else {
-                    log.error("Error deleting group: {}", event.left().getValue());
+                    log.error("Error deleting group: " + event.left().getValue());
                     promise.fail(event.left().getValue());
                 }
             });
-        }).onFailure(promise::fail);
-
-        return promise.future();
+            return promise.future();
+        });
     }
 
     /**
@@ -206,27 +212,23 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with the result of the addition
      */
     @Override
-    public Future<AddGroupMemberResponseDTO> addGroupMember(AddGroupMemberRequestDTO request) {
-        final Promise<AddGroupMemberResponseDTO> promise = Promise.promise();
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for addGroupMember: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<AddGroupMemberResponse> onAddGroupMember(AddGroupMemberRequest request) {
+        if (StringUtils.isBlank(request.getUserId()) || (StringUtils.isBlank(request.getGroupId()) && StringUtils.isBlank(request.getGroupExternalId()))) {
+            return invalidRequest("addGroupMember", request);
         }
         final JsonArray userIds = new JsonArray().add(request.getUserId());
-        // If groupExternalId is provided, fetch the group ID from the database
-        final Future<String> groupIdFuture = request.getGroupId() != null ? Future.succeededFuture(request.getGroupId()) : groupService.getGroupByExternalId(request.getGroupExternalId()).map(group -> group.getString("id"));
-        groupIdFuture.onSuccess(groupId -> groupService.addUsers(groupId, userIds, event -> {
-            if(event.isRight()){
-                promise.complete(new AddGroupMemberResponseDTO(true));
-            }else{
-                log.error("Error adding user to group: {}", event.left().getValue());
-                promise.fail(event.left().getValue());
-            }
-        })).onFailure(promise::fail);
-
-        return promise.future();
+        return getGroupId(request.getGroupId(), request.getGroupExternalId()).compose(groupId -> {
+            final Promise<AddGroupMemberResponse> promise = Promise.promise();
+            groupService.addUsers(groupId, userIds, event -> {
+                if (event.isRight()) {
+                    promise.complete(new AddGroupMemberResponseBuilder().withAdded(true).build());
+                } else {
+                    log.error("Error adding user to group: " + event.left().getValue());
+                    promise.fail(event.left().getValue());
+                }
+            });
+            return promise.future();
+        });
     }
 
     /**
@@ -236,28 +238,23 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with the result of the removal
      */
     @Override
-    public Future<RemoveGroupMemberResponseDTO> removeGroupMember(RemoveGroupMemberRequestDTO request) {
-        final Promise<RemoveGroupMemberResponseDTO> promise = Promise.promise();
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for removeGroupMember: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<RemoveGroupMemberResponse> onRemoveGroupMember(RemoveGroupMemberRequest request) {
+        if (StringUtils.isBlank(request.getUserId()) || (StringUtils.isBlank(request.getGroupId()) && StringUtils.isBlank(request.getGroupExternalId()))) {
+            return invalidRequest("removeGroupMember", request);
         }
-
         final JsonArray userIds = new JsonArray().add(request.getUserId());
-        // If groupExternalId is provided, fetch the group ID from the database
-        final Future<String> groupIdFuture = request.getGroupId() != null ? Future.succeededFuture(request.getGroupId()) : groupService.getGroupByExternalId(request.getGroupExternalId()).map(group -> group.getString("id"));
-        groupIdFuture.onSuccess(groupId -> groupService.removeUsers(groupId, userIds, event -> {
-            if(event.isRight()){
-                promise.complete(new RemoveGroupMemberResponseDTO(true));
-            }else{
-                log.error("Error adding user to group: {}", event.left().getValue());
-                promise.fail(event.left().getValue());
-            }
-        })).onFailure(promise::fail);
-
-        return promise.future();
+        return getGroupId(request.getGroupId(), request.getGroupExternalId()).compose(groupId -> {
+            final Promise<RemoveGroupMemberResponse> promise = Promise.promise();
+            groupService.removeUsers(groupId, userIds, event -> {
+                if (event.isRight()) {
+                    promise.complete(new RemoveGroupMemberResponseBuilder().withRemoved(true).build());
+                } else {
+                    log.error("Error removing user from group: " + event.left().getValue());
+                    promise.fail(event.left().getValue());
+                }
+            });
+            return promise.future();
+        });
     }
 
     /**
@@ -267,29 +264,18 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with the found group information
      */
     @Override
-    public Future<FindGroupByExternalIdResponseDTO> findGroupByExternalId(FindGroupByExternalIdRequestDTO request) {
-        final Promise<FindGroupByExternalIdResponseDTO> promise = Promise.promise();
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for findGroupByExternalId: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<FindGroupByExternalIdResponse> onFindGroupByExternalId(FindGroupByExternalIdRequest request) {
+        if (StringUtils.isBlank(request.getExternalId())) {
+            return invalidRequest("findGroupByExternalId", request);
         }
-        // Find group by external ID using existing service
-        groupService.getGroupByExternalId(request.getExternalId()).onSuccess(group -> {
-            if (group != null) {
-                final String id = group.getString("id");
-                final String name = group.getString("name");
-                promise.complete(new FindGroupByExternalIdResponseDTO(new GroupDTO(id, name)));
-            } else {
-                promise.fail("directory.group.notfound");
-            }
-        }).onFailure(error -> {
-            log.error("Error finding group by external ID: ", error);
-            promise.fail(error);
-        });
-
-        return promise.future();
+        return groupService.getGroupByExternalId(request.getExternalId())
+            .compose(group -> {
+                if (group == null) {
+                    return Future.<FindGroupByExternalIdResponse>failedFuture("directory.group.notfound");
+                }
+                return Future.succeededFuture(new FindGroupByExternalIdResponseBuilder().withGroup(new Group(group.getString("id"), group.getString("name"))).build());
+            })
+            .onFailure(error -> log.error("Error finding group by external ID: ", error));
     }
 
     /**
@@ -299,121 +285,110 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with a map of user IDs to their display names
      */
     @Override
-    public Future<GetUserDisplayNamesResponseDTO> getUserDisplayNames(GetUserDisplayNamesRequestDTO request) {
-        final Promise<GetUserDisplayNamesResponseDTO> promise = Promise.promise();
-        
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getUserDisplayNames: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<GetUserDisplayNamesResponse> onGetUserDisplayNames(GetUserDisplayNamesRequest request) {
+        if (isEmpty(request.getUserIds())) {
+            return invalidRequest("getUserDisplayNames", request);
         }
-        
-        // Convert list of user IDs to JsonArray
-        final JsonArray userIdsArray = new JsonArray(request.getUserIds());
-        
-        // Use the UserService to get display names
-        userService.getUsersDisplayNames(userIdsArray)
-            .onSuccess(result -> {
+        return userService.getUsersDisplayNames(new JsonArray(request.getUserIds()))
+            .map(result -> {
                 // Convert JsonObject to Map<String, String>
                 final Map<String, String> displayNamesMap = new HashMap<>();
                 for (String userId : result.fieldNames()) {
                     displayNamesMap.put(userId, result.getString(userId));
                 }
-                
-                // Return response DTO with the map
-                promise.complete(new GetUserDisplayNamesResponseDTO(displayNamesMap));
+                return new GetUserDisplayNamesResponseBuilder().withUserDisplayNames(displayNamesMap).build();
             })
-            .onFailure(error -> {
-                log.error("Error retrieving user display names: ", error);
-                promise.fail(error);
-            });
-        
-        return promise.future();
+            .onFailure(error -> log.error("Error retrieving user display names: ", error));
     }
 
     /**
-     * Retrieves users by their ENT IDs including profile and function information
+     * Retrieves users by their ENT IDs including profile and function information, and the optional fields asked for
      *
-     * @param request The request containing a list of user IDs
+     * @param request The request containing a list of user IDs and the optional fields to return
      * @return Response with detailed user information
      */
     @Override
-    public Future<GetUsersByIdsResponseDTO> getUsersByIds(GetUsersByIdsRequestDTO request) {
-        final Promise<GetUsersByIdsResponseDTO> promise = Promise.promise();
-        
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getUsersByIds: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<GetUsersByIdsResponse> onGetUsersByIds(GetUsersByIdsRequest request) {
+        if (isEmpty(request.getUserIds())) {
+            return invalidRequest("getUsersByIds", request);
         }
-        
-        // Convert list of user IDs to JsonArray
-        final JsonArray userIdsArray = new JsonArray(request.getUserIds());
-        
-        // Use the UserService to get users by IDs
-        userService.getUsersByIds(userIdsArray)
-            .onSuccess(usersArray -> {
-                // Transform JsonArray of users to List<UserDTO>
-                List<UserDTO> usersList = new ArrayList<>();
-                
+        final Set<UserField> fields = toEnumSet(request.getFields(), UserField.class);
+        return userService.getUsersByIds(new JsonArray(request.getUserIds()), fields)
+            .map(usersArray -> {
+                final List<User> usersList = new ArrayList<>();
                 for (int i = 0; i < usersArray.size(); i++) {
-                    JsonObject userJson = usersArray.getJsonObject(i);
-                    
-                    String id = userJson.getString("id");
-                    String displayName = userJson.getString("displayName");
-                    
-                    // Extract the first profile from the list or empty string if none
-                    String profile = "";
-                    JsonArray profilesArray = userJson.getJsonArray("profiles");
-                    if (profilesArray != null && profilesArray.size() > 0) {
-                        profile = profilesArray.getString(0);
-                    }
-                    
-                    // Handle functions - convert Neo4j array format to map
-                    Map<String, List<String>> functions = new HashMap<>();
-                    JsonArray functionsArray = userJson.getJsonArray("functions");
-                    if (functionsArray != null) {
-                        for (int j = 0; j < functionsArray.size(); j++) {
-                            JsonArray functionEntry = functionsArray.getJsonArray(j);
-                            if (functionEntry != null && functionEntry.size() >= 2) {
-                                String functionCode = functionEntry.getString(0);
-                                if (functionCode != null) {
-                                    // Extract scope from the second element
-                                    List<String> scope = new ArrayList<>();
-                                    Object scopeObj = functionEntry.getValue(1);
-                                    
-                                    if (scopeObj instanceof JsonArray) {
-                                        JsonArray scopeArray = (JsonArray) scopeObj;
-                                        for (int k = 0; k < scopeArray.size(); k++) {
-                                            String scopeItem = scopeArray.getString(k);
-                                            if (scopeItem != null) {
-                                                scope.add(scopeItem);
-                                            }
-                                        }
-                                    } else if (scopeObj instanceof String) {
-                                        scope.add((String) scopeObj);
-                                    }
-                                    
-                                    functions.put(functionCode, scope);
-                                }
+                    usersList.add(toUser(usersArray.getJsonObject(i), fields));
+                }
+                return new GetUsersByIdsResponseBuilder().withUsers(usersList).build();
+            })
+            .onFailure(error -> log.error("Error retrieving users by IDs: ", error));
+    }
+
+    /**
+     * @param userJson a user returned by {@link UserService#getUsersByIds(JsonArray, Set)}
+     * @param fields the optional fields that were asked for
+     * @return the user, with only the optional fields that were asked for
+     */
+    static User toUser(final JsonObject userJson, final Set<UserField> fields) {
+        // Extract the first profile from the list or empty string if none
+        String profile = "";
+        final JsonArray profilesArray = userJson.getJsonArray("profiles");
+        if (profilesArray != null && profilesArray.size() > 0) {
+            profile = profilesArray.getString(0);
+        }
+        final UserBuilder builder = new UserBuilder()
+            .withId(userJson.getString("id"))
+            .withDisplayName(userJson.getString("displayName"))
+            .withProfile(profile)
+            .withFunctions(toFunctions(userJson.getJsonArray("functions")));
+        if (fields.contains(UserField.firstName)) {
+            builder.withFirstName(userJson.getString("firstName"));
+        }
+        if (fields.contains(UserField.lastName)) {
+            builder.withLastName(userJson.getString("lastName"));
+        }
+        if (fields.contains(UserField.login)) {
+            builder.withLogin(userJson.getString("login"));
+        }
+        if (fields.contains(UserField.email)) {
+            builder.withEmail(userJson.getString("email"));
+        }
+        return builder.build();
+    }
+
+    /**
+     * @param functionsArray the functions as Neo4j returns them : a list of [function code, scope]
+     * @return the scopes of the functions, by function code
+     */
+    private static Map<String, List<String>> toFunctions(final JsonArray functionsArray) {
+        final Map<String, List<String>> functions = new HashMap<>();
+        if (functionsArray == null) {
+            return functions;
+        }
+        for (int j = 0; j < functionsArray.size(); j++) {
+            final JsonArray functionEntry = functionsArray.getJsonArray(j);
+            if (functionEntry != null && functionEntry.size() >= 2) {
+                final String functionCode = functionEntry.getString(0);
+                if (functionCode != null) {
+                    // Extract scope from the second element
+                    final List<String> scope = new ArrayList<>();
+                    final Object scopeObj = functionEntry.getValue(1);
+                    if (scopeObj instanceof JsonArray) {
+                        final JsonArray scopeArray = (JsonArray) scopeObj;
+                        for (int k = 0; k < scopeArray.size(); k++) {
+                            final String scopeItem = scopeArray.getString(k);
+                            if (scopeItem != null) {
+                                scope.add(scopeItem);
                             }
                         }
+                    } else if (scopeObj instanceof String) {
+                        scope.add((String) scopeObj);
                     }
-                    
-                    usersList.add(new UserDTO(id, displayName, profile, functions));
+                    functions.put(functionCode, scope);
                 }
-                
-                // Return the response DTO with the list of users
-                promise.complete(new GetUsersByIdsResponseDTO(usersList));
-            })
-            .onFailure(error -> {
-                log.error("Error retrieving users by IDs: ", error);
-                promise.fail(error);
-            });
-
-        return promise.future();
+            }
+        }
+        return functions;
     }
 
     /**
@@ -423,33 +398,23 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with detailed user information
      */
     @Override
-    public Future<GetClassAdminResponseDTO> getClassAdminUsers(GetClassAdminRequestDTO request) {
-        final Promise<GetClassAdminResponseDTO> promise = Promise.promise();
-
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getClassAdminUsers: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<GetClassAdminResponse> onGetClassAdminUsers(GetClassAdminRequest request) {
+        if (StringUtils.isBlank(request.getUserId())) {
+            return invalidRequest("getClassAdminUsers", request);
         }
-
-        String userId = request.getUserId();
-        if (userId == null || userId.trim().isEmpty()) {
-            promise.fail("request.parameters.userid.invalid");
-            return promise.future();
-        }
-
-        this.userService.getUserInfos(request.getUserId(), request.getIncludes(), result -> {
+        final Promise<GetClassAdminResponse> promise = Promise.promise();
+        this.userService.getUserInfos(request.getUserId(), toEnumSet(request.getIncludes(), ClassIncludeField.class), result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
                     try {
-                        JsonObject userInfoJson = result.right().getValue();
-                        UserProfileDTOClassAdmin userProfile = objectMapper.readValue(
+                        final JsonObject userInfoJson = result.right().getValue();
+                        final UserProfileClassAdmin userProfile = objectMapper.readValue(
                             userInfoJson.toString(),
-                            UserProfileDTOClassAdmin.class
+                            UserProfileClassAdmin.class
                         );
-                        promise.complete(new GetClassAdminResponseDTO(userProfile));
+                        promise.complete(new GetClassAdminResponseBuilder().withData(userProfile).build());
                     } catch (Exception e) {
-                        log.error("Error converting JsonObject to UserProfileDTOClassAdmin", e);
+                        log.error("Error converting JsonObject to UserProfileClassAdmin", e);
                         promise.fail("Error processing user data");
                     }
                 } else {
@@ -470,40 +435,28 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * and INE + relatives if requested
      * with additional parameters to specify the type of users to retrieve
      *
-     * @param request The request containing a user ID
+     * @param request The request containing a class ID
      * @return Response with detailed user information
      */
     @Override
-    public Future<GetUserInClassWithParamsResponseDTO> getUserInClassWithParams(GetUserInClassWithParamsRequestDTO request) {
-        final Promise<GetUserInClassWithParamsResponseDTO> promise = Promise.promise();
-
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getUserInClassWithParams: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<GetUserInClassWithParamsResponse> onGetUserInClassWithParams(GetUserInClassWithParamsRequest request) {
+        if (StringUtils.isBlank(request.getClassId()) || StringUtils.isBlank(request.getType())) {
+            return invalidRequest("getUserInClassWithParams", request);
         }
-
-        String classId = request.getClassId();
-        JsonArray types = new JsonArray().add(request.getType());
-        boolean collectRelative = request.doesCollectRelative();
-        boolean ine = request.doesCollectIne();
-        if (classId == null || classId.trim().isEmpty()) {
-            promise.fail("request.parameters.classid.invalid");
-            return promise.future();
-        }
-
-        classService.findUsers(classId, types, collectRelative, ine, result -> {
+        final Promise<GetUserInClassWithParamsResponse> promise = Promise.promise();
+        final JsonArray types = new JsonArray().add(request.getType());
+        classService.findUsers(request.getClassId(), types, request.isCollectRelative(), request.isIne(), result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
                     try {
-                        JsonArray jsonArray = result.right().getValue();
-                        List<UserProfileDTOInClass> userProfiles = objectMapper.readValue(
+                        final JsonArray jsonArray = result.right().getValue();
+                        final List<UserProfileInClass> userProfiles = objectMapper.readValue(
                             jsonArray.toString(),
-                            new TypeReference<List<UserProfileDTOInClass>>() {}
+                            new TypeReference<List<UserProfileInClass>>() {}
                         );
-                        promise.complete(new GetUserInClassWithParamsResponseDTO(userProfiles));
+                        promise.complete(new GetUserInClassWithParamsResponseBuilder().withData(userProfiles).build());
                     } catch (Exception e) {
-                        log.error("Error converting JsonArray to List<UserProfileDTOInClass>", e);
+                        log.error("Error converting JsonArray to List<UserProfileInClass>", e);
                         promise.fail("Error processing user data");
                     }
                 } else {
@@ -526,21 +479,11 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with a list of detailed user information
      */
     @Override
-    public Future<GetStructureUsersResponseDTO> getStructureUsers(GetStructureUsersRequestDTO request) {
-        final Promise<GetStructureUsersResponseDTO> promise = Promise.promise();
-
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getStructureUsers: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<GetStructureUsersResponse> onGetStructureUsers(GetStructureUsersRequest request) {
+        if (StringUtils.isBlank(request.getStructureId())) {
+            return invalidRequest("getStructureUsers", request);
         }
-
-        String structureId = request.getStructureId();
-        if (structureId == null || structureId.trim().isEmpty()) {
-            promise.fail("request.parameters.structureid.invalid");
-            return promise.future();
-        }
-
+        final Promise<GetStructureUsersResponse> promise = Promise.promise();
         // The boolean params might be used to filter deleted users
         // TODO: update the method to find if the user is an admc or not (third params)
         // As we do not have acces to the user informations in the broker
@@ -551,14 +494,14 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
                     try {
-                        JsonArray jsonArray = result.right().getValue();
-                        List<UserProfileDTOStructure> userProfiles = objectMapper.readValue(
+                        final JsonArray jsonArray = result.right().getValue();
+                        final List<UserProfileStructure> userProfiles = objectMapper.readValue(
                             jsonArray.toString(),
-                            new TypeReference<List<UserProfileDTOStructure>>() {}
+                            new TypeReference<List<UserProfileStructure>>() {}
                         );
-                        promise.complete(new GetStructureUsersResponseDTO(userProfiles));
+                        promise.complete(new GetStructureUsersResponseBuilder().withData(userProfiles).build());
                     } catch (Exception e) {
-                        log.error("Error converting JsonArray to List<UserProfileDTOStructure>", e);
+                        log.error("Error converting JsonArray to List<UserProfileStructure>", e);
                         promise.fail("Error processing user data");
                     }
                 } else {
@@ -574,51 +517,43 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         return promise.future();
     }
 
-
-
+    /**
+     * Retrieves the users of groups.
+     *
+     * @param request The request containing the list of group IDs
+     * @return Response with the users of the groups, without their functions
+     */
     @Override
-    public Future<GetUsersFromGroupsResponseDTO> getUsersFromGroups(GetUsersFromGroupsRequestDTO request) {
-        final Promise<GetUsersFromGroupsResponseDTO> promise = Promise.promise();
-
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getUsersFromGroups: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<GetUsersFromGroupsResponse> onGetUsersFromGroups(GetUsersFromGroupsRequest request) {
+        if (isEmpty(request.getGroupIds())) {
+            return invalidRequest("getUsersFromGroups", request);
         }
-
-        // Convert list of group IDs to JsonArray
-        final JsonArray groupIdsArray = new JsonArray(request.getGroupIds());
-
-        userService.list(groupIdsArray, new JsonArray(), true, null, event -> {
-            if(event.isRight()) {
-                JsonArray usersArray = event.right().getValue();
+        final Promise<GetUsersFromGroupsResponse> promise = Promise.promise();
+        userService.list(new JsonArray(request.getGroupIds()), new JsonArray(), true, null, event -> {
+            if (event.isRight()) {
+                final JsonArray usersArray = event.right().getValue();
                 try {
-                    // Transform JsonArray of users to List<UserDTO> (using util method)
-                    List<UserDTO> usersList = new ArrayList<>();
+                    final List<User> usersList = new ArrayList<>();
                     for (int i = 0; i < usersArray.size(); i++) {
-                        JsonObject userJson = usersArray.getJsonObject(i);
-
-                        String id = userJson.getString("id");
-                        String displayName = userJson.getString("username");
-                        String profile = userJson.getString("type");
-
-                        // functions are not returned by the query inside "userService.list" : use empty map
-                        Map<String, List<String>> functions = new HashMap<>();
-
-                        usersList.add(new UserDTO(id, displayName, profile, functions));
+                        final JsonObject userJson = usersArray.getJsonObject(i);
+                        usersList.add(new UserBuilder()
+                            .withId(userJson.getString("id"))
+                            .withDisplayName(userJson.getString("username"))
+                            .withProfile(userJson.getString("type"))
+                            // functions are not returned by the query inside "userService.list" : use empty map
+                            .withFunctions(new HashMap<>())
+                            .build());
                     }
-                    promise.complete(new GetUsersFromGroupsResponseDTO(usersList));
+                    promise.complete(new GetUsersFromGroupsResponseBuilder().withUsers(usersList).build());
                 } catch (Exception err) {
                     log.error("Error while parsing user array", err);
                     promise.fail(err);
                 }
             } else {
-                log.error("Error getting users from groups", event.left().getValue());
+                log.error("Error getting users from groups: " + event.left().getValue());
                 promise.fail(event.left().getValue());
             }
         });
-
         return promise.future();
     }
 
@@ -632,31 +567,22 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with the found groups
      */
     @Override
-    public Future<GetGroupsByIdsResponseDTO> getGroupsByIds(GetGroupsByIdsRequestDTO request) {
-        final Promise<GetGroupsByIdsResponseDTO> promise = Promise.promise();
-
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getGroupsByIds: " + request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
+    protected Future<GetGroupsByIdsResponse> onGetGroupsByIds(GetGroupsByIdsRequest request) {
+        if (isEmpty(request.getGroupIds())) {
+            return invalidRequest("getGroupsByIds", request);
         }
-
-        // Convert list of group IDs to JsonArray
-        final JsonArray groupIdsArray = new JsonArray(request.getGroupIds());
-
-        groupService.getBatchInfos(groupIdsArray, GroupService.Field.DISPLAY_NAME.value(), event -> {
+        final Promise<GetGroupsByIdsResponse> promise = Promise.promise();
+        groupService.getBatchInfos(new JsonArray(request.getGroupIds()), GroupService.Field.DISPLAY_NAME.value(), event -> {
             if (event.isRight()) {
                 final JsonArray groupsArray = event.right().getValue();
                 try {
-                    // Transform JsonArray of groups to List<GroupDTO>
-                    final List<GroupDTO> groupsList = new ArrayList<>();
+                    final List<Group> groupsList = new ArrayList<>();
                     for (int i = 0; i < groupsArray.size(); i++) {
                         final JsonObject groupJson = groupsArray.getJsonObject(i);
                         final String displayName = groupJson.getString("displayName", groupJson.getString("name"));
-                        groupsList.add(new GroupDTO(groupJson.getString("id"), displayName));
+                        groupsList.add(new Group(groupJson.getString("id"), displayName));
                     }
-                    promise.complete(new GetGroupsByIdsResponseDTO(groupsList));
+                    promise.complete(new GetGroupsByIdsResponseBuilder().withGroups(groupsList).build());
                 } catch (Exception err) {
                     log.error("Error while parsing group array", err);
                     promise.fail(err);
@@ -666,7 +592,29 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                 promise.fail(event.left().getValue());
             }
         });
-
         return promise.future();
+    }
+
+    /**
+     * Not served by the directory : the callers receive an error instead of waiting for a timeout.
+     */
+    @Override
+    protected Future<SearchStructuresResponse> onSearchStructures(SearchStructuresRequest request) {
+        return Future.failedFuture(new UnsupportedOperationException("directory.structures.search is not implemented"));
+    }
+
+    private static boolean isEmpty(final Collection<?> values) {
+        return values == null || values.isEmpty();
+    }
+
+    /**
+     * @return the values, without the {@code null} ones (values of the enum that this version does not know)
+     */
+    static <E extends Enum<E>> Set<E> toEnumSet(final Collection<E> values, final Class<E> type) {
+        final Set<E> set = EnumSet.noneOf(type);
+        if (values != null) {
+            values.stream().filter(Objects::nonNull).forEach(set::add);
+        }
+        return set;
     }
 }
