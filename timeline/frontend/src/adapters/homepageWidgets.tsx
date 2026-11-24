@@ -10,6 +10,7 @@ import {
   QwantContainer,
   RssContainer,
   ScreenTimeContainer,
+  Stop3018Container,
   UniversalisContainer,
   UsefulLinksContainer,
 } from '@edifice.io/react/homepage';
@@ -42,6 +43,8 @@ const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'edumalin-widget': EdumalinContainer,
   'rss-widget': RssContainer,
   'screen-time-widget': ScreenTimeContainer,
+  // No platform catalog entry: shown to students and relatives only
+  'stop3018-widget': Stop3018Container,
 };
 
 /**

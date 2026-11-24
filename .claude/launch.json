@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "auth-wayf",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "auth/frontend", "dev"],
+      "port": 4200
+    },
+    {
+      "name": "homepage-crna",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "timeline/frontend-crna", "exec", "vite", "--port", "4203", "--strictPort", "--force"],
+      "port": 4203
+    },
+    {
+      "name": "timeline-frontend",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "timeline/frontend", "exec", "vite", "--port", "4202", "--strictPort", "--force"],
+      "port": 4202
+    }
+  ]
+}

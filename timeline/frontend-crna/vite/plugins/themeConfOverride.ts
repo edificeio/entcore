@@ -27,34 +27,41 @@ export function themeConfOverridePlugin({
     configureServer(server) {
       if (!target || !overrides) return;
       const uiOverrides = JSON.parse(overrides) as Record<string, unknown>;
+      // Last successfully overridden file, served again when the platform is
+      // unreachable. Never fall through to the proxy: its raw response is sent
+      // with `max-age=14400` and would stick in the browser cache for hours.
+      let lastGood: string | undefined;
 
-      server.middlewares.use(
-        '/assets/theme-conf.js',
-        async (_req, res, next) => {
-          try {
-            const response = await fetch(
-              new URL('/assets/theme-conf.js', target),
-            );
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      server.middlewares.use('/assets/theme-conf.js', async (_req, res) => {
+        res.setHeader('Content-Type', 'application/javascript');
+        res.setHeader('Cache-Control', 'no-store');
+        try {
+          const response = await fetch(
+            new URL('/assets/theme-conf.js', target),
+          );
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-            const sandbox: { exports: { conf?: ThemeConf } } = { exports: {} };
-            runInNewContext(await response.text(), sandbox);
-            const conf = sandbox.exports.conf ?? {};
-            conf.overriding?.forEach((theme) => {
-              theme.uiOverrides = { ...theme.uiOverrides, ...uiOverrides };
-            });
+          const sandbox: { exports: { conf?: ThemeConf } } = { exports: {} };
+          runInNewContext(await response.text(), sandbox);
+          const conf = sandbox.exports.conf ?? {};
+          conf.overriding?.forEach((theme) => {
+            theme.uiOverrides = { ...theme.uiOverrides, ...uiOverrides };
+          });
 
-            res.setHeader('Content-Type', 'application/javascript');
-            res.setHeader('Cache-Control', 'no-store');
-            res.end(`exports.conf = ${JSON.stringify(conf, null, 2)};\n`);
-          } catch (error) {
-            server.config.logger.warn(
-              `[theme-conf-override] ${String(error)}, falling back to proxy`,
-            );
-            next();
+          lastGood = `exports.conf = ${JSON.stringify(conf, null, 2)};\n`;
+          res.end(lastGood);
+        } catch (error) {
+          server.config.logger.warn(
+            `[theme-conf-override] ${String(error)}, ${lastGood ? 'serving the last overridden version' : 'no version to serve yet'}`,
+          );
+          if (lastGood) {
+            res.end(lastGood);
+          } else {
+            res.statusCode = 503;
+            res.end('// theme-conf unavailable, retry later\n');
           }
-        },
-      );
+        }
+      });
     },
   };
 }

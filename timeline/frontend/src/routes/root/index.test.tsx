@@ -123,6 +123,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   CantineContainer: () => <div data-testid="cantine-container" />,
   EdumalinContainer: () => <div data-testid="edumalin-container" />,
   ScreenTimeContainer: () => <div data-testid="screen-time-container" />,
+  Stop3018Container: () => <div data-testid="stop3018-container" />,
   RssContainer: () => <div data-testid="rss-container" />,
   UserSpaceContainer: ({
     children,
@@ -355,6 +356,7 @@ describe('Root - widgets', () => {
       'edumalin-container',
       'rss-container',
       'screen-time-container',
+      'stop3018-container',
     ]);
   });
 
@@ -395,14 +397,15 @@ describe('Root - widgets', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('hides a widget that is not deployed for the user', () => {
+  it('displays a widget even when the platform does not deploy it for the user', () => {
     mocks.useWidgetPreferences.mockReturnValue(
       preferences({ widgets: [{ name: 'communities-widget' }] }),
     );
 
     render(<Root />);
 
-    expect(screen.queryByTestId('agenda-container')).not.toBeInTheDocument();
+    expect(screen.getByTestId('agenda-container')).toBeInTheDocument();
     expect(screen.getByTestId('communities-container')).toBeInTheDocument();
+    expect(screen.getByTestId('stop3018-container')).toBeInTheDocument();
   });
 });

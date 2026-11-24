@@ -8,6 +8,7 @@ import {
   IconUniversalis,
 } from '@edifice.io/react/icons/apps';
 import {
+  IconAlertCircle,
   IconBookmark,
   IconCalendar,
   IconGlobe,
@@ -42,6 +43,7 @@ const WIDGET_ICONS: Record<string, ReactNode> = {
   'carnet-de-bord': <IconBookmark />,
   'maxicours-widget': <IconMaxicours />,
   'mediacentre-widget': <IconMediacentre />,
+  'stop3018-widget': <IconAlertCircle />,
 };
 
 export function getWidgetIcon(name: string): ReactNode {
