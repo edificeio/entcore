@@ -119,6 +119,16 @@ public interface ConversationService {
 	Future<Void> recallMessage(String id, UserInfos user);
 
 	/**
+	 * Sends a message that has no sender user (external applications): it is stored with an empty sender and only
+	 * linked to its recipients, so that no phantom user collects every such message.
+	 *
+	 * @param message      subject, body, to, cc, cci, fromName, displayNames, noReply
+	 * @param recipientIds ids of the users that receive the message, groups already flattened
+	 * @return id, thread_id, subject and body of the sent message
+	 */
+	Future<JsonObject> sendWithoutSender(JsonObject message, JsonArray recipientIds, HttpServerRequest request);
+
+	/**
 	 * List messages from any folder 
 	 * @param folder Any UserFolder ID, or any case-insensitive SystemFolder name.
 	 * @param unread Truthy when only unread messages must be returned.
