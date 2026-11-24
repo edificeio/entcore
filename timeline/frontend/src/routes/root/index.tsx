@@ -87,10 +87,13 @@ export const Root = () => {
                 <Component />
               </Masonry.Item>
             ))}
+            {/* Not a catalog widget: it shows itself from the alloregion.access
+                workflow (always shown in demo mode). Last item of the grid so
+                it sits next to the other widgets, not on a line of its own. */}
+            <Masonry.Item key="allo-region">
+              <AlloRegionWidget />
+            </Masonry.Item>
           </Masonry>
-          {/* Not a catalog widget: it shows itself from the alloregion.access
-              workflow (always shown in demo mode) */}
-          <AlloRegionWidget />
         </div>
       </PageLayout.Content>
 

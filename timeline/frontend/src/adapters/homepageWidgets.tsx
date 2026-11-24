@@ -23,10 +23,8 @@ import {
   BriefMeDemo,
   CantineDemo,
   CarnetDeBordDemo,
-  CommunitiesDemo,
   EdumalinDemo,
   GenerationHdfDemo,
-  MediacentreDemo,
   QwantDemo,
   RssDemo,
   ScreenTimeDemo,
@@ -74,16 +72,20 @@ const CONTAINER_COMPONENTS: Record<string, ComponentType> = {
   'stop3018-widget': Stop3018Container,
 };
 
-/** Same catalog names, rendered with mocked data (see `~/demo/widgets`). */
+/**
+ * Same catalog names, rendered with mocked data (see `~/demo/widgets`),
+ * except Communities and Médiacentre: they keep their containers, the demo
+ * platform has real data for them.
+ */
 const DEMO_COMPONENTS: Record<string, ComponentType> = {
   'carnet-de-bord': CarnetDeBordDemo,
-  'communities-widget': CommunitiesDemo,
+  'communities-widget': CommunitiesContainer,
   'agenda-widget': AgendaDemo,
   'bookmark-widget': UsefulLinksDemo,
   'briefme-widget': BriefMeDemo,
   'qwant': QwantDemo,
   'universalis-widget': UniversalisDemo,
-  'mediacentre-widget': MediacentreDemo,
+  'mediacentre-widget': MediacentreContainer,
   'cursus-widget': GenerationHdfDemo,
   'cantine-widget': CantineDemo,
   'edumalin-widget': EdumalinDemo,

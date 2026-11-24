@@ -152,10 +152,8 @@ vi.mock('~/demo/widgets', () => {
     BriefMeDemo: demo('briefme-demo'),
     CantineDemo: demo('cantine-demo'),
     CarnetDeBordDemo: demo('carnet-de-bord-demo'),
-    CommunitiesDemo: demo('communities-demo'),
     EdumalinDemo: demo('edumalin-demo'),
     GenerationHdfDemo: demo('generation-hdf-demo'),
-    MediacentreDemo: demo('mediacentre-demo'),
     QwantDemo: demo('qwant-demo'),
     RssDemo: demo('rss-demo'),
     ScreenTimeDemo: demo('screen-time-demo'),
@@ -231,17 +229,15 @@ describe('Root - MessageFlashListContainer responsive placement', () => {
 });
 
 describe('Root - Allô Région widget', () => {
-  it('renders the Allô Région demo in the main content, outside the widgets grid', () => {
+  it('renders the Allô Région demo as the last one-column item of the widgets grid', () => {
     mocks.useBreakpoint.mockReturnValue({ sm: true, md: true });
 
     render(<Root />);
 
-    expect(
-      within(screen.getByTestId('content')).getByTestId('allo-region-demo'),
-    ).toBeInTheDocument();
-    expect(
-      within(screen.getByTestId('masonry')).queryByTestId('allo-region-demo'),
-    ).not.toBeInTheDocument();
+    const grid = screen.getByTestId('masonry');
+    const alloRegion = within(grid).getByTestId('allo-region-demo');
+    expect(grid.lastElementChild).toContainElement(alloRegion);
+    expect(alloRegion.parentElement).not.toHaveAttribute('data-span', '2');
     expect(
       screen.queryByTestId('allo-region-container'),
     ).not.toBeInTheDocument();
@@ -359,17 +355,17 @@ describe('Root - widgets', () => {
 
   const renderedWidgetIds = () =>
     within(screen.getByTestId('masonry'))
-      .getAllByTestId(/-demo$/)
+      .getAllByTestId(/-(demo|container)$/)
       .map((el) => el.dataset.testid);
 
   it('renders the widgets in the configured order', () => {
     render(<Root />);
 
     expect(renderedWidgetIds()).toEqual([
-      'communities-demo',
+      'communities-container',
       'timetable-demo',
       'carnet-de-bord-demo',
-      'mediacentre-demo',
+      'mediacentre-container',
       'avantages-demo',
       'agenda-demo',
       'useful-links-demo',
@@ -382,6 +378,7 @@ describe('Root - widgets', () => {
       'rss-demo',
       'screen-time-demo',
       'stop3018-demo',
+      'allo-region-demo',
     ]);
   });
 
@@ -390,9 +387,9 @@ describe('Root - widgets', () => {
 
     const spanOf = (testId: string) =>
       screen.getByTestId(testId).parentElement?.dataset.span;
-    expect(spanOf('communities-demo')).toBe('2');
+    expect(spanOf('communities-container')).toBe('2');
     expect(spanOf('agenda-demo')).toBe('1');
-    expect(spanOf('mediacentre-demo')).toBe('1');
+    expect(spanOf('mediacentre-container')).toBe('1');
   });
 
   it('hides a widget the user turned off', () => {
@@ -428,7 +425,7 @@ describe('Root - widgets', () => {
     render(<Root />);
 
     expect(screen.getByTestId('agenda-demo')).toBeInTheDocument();
-    expect(screen.getByTestId('communities-demo')).toBeInTheDocument();
+    expect(screen.getByTestId('communities-container')).toBeInTheDocument();
     expect(screen.getByTestId('stop3018-demo')).toBeInTheDocument();
   });
 });
