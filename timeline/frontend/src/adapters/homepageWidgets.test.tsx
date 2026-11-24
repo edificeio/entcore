@@ -9,6 +9,7 @@ vi.mock('@edifice.io/react/homepage', () => {
     CommunitiesContainer: stub,
     EdumalinContainer: stub,
     ScreenTimeContainer: stub,
+    Stop3018Container: stub,
     GenerationHdfContainer: stub,
     QwantContainer: stub,
     RssContainer: stub,
@@ -16,6 +17,28 @@ vi.mock('@edifice.io/react/homepage', () => {
     MediacentreContainer: stub,
     CarnetDeBordContainer: stub,
     UsefulLinksContainer: stub,
+  };
+});
+
+vi.mock('~/demo/widgets', () => {
+  const stub = () => null;
+  return {
+    AgendaDemo: stub,
+    AvantagesDemo: stub,
+    BriefMeDemo: stub,
+    CantineDemo: stub,
+    CarnetDeBordDemo: stub,
+    CommunitiesDemo: stub,
+    EdumalinDemo: stub,
+    GenerationHdfDemo: stub,
+    MediacentreDemo: stub,
+    QwantDemo: stub,
+    RssDemo: stub,
+    ScreenTimeDemo: stub,
+    Stop3018Demo: stub,
+    TimetableDemo: stub,
+    UniversalisDemo: stub,
+    UsefulLinksDemo: stub,
   };
 });
 

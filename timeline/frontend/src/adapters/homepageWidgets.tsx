@@ -10,10 +10,29 @@ import {
   QwantContainer,
   RssContainer,
   ScreenTimeContainer,
+  Stop3018Container,
   UniversalisContainer,
   UsefulLinksContainer,
 } from '@edifice.io/react/homepage';
 import { ComponentType } from 'react';
+import {
+  AgendaDemo,
+  AvantagesDemo,
+  BriefMeDemo,
+  CantineDemo,
+  CarnetDeBordDemo,
+  CommunitiesDemo,
+  EdumalinDemo,
+  GenerationHdfDemo,
+  MediacentreDemo,
+  QwantDemo,
+  RssDemo,
+  ScreenTimeDemo,
+  Stop3018Demo,
+  TimetableDemo,
+  UniversalisDemo,
+  UsefulLinksDemo,
+} from '~/demo/widgets';
 import { WidgetOrderEntry } from '~/services';
 
 export interface HomepageWidget {
@@ -26,7 +45,14 @@ export interface HomepageWidget {
   Component: ComponentType;
 }
 
-const WIDGET_COMPONENTS: Record<string, ComponentType> = {
+/**
+ * Demo mode (AO demo): the widgets render mocked data instead of their data
+ * containers, so they can be shown on a platform without these services.
+ * Set to `false` to go back to the containers.
+ */
+const DEMO_WIDGETS = true;
+
+const CONTAINER_COMPONENTS: Record<string, ComponentType> = {
   'carnet-de-bord': CarnetDeBordContainer,
   'communities-widget': CommunitiesContainer,
   'agenda-widget': AgendaContainer,
@@ -42,7 +68,32 @@ const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'edumalin-widget': EdumalinContainer,
   'rss-widget': RssContainer,
   'screen-time-widget': ScreenTimeContainer,
+  // No platform catalog entry: shown to students and relatives only
+  'stop3018-widget': Stop3018Container,
 };
+
+/** Same catalog names, rendered with mocked data (see `~/demo/widgets`). */
+const DEMO_COMPONENTS: Record<string, ComponentType> = {
+  'carnet-de-bord': CarnetDeBordDemo,
+  'communities-widget': CommunitiesDemo,
+  'agenda-widget': AgendaDemo,
+  'bookmark-widget': UsefulLinksDemo,
+  'briefme-widget': BriefMeDemo,
+  'qwant': QwantDemo,
+  'universalis-widget': UniversalisDemo,
+  'mediacentre-widget': MediacentreDemo,
+  'cursus-widget': GenerationHdfDemo,
+  'cantine-widget': CantineDemo,
+  'edumalin-widget': EdumalinDemo,
+  'rss-widget': RssDemo,
+  'screen-time-widget': ScreenTimeDemo,
+  'stop3018-widget': Stop3018Demo,
+  // Migrated from the CRNA homepage, demo only (no data container yet)
+  'timetable-widget': TimetableDemo,
+  'avantages-widget': AvantagesDemo,
+};
+
+const WIDGET_COMPONENTS = DEMO_WIDGETS ? DEMO_COMPONENTS : CONTAINER_COMPONENTS;
 
 /**
  * Widgets of the given order that the new homepage handles, in that order.

@@ -14,8 +14,9 @@ export interface UserHomepageWidget extends HomepageWidget {
  * Widgets of the new homepage, in the display order of the project (see
  * `useWidgetsOrder`) — the same one applies to the homepage and to the
  * personalization panel, and users cannot change it.
- * - `available`: the widgets listed in the personalization panel (the ones
- *   deployed for the current user and given by the order).
+ * - `available`: the widgets listed in the personalization panel — every
+ *   widget of the order that the homepage handles, whether or not the
+ *   platform deploys it for the current user (`user.widgets` is ignored).
  * - `displayed`: the widgets rendered on the homepage — `available` ones the
  *   user did not hide (a locked widget is always displayed). Without a choice
  *   of the user, a widget follows its `defaultVisible` (profile based).
@@ -26,27 +27,19 @@ export function useHomepageWidgets(): {
   displayed: UserHomepageWidget[];
   isLoading: boolean;
 } {
-  const {
-    widgets,
-    profiles = [],
-    isVisible,
-    isLocked,
-  } = useWidgetPreferences();
+  const { profiles = [], isVisible, isLocked } = useWidgetPreferences();
   const { order, isLoading } = useWidgetsOrder();
-  const deployed = new Set<string>(widgets.map((widget) => widget.name));
 
   const available = isLoading
     ? []
-    : resolveHomepageWidgets(order)
-        .filter(({ name }) => deployed.has(name))
-        .map((widget) => ({
-          ...widget,
-          defaultVisible:
-            !widget.defaultVisibleFor ||
-            widget.defaultVisibleFor.some((profile) =>
-              (profiles as string[]).includes(profile),
-            ),
-        }));
+    : resolveHomepageWidgets(order).map((widget) => ({
+        ...widget,
+        defaultVisible:
+          !widget.defaultVisibleFor ||
+          widget.defaultVisibleFor.some((profile) =>
+            (profiles as string[]).includes(profile),
+          ),
+      }));
   const displayed = available.filter(
     ({ name, defaultVisible }) =>
       isLocked(name) || isVisible(name, defaultVisible),

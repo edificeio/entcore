@@ -123,6 +123,7 @@ vi.mock('@edifice.io/react/homepage', () => ({
   CantineContainer: () => <div data-testid="cantine-container" />,
   EdumalinContainer: () => <div data-testid="edumalin-container" />,
   ScreenTimeContainer: () => <div data-testid="screen-time-container" />,
+  Stop3018Container: () => <div data-testid="stop3018-container" />,
   RssContainer: () => <div data-testid="rss-container" />,
   UserSpaceContainer: ({
     children,
@@ -141,6 +142,28 @@ vi.mock('@edifice.io/react/homepage', () => ({
     </div>
   ),
 }));
+
+vi.mock('~/demo/widgets', () => {
+  const demo = (testId: string) => () => <div data-testid={testId} />;
+  return {
+    AgendaDemo: demo('agenda-demo'),
+    AvantagesDemo: demo('avantages-demo'),
+    BriefMeDemo: demo('briefme-demo'),
+    CantineDemo: demo('cantine-demo'),
+    CarnetDeBordDemo: demo('carnet-de-bord-demo'),
+    CommunitiesDemo: demo('communities-demo'),
+    EdumalinDemo: demo('edumalin-demo'),
+    GenerationHdfDemo: demo('generation-hdf-demo'),
+    MediacentreDemo: demo('mediacentre-demo'),
+    QwantDemo: demo('qwant-demo'),
+    RssDemo: demo('rss-demo'),
+    ScreenTimeDemo: demo('screen-time-demo'),
+    Stop3018Demo: demo('stop3018-demo'),
+    TimetableDemo: demo('timetable-demo'),
+    UniversalisDemo: demo('universalis-demo'),
+    UsefulLinksDemo: demo('useful-links-demo'),
+  };
+});
 
 vi.mock('~/components/BetaSwitch/BetaSwitchContainer', () => ({
   BetaSwitchContainer: () => <div data-testid="beta-switch-container" />,
@@ -335,26 +358,29 @@ describe('Root - widgets', () => {
 
   const renderedWidgetIds = () =>
     within(screen.getByTestId('masonry'))
-      .getAllByTestId(/-container$/)
+      .getAllByTestId(/-demo$/)
       .map((el) => el.dataset.testid);
 
   it('renders the widgets in the configured order', () => {
     render(<Root />);
 
     expect(renderedWidgetIds()).toEqual([
-      'communities-container',
-      'carnet-de-bord-container',
-      'mediacentre-container',
-      'agenda-container',
-      'useful-links-container',
-      'briefme-container',
-      'qwant-container',
-      'universalis-container',
-      'generation-hdf-container',
-      'cantine-container',
-      'edumalin-container',
-      'rss-container',
-      'screen-time-container',
+      'communities-demo',
+      'timetable-demo',
+      'carnet-de-bord-demo',
+      'mediacentre-demo',
+      'avantages-demo',
+      'agenda-demo',
+      'useful-links-demo',
+      'briefme-demo',
+      'qwant-demo',
+      'universalis-demo',
+      'generation-hdf-demo',
+      'cantine-demo',
+      'edumalin-demo',
+      'rss-demo',
+      'screen-time-demo',
+      'stop3018-demo',
     ]);
   });
 
@@ -363,9 +389,9 @@ describe('Root - widgets', () => {
 
     const spanOf = (testId: string) =>
       screen.getByTestId(testId).parentElement?.dataset.span;
-    expect(spanOf('communities-container')).toBe('2');
-    expect(spanOf('agenda-container')).toBe('1');
-    expect(spanOf('mediacentre-container')).toBe('1');
+    expect(spanOf('communities-demo')).toBe('2');
+    expect(spanOf('agenda-demo')).toBe('1');
+    expect(spanOf('mediacentre-demo')).toBe('1');
   });
 
   it('hides a widget the user turned off', () => {
@@ -375,8 +401,8 @@ describe('Root - widgets', () => {
 
     render(<Root />);
 
-    expect(screen.queryByTestId('agenda-container')).not.toBeInTheDocument();
-    expect(screen.getByTestId('universalis-container')).toBeInTheDocument();
+    expect(screen.queryByTestId('agenda-demo')).not.toBeInTheDocument();
+    expect(screen.getByTestId('universalis-demo')).toBeInTheDocument();
   });
 
   it('keeps a locked widget displayed even if its preference is off', () => {
@@ -389,20 +415,19 @@ describe('Root - widgets', () => {
 
     render(<Root />);
 
-    expect(screen.getByTestId('agenda-container')).toBeInTheDocument();
-    expect(
-      screen.queryByTestId('universalis-container'),
-    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('agenda-demo')).toBeInTheDocument();
+    expect(screen.queryByTestId('universalis-demo')).not.toBeInTheDocument();
   });
 
-  it('hides a widget that is not deployed for the user', () => {
+  it('displays a widget even when the platform does not deploy it for the user', () => {
     mocks.useWidgetPreferences.mockReturnValue(
       preferences({ widgets: [{ name: 'communities-widget' }] }),
     );
 
     render(<Root />);
 
-    expect(screen.queryByTestId('agenda-container')).not.toBeInTheDocument();
-    expect(screen.getByTestId('communities-container')).toBeInTheDocument();
+    expect(screen.getByTestId('agenda-demo')).toBeInTheDocument();
+    expect(screen.getByTestId('communities-demo')).toBeInTheDocument();
+    expect(screen.getByTestId('stop3018-demo')).toBeInTheDocument();
   });
 });

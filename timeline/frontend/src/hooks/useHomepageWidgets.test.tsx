@@ -23,6 +23,7 @@ vi.mock('@edifice.io/react/homepage', () => {
     CommunitiesContainer: stub,
     EdumalinContainer: stub,
     ScreenTimeContainer: stub,
+    Stop3018Container: stub,
     GenerationHdfContainer: stub,
     QwantContainer: stub,
     RssContainer: stub,
@@ -30,6 +31,28 @@ vi.mock('@edifice.io/react/homepage', () => {
     MediacentreContainer: stub,
     CarnetDeBordContainer: stub,
     UsefulLinksContainer: stub,
+  };
+});
+
+vi.mock('~/demo/widgets', () => {
+  const stub = () => null;
+  return {
+    AgendaDemo: stub,
+    AvantagesDemo: stub,
+    BriefMeDemo: stub,
+    CantineDemo: stub,
+    CarnetDeBordDemo: stub,
+    CommunitiesDemo: stub,
+    EdumalinDemo: stub,
+    GenerationHdfDemo: stub,
+    MediacentreDemo: stub,
+    QwantDemo: stub,
+    RssDemo: stub,
+    ScreenTimeDemo: stub,
+    Stop3018Demo: stub,
+    TimetableDemo: stub,
+    UniversalisDemo: stub,
+    UsefulLinksDemo: stub,
   };
 });
 
@@ -74,7 +97,7 @@ describe('useHomepageWidgets', () => {
     ]);
   });
 
-  it('lists the deployed catalog widgets in the configured order', () => {
+  it('lists the catalog widgets in the configured order', () => {
     // Deliberately given in another order than the configured one
     setPreferences({
       deployed: [
@@ -107,7 +130,7 @@ describe('useHomepageWidgets', () => {
     ]);
   });
 
-  it('hides deployed widgets absent from the order', () => {
+  it('hides widgets absent from the order', () => {
     setOrder(['agenda-widget']);
     setPreferences({ deployed: ['agenda-widget', 'cantine-widget'] });
 
@@ -127,7 +150,7 @@ describe('useHomepageWidgets', () => {
     expect(result.current.available).toEqual([]);
   });
 
-  it('ignores deployed widgets the new homepage does not handle', () => {
+  it('ignores widgets the new homepage does not handle', () => {
     setOrder(['agenda-widget', 'mood', 'notes']);
     setPreferences({ deployed: ['agenda-widget', 'mood', 'notes'] });
 
@@ -136,27 +159,34 @@ describe('useHomepageWidgets', () => {
     expect(names(result.current.available)).toEqual(['agenda-widget']);
   });
 
-  it('lists nothing when no handled widget is deployed', () => {
+  it('lists the widgets of the order even when the platform deploys none', () => {
     setPreferences({ deployed: [] });
 
     const { result } = renderHook(() => useHomepageWidgets());
 
-    expect(result.current.available).toEqual([]);
-    expect(result.current.displayed).toEqual([]);
+    const all = [
+      'communities-widget',
+      'agenda-widget',
+      'universalis-widget',
+      'cantine-widget',
+    ];
+    expect(names(result.current.available)).toEqual(all);
+    expect(names(result.current.displayed)).toEqual(all);
   });
 
-  it('displays widgets only when deployed and not hidden', () => {
+  it('displays the widgets the user did not hide', () => {
     setPreferences({
-      deployed: ['agenda-widget', 'universalis-widget'],
+      deployed: ['agenda-widget'],
       visible: (name) => name !== 'agenda-widget',
     });
 
     const { result } = renderHook(() => useHomepageWidgets());
 
-    const displayed = names(result.current.displayed);
-    expect(displayed).toContain('universalis-widget');
-    expect(displayed).not.toContain('agenda-widget');
-    expect(displayed).not.toContain('communities-widget');
+    expect(names(result.current.displayed)).toEqual([
+      'communities-widget',
+      'universalis-widget',
+      'cantine-widget',
+    ]);
   });
 
   it('keeps a locked widget displayed whatever its preference', () => {
@@ -235,7 +265,7 @@ describe('useHomepageWidgets', () => {
 
       const { result } = renderHook(() => useHomepageWidgets());
 
-      expect(names(result.current.displayed)).toEqual(['communities-widget']);
+      expect(names(result.current.displayed)).toContain('communities-widget');
     });
 
     it('hides it for a user without profile', () => {
@@ -243,7 +273,7 @@ describe('useHomepageWidgets', () => {
 
       const { result } = renderHook(() => useHomepageWidgets());
 
-      expect(result.current.displayed).toEqual([]);
+      expect(names(result.current.displayed)).toEqual(['agenda-widget']);
     });
   });
 });

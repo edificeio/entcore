@@ -4,8 +4,10 @@
     "fullWidth": true,
     "defaultVisibleFor": ["Teacher", "Student"]
   },
+  { "name": "timetable-widget" },
   { "name": "carnet-de-bord" },
   { "name": "mediacentre-widget" },
+  { "name": "avantages-widget" },
   { "name": "agenda-widget" },
   { "name": "bookmark-widget" },
   { "name": "briefme-widget" },
@@ -15,5 +17,6 @@
   { "name": "cantine-widget" },
   { "name": "edumalin-widget" },
   { "name": "rss-widget" },
-  { "name": "screen-time-widget" }
+  { "name": "screen-time-widget" },
+  { "name": "stop3018-widget" }
 ]
