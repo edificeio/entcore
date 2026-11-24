@@ -42,6 +42,10 @@ export interface WayfPartner {
 export interface WayfDomainConfig {
   providers: WayfProvider[];
   partners?: WayfPartner[];
+  /** Height (px) of the partner logos. Defaults to 40. */
+  partnerLogoHeight?: number;
+  /** Header logo URL. Defaults to the theme `img/logo-wayf.png`. */
+  logoUrl?: string;
   /** Whether the Édifice logo links to edifice.io. Defaults to `true`. */
   edificeLogoClickable?: boolean;
 }

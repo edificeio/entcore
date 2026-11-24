@@ -17,8 +17,9 @@
 }
 
 .wayf-partners__logo {
-  max-height: auto;
-  width: 75px;
+  max-height: var(--wayf-partner-logo-height, 40px);
+  max-width: 100%;
+  width: auto;
   object-fit: contain;
   display: block;
 }

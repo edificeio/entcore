@@ -31,8 +31,14 @@ export const WayfPage = () => {
   const [loginFormOpen, setLoginFormOpen] = useState(false);
   const dirRef = useRef<1 | -1>(1);
 
-  const { providers, partners, edificeLogoClickable = true } = useWayfConfig();
-  const welcomeState = useWelcomeMessage();
+  const {
+    providers,
+    partners,
+    partnerLogoHeight,
+    logoUrl,
+    edificeLogoClickable = true,
+  } = useWayfConfig();
+  const welcomeState = useWelcomeMessage(childTheme);
 
   useMobileLinkRedirect();
 
@@ -111,7 +117,11 @@ export const WayfPage = () => {
       {/* Zone éditoriale — gauche */}
       <div className="wayf-editorial">
         <WelcomeMessage state={welcomeState} />
-        <PartnerLogos partners={partners} childTheme={childTheme} />
+        <PartnerLogos
+          partners={partners}
+          childTheme={childTheme}
+          logoHeight={partnerLogoHeight}
+        />
       </div>
 
       {/* Zone de sélection — droite */}
@@ -121,7 +131,7 @@ export const WayfPage = () => {
           {childTheme && (
             <img
               className="wayf-logo"
-              src={`/assets/themes/${childTheme}/img/logo-wayf.png`}
+              src={logoUrl ?? `/assets/themes/${childTheme}/img/logo-wayf.png`}
               alt="logo"
             />
           )}
@@ -135,16 +145,18 @@ export const WayfPage = () => {
           <div className="wayf-view-container">
             {transitions((style, item) => (
               <animated.div style={style} className="wayf-view-slide">
-                {item.view === 'login' ? (
-                  <LoginForm onBack={handleBack} />
-                ) : (
-                  <ProviderList
-                    providers={item.providers}
-                    onProviderClick={handleProviderClick}
-                    parentIconKey={item.parentIconKey}
-                    onBack={item.depth > 0 ? handleBack : undefined}
-                  />
-                )}
+                <ScrollArea>
+                  {item.view === 'login' ? (
+                    <LoginForm onBack={handleBack} />
+                  ) : (
+                    <ProviderList
+                      providers={item.providers}
+                      onProviderClick={handleProviderClick}
+                      parentIconKey={item.parentIconKey}
+                      onBack={item.depth > 0 ? handleBack : undefined}
+                    />
+                  )}
+                </ScrollArea>
               </animated.div>
             ))}
           </div>

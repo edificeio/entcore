@@ -2,7 +2,8 @@
    Layout principal — Grid deux colonnes
    ═══════════════════════════════════════════ */
 .wayf-layout {
-  --wayf-editorial-fallback: #3030d1;
+  /* Same yellow/pink background as the homepage (design system "edifice2d"). */
+  --wayf-editorial-fallback: url('@images/backgrounds/edifice2d.png');
   display: grid;
   grid-template-columns: 2fr 1fr;
   grid-template-areas: 'editorial selection';

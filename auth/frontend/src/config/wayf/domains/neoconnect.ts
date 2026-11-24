@@ -1,3 +1,4 @@
+import edificeLogoColorUrl from '~/assets/edifice-logo-color.svg';
 import type { WayfDomainConfig } from '~/models/wayf';
 
 export const neoconnectConfig: WayfDomainConfig = {
@@ -122,20 +123,5 @@ export const neoconnectConfig: WayfDomainConfig = {
       acs: '/auth/login',
     },
   ],
-  partners: [
-
-    { logo: '/img/partners/REGIONBFC.jpeg' },
-    { logo: '/img/partners/CD_blue_2018fin.png' },
-    { logo: "/img/partners/Côte-d'Or_(21)_logo_2015.svg" },
-    { logo: '/img/partners/Logo-CD89-2022-couleur-PNG-.png' },
-    { logo: '/img/partners/Logo_Conseil_départemental_du_Jura.jpg' },
-    { logo: '/img/partners/25_departement-doubs-logo.png' },
-    { logo: '/img/partners/HAUTE-SAONE.png' },
-    { logo: '/img/partners/territoiredebelfort_logo_rvb.jpg' },
-        { logo: '/img/partners/02_logo_REGIONS-ACA_BOURGOGNE-FRANCHE-COMTE.webp' },
-    { logo: '/img/partners/logoAC_Dijon2.svg' },
-    { logo: '/img/partners/Académie_de_Besançon.svg.webp' },
-    { logo: '/img/partners/draaf2.png' },
-  ],
+  logoUrl: edificeLogoColorUrl,
 };
-
