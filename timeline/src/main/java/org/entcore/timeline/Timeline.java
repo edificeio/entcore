@@ -29,8 +29,6 @@ import java.util.Map;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.ws.OssFcm;
-import org.entcore.common.user.DefaultPreferenceHelper;
-import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.CustomizeController;
 import org.entcore.timeline.controllers.FlashMsgController;
@@ -110,10 +108,7 @@ public class Timeline extends BaseServer {
 				config.getBoolean("remove-push-notifs-404-tokens", false));
 		notificationHelper.setPushNotifServices(pushNotifServices);
 
-		PreferenceHelper preferenceService = new DefaultPreferenceHelper(getEventBus(vertx));
-
 		timelineController.setNotificationHelper(notificationHelper);
-		timelineController.setPreferenceService(preferenceService);
 
 		final FlashMsgService flashMsgService = new FlashMsgServiceSqlImpl("flashmsg", "messages");
 		final FlashMsgController flashMsgController = new FlashMsgController(

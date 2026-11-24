@@ -165,10 +165,6 @@ vi.mock('~/demo/widgets', () => {
   };
 });
 
-vi.mock('~/components/BetaSwitch/BetaSwitchContainer', () => ({
-  BetaSwitchContainer: () => <div data-testid="beta-switch-container" />,
-}));
-
 vi.mock(
   '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer',
   () => ({

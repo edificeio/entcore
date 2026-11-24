@@ -16,7 +16,6 @@ import {
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { useState } from 'react';
-import { BetaSwitchContainer } from '~/components/BetaSwitch/BetaSwitchContainer';
 import { WidgetsPersonalizationPanelContainer } from '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer';
 import { useHomepageWidgets } from '~/hooks/useHomepageWidgets';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
@@ -70,7 +69,6 @@ export const Root = () => {
       </PageLayout.SidebarLeft>
       <PageLayout.Content>
         <div className="d-flex flex-column py-16 gap-16">
-          <BetaSwitchContainer />
           {md && <MessageFlashListContainer />}
           <UserSpaceContainer onCustomizeWidgetsClick={openWidgetsPanel}>
             <div

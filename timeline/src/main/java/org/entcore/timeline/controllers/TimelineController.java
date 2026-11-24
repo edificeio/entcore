@@ -54,7 +54,6 @@ import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
-import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.Timeline;
@@ -81,13 +80,11 @@ import static org.entcore.common.http.response.DefaultResponseHandler.defaultRes
 public class TimelineController extends BaseController {
 
 	private static final long IMMEDIATE_NOTIF_DELAY_BY_CHUNK = 30000L;
-	private static final String TIMELINE_BETA_RIGHT = "org.entcore.timeline|betaActivation";
 	private static final Logger log = LoggerFactory.getLogger(TimelineController.class);
 
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
 	private TimelineMailerService mailerService;
-	private PreferenceHelper preferenceService;
 
 	private Map<String, String> registeredNotifications;
 	private Map<String, String> eventsI18n;
@@ -210,7 +207,7 @@ public class TimelineController extends BaseController {
 
 			JsonArray userSkinLevels = this.skinLevels.getJsonArray(userTheme);
 			if (userSkinLevels != null && userSkinLevels.contains("2d")) {
-				renderTimeline2dOrBeta(request);
+				renderTimeline2dOrHomepage(request);
 			} else {
 				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
 			}
@@ -218,41 +215,22 @@ public class TimelineController extends BaseController {
 	}
 
 	/**
-	 * Endpoint to create the workflow right to show beta switch on timeline front
-	 * @param request
+	 * Renders the React homepage (timeline/frontend) on the hosts listed in
+	 * "specific-homepages-host", and the 2D timeline everywhere else.
 	 */
-	@Get("/beta-right")
-	@SecuredAction(value = "timeline.beta", right = TIMELINE_BETA_RIGHT)
-	public void beta(HttpServerRequest request) {
-		Renders.ok(request);
-	}
-
-	private void renderTimeline2dOrBeta(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			preferenceService.getPreferences(request)
-					.onSuccess(preferences -> {
-						String host = getHost(request);
-						JsonArray specificHomepagesHost = config.getJsonArray("specific-homepages-host");
-						if(specificHomepagesHost != null && !specificHomepagesHost.isEmpty() && host != null && !host.isEmpty() && specificHomepagesHost.contains(host)) {
-							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage-crna.html", null);
-						}
-						else if (user.getAuthorizedActions().stream().anyMatch( a -> a.getName().equals(TIMELINE_BETA_RIGHT)) && preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
-							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
-						} else {
-							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
-						}
-					}).onFailure( e -> {
-						log.error("Error while retreiving user preferences", e);
-						renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
-					});
-		});
+	private void renderTimeline2dOrHomepage(HttpServerRequest request) {
+		final String host = getHost(request);
+		final JsonArray specificHomepagesHost = config.getJsonArray("specific-homepages-host");
+		final String view = specificHomepagesHost != null && !isEmpty(host) && specificHomepagesHost.contains(host)
+				? "homepage.html"
+				: "timeline2.html";
+		renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), view, null);
 	}
 
 	@Get("/timeline2")
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view2(HttpServerRequest request) {
-		final boolean cache = config.getBoolean("cache", false);
-		renderTimeline2dOrBeta(request);
+		renderTimeline2dOrHomepage(request);
 		eventHelper.onAccess(request);
 	}
 
@@ -1079,10 +1057,6 @@ public class TimelineController extends BaseController {
 
 	public void setNotificationHelper(NotificationHelper notificationHelper) {
 		this.notificationHelper = notificationHelper;
-	}
-
-	public void setPreferenceService(PreferenceHelper preferenceService) {
-		this.preferenceService = preferenceService;
 	}
 
 	public void setEventsI18n(Map<String, String> eventsI18n) {
