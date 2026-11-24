@@ -79,29 +79,33 @@ encoder.wav = function(leftChannel, rightChannel, recordingLength, callback){
 	callback(new Blob ([ view ], { type : 'audio/wav' }));
 };
 
+// Absolute URL: inside a blob-bootstrapped worker the base URL is "blob:...",
+// against which a root-relative path cannot be resolved.
+var LAME_URL = self.location.origin + '/infra/public/js/libmp3lame.min.js';
+
 encoder.mp3 = function(leftChannel, rightChannel, recordingLength, callback){
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', '/infra/public/js/libmp3lame.min.js');
-	xhr.onload = function(){
-		eval(xhr.responseText);
-		var mp3codec = Lame.init();
+	// importScripts rather than XHR + eval: it only needs script-src, not
+	// connect-src nor 'unsafe-eval'. The library sets self.Lame.
+	if (typeof self.Lame === 'undefined') {
+		importScripts(LAME_URL);
+	}
+	var mp3codec = Lame.init();
 
-		Lame.set_mode(mp3codec, Lame.JOINT_STEREO);
-		Lame.set_num_channels(mp3codec, 2);
-		Lame.set_num_samples(mp3codec, -1);
-		Lame.set_in_samplerate(mp3codec, encoder.options.sampleRate);
-		Lame.set_out_samplerate(mp3codec, encoder.options.sampleRate);
-		Lame.set_bitrate(mp3codec, 128);
+	Lame.set_mode(mp3codec, Lame.JOINT_STEREO);
+	Lame.set_num_channels(mp3codec, 2);
+	Lame.set_num_samples(mp3codec, -1);
+	Lame.set_in_samplerate(mp3codec, encoder.options.sampleRate);
+	Lame.set_out_samplerate(mp3codec, encoder.options.sampleRate);
+	Lame.set_bitrate(mp3codec, 128);
 
-		Lame.init_params(mp3codec);
+	Lame.init_params(mp3codec);
 
-		var leftBuffer = mergeBuffers(leftChannel, recordingLength);
-		var rightBuffer = mergeBuffers(rightChannel, recordingLength);
+	var leftBuffer = mergeBuffers(leftChannel, recordingLength);
+	var rightBuffer = mergeBuffers(rightChannel, recordingLength);
 
-		var mp3data = Lame.encode_buffer_ieee_float(mp3codec, leftBuffer, rightBuffer);
-		callback(new Blob([new Uint8Array(mp3data.data)], {type: 'audio/mp3'}));
-	};
-	xhr.send(null);
+	var mp3data = Lame.encode_buffer_ieee_float(mp3codec, leftBuffer, rightBuffer);
+	Lame.close(mp3codec);
+	callback(new Blob([new Uint8Array(mp3data.data)], {type: 'audio/mp3'}));
 };
 
 encoder.chunk =function(leftChannel, rightChannel, recordingLength, callback){
