@@ -1,4 +1,5 @@
 export * from './AgendaDemo';
+export * from './AlloRegionDemo';
 export * from './BriefMeDemo';
 export * from './CantineDemo';
 export * from './CarnetDeBordDemo';

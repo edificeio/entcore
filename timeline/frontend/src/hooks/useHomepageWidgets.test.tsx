@@ -18,6 +18,7 @@ vi.mock('@edifice.io/react/homepage', () => {
   const stub = () => null;
   return {
     AgendaContainer: stub,
+    AlloRegionContainer: stub,
     BriefMeContainer: stub,
     CantineContainer: stub,
     CommunitiesContainer: stub,
@@ -38,6 +39,7 @@ vi.mock('~/demo/widgets', () => {
   const stub = () => null;
   return {
     AgendaDemo: stub,
+    AlloRegionDemo: stub,
     AvantagesDemo: stub,
     BriefMeDemo: stub,
     CantineDemo: stub,

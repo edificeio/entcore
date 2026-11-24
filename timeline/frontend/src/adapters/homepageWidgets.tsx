@@ -1,5 +1,6 @@
 import {
   AgendaContainer,
+  AlloRegionContainer,
   BriefMeContainer,
   CantineContainer,
   CarnetDeBordContainer,
@@ -17,6 +18,7 @@ import {
 import { ComponentType } from 'react';
 import {
   AgendaDemo,
+  AlloRegionDemo,
   AvantagesDemo,
   BriefMeDemo,
   CantineDemo,
@@ -94,6 +96,14 @@ const DEMO_COMPONENTS: Record<string, ComponentType> = {
 };
 
 const WIDGET_COMPONENTS = DEMO_WIDGETS ? DEMO_COMPONENTS : CONTAINER_COMPONENTS;
+
+/**
+ * "Allô Région" is not a catalog widget: its container shows itself from the
+ * alloregion.access workflow. In demo mode it is always shown.
+ */
+export const AlloRegionWidget: ComponentType = DEMO_WIDGETS
+  ? AlloRegionDemo
+  : AlloRegionContainer;
 
 /**
  * Widgets of the given order that the new homepage handles, in that order.

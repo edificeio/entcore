@@ -147,6 +147,7 @@ vi.mock('~/demo/widgets', () => {
   const demo = (testId: string) => () => <div data-testid={testId} />;
   return {
     AgendaDemo: demo('agenda-demo'),
+    AlloRegionDemo: demo('allo-region-demo'),
     AvantagesDemo: demo('avantages-demo'),
     BriefMeDemo: demo('briefme-demo'),
     CantineDemo: demo('cantine-demo'),
@@ -230,16 +231,20 @@ describe('Root - MessageFlashListContainer responsive placement', () => {
 });
 
 describe('Root - Allô Région widget', () => {
-  it('renders the Allô Région widget in the main content', () => {
+  it('renders the Allô Région demo in the main content, outside the widgets grid', () => {
     mocks.useBreakpoint.mockReturnValue({ sm: true, md: true });
 
     render(<Root />);
 
     expect(
-      within(screen.getByTestId('content')).getByTestId(
-        'allo-region-container',
-      ),
+      within(screen.getByTestId('content')).getByTestId('allo-region-demo'),
     ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('masonry')).queryByTestId('allo-region-demo'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('allo-region-container'),
+    ).not.toBeInTheDocument();
   });
 });
 

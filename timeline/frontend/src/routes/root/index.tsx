@@ -6,7 +6,6 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import {
-  AlloRegionContainer,
   FavoritesContainer,
   LastInfosContainer,
   MessageFlashListContainer,
@@ -16,6 +15,7 @@ import {
   UserSpaceContainer,
 } from '@edifice.io/react/homepage';
 import { useState } from 'react';
+import { AlloRegionWidget } from '~/adapters/homepageWidgets';
 import { WidgetsPersonalizationPanelContainer } from '~/components/WidgetsPersonalizationPanel/WidgetsPersonalizationPanelContainer';
 import { useHomepageWidgets } from '~/hooks/useHomepageWidgets';
 import { useNotificationsLayout } from './hooks/useNotificationsLayout';
@@ -88,8 +88,9 @@ export const Root = () => {
               </Masonry.Item>
             ))}
           </Masonry>
-          {/* Not a catalog widget: it shows itself from the alloregion.access workflow */}
-          <AlloRegionContainer />
+          {/* Not a catalog widget: it shows itself from the alloregion.access
+              workflow (always shown in demo mode) */}
+          <AlloRegionWidget />
         </div>
       </PageLayout.Content>
 
