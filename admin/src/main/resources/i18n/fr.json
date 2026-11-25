@@ -920,6 +920,7 @@
   "mobile": "Téléphone mobile",
   "mobilePhone": "Téléphone portable",
   "modification.date": "Date de dernière modification",
+  "moderation.user.create.feature" : "Créer un signalement",
   "module": "Module",
   "moduleName": "Nom du Module",
   "monoselect.placeholder.default": "Choisir une option",

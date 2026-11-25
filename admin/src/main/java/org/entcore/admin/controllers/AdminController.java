@@ -57,4 +57,10 @@ public class AdminController extends BaseController {
 	public void serveHomeAlias(HttpServerRequest request) {
 		serveHome(request);
 	}
+
+	@Get(value = "/fake-moderation-feature")
+	@SecuredAction(type = ActionType.WORKFLOW, value = "moderation.user.create.feature")
+	public void fakeModerationFeature(HttpServerRequest request) {
+		render(request, new JsonObject());
+	}
 }
