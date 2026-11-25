@@ -810,6 +810,7 @@
   "homepage.notifications.report-modal.body": "Attention ! Vous souhaitez signaler cette notification comme inappropriée, car elle ne respecte pas les conditions d'utilisation de l'ENT. L’heure et l’origine de ce signalement seront enregistrées et transmises à un administrateur.",
   "homepage.notifications.report-modal.confirm": "Signaler la notification",
   "homepage.notifications.report-modal.title": "Signaler une notification",
+  "homepage.school-space.change": "Changer d’établissement",
   "homepage.school-space.directory": "Annuaire",
   "homepage.tools.modal.cancel": "Fermer",
   "homepage.tools.modal.create": "Créer le document",
