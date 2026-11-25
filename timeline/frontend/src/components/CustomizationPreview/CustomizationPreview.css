@@ -8,8 +8,10 @@
   flex-direction: column;
   flex-shrink: 0;
   width: 42.2rem;
-  flex-grow: 1;
-  height: auto;
+  /* Fits the viewport (Figma desktop) instead of stretching with the form:
+     header height + the 32px top/bottom margins of .customize-content-wrap. */
+  align-self: flex-start;
+  height: calc(100dvh - var(--pagelayout-headerheight, 5.8rem) - 6.4rem);
   overflow: hidden;
   border: 2px solid var(--primitive-grey-300);
   border-radius: var(--primitive-border-radius-2xl);
