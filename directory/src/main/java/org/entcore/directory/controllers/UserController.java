@@ -104,6 +104,7 @@ public class UserController extends BaseController {
 	private final EventHelper eventHelper;
 	private JsonObject userBookData;
 	private JsonArray userBookMoods;
+	private JsonObject limitRootUaiAccessForProvisioning;
 	private Vertx vertx;
 
 	public UserController(){
@@ -127,6 +128,7 @@ public class UserController extends BaseController {
 		}
 		if(this.userBookMoods.contains("default") == false)
 			this.userBookMoods.add("default");
+		this.limitRootUaiAccessForProvisioning = config.getJsonObject("provisioning-limit-root-uai-access", new JsonObject());
 
 	}
 
@@ -1314,6 +1316,29 @@ public class UserController extends BaseController {
 	public void listUsersByStructure(final HttpServerRequest request) {
 		final List<String> structures = request.params().getAll("uai");
 		userService.listUsersByStructure(structures, arrayResponseHandler(request));
+	}
+
+	@Get("/user/provisioning/by/uai")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void listUsersByUAIForProvisioning(final HttpServerRequest request) {
+		final List<String> uais = request.params().getAll("uai");
+		if (uais == null || uais.isEmpty()) {
+			badRequest(request);
+		} else {
+			final String host = Renders.getHost(request);
+			final String parentUaiFilter = (this.limitRootUaiAccessForProvisioning != null && this.limitRootUaiAccessForProvisioning.containsKey(host)) ?
+					this.limitRootUaiAccessForProvisioning.getString(host) : null;
+			userService.listUsersByUAIForProvisioning(uais, parentUaiFilter).onComplete(res->{
+				if (res.succeeded()) {
+					Renders.renderJson(request, res.result());
+				} else {
+					Renders.renderError(request, new JsonObject().put("error", "user.provisioning.infos.cantload"));
+					log.error("Failed to load user provisioning infos by UAIs : ", res.cause());
+				}
+			});
+		}
 	}
 
 	@Put("/user/attachments/infos")

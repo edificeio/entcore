@@ -1703,6 +1703,42 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public Future<JsonArray> listUsersByUAIForProvisioning(List<String> uais, String parentUaiFilter) {
+		final Promise<JsonArray> promise = Promise.promise();
+
+		if (uais == null || uais.isEmpty()) {
+			promise.complete(new JsonArray());
+			return promise.future();
+		}
+
+		final StringBuilder query = new StringBuilder();
+		final JsonObject params = new JsonObject().put("uais", uais);
+
+		final String filter = "WHERE s.UAI IN {uais} ";
+		if (parentUaiFilter != null) {
+			query.append("MATCH (p:Structure {UAI:{parentUaiFilter}})<-[:HAS_ATTACHMENT*1..]-(s:Structure) ");
+			query.append(filter);
+			query.append("WITH DISTINCT s MATCH s<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) ");
+			params.put("parentUaiFilter", parentUaiFilter);
+		} else {
+			query.append("MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) ");
+			query.append(filter);
+		}
+
+		query.append("RETURN DISTINCT u.id AS id, u.externalId AS externalId, head(u.profiles) AS profile, u.firstName AS firstName, u.lastName AS lastName, u.ine AS ine, u.birthDate AS birthDate, collect(s.UAI) AS UAIs");
+
+		neo.execute(query.toString(), params, validResultHandler(event -> {
+			if (event.isRight()) {
+				promise.complete(event.right().getValue());
+			} else {
+				promise.fail(event.left().getValue());
+			}
+		}));
+
+		return promise.future();
+	}
+
+	@Override
 	public Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources) {
 		final Promise<JsonArray> promise = Promise.promise();
 		final String query =

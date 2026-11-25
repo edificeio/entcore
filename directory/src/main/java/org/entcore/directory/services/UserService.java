@@ -219,7 +219,10 @@ public interface UserService {
 
 	Future<JsonObject> getUsersDisplayNames(JsonArray userIds);
 	
-	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
+	void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
+
+	Future<JsonArray> listUsersByUAIForProvisioning(List<String> uais, String parentUaiFilter);
+
 	void getUserStructuresGroup(String id, Handler<Either<String, JsonObject>> result);
 
 	Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources);

@@ -147,6 +147,7 @@
       {% endif %}
     {% endif -%}
     "enable-manual-group-autolink": {{ adminEnableManualGroupAutoLink | default('false') }},
+    {% if provisioningLimitRootUaiAccess is defined %}"provisioning-limit-root-uai-access": {{ provisioningLimitRootUaiAccess }},{% endif %}
     "publicConf": {
       "feeders": [
         "CSV"
