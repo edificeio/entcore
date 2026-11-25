@@ -1982,37 +1982,46 @@ public class ConversationController extends BaseController {
 						.put("noReply", true);
 
 
+				// Without sender, the message is only linked to its recipients (no phantom sender user).
+				final boolean withoutSender = from == null || from.trim().isEmpty();
 				final UserInfos user = new UserInfos();
-				user.setUserId(from);
+				user.setUserId(withoutSender ? "" : from);
 				user.setUsername(username);
-				message.put("from", from);
+				message.put("from", user.getUserId());
 				message.put("fromName", username);
 				userService.addDisplayNames(message, null, new Handler<JsonObject>() {
 					public void handle(final JsonObject m) {
-						saveAndSend(null, m, user, null, null,
-								new Handler<Either<String, JsonObject>>() {
-									@Override
-									public void handle(Either<String, JsonObject> event) {
-										if (event.isRight()) {
-											JsonObject result = event.right().getValue();
-											JsonObject timelineParams = new JsonObject()
-													.put("subject", result.getString("subject"))
-													.put("body", StringUtils.stripHtmlTag(result.getString("body")))
-													.put("id", result.getString("id"))
-													.put("thread_id", result.getString("thread_id"))
-													.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()))
-													.put("disableAntiFlood", true);
-											timelineNotification(request, timelineParams, user);
-											JsonObject s = new JsonObject().put("status", "ok")
-													.put("result", new fr.wseduc.webutils.collections.JsonArray().add(new JsonObject()));
-											renderJson(request,s);
-										} else {
-											JsonObject error = new JsonObject()
-													.put("error", event.left().getValue());
-											badRequest(request, error.toString());
-										}
-									}
-								}, request);
+						final Handler<Either<String, JsonObject>> onSent = event -> {
+							if (event.isRight()) {
+								JsonObject result = event.right().getValue();
+								JsonObject timelineParams = new JsonObject()
+										.put("subject", result.getString("subject"))
+										.put("body", StringUtils.stripHtmlTag(result.getString("body")))
+										.put("id", result.getString("id"))
+										.put("thread_id", result.getString("thread_id"))
+										.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()))
+										.put("disableAntiFlood", true);
+								timelineNotification(request, timelineParams, user);
+								JsonObject s = new JsonObject().put("status", "ok")
+										.put("result", new fr.wseduc.webutils.collections.JsonArray().add(new JsonObject()));
+								renderJson(request,s);
+							} else {
+								JsonObject error = new JsonObject()
+										.put("error", event.left().getValue());
+								badRequest(request, error.toString());
+							}
+						};
+						if (withoutSender) {
+							userService.findInactives(m, 0, userDetails -> {
+								m.mergeIn(userDetails);
+								conversationService.sendWithoutSender(m, m.getJsonArray("allUsers", new JsonArray()), request)
+										.onComplete(ar -> onSent.handle(ar.succeeded()
+												? new Either.Right<>(ar.result())
+												: new Either.Left<>(ar.cause().getMessage())));
+							});
+						} else {
+							saveAndSend(null, m, user, null, null, onSent, request);
+						}
 					}
 				});
 			}});
