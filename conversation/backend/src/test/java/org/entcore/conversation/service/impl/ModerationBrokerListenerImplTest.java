@@ -92,20 +92,20 @@ public class ModerationBrokerListenerImplTest {
 
     @Test
     public void userWithTheMessageShouldHaveRight(TestContext context) {
-        listener.onHasRight(request(OWNER, "message/" + MESSAGE))
+        listener.onHasRight(request(OWNER, "/conversation/message/" + MESSAGE))
             .onComplete(context.asyncAssertSuccess(response -> context.assertTrue(response.isHasRight())));
     }
 
     @Test
     public void userWithoutTheMessageShouldNotHaveRight(TestContext context) {
-        listener.onHasRight(request(STRANGER, "message/" + MESSAGE))
+        listener.onHasRight(request(STRANGER, "/conversation/message/" + MESSAGE))
             .onComplete(context.asyncAssertSuccess(response -> context.assertFalse(response.isHasRight())));
     }
 
     @Test
     public void sqlErrorShouldAnswerNoRightInsteadOfHanging(TestContext context) {
         // A message id that is not a UUID makes the cast fail in the database.
-        listener.onHasRight(request(OWNER, "message/not-a-uuid"))
+        listener.onHasRight(request(OWNER, "/conversation/message/not-a-uuid"))
             .onComplete(context.asyncAssertSuccess(response -> context.assertFalse(response.isHasRight())));
     }
 
@@ -119,7 +119,7 @@ public class ModerationBrokerListenerImplTest {
     public void invalidRequestShouldFail(TestContext context) {
         listener.onHasRight(null).onComplete(context.asyncAssertFailure());
         listener.onHasRight(new RightsOnResourceRequest(OWNER, null)).onComplete(context.asyncAssertFailure());
-        listener.onHasRight(request(null, "message/" + MESSAGE)).onComplete(context.asyncAssertFailure());
+        listener.onHasRight(request(null, "/conversation/message/" + MESSAGE)).onComplete(context.asyncAssertFailure());
     }
 
     private static ResourcesVersionsRequest versions(String... paths) {
@@ -139,26 +139,26 @@ public class ModerationBrokerListenerImplTest {
     public void versionsShouldBeTheSha256OfEachBody(TestContext context) throws Exception {
         final String expected = sha256Hex(BODY);
         final String otherExpected = sha256Hex(OTHER_BODY);
-        listener.onResourcesVersions(versions("message/" + MESSAGE, "message/" + OTHER_MESSAGE))
+        listener.onResourcesVersions(versions("/conversation/message/" + MESSAGE, "/conversation/message/" + OTHER_MESSAGE))
             .onComplete(context.asyncAssertSuccess(response -> {
                 final Map<String, String> versions = byPath(response);
                 context.assertEquals(2, versions.size());
-                context.assertEquals(expected, versions.get("message/" + MESSAGE));
-                context.assertEquals(otherExpected, versions.get("message/" + OTHER_MESSAGE));
+                context.assertEquals(expected, versions.get("/conversation/message/" + MESSAGE));
+                context.assertEquals(otherExpected, versions.get("/conversation/message/" + OTHER_MESSAGE));
             }));
     }
 
     @Test
     public void unknownMessagesShouldBeLeftOut(TestContext context) {
         // A message id that is not a UUID is just unknown: ids are compared as text.
-        listener.onResourcesVersions(versions("message/" + MESSAGE, "message/" + UNKNOWN_MESSAGE, "message/not-a-uuid"))
+        listener.onResourcesVersions(versions("/conversation/message/" + MESSAGE, "/conversation/message/" + UNKNOWN_MESSAGE, "/conversation/message/not-a-uuid"))
             .onComplete(context.asyncAssertSuccess(response ->
-                context.assertEquals(Collections.singleton("message/" + MESSAGE), byPath(response).keySet())));
+                context.assertEquals(Collections.singleton("/conversation/message/" + MESSAGE), byPath(response).keySet())));
     }
 
     @Test
     public void versionsOfUnsupportedPathShouldFail(TestContext context) {
-        listener.onResourcesVersions(versions("message/" + MESSAGE, "folder/" + MESSAGE))
+        listener.onResourcesVersions(versions("/onversation/message/" + MESSAGE, "/onversation/message/" + MESSAGE))
             .onComplete(context.asyncAssertFailure());
     }
 

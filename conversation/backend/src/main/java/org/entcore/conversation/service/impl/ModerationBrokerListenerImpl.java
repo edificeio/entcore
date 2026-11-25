@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class ModerationBrokerListenerImpl extends ModerationEventBrokerListener {
 
     private static final Logger log = LoggerFactory.getLogger(ModerationBrokerListenerImpl.class);
-    private static final String MESSAGE_PATH_PREFIX = "message/";
+    private static final String MESSAGE_PATH_PREFIX = "/conversation/message/";
     private static final String HAS_RIGHT_QUERY =
             "SELECT EXISTS(SELECT 1 FROM conversation.usermessages_v2 um " +
             "WHERE um.user_id = ?::UUID AND um.message_id = ?::UUID) AS \"hasRight\"";
