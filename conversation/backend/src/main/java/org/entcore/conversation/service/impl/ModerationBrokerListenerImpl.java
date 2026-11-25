@@ -11,11 +11,15 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
+import org.entcore.common.utils.Config;
+import org.entcore.conversation.util.QuotaUtil;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Answers the moderation application: can a user see a conversation resource?
+ * Answers the moderation application: can a user see a conversation resource, what version is it, delete it.
  * Only messages are supported, identified by the path {@code message/<messageId>}.
  * A user can see a message as long as it is in one of their folders, trash included.
  */
@@ -31,11 +35,55 @@ public class ModerationBrokerListenerImpl extends ModerationEventBrokerListener 
             "SELECT m.id, encode(sha256(convert_to(coalesce(m.body, ''), 'UTF8')), 'hex') AS hash " +
             "FROM conversation.messages m WHERE m.id IN ";
 
+    /** Removes the message from every box, and returns per user the storage to give back. */
+    private static final String DELETE_MESSAGE_QUERY =
+            "WITH deleted AS (DELETE FROM conversation.usermessages_v2 um WHERE um.message_id = ?::UUID " +
+            "RETURNING um.user_id, um.total_quota) " +
+            "SELECT user_id::text AS user_id, coalesce(sum(total_quota), 0)::bigint AS total_quota FROM deleted GROUP BY user_id";
+
     private final Sql sql;
+    private final Vertx vertx;
 
     public ModerationBrokerListenerImpl(Sql sql, Vertx vertx, Parameters parameters) {
         super(vertx, parameters);
         this.sql = sql;
+        this.vertx = vertx;
+    }
+
+    /**
+     * Removes the message from the box of every user and gives them back its storage.
+     * Fails on a malformed request or an unsupported path; answers {@code ERROR} when the deletion itself fails.
+     */
+    @Override
+    protected Future<DeleteResourceResponse> onDeleteResource(DeleteResourceRequest request) {
+        if (request == null || request.getResource() == null || request.getResource().getPath() == null) {
+            return Future.failedFuture("moderation.invalid.request");
+        }
+        final String path = request.getResource().getPath();
+        if (!path.startsWith(MESSAGE_PATH_PREFIX)) {
+            return Future.failedFuture("moderation.unsupported.resource");
+        }
+        final String messageId = path.substring(MESSAGE_PATH_PREFIX.length());
+        final Promise<DeleteResourceResponse> promise = Promise.promise();
+        sql.prepared(DELETE_MESSAGE_QUERY, new JsonArray().add(messageId), SqlResult.validResultHandler(result -> {
+            if (result.isLeft()) {
+                log.error(String.format("Moderation delete failed on message %s : %s", messageId, result.left().getValue()));
+                promise.complete(new DeleteResourceResponse(ModerationResponseStatus.ERROR));
+                return;
+            }
+            final Map<String, Long> sizes = new HashMap<>();
+            for (Object o : result.right().getValue()) {
+                final JsonObject row = (JsonObject) o;
+                if (row.getLong("total_quota") > 0) {
+                    sizes.put(row.getString("user_id"), -row.getLong("total_quota"));
+                }
+            }
+            final int threshold = Config.getConf().getInteger("alertStorage", QuotaUtil.DEFAULT_STORAGE_ALERT_THRESHOLD);
+            // The rows are gone : the response does not depend on the storage update, logged by QuotaUtil on failure.
+            QuotaUtil.updateUsersQuota(vertx.eventBus(), sizes, threshold)
+                    .onComplete(v -> promise.complete(new DeleteResourceResponse(ModerationResponseStatus.OK)));
+        }));
+        return promise.future();
     }
 
     /**

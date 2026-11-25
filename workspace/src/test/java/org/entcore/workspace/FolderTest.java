@@ -79,9 +79,7 @@ public class FolderTest {
                 final String imageResizerAddress = "wse.image.resizer";
                 final FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage,
                         test.vertx(), shareService, imageResizerAddress, false);
-                final boolean neo4jPlugin = false;
-                final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
-                        new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
+                final QuotaService quotaService = new DefaultQuotaService(new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
                 final int threshold = 80;
                 workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold, imageResizerAddress,
                         quotaService, folderManager, test.vertx(), shareService, false);

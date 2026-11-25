@@ -19,10 +19,13 @@
 
 package org.entcore.workspace.service.impl;
 
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
@@ -30,18 +33,31 @@ import org.entcore.common.service.impl.BasicQuotaService;
 import org.entcore.workspace.service.WorkspaceService;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class DefaultQuotaService extends BasicQuotaService {
 
-	private final TimelineHelper notification;
-	private final boolean neo4jPlugin;
+	private static final Logger log = LoggerFactory.getLogger(DefaultQuotaService.class);
+	/** Max users per Neo4j transaction : every user of a batch stays locked until its commit. */
+	static final int STORAGE_BATCH_SIZE = 500;
+	/** Same update as incrementStorage, for a list of {userId, size}. */
+	private static final String INCREMENT_STORAGES_QUERY =
+			"UNWIND {users} AS row " +
+			"MATCH (u:UserBook { userid : row.userId }) " +
+			"SET u.__lock__ = 1, u.storage = u.storage + row.size " +
+			"WITH u, u.alertSize as oldAlert " +
+			"SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}), u.__lock__ = 0 " +
+			"RETURN u.userid as userId, u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
 
-	public DefaultQuotaService(boolean neo4jPlugin, TimelineHelper timelineHelper) {
-		this.neo4jPlugin = neo4jPlugin;
+	private final TimelineHelper notification;
+
+	public DefaultQuotaService(TimelineHelper timelineHelper) {
 		this.notification = timelineHelper;
 	}
 
@@ -57,27 +73,61 @@ public class DefaultQuotaService extends BasicQuotaService {
 	public void incrementStorage(String userId, Long size, int threshold,
 			final Handler<Either<String, JsonObject>> handler) {
 		JsonObject params = new JsonObject().put("size", size).put("threshold", threshold);
-		if (!neo4jPlugin) {
-			String query = "MATCH (u:UserBook { userid : {userId}}) " + "SET u.__lock__ = 1, u.storage = u.storage + {size} "
-					+ "WITH u, u.alertSize as oldAlert "
-					+ "SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}), u.__lock__ = 0 "
-					+ "RETURN u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
-			params.put("userId", userId);
-			neo4j.execute(query, params, validUniqueResultHandler(handler));
-		} else {
-			neo4j.unmanagedExtension("put", "/entcore/quota/storage/" + userId, params.encode(),
-					new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							if ("ok".equals(event.body().getString("status"))) {
-								handler.handle(new Either.Right<String, JsonObject>(
-										new JsonObject(event.body().getString("result"))));
-							} else {
-								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message")));
-							}
-						}
-					});
+		String query = "MATCH (u:UserBook { userid : {userId}}) " + "SET u.__lock__ = 1, u.storage = u.storage + {size} "
+				+ "WITH u, u.alertSize as oldAlert "
+				+ "SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}), u.__lock__ = 0 "
+				+ "RETURN u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
+		params.put("userId", userId);
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	/**
+	 * {@link #incrementStorage} for several users at once. Sizes are summed per user and users sorted by id, so that
+	 * concurrent calls lock them in the same order and cannot deadlock, then updated by transactions of
+	 * {@link #STORAGE_BATCH_SIZE} users. A failed transaction is logged and skipped : the previous ones are committed,
+	 * their rows must still reach the caller.
+	 * @param users array of {userId, size}
+	 * @return rows of {userId, storage, notify}, only for the users found and updated
+	 */
+	public Future<JsonArray> incrementStorages(JsonArray users, int threshold) {
+		final Map<String, Long> sizes = new TreeMap<>();
+		for (Object o : users) {
+			final JsonObject user = (JsonObject) o;
+			if (user.getString("userId") != null) {
+				sizes.merge(user.getString("userId"), user.getLong("size", 0L), Long::sum);
+			}
 		}
+		final List<JsonArray> batches = new ArrayList<>();
+		JsonArray batch = new JsonArray();
+		for (Map.Entry<String, Long> size : sizes.entrySet()) {
+			if (batch.size() == STORAGE_BATCH_SIZE) {
+				batches.add(batch);
+				batch = new JsonArray();
+			}
+			batch.add(new JsonObject().put("userId", size.getKey()).put("size", size.getValue()));
+		}
+		if (!batch.isEmpty()) {
+			batches.add(batch);
+		}
+		Future<JsonArray> updated = Future.succeededFuture(new JsonArray());
+		for (JsonArray b : batches) {
+			updated = updated.compose(rows -> incrementStoragesBatch(b, threshold).map(rows::addAll));
+		}
+		return updated;
+	}
+
+	private Future<JsonArray> incrementStoragesBatch(JsonArray users, int threshold) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonObject params = new JsonObject().put("users", users).put("threshold", threshold);
+		neo4j.execute(INCREMENT_STORAGES_QUERY, params, validResultHandler(result -> {
+			if (result.isLeft()) {
+				log.error("Failed updating the storage of " + users.size() + " users : " + result.left().getValue());
+				promise.complete(new JsonArray());
+			} else {
+				promise.complete(result.right().getValue());
+			}
+		}));
+		return promise.future();
 	}
 
 	@Override

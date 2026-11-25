@@ -1,11 +1,14 @@
 package org.entcore.conversation.service.impl;
 
 import io.edifice.moderation.events.ModerationEventBrokerListener;
+import io.edifice.moderation.v1.DeleteResourceRequest;
+import io.edifice.moderation.v1.ModerationResponseStatus;
 import io.edifice.moderation.v1.Resource;
 import io.edifice.moderation.v1.ResourcesVersionsRequest;
 import io.edifice.moderation.v1.ResourcesVersionsResponse;
 import io.edifice.moderation.v1.RightsOnResourceRequest;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.utils.Config;
 import org.entcore.test.TestHelper;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -20,10 +23,13 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -41,6 +47,8 @@ public class ModerationBrokerListenerImplTest {
     private static final String MESSAGE = "eeeeeeee-0000-0000-0000-000000000001";
     private static final String OTHER_MESSAGE = "eeeeeeee-0000-0000-0000-000000000002";
     private static final String UNKNOWN_MESSAGE = "eeeeeeee-0000-0000-0000-000000000003";
+    private static final String DELETED_MESSAGE = "eeeeeeee-0000-0000-0000-000000000004";
+    private static final String KEPT_MESSAGE = "eeeeeeee-0000-0000-0000-000000000005";
     private static final String BODY = "<p>Bonjour é</p>";
     private static final String OTHER_BODY = "<p>Other</p>";
 
@@ -48,6 +56,8 @@ public class ModerationBrokerListenerImplTest {
     public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer();
 
     private static ModerationBrokerListenerImpl listener;
+    /** Storage given back per user, as received by the fake workspace quota service. */
+    private static final Map<String, Long> released = new ConcurrentHashMap<>();
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
@@ -55,6 +65,16 @@ public class ModerationBrokerListenerImplTest {
         pgContainer.execInContainer("psql", "-U", pgContainer.getUsername(), "-d", pgContainer.getDatabaseName(),
                 "-c", "CREATE ROLE \"web-education\"");
         test.database().initPostgreSQL(context, pgContainer, SCHEMA);
+        Config.getInstance().setConfig(new JsonObject());
+        test.vertx().eventBus().<JsonObject>consumer("org.entcore.workspace.quota", message -> {
+            final JsonArray rows = new JsonArray();
+            for (Object o : message.body().getJsonArray("users")) {
+                final JsonObject user = (JsonObject) o;
+                released.merge(user.getString("userId"), user.getLong("size"), Long::sum);
+                rows.add(new JsonObject().put("userId", user.getString("userId")).put("storage", 0L).put("notify", false));
+            }
+            message.reply(new JsonObject().put("status", "ok").put("results", rows));
+        });
         // Not started : the tests call the handler directly, without the event bus nor the broker.
         listener = new ModerationBrokerListenerImpl(Sql.getInstance(), test.vertx(),
                 ModerationEventBrokerListener.Parameters.builder().application("conversation").build());
@@ -167,5 +187,57 @@ public class ModerationBrokerListenerImplTest {
         listener.onResourcesVersions(null).onComplete(context.asyncAssertFailure());
         listener.onResourcesVersions(new ResourcesVersionsRequest(null)).onComplete(context.asyncAssertFailure());
         listener.onResourcesVersions(versions()).onComplete(context.asyncAssertFailure());
+    }
+
+    private static Future<JsonArray> select(String query) {
+        final Promise<JsonArray> promise = Promise.promise();
+        Sql.getInstance().raw(query, result -> {
+            if ("ok".equals(result.body().getString("status"))) {
+                promise.complete(result.body().getJsonArray("results", new JsonArray()));
+            } else {
+                promise.fail(result.body().getString("message", "sql error"));
+            }
+        });
+        return promise.future();
+    }
+
+    private static DeleteResourceRequest delete(String path) {
+        return new DeleteResourceRequest(new Resource(path, null));
+    }
+
+    @Test
+    public void deleteShouldRemoveTheMessageFromEveryBoxAndGiveBackTheStorage(TestContext context) {
+        final Async async = context.async();
+        released.clear();
+        raw("INSERT INTO conversation.usermessages_v2 (user_id, message_id, total_quota) VALUES "
+                + "('" + OWNER + "', '" + DELETED_MESSAGE + "', 100), ('" + STRANGER + "', '" + DELETED_MESSAGE + "', 0), "
+                + "('" + STRANGER + "', '" + KEPT_MESSAGE + "', 40)")
+            .compose(v -> listener.onDeleteResource(delete("/conversation/message/" + DELETED_MESSAGE)))
+            .compose(response -> {
+                context.assertEquals(ModerationResponseStatus.OK, response.getStatus());
+                return select("SELECT user_id::text, message_id::text FROM conversation.usermessages_v2 "
+                        + "WHERE message_id IN ('" + DELETED_MESSAGE + "', '" + KEPT_MESSAGE + "')");
+            })
+            .onSuccess(rows -> {
+                context.assertEquals(new JsonArray().add(new JsonArray().add(STRANGER).add(KEPT_MESSAGE)).encode(), rows.encode(),
+                        "Only the other message must stay");
+                context.assertEquals(-100L, released.get(OWNER), "The owner gets back the storage of the deleted message");
+                context.assertFalse(released.containsKey(STRANGER), "Nothing to give back when the row weighed nothing");
+                async.complete();
+            })
+            .onFailure(context::fail);
+    }
+
+    @Test
+    public void deleteSqlErrorShouldAnswerErrorInsteadOfHanging(TestContext context) {
+        listener.onDeleteResource(delete("/conversation/message/not-a-uuid"))
+            .onComplete(context.asyncAssertSuccess(response -> context.assertEquals(ModerationResponseStatus.ERROR, response.getStatus())));
+    }
+
+    @Test
+    public void invalidOrUnsupportedDeleteShouldFail(TestContext context) {
+        listener.onDeleteResource(null).onComplete(context.asyncAssertFailure());
+        listener.onDeleteResource(new DeleteResourceRequest(null)).onComplete(context.asyncAssertFailure());
+        listener.onDeleteResource(delete("folder/" + MESSAGE)).onComplete(context.asyncAssertFailure());
     }
 }
