@@ -76,7 +76,7 @@
         <gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
         <postgres-driver.version>42.2.26</postgres-driver.version>
         <hikari.version>2.4.2</hikari.version>
-        <moderationServer.version>1.1.1</moderationServer.version>
+        <moderationServer.version>1.1.2</moderationServer.version>
     </properties>
 
     <dependencyManagement>
