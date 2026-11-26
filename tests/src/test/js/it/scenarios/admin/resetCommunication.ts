@@ -55,9 +55,9 @@ export function testResetCommunicationsRules(data: InitData){
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
 
     const profileGroups: ProfileGroup[] = getProfileGroupsOfStructureByType("Teacher", data.structure);
-    const profileGroupTeacherStruct: ProfileGroup = profileGroups.find(p => p.name === (schoolName + ' - School-Teacher'));
+    const profileGroupTeacherStruct: ProfileGroup = profileGroups.find(p => p.name === `${data.structure.name}-Teacher`);
 
-    if(profileGroupTeacherStruct === null) {
+    if(!profileGroupTeacherStruct) {
       fail("[Admin][Structure][Communication] Unable to find the teacher group of the structure");
     }
     let incomingRelation: ProfileGroup[] = getProfileGroupsRelatedToGroup(profileGroupTeacherStruct.id, "incoming");
@@ -84,6 +84,9 @@ export function testResetCommunicationsRules(data: InitData){
     const profilGuestGroups: ProfileGroup[] = getProfileGroupsOfStructureByType("Guest", data.structure);
 
     const targetGuestGroup = profilGuestGroups[0];
+    if (!targetGuestGroup) {
+      fail("[Admin][Structure][Communication] Unable to find the guest group of the structure");
+    }
 
     addCommunicationBetweenGroups(profileGroupTeacherStruct.id, targetGuestGroup.id);
 
