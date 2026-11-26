@@ -112,20 +112,20 @@ public class ModerationBrokerListenerImplTest {
 
     @Test
     public void userWithTheMessageShouldHaveRight(TestContext context) {
-        listener.onHasRight(request(OWNER, "/conversation/message/" + MESSAGE))
+        listener.onHasRight(request(OWNER, "/conversation/messages/" + MESSAGE))
             .onComplete(context.asyncAssertSuccess(response -> context.assertTrue(response.isHasRight())));
     }
 
     @Test
     public void userWithoutTheMessageShouldNotHaveRight(TestContext context) {
-        listener.onHasRight(request(STRANGER, "/conversation/message/" + MESSAGE))
+        listener.onHasRight(request(STRANGER, "/conversation/messages/" + MESSAGE))
             .onComplete(context.asyncAssertSuccess(response -> context.assertFalse(response.isHasRight())));
     }
 
     @Test
     public void sqlErrorShouldAnswerNoRightInsteadOfHanging(TestContext context) {
         // A message id that is not a UUID makes the cast fail in the database.
-        listener.onHasRight(request(OWNER, "/conversation/message/not-a-uuid"))
+        listener.onHasRight(request(OWNER, "/conversation/messages/not-a-uuid"))
             .onComplete(context.asyncAssertSuccess(response -> context.assertFalse(response.isHasRight())));
     }
 
@@ -139,7 +139,7 @@ public class ModerationBrokerListenerImplTest {
     public void invalidRequestShouldFail(TestContext context) {
         listener.onHasRight(null).onComplete(context.asyncAssertFailure());
         listener.onHasRight(new RightsOnResourceRequest(OWNER, null)).onComplete(context.asyncAssertFailure());
-        listener.onHasRight(request(null, "/conversation/message/" + MESSAGE)).onComplete(context.asyncAssertFailure());
+        listener.onHasRight(request(null, "/conversation/messages/" + MESSAGE)).onComplete(context.asyncAssertFailure());
     }
 
     private static ResourcesVersionsRequest versions(String... paths) {
@@ -159,21 +159,21 @@ public class ModerationBrokerListenerImplTest {
     public void versionsShouldBeTheSha256OfEachBody(TestContext context) throws Exception {
         final String expected = sha256Hex(BODY);
         final String otherExpected = sha256Hex(OTHER_BODY);
-        listener.onResourcesVersions(versions("/conversation/message/" + MESSAGE, "/conversation/message/" + OTHER_MESSAGE))
+        listener.onResourcesVersions(versions("/conversation/messages/" + MESSAGE, "/conversation/messages/" + OTHER_MESSAGE))
             .onComplete(context.asyncAssertSuccess(response -> {
                 final Map<String, String> versions = byPath(response);
                 context.assertEquals(2, versions.size());
-                context.assertEquals(expected, versions.get("/conversation/message/" + MESSAGE));
-                context.assertEquals(otherExpected, versions.get("/conversation/message/" + OTHER_MESSAGE));
+                context.assertEquals(expected, versions.get("/conversation/messages/" + MESSAGE));
+                context.assertEquals(otherExpected, versions.get("/conversation/messages/" + OTHER_MESSAGE));
             }));
     }
 
     @Test
     public void unknownMessagesShouldBeLeftOut(TestContext context) {
         // A message id that is not a UUID is just unknown: ids are compared as text.
-        listener.onResourcesVersions(versions("/conversation/message/" + MESSAGE, "/conversation/message/" + UNKNOWN_MESSAGE, "/conversation/message/not-a-uuid"))
+        listener.onResourcesVersions(versions("/conversation/messages/" + MESSAGE, "/conversation/messages/" + UNKNOWN_MESSAGE, "/conversation/messages/not-a-uuid"))
             .onComplete(context.asyncAssertSuccess(response ->
-                context.assertEquals(Collections.singleton("/conversation/message/" + MESSAGE), byPath(response).keySet())));
+                context.assertEquals(Collections.singleton("/conversation/messages/" + MESSAGE), byPath(response).keySet())));
     }
 
     @Test
@@ -212,7 +212,7 @@ public class ModerationBrokerListenerImplTest {
         raw("INSERT INTO conversation.usermessages_v2 (user_id, message_id, total_quota) VALUES "
                 + "('" + OWNER + "', '" + DELETED_MESSAGE + "', 100), ('" + STRANGER + "', '" + DELETED_MESSAGE + "', 0), "
                 + "('" + STRANGER + "', '" + KEPT_MESSAGE + "', 40)")
-            .compose(v -> listener.onDeleteResource(delete("/conversation/message/" + DELETED_MESSAGE)))
+            .compose(v -> listener.onDeleteResource(delete("/conversation/messages/" + DELETED_MESSAGE)))
             .compose(response -> {
                 context.assertEquals(ModerationResponseStatus.OK, response.getStatus());
                 return select("SELECT user_id::text, message_id::text FROM conversation.usermessages_v2 "
@@ -230,7 +230,7 @@ public class ModerationBrokerListenerImplTest {
 
     @Test
     public void deleteSqlErrorShouldAnswerErrorInsteadOfHanging(TestContext context) {
-        listener.onDeleteResource(delete("/conversation/message/not-a-uuid"))
+        listener.onDeleteResource(delete("/conversation/messages/not-a-uuid"))
             .onComplete(context.asyncAssertSuccess(response -> context.assertEquals(ModerationResponseStatus.ERROR, response.getStatus())));
     }
 
