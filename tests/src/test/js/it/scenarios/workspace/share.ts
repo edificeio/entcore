@@ -17,6 +17,7 @@ import {
   addCommRuleToGroup,
   addCommunicationBetweenGroups,
   attachStructureAsChild,
+  linkAutogroups,
   switchSession,
   WS_READER_SHARE,
   WS_MANAGER_SHARE,
@@ -79,6 +80,8 @@ export function setup() {
     structure2 = initSchool(schoolName2)
     attachStructureAsChild(chapeau, structure1)
     attachStructureAsChild(chapeau, structure2)
+    // The teachers of the schools join the broadcast group of the chapeau only once the autolink rules are applied
+    linkAutogroups()
     const teacherRole1 = getTeacherRole(structure1)
     const teacherRole2 = getTeacherRole(structure2)
     const parentRole2 = getParentRole(structure2)
@@ -177,8 +180,8 @@ function checkHasCorrectShares(res, sharesType, entityId, expectedShares, checkN
     for(let expectedShare of expectedShares) {
       if(actualShares.indexOf(expectedShare) < 0) {
         ok = false;
+        console.error("Expected share", expectedShare, "was not found");
       }
-      console.error("Expected share", expectedShare);
     }
     return ok;
   }
@@ -261,7 +264,7 @@ function testForbiddenShares(data) {
     console.log("Teacher 1 - ", teacher1.login, " - " , teacher1.id);
     console.log("Teacher 1.2 - ", teacher12.login, " - " , teacher12.id);
     console.log("Parent 1 - ", parent1.login, " - " , parent1.id);
-    console.log("Parent 2 - ", parent2.login, " - " , parent1.id);
+    console.log("Parent 2 - ", parent2.login, " - " , parent2.id);
     // Teacher upload a file
     const teacher1Session = authenticateWeb(teacher1.login, 'password');
     const uploadedFile = uploadFile(fileToUpload);
@@ -312,7 +315,7 @@ function testForbiddenShares(data) {
     delete shares.users[teacher12.id];
     shares.users[teacher13.id] = WS_READER_SHARE;
     res = shareFile(fileId, shares)
-    checkShareOk(res, '400 while trying to modify and delete shares of a user he/she cannot see')
+    checkShareKo(res, '400 while trying to modify and delete shares of a user he/she cannot see')
     res = getShares(fileId)
     checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 still appears in shares after forbidden modification and deletion")
     checkPresentShares(res, "users", [parent1.id], "parent of group of school 1 still appears in shares after forbidden modification and deletion")

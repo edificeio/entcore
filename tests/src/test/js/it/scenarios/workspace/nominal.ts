@@ -13,7 +13,8 @@ import {
   downloadFile,
   createUserAndGetData,
   createEmptyStructure,
-  activateUsers
+  activateUsers,
+  reinitLogins,
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 import { check, sleep } from "k6";
 
@@ -64,6 +65,8 @@ export function setup() {
   describe("[Workspace-Init] Initialize data", () => {
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     structure = createEmptyStructure(`${schoolName}`, true)
+    // The login of the user is generated from the cache of the feeder instance handling the request
+    reinitLogins();
     const user = createUserAndGetData({
       firstName: "Uploader",
       lastName: "User",
