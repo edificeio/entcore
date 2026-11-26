@@ -655,7 +655,7 @@
   "management.message.flash.signature": "Signature",
   "management.message.flash.signature.color": "Couleur Signature",
   "management.message.flash.startDate": "Date de début",
-  "management.message.flash.title": "Titre",
+  "management.message.flash.title": "Infobulle",
   "management.message.flash.upload": "Mettre en ligne",
   "management.message.flash.userPositions": "Fonction(s)",
   "management.message.flash.viewCount": "Nombre de vues",
