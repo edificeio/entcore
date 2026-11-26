@@ -363,14 +363,15 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                     
                     String id = userJson.getString("id");
                     String displayName = userJson.getString("displayName");
-                    
+                    String login = userJson.getString("login");
+
                     // Extract the first profile from the list or empty string if none
                     String profile = "";
                     JsonArray profilesArray = userJson.getJsonArray("profiles");
                     if (profilesArray != null && profilesArray.size() > 0) {
                         profile = profilesArray.getString(0);
                     }
-                    
+
                     // Handle functions - convert Neo4j array format to map
                     Map<String, List<String>> functions = new HashMap<>();
                     JsonArray functionsArray = userJson.getJsonArray("functions");
@@ -383,7 +384,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                                     // Extract scope from the second element
                                     List<String> scope = new ArrayList<>();
                                     Object scopeObj = functionEntry.getValue(1);
-                                    
+
                                     if (scopeObj instanceof JsonArray) {
                                         JsonArray scopeArray = (JsonArray) scopeObj;
                                         for (int k = 0; k < scopeArray.size(); k++) {
@@ -395,16 +396,16 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                                     } else if (scopeObj instanceof String) {
                                         scope.add((String) scopeObj);
                                     }
-                                    
+
                                     functions.put(functionCode, scope);
                                 }
                             }
                         }
                     }
-                    
-                    usersList.add(new UserDTO(id, displayName, profile, functions));
+
+                    usersList.add(new UserDTO(id, displayName, login, profile, functions));
                 }
-                
+
                 // Return the response DTO with the list of users
                 promise.complete(new GetUsersByIdsResponseDTO(usersList));
             })
@@ -606,7 +607,8 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                         // functions are not returned by the query inside "userService.list" : use empty map
                         Map<String, List<String>> functions = new HashMap<>();
 
-                        usersList.add(new UserDTO(id, displayName, profile, functions));
+                        // login is not returned by the query inside "userService.list" either
+                        usersList.add(new UserDTO(id, displayName, null, profile, functions));
                     }
                     promise.complete(new GetUsersFromGroupsResponseDTO(usersList));
                 } catch (Exception err) {
@@ -663,6 +665,39 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                 }
             } else {
                 log.error("Error getting groups by IDs: " + event.left().getValue());
+                promise.fail(event.left().getValue());
+            }
+        });
+
+        return promise.future();
+    }
+
+    /**
+     * Retrieves the group ids a user belongs to (see {@code UserService.getGroups} Neo4j query).
+     *
+     * @param request The request containing the user's ENT id
+     * @return Response with that user's group ids
+     */
+    @Override
+    public Future<GetUserGroupIdsResponseDTO> getUserGroupIds(GetUserGroupIdsRequestDTO request) {
+        final Promise<GetUserGroupIdsResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUserGroupIds: " + request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        userService.getGroups(request.getUserId(), event -> {
+            if (event.isRight()) {
+                final JsonArray groupsArray = event.right().getValue();
+                final List<String> groupIds = new ArrayList<>();
+                for (int i = 0; i < groupsArray.size(); i++) {
+                    groupIds.add(groupsArray.getJsonObject(i).getString("id"));
+                }
+                promise.complete(new GetUserGroupIdsResponseDTO(groupIds));
+            } else {
+                log.error("Error getting groups for user " + request.getUserId() + ": " + event.left().getValue());
                 promise.fail(event.left().getValue());
             }
         });

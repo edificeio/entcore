@@ -132,8 +132,6 @@ public interface UserService {
 
 	void getUserStructuresClasses(String userId, Handler<Either<String, JsonObject>> result);
 	
-	void getUserRelatives(String studentId, Handler<Either<String, JsonArray>> result);
-
 	void relativeStudent(String relativeId, String studentId, Handler<Either<String,JsonObject>> eitherHandler);
 
 	void unlinkRelativeStudent(String relativeId, String studentId, Handler<Either<String, JsonObject>> eitherHandler);

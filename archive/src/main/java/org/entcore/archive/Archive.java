@@ -30,9 +30,12 @@ import io.vertx.core.shareddata.AsyncMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.archive.controllers.*;
 import org.entcore.archive.filters.ArchiveFilter;
+import org.entcore.archive.listeners.ArchiveBrokerListenerImpl;
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.RepriseService;
 import org.entcore.archive.services.impl.*;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
+import org.entcore.common.archive.ArchiveFolderFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
@@ -87,6 +90,9 @@ public class Archive extends BaseServer {
 		addController(ac);
 		addController(ic);
 		addController(dc);
+
+		BrokerProxyUtils.addBrokerProxy(
+				new ArchiveBrokerListenerImpl(vertx, ArchiveFolderFactory.from(storage), signKey, verifyKey, forceEncryption), vertx);
 
 		DeleteOldArchivesTask deleteOldArchivesTask = new DeleteOldArchivesTask(vertx,
 				storageFactory.getStorage(),
