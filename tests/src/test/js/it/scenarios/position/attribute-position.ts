@@ -55,10 +55,12 @@ export function setup() {
     let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     //////////////////////////////////
     // Create 1 head structure and 2
-    // depending structures
-    const chapeau = initStructure(`Chapeau-${schoolName}`, 'tiny')
-    const structure1 = initStructure(`1 - ${schoolName}`, 'tiny')
-    const structure2 = initStructure(`2 - ${schoolName}`, 'tiny')
+    // depending structures (the sessions opened by the activations are closed
+    // because some users are made ADML afterwards and the backend could pick
+    // their stale non-ADML session when checking their rights)
+    const chapeau = initStructure(`Chapeau-${schoolName}`, 'tiny', true)
+    const structure1 = initStructure(`1 - ${schoolName}`, 'tiny', true)
+    const structure2 = initStructure(`2 - ${schoolName}`, 'tiny', true)
     attachStructureAsChild(chapeau, structure1, session)
     attachStructureAsChild(chapeau, structure2, session)
     ////////////////////////////////////////
