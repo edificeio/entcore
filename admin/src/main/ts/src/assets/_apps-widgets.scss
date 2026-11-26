@@ -211,3 +211,13 @@ i.screen-time {
         color:#ecbe30;
     }
 }
+
+i.universalis-1-large,
+i.universalis-1 {
+  @include fonticon;
+
+  &::before {
+    content: '\e95e';
+    color: $red;
+  }
+}

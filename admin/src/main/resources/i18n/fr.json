@@ -1608,6 +1608,7 @@
   "totp.verify.success": "Le code TOTP est valide, l'authentification fonctionnera",
   "transport": "Transport scolaire",
   "unblock": "Débloquer",
+  "universalis-widget": "Universalis",
   "unremoveFromStructure": "Rétablir le rattachement",
   "user-position.add": "Ajouter une nouvelle fonction",
   "user-position.cancel": "Annuler",
