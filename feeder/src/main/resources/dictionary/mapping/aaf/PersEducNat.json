@@ -34,4 +34,3 @@
 	"ENTAuxEnsClassesMatieresOrgaPedagoEtabDate" : { "attribute" : "classesMembershipPeriod", "type" : "array-string" },
 	"ENTAuxEnsGroupesMatieresOrgaPedagoEtabDate" : { "attribute" : "groupsMembershipPeriod", "type" : "array-orga-pedago-group-fieldOfStudy", "prefix" : true }
 }
->>>>>>> 3b07ab7 (feat(feeder): #ENABLING-1330 consider new fields for functional groups)
