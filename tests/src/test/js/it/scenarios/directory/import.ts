@@ -13,6 +13,7 @@ import {
   createEmptyStructure,
   importUsers,
   importCSVToStructure,
+  reinitLogins,
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import http from "k6/http";
 import {check, group, fail} from "k6";
@@ -180,7 +181,17 @@ function getOrCreateClassId(structureId: string, className: string): string {
   return existing ? existing.id : createClassAndGetIdOrFail(structureId, className);
 }
 
-function postWizard(fd: any, path: string = "/directory/wizard/import") {
+const WIZARD_IMPORT_PATH = "/directory/wizard/import";
+
+/**
+ * Each directory pod embeds a feeder instance, each one generating the logins from its own cache : an import must be
+ * preceded by a refresh of the logins, otherwise an instance gives a login created by another one and the import
+ * fails (ConstraintValidationFailed on User.login). Requires an ADMC session.
+ */
+function postWizard(fd: any, path: string = WIZARD_IMPORT_PATH) {
+  if (path === WIZARD_IMPORT_PATH) {
+    reinitLogins();
+  }
   const headers = getHeaders();
   headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
   return http.post(`${rootUrl}${path}`, fd.body(), { headers });
@@ -1094,6 +1105,7 @@ export function testWizardValidateFormat(data: InitData) {
     const validateBody = JSON.parse(<string>validateRes.body);
     if (validateBody.importId) {
       // Use the importId to launch the import
+      reinitLogins();
       const headers = getHeaders();
       headers["content-type"] = "application/json";
       const importRes = http.put(`${rootUrl}/directory/wizard/import/${validateBody.importId}`, null, { headers });
@@ -1357,6 +1369,8 @@ export function testClassImportAndVerify(data: InitData) {
       scope: [data.structure.id],
     }), { headers: admlHeaders });
 
+    // Before switching to the teacher : the refresh of the logins requires the right of the ADMC
+    reinitLogins();
     authenticateWeb(teacher.login);
 
     const studentsCsv =
@@ -1423,6 +1437,8 @@ export function testClassImportAndVerify(data: InitData) {
       scope: [data.structure.id],
     }), { headers: admlHeaders });
 
+    // Before switching to the teacher : the refresh of the logins requires the right of the ADMC
+    reinitLogins();
     authenticateWeb(teacher.login);
 
     const teachersCsv =
