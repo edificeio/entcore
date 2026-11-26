@@ -47,6 +47,7 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
         "bookmark-widget":      "signets",
         "calendar-widget":      "calendar",
         "carnet-de-bord":       "carnet-de-bord",
+        "communities-widget":   "communities",
         "cursus-widget":        "aide-devoirs",
         "last-infos-widget":    "actualites",
         "maxicours-widget":     "maxicours",
