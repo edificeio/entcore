@@ -714,6 +714,8 @@
   "homepage.agenda.empty": "Pas d’évènement à venir.",
   "homepage.agenda.multiDayTime": "[[startTime]] - [[endDay]] à [[endTime]]",
   "homepage.agenda.openAgenda": "Accéder à l'agenda",
+  "homepage.agenda.seeMore": "Voir plus",
+  "homepage.agenda.seeMoreLabel": "Voir plus d'évènements de l'agenda",
   "homepage.agenda.title": "Agenda",
   "homepage.briefme.categories": "Catégories Brief.me",
   "homepage.briefme.category.brief-eco": "Brief.eco",
