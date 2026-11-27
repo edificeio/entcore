@@ -56,7 +56,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         <h5 className="customization-form-section-title">
           {t('homepage.customize.form.fonts')}
         </h5>
-        <Flex gap="8" wrap="wrap">
+        <Flex gap="8" className="customization-form-fonts">
           {fonts && selectedFont ? (
             fonts.map(({ _id, displayName }) => (
               <RadioTile
@@ -82,7 +82,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         <h5 className="customization-form-section-title">
           {t('homepage.customize.form.themes')}
         </h5>
-        <Flex gap="12" wrap="wrap">
+        <div className="customization-form-themes">
           {backgrounds ? (
             backgrounds.map((background) => (
               <RadioTile
@@ -104,7 +104,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
           ) : (
             <ChoiceSkeleton />
           )}
-        </Flex>
+        </div>
       </Flex>
 
       <Flex
@@ -116,7 +116,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
         <h5 className="customization-form-section-title">
           {t('homepage.customize.form.languages')}
         </h5>
-        <Flex gap="12" wrap="wrap">
+        <div className="customization-form-languages">
           {languages ? (
             languages.map((lang) => (
               <RadioTile
@@ -132,7 +132,7 @@ export const CustomizationForm = ({ form }: CustomizationFormProps) => {
           ) : (
             <ChoiceSkeleton />
           )}
-        </Flex>
+        </div>
       </Flex>
     </Flex>
   );

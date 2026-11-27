@@ -19,3 +19,56 @@
   background-repeat: no-repeat;
   background-position: right bottom;
 }
+
+/* Fonts: tiles share the whole row below desktop (Figma mobile/tablet). */
+.customization-form-fonts > .radio-tile {
+  flex: 1;
+}
+
+/*
+ * Themes and languages, below tablet: fixed-width columns, as many as fit,
+ * centered as a block so the space left over is shared between both sides.
+ * The last row stays left-aligned under the columns. `auto-fit` drops the
+ * empty columns so a short list stays centered too.
+ * Themes keep the Figma mobile gap: 3 tiles fill a 360px screen
+ * (3 x 90 + 2 x 29 = 328).
+ */
+.customization-form-themes,
+.customization-form-languages {
+  display: grid;
+  justify-content: center;
+  row-gap: var(--primitive-spacer-12);
+}
+
+.customization-form-themes {
+  grid-template-columns: repeat(auto-fit, 90px);
+  column-gap: 29px;
+}
+
+/* Languages: fixed-width tiles (Figma: 100x90). */
+.customization-form-languages {
+  grid-template-columns: repeat(auto-fit, 100px);
+  column-gap: var(--primitive-spacer-12);
+}
+
+/* Tablet and desktop: left-aligned rows, as in Figma. */
+@media only screen and (min-width: 768px) {
+  .customization-form-themes,
+  .customization-form-languages {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--primitive-spacer-12);
+  }
+
+  .customization-form-languages > .radio-tile {
+    width: 100px;
+  }
+}
+
+@media only screen and (min-width: 1024px) {
+  .customization-form-fonts > .radio-tile {
+    flex: 0 0 auto;
+    min-width: 145px;
+  }
+}

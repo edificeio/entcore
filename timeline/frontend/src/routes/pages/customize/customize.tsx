@@ -30,7 +30,7 @@ export const Component = () => {
   const { init } = useEdificeClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { md, lg } = useBreakpoint();
+  const { lg } = useBreakpoint();
   const { t, common_t } = useI18n();
   const { background, productOverride } = useBackground();
 
@@ -118,7 +118,12 @@ export const Component = () => {
       >
         <div className="customize-content-wrap">
           <Flex direction="row" gap={lg ? '64' : '32'}>
-            <Flex direction="column" gap="16" align="start">
+            <Flex
+              direction="column"
+              gap="16"
+              align="stretch"
+              className="customize-content-main"
+            >
               <div>
                 <Button
                   data-testid="customize-back-button"
@@ -153,7 +158,7 @@ export const Component = () => {
                 </Button>
               </Flex>
             </Flex>
-            {md && (
+            {lg && (
               <CustomizationPreview
                 selectedFont={selectedFont}
                 selectedLanguage={selectedLanguage}
