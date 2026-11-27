@@ -73,11 +73,15 @@ public class PurgeMessagesQuotaTest {
                 "-c", "CREATE ROLE \"web-education\"");
         test.database().initPostgreSQL(context, pgContainer, SCHEMA);
         test.vertx().eventBus().<JsonObject>consumer("org.entcore.workspace.quota", message -> {
-            final JsonObject body = message.body();
-            if ("updateUserQuota".equals(body.getString("action"))) {
-                released.merge(body.getString("userId"), body.getLong("size"), Long::sum);
+            final JsonArray rows = new JsonArray();
+            if ("updateUsersQuota".equals(message.body().getString("action"))) {
+                for (Object o : message.body().getJsonArray("users")) {
+                    final JsonObject user = (JsonObject) o;
+                    released.merge(user.getString("userId"), user.getLong("size"), Long::sum);
+                    rows.add(new JsonObject().put("userId", user.getString("userId")).put("storage", 0L));
+                }
             }
-            message.reply(new JsonObject().put("storage", 0L));
+            message.reply(new JsonObject().put("status", "ok").put("results", rows));
         });
     }
 

@@ -95,6 +95,7 @@ import org.entcore.conversation.util.AbsenceValidator;
 import org.entcore.conversation.util.AbsenceReplySender;
 import org.entcore.conversation.util.AsyncUtil;
 import org.entcore.conversation.util.DecodedDisplayName;
+import org.entcore.conversation.util.QuotaUtil;
 
 import fr.wseduc.security.ActionType;
 
@@ -489,11 +490,16 @@ public class ConversationController extends BaseController {
 
 								conversationService.send(parentMessageId, id, message, user, event1 -> {
                                     if(event1.isRight() && StringUtils.isEmpty(message.getString("scheduleAt"))){
+                                        final Map<String, Long> sizes = new HashMap<>();
                                         for(Object recipient : message.getJsonArray("allUsers", new JsonArray())){
-                                            if(recipient.toString().equals(user.getUserId()))
-                                                continue;
-                                            updateUserQuota(recipient.toString(), size.get());
+                                            if(!recipient.toString().equals(user.getUserId()))
+                                                sizes.put(recipient.toString(), size.get());
                                         }
+                                        QuotaUtil.updateUsersQuota(eb, sizes, threshold).onSuccess(rows -> notifyEmptySpaceIsSmall(
+                                                rows.stream().map(JsonObject.class::cast)
+                                                        .filter(row -> row.getBoolean("notify", false))
+                                                        .map(row -> row.getString("userId"))
+                                                        .collect(Collectors.toList())));
                                     }
                                     result.handle(event1);
                                 });
@@ -1838,10 +1844,6 @@ public class ConversationController extends BaseController {
 		}));
 	}
 
-	private void updateUserQuota(final String userId, long size){
-		updateUserQuota(userId, size, null);
-	}
-
 	private void updateUserQuota(final String userId, long size, final Handler<Void> continuation){
 		JsonObject message = new JsonObject();
 		message.put("action", "updateUserQuota");
@@ -1854,7 +1856,7 @@ public class ConversationController extends BaseController {
 				JsonObject obj = reply.body();
 				UserUtils.addSessionAttribute(eb, userId, "storage", obj.getLong("storage"), null);
 				if (obj.getBoolean("notify", false)) {
-					notifyEmptySpaceIsSmall(userId);
+					notifyEmptySpaceIsSmall(Collections.singletonList(userId));
 				}
 
 				if(continuation != null)
@@ -1863,9 +1865,10 @@ public class ConversationController extends BaseController {
 		}));
 	}
 
-	private void notifyEmptySpaceIsSmall(String userId) {
-		List<String> recipients = new ArrayList<>();
-		recipients.add(userId);
+	private void notifyEmptySpaceIsSmall(List<String> recipients) {
+		if (recipients.isEmpty()) {
+			return;
+		}
 		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()),
 				"messagerie.storage", null, recipients, null, new JsonObject());
 	}

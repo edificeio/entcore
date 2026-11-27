@@ -22,7 +22,7 @@ package org.entcore.workspace.controllers;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
-import org.entcore.common.folders.QuotaService;
+import org.entcore.workspace.service.impl.DefaultQuotaService;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
@@ -36,11 +36,12 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class QuotaController extends BaseController {
 
-	private QuotaService quotaService;
+	private DefaultQuotaService quotaService;
 
 	@Get("/quota/user/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -130,13 +131,19 @@ public class QuotaController extends BaseController {
 				int threshold = message.body().getInteger("threshold");
 				quotaService.incrementStorage(userId, size, threshold, responseHandler);
 				break;
+			case "updateUsersQuota" :
+				quotaService.incrementStorages(message.body().getJsonArray("users", new JsonArray()),
+						message.body().getInteger("threshold"))
+					.onSuccess(rows -> message.reply(new JsonObject().put("status", "ok").put("results", rows)))
+					.onFailure(e -> message.reply(new JsonObject().put("status", "error").put("message", e.getMessage())));
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
 		}
 	}
 
 
-	public void setQuotaService(QuotaService quotaService) {
+	public void setQuotaService(DefaultQuotaService quotaService) {
 		this.quotaService = quotaService;
 	}
 }

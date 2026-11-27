@@ -31,7 +31,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.folders.FolderManager;
-import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.pdf.PdfFactory;
@@ -78,9 +77,7 @@ public class Workspace extends BaseServer {
 
 		Storage storage = storageFactory.getStorage();
 
-		final boolean neo4jPlugin = config.getBoolean("neo4jPlugin", false);
-		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
-				new TimelineHelper(vertx, vertx.eventBus(), config));
+		final DefaultQuotaService quotaService = new DefaultQuotaService(new TimelineHelper(vertx, vertx.eventBus(), config));
 
 		String node = (String) workspaceMap.get("node");
 		if (node == null) {

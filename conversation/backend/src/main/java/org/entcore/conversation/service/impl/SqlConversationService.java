@@ -51,6 +51,7 @@ import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.util.FolderUtil;
 import org.entcore.conversation.util.MessageUtil;
+import org.entcore.conversation.util.QuotaUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,17 +124,8 @@ public class SqlConversationService implements ConversationService{
 	 */
 	private static final int MIN_ABSENCE_REPLIES_RETENTION_DAYS = 2;
 
-	/** Bus address of the workspace quota service, which holds the storage counter of each user. */
-	private static final String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
-
-	/** Storage alert threshold in percent, when the configuration has no alertStorage (same default as ConversationController). */
-	private static final int DEFAULT_STORAGE_ALERT_THRESHOLD = 80;
-
 	/** Field holding the outcome of a bus reply. */
 	private static final String STATUS_FIELD = "status";
-
-	/** Storage counter of a user, in the quota service replies and in the session. */
-	private static final String STORAGE_FIELD = "storage";
 
 	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
@@ -2407,33 +2399,15 @@ public class SqlConversationService implements ConversationService{
 	 * @param perUser rows of [user_id, total_quota, deleted] returned by one batch
 	 */
 	private Future<Void> releasePurgedQuota(final JsonArray perUser) {
-		final int threshold = Config.getConf().getInteger("alertStorage", DEFAULT_STORAGE_ALERT_THRESHOLD);
-		final List<Future<Void>> updates = new ArrayList<>();
+		final Map<String, Long> sizes = new HashMap<>();
 		for (Object o : perUser) {
 			final JsonArray row = (JsonArray) o;
-			final String userId = row.getString(0);
-			final long quota = row.getLong(1);
-			if (quota <= 0) {
-				continue;
+			if (row.getLong(1) > 0) {
+				sizes.put(row.getString(0), -row.getLong(1));
 			}
-			final JsonObject message = new JsonObject()
-				.put("action", "updateUserQuota")
-				.put("userId", userId)
-				.put("size", -quota)
-				.put("threshold", threshold);
-			final Promise<Void> released = Promise.promise();
-			eb.<JsonObject>request(QUOTA_BUS_ADDRESS, message, reply -> {
-				if (reply.failed() || "error".equals(reply.result().body().getString(STATUS_FIELD))) {
-					log.error("Failed giving back " + quota + " bytes of purged messages to user " + userId + ": "
-						+ (reply.failed() ? reply.cause().getMessage() : reply.result().body().encode()));
-				} else if (reply.result().body().getLong(STORAGE_FIELD) != null) {
-					UserUtils.addSessionAttribute(eb, userId, STORAGE_FIELD, reply.result().body().getLong(STORAGE_FIELD), null);
-				}
-				released.complete();
-			});
-			updates.add(released.future());
 		}
-		return Future.join(updates).mapEmpty();
+		final int threshold = Config.getConf().getInteger("alertStorage", QuotaUtil.DEFAULT_STORAGE_ALERT_THRESHOLD);
+		return QuotaUtil.updateUsersQuota(eb, sizes, threshold).mapEmpty();
 	}
 
 	@Override
