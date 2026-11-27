@@ -22,7 +22,8 @@ package org.entcore.directory.services;
 import java.util.List;
 import java.util.Set;
 
-import org.entcore.broker.api.dto.directory.ClassIncludeField;
+import io.edifice.directory.v1.ClassIncludeField;
+import io.edifice.directory.v1.UserField;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.TransversalSearchQuery;
 
@@ -225,9 +226,11 @@ public interface UserService {
 	Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources);
 
 	/**
-	 * Get users by their IDs with basic profile and function information
+	 * Get users by their IDs with basic profile and function information, and the optional fields asked for
 	 * @param userIds List of user IDs to retrieve
+	 * @param fields Optional fields of the users to return in addition to id, displayName, profiles and functions
+	 *               (each one under the name of the field : firstName, lastName, login, email)
 	 * @return Future with a JsonArray containing user information
 	 */
-	Future<JsonArray> getUsersByIds(JsonArray userIds);
+	Future<JsonArray> getUsersByIds(JsonArray userIds, Set<UserField> fields);
 }
