@@ -39,6 +39,16 @@ export function uploadAAF(feeder: AAFFeeder, subPath: string, files: Record<stri
 }
 
 /**
+ * A number unique to the run, to start the ids of the generated data with ({@link AAFGeneratorBuilder.withIndexStart}).
+ * The platform keeps what previous runs imported, and the feeder attaches the users of a file to the structures
+ * they had : with the same ids at every run, the structures of a test pile up the users of all its runs (and of the
+ * older versions of the generator). Different ids give new structures, users and UAIs at every run.
+ */
+export function newRunSeed(): number {
+  return (Date.now() % 900000000) + 100000;
+}
+
+/**
  * The externalId under which the feeder stores an entity (structure, class, group, user...) of the files uploaded by
  * {@link uploadAAF} : the feeder prefixes the externalIds of a sub-directory of the import directory with its name
  * (the "academy" prefix of the import), e.g. "STRUCT-9999" uploaded in "test" becomes "test-STRUCT-9999".

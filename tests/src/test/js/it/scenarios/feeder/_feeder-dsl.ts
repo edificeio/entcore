@@ -16,7 +16,7 @@
  *   export const teardown = scenario.teardown;
  */
 import { check, fail } from "k6";
-import { AAF_FEEDERS, cleanAllUploadedAAF } from "../directory/_aaf-utils.ts";
+import { AAF_FEEDERS, cleanAllUploadedAAF, newRunSeed } from "../directory/_aaf-utils.ts";
 import { ScenarioBuilder } from "./_feeder-builder.ts";
 import { cleanUp, runScenario } from "./_feeder-engine.ts";
 import type { Reporter, ScenarioDefinition, ScenarioRunData } from "./_feeder-engine.ts";
@@ -67,7 +67,7 @@ export class FeederScenario {
       this.gateway.login();
       cleanAllUploadedAAF();
     }
-    return { seed: parseInt(__ENV.FEEDER_SEED || String((Date.now() % 900000000) + 100000)) };
+    return { seed: __ENV.FEEDER_SEED ? parseInt(__ENV.FEEDER_SEED) : newRunSeed() };
   };
 
   run = (data: ScenarioRunData): void => {

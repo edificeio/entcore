@@ -14,7 +14,7 @@ import {
 import http from "k6/http";
 import { check, group } from "k6";
 import { AAFFiles, AAFGeneratorBuilder } from "./_aaf-generator.ts";
-import { cleanAAFWhenIdle, cleanAllUploadedAAF, importAndWaitOrFail, importedExternalId, uploadAAF } from "./_aaf-utils.ts";
+import { cleanAAFWhenIdle, cleanAllUploadedAAF, importAndWaitOrFail, importedExternalId, newRunSeed, uploadAAF } from "./_aaf-utils.ts";
 
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
@@ -23,7 +23,8 @@ const schoolNameCSV = __ENV.DATA_SCHOOL_NAME_CSV || `${schoolName} CSV`;
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
 const rootUrl = __ENV.ROOT_URL;
 const skipInit = __ENV.SKIP_INIT === "true";
-const indexStart = parseInt(__ENV.INDEX_START || "9999");
+/** First id of the generated data : a new one at every run (see newRunSeed), INDEX_START replays one. */
+const INDEX_START = __ENV.INDEX_START;
 const nbDuplicateUsers = parseInt(__ENV.NB_DUPLICATE_USERS || "3");
 /** Import directory of the files uploaded by this test. Removed at the end : see teardown(). */
 const AAF_IMPORT_DIRECTORY = "test";
@@ -185,7 +186,7 @@ function generateAAFStructure(parameters: AAFStructureGenerationParameters[]): S
 
 function generateAAFStructureRequest(parameters: AAFStructureGenerationParameters[]): AAFFiles {
   const builder = new AAFGeneratorBuilder()
-    .withIndexStart(indexStart)
+    .withIndexStart(INDEX_START ? parseInt(INDEX_START) : newRunSeed())
     .withNbStructures(parameters.length);
 
   let studentOffset = 0;

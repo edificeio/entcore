@@ -14,13 +14,14 @@ import {
 import http from "k6/http";
 import { check, group } from "k6";
 import { AAFGeneratorBuilder, AAFGeneratedModel, AAFFiles } from "./_aaf-generator.ts";
-import { cleanAAFWhenIdle, cleanAllUploadedAAF, getUserDetail, importAndWaitOrFail, importedExternalId, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
+ import { cleanAAFWhenIdle, cleanAllUploadedAAF, getUserDetail, importAndWaitOrFail, importedExternalId, newRunSeed, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
 const rootUrl = __ENV.ROOT_URL;
 const schoolNameBig = __ENV.DATA_SCHOOL_NAME_BIG || "IT Directory Big";
-const indexStart = parseInt(__ENV.INDEX_START || "500000");
+/** First id of the generated data : a new one at every run (see newRunSeed), INDEX_START replays one. */
+const INDEX_START = __ENV.INDEX_START;
 /** Longest time in seconds the import (post import included) is awaited. */
 const MAX_WAIT_BIG_AAF_IMPORTED = parseInt(__ENV.MAX_WAIT_BIG_AAF_IMPORTED || "900");
 /** Import directory of the files uploaded by this test. Removed at the end : see teardown(). */
@@ -170,7 +171,7 @@ export function testImportAAFBig(data: InitData) {
         // deep-dive: exact membership (by externalId), on the first structure only, to bound API calls.
         if (found && s.index === 0) {
           const members = getUsersOfGroup(found.id);
-          const expectedExternalIds = new Set(eg.studentIndices.map((idx) => model.students[idx].externalId));
+          const expectedExternalIds = new Set(eg.studentIndices.map((idx) => imported(model.students[idx].externalId)));
           const actualExternalIds = new Set(members.map((m) => m.externalId));
           check(members, {
             [`group ${eg.name} of structure 0 has the exact expected members`]:
@@ -205,7 +206,7 @@ export function testImportAAFBig(data: InitData) {
     model.structures.forEach((s) => {
       const modelTeacher = model.teachers.find((t) => t.structureIndex === s.index);
       if (!modelTeacher) return;
-      const actualTeacher = usersByStructure[s.index].find((u) => u.externalId === modelTeacher.externalId);
+      const actualTeacher = usersByStructure[s.index].find((u) => u.externalId === imported(modelTeacher.externalId));
       check(actualTeacher, {
         [`sampled teacher of structure ${s.index} was imported`]: (u) => !!u,
       });
@@ -226,7 +227,7 @@ export function testImportAAFBig(data: InitData) {
       const modelStudent = model.students.find((st) => st.structureIndex === s.index);
       if (!modelStudent) return;
       const users = usersByStructure[s.index];
-      const actualStudent = users.find((u) => u.externalId === modelStudent.externalId);
+      const actualStudent = users.find((u) => u.externalId === imported(modelStudent.externalId));
       check(actualStudent, {
         [`sampled student of structure ${s.index} was imported`]: (u) => !!u,
       });
@@ -241,7 +242,7 @@ export function testImportAAFBig(data: InitData) {
       const firstLink = modelStudent.relativeLinks[0];
       if (!firstLink) return;
       const modelRelative = model.relatives[firstLink.relativeIndex];
-      const actualRelative = users.find((u) => u.externalId === modelRelative.externalId);
+      const actualRelative = users.find((u) => u.externalId === imported(modelRelative.externalId));
       check(actualRelative, {
         [`first relative of sampled student of structure ${s.index} was imported`]: (u) => !!u,
       });
@@ -253,7 +254,7 @@ export function testImportAAFBig(data: InitData) {
           const body = JSON.parse(<string>r.body);
           return Array.isArray(body) && body.some(
             (entry: any) => Array.isArray(entry.children) &&
-              entry.children.some((c: any) => c.externalId === modelStudent.externalId)
+              entry.children.some((c: any) => c.externalId === imported(modelStudent.externalId))
           );
         },
       });
@@ -265,11 +266,12 @@ export function testImportAAFBig(data: InitData) {
  *  AAF generation / import helpers
  ******************************************************************************************************/
 function buildBigAAFRequest(): AAFFiles {
+  const indexStart = INDEX_START ? parseInt(INDEX_START) : newRunSeed();
   const totalStudents = NB_STRUCTURES * NB_CLASSES_PER_STRUCTURE * NB_STUDENTS_PER_CLASS;
   const builder = new AAFGeneratorBuilder()
     .withIndexStart(indexStart)
     .withNbStructures(NB_STRUCTURES)
-    .withStructureNameFormat(`${schoolNameBig} {idx}`)
+    .withStructureNameFormat(`${schoolNameBig} ${indexStart} {idx}`)
     .withNbClasses(NB_CLASSES_PER_STRUCTURE)
     .withNbStudentsPerClass(NB_STUDENTS_PER_CLASS)
     .withNbTeachersPerStructure(NB_TEACHERS_PER_STRUCTURE)
@@ -306,6 +308,11 @@ function importAAFStructureOrFail(files: Record<string, string>) {
   assertOk(res, "Big AAF structure files should be uploaded");
 }
 
+/** The externalId under which the feeder stores an entity of the generated model. */
+function imported(externalId: string): string {
+  return importedExternalId(AAF_IMPORT_DIRECTORY, externalId);
+}
+
 /** externalIds of every relative referenced by at least one student of the given structure. */
 function relativeIndicesOfStructure(model: AAFGeneratedModel, structureIndex: number): Set<number> {
   const indices = new Set<number>();
@@ -320,7 +327,7 @@ function loadBigAAFImport(model: AAFGeneratedModel): { structures: Structure[]; 
   // looked up by externalId : the names can be shared with the structures of older runs
   const all = getAllStructures();
   const structuresByIndex = model.structures.map((s) => {
-    const externalId = importedExternalId(AAF_IMPORT_DIRECTORY, s.externalId);
+    const externalId = imported(s.externalId);
     const structure = all.find((st) => st.externalId === externalId);
     if (!structure) {
       throw new Error(`Structure ${s.index} (${externalId}) not found after the import : ` +
