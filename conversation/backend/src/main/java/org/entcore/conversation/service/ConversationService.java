@@ -164,6 +164,8 @@ public interface ConversationService {
 
 	Future<JsonObject> getAndFormat(String id, UserInfos userInfos, String lang, boolean originalFormat, HttpServerRequest request);
 
+	Future<JsonObject> formatUsersAndGroups(JsonObject message, UserInfos userInfos, String lang);
+
 	Future<String> getOriginalMessageContent(String messageId);
 
 	Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, boolean recordTransformation, HttpServerRequest request);

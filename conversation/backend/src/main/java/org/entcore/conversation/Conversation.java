@@ -131,7 +131,8 @@ public class Conversation extends BaseServer {
 				log.error("Invalid purge messages cron expression.", e);
 			}
 		}
-		ModerationEventBrokerListener moderationListener = new ModerationBrokerListenerImpl(Sql.getInstance(), vertx, ModerationEventBrokerListener.Parameters.
+		ModerationEventBrokerListener moderationListener = new ModerationBrokerListenerImpl(Sql.getInstance(), conversationService,
+				vertx, ModerationEventBrokerListener.Parameters.
 				builder()
 				.application("conversation")
 				.build());

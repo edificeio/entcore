@@ -1087,31 +1087,12 @@ public class SqlConversationService implements ConversationService{
 	@Override
 	public Future<JsonObject> getAndFormat(String id, UserInfos userInfos, String lang, boolean originalFormat, HttpServerRequest request) {
 		final Promise<JsonObject> promise = Promise.promise();
-		final JsonObject userIndex = new JsonObject();
-		final JsonObject groupIndex = new JsonObject();
-		final JsonObject structureIndex = new JsonObject();
 		this.get(id, userInfos, 1, either -> {
 			if (either.isRight()) {
 				final JsonObject message = either.right().getValue();
 				formatMessageContent(id, originalFormat, request, message)
-						.onSuccess(event -> {
-							// Extract distinct users and groups.
-							MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
-
-							// Same two calls as listAndFormat, on purpose: the establishment displayed for a
-							// message must not depend on the surface it is read from.
-							Future.join(
-									MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex),
-									MessageUtil.loadUsersStructures(eb, userIndex, structureIndex)
-							)
-									.onSuccess( unused -> {
-										MessageUtil.formatRecipients(message, userIndex, groupIndex);
-										MessageUtil.applySenderDisplayStructure(message, structureIndex, userInfos.getUserId());
-										promise.complete(message);
-									})
-									.onFailure( throwable -> {
-										promise.fail(throwable.getMessage());
-									});})
+						.compose(event -> formatUsersAndGroups(message, userInfos, lang))
+						.onSuccess(promise::complete)
 						.onFailure(th -> {
 							promise.fail(th.getMessage());
 						});
@@ -1120,6 +1101,35 @@ public class SqlConversationService implements ConversationService{
 			}
 		});
 		return promise.future();
+	}
+
+	/**
+	 * Replaces the sender and recipients ids of a message by their display names and details, groups included,
+	 * as seen by the given reader : cci are hidden to a reader who is not the sender, and the establishment
+	 * of the sender is chosen relative to the reader.
+	 * @param message a message as read from the database, with its from, to, cc, cci, *Name and displayNames fields
+	 * @param userInfos the reader
+	 * @param lang the language of the group names
+	 * @return a {@link Future} of the same message, formatted
+	 */
+	@Override
+	public Future<JsonObject> formatUsersAndGroups(JsonObject message, UserInfos userInfos, String lang) {
+		final JsonObject userIndex = new JsonObject();
+		final JsonObject groupIndex = new JsonObject();
+		final JsonObject structureIndex = new JsonObject();
+		// Extract distinct users and groups.
+		MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
+
+		// Same two calls as listAndFormat, on purpose: the establishment displayed for a
+		// message must not depend on the surface it is read from.
+		return Future.join(
+				MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex),
+				MessageUtil.loadUsersStructures(eb, userIndex, structureIndex)
+		).map(unused -> {
+			MessageUtil.formatRecipients(message, userIndex, groupIndex);
+			MessageUtil.applySenderDisplayStructure(message, structureIndex, userInfos.getUserId());
+			return message;
+		});
 	}
 
 	/**
