@@ -953,6 +953,7 @@
   "homepage.widget.rss.form.editTitle": "Modifier un flux RSS",
   "homepage.widget.rss.form.link": "Lien",
   "homepage.widget.rss.form.link.caption": "L’URL doit renvoyer un flux au format XML",
+  "homepage.widget.rss.form.link.error": "L’adresse doit être l’URL d’un flux RSS (ex. https://exemple.fr/rss.xml)",
   "homepage.widget.rss.form.link.placeholder": "Ajouter l’URL",
   "homepage.widget.rss.form.save": "Enregistrer",
   "homepage.widget.rss.form.title": "Nom",
