@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => ({
   useBreakpoint: vi.fn(),
   updateOverlayOpen: vi.fn(),
   useWidgetPreferences: vi.fn(),
+  useUser: vi.fn(() => ({ user: { userId: 'user-1' } })),
 }));
 
 vi.mock('@edifice.io/react', async () => {
@@ -84,6 +85,7 @@ vi.mock('@edifice.io/react', async () => {
     Masonry: MasonryMock,
     useBreakpoint: mocks.useBreakpoint,
     useEdificeClient: () => ({ init: true }),
+    useUser: mocks.useUser,
     useOverlay: () => ({ updateOverlayOpen: mocks.updateOverlayOpen }),
     PageLayout: PageLayoutMock,
     // Root doesn't exercise session bootstrap directly (useEdificeClient is
@@ -255,7 +257,10 @@ describe('Root - widgets personalization panel / notifications mutual exclusion'
   it('opens the widgets panel over the notifications sidebar in one click on desktop', () => {
     // Regression: the sidebar closing used to reset the overlay to closed, so
     // a second click was needed to actually show the widgets panel.
-    localStorage.setItem('timeline:notificationsOpen', 'true');
+    localStorage.setItem(
+      'timeline:notificationsOpen',
+      JSON.stringify({ 'user-1': true }),
+    );
     render(<Root />);
     expect(screen.getByTestId('sidebar-right')).toBeInTheDocument();
 
