@@ -14,7 +14,7 @@ import {
 import http from "k6/http";
 import { check, group } from "k6";
 import { AAFGeneratorBuilder, AAFGeneratedModel, AAFFiles } from "./_aaf-generator.ts";
- import { cleanAAFWhenIdle, cleanAllUploadedAAF, getUserDetail, importAndWaitOrFail, importedExternalId, newRunSeed, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
+ import { cleanAAFWhenIdle, cleanAllUploadedAAF, distinctById, getUserDetail, importAndWaitOrFail, importedExternalId, newRunSeed, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
@@ -195,8 +195,9 @@ export function testImportAAFBig(data: InitData) {
       const childrenRes = http.get(`${rootUrl}/directory/structure/${parent.id}/children`, { headers: getHeaders() });
       check(childrenRes, {
         [`structure ${parentIdx} (${parent.name}) lists structure ${childIdx} (${child.name}) as a child`]: (r) => {
+          // the ids of the children (direct or not), not objects
           const body = JSON.parse(<string>r.body);
-          return Array.isArray(body) && body.some((c: any) => c.id === child.id);
+          return Array.isArray(body) && body.includes(child.id);
         },
       });
     });
@@ -344,7 +345,7 @@ function loadBigAAFImport(model: AAFGeneratedModel): { structures: Structure[]; 
   );
 
   const usersByStructure = structuresByIndex.map((s, idx) => {
-    const users = getUsersOfSchool(s);
+    const users = distinctById(getUsersOfSchool(s));
     if (users.length < expectedUsersByStructure[idx]) {
       throw new Error(`Structure ${idx} (${s.name}) only has ${users.length}/${expectedUsersByStructure[idx]} users after the import`);
     }

@@ -147,6 +147,17 @@ export function importAndWaitOrFail(feeder: AAFFeeder, timeoutMs?: number): Impo
  * Completes the users it returned with the one of the admin list, in a single call for the whole structure. The
  * users are returned as they are when they all have one already or when the admin list cannot be read.
  */
+/**
+ * {@link getUsersOfSchool} (/structure/:id/users) returns a user once per distinct list of structures of their duplicates (DefaultSchoolService.userList
+ * groups by that list). The generated names come back at every run, so the users of a run have duplicates in the
+ * structures of the older runs : without this, they are counted several times.
+ */
+export function distinctById<T extends { id: string }>(users: T[]): T[] {
+  const byId = new Map<string, T>();
+  users.forEach((user) => { if (!byId.has(user.id)) byId.set(user.id, user); });
+  return Array.from(byId.values());
+}
+
 export function withExternalIds<T extends { id: string; externalId?: string }>(structureId: string, users: T[]): T[] {
   if (users.every((user) => !!user.externalId)) return users;
   const res = http.get(`${rootUrl}/directory/user/admin/list?structureId=${structureId}`, { headers: getHeaders() });
