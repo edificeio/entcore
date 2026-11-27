@@ -14,7 +14,7 @@ import {
 import http from "k6/http";
 import { check, group } from "k6";
 import { AAFGeneratorBuilder, AAFGeneratedModel, AAFFiles } from "./_aaf-generator.ts";
-import { cleanAAF, cleanAAFWhenIdle, getUserDetail, importedExternalId, triggerImportAndWait, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
+import { cleanAAFWhenIdle, cleanAllUploadedAAF, getUserDetail, importAndWaitOrFail, importedExternalId, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
@@ -65,8 +65,9 @@ export function setup(): InitData {
 
   group("[Directory] Generate and import a big multi-structure AAF dataset", () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    // teardown() does not run when a previous run was killed or failed in setup : start from a clean directory
-    cleanAAF("AAF", AAF_IMPORT_DIRECTORY);
+    // teardown() does not run when a previous run (of this test or of another one) was killed or failed in setup :
+    // start from clean import directories
+    cleanAllUploadedAAF();
     try {
       model = generateAndImportBigAAF();
       result = loadBigAAFImport(model);
@@ -296,8 +297,7 @@ function generateAndImportBigAAF(): AAFGeneratedModel {
   const { files, model } = buildBigAAFRequest();
   importAAFStructureOrFail(files);
   // waits for the post import too (duplicates, communication rules) : the data is complete once it answers
-  const res = triggerImportAndWait("AAF", MAX_WAIT_BIG_AAF_IMPORTED * 1000);
-  assertOk(res, "Big AAF import should succeed");
+  importAndWaitOrFail("AAF", MAX_WAIT_BIG_AAF_IMPORTED * 1000);
   return model;
 }
 

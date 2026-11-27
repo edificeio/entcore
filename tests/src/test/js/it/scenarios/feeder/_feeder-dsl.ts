@@ -16,7 +16,7 @@
  *   export const teardown = scenario.teardown;
  */
 import { check, fail } from "k6";
-import type { AAFFeeder } from "../directory/_aaf-utils.ts";
+import { AAF_FEEDERS, cleanAllUploadedAAF } from "../directory/_aaf-utils.ts";
 import { ScenarioBuilder } from "./_feeder-builder.ts";
 import { cleanUp, runScenario } from "./_feeder-engine.ts";
 import type { Reporter, ScenarioDefinition, ScenarioRunData } from "./_feeder-engine.ts";
@@ -24,8 +24,6 @@ import { FeederGateway, HttpFeederGateway } from "./_feeder-gateway.ts";
 
 export { ScenarioBuilder } from "./_feeder-builder.ts";
 
-/** Cleaning a feeder which received nothing is harmless, so a run does not need to remember which ones it used. */
-const ALL_FEEDERS: AAFFeeder[] = ["AAF", "AAF1D"];
 
 /** Runs the scenario in k6 : each message becomes the name of a k6 check, which is what the report of Jenkins shows. */
 export const k6Reporter: Reporter = {
@@ -59,8 +57,18 @@ export class FeederScenario {
     return !!this.definition.pendingFor && __ENV.FEEDER_RUN_PENDING !== "true";
   }
 
-  /** The seed makes every run unique (the platform keeps what previous runs created) ; FEEDER_SEED replays one. */
-  setup = (): ScenarioRunData => ({ seed: parseInt(__ENV.FEEDER_SEED || String((Date.now() % 900000000) + 100000)) });
+  /**
+   * Removes the directories left by interrupted runs (their teardown never ran), which would break the imports of
+   * this one.
+   * The seed makes every run unique (the platform keeps what previous runs created) ; FEEDER_SEED replays one.
+   */
+  setup = (): ScenarioRunData => {
+    if (!this.skipped) {
+      this.gateway.login();
+      cleanAllUploadedAAF();
+    }
+    return { seed: parseInt(__ENV.FEEDER_SEED || String((Date.now() % 900000000) + 100000)) };
+  };
 
   run = (data: ScenarioRunData): void => {
     if (this.skipped) {
@@ -74,7 +82,7 @@ export class FeederScenario {
   teardown = (data: ScenarioRunData): void => {
     // FEEDER_KEEP_FILES=true : leave the uploaded files and the import directory on the platform, to inspect them
     if (!this.skipped && __ENV.FEEDER_KEEP_FILES !== "true") {
-      cleanUp(this.definition, data, this.gateway, ALL_FEEDERS, k6Reporter);
+      cleanUp(this.definition, data, this.gateway, AAF_FEEDERS, k6Reporter);
     }
   };
 }

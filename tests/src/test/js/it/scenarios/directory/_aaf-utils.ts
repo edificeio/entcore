@@ -7,6 +7,9 @@ const rootUrl = __ENV.ROOT_URL;
 /** The feeders reading AAF files. */
 export type AAFFeeder = "AAF" | "AAF1D";
 
+/** Every feeder reading AAF files. They may share the same import directory (as on recette). */
+export const AAF_FEEDERS: AAFFeeder[] = ["AAF", "AAF1D"];
+
 /** What the feeder reports at the end of an import (see ImportReportSummary on the directory side). */
 export type ImportSummary = {
   status: string;
@@ -65,7 +68,7 @@ export function cleanAAF(feeder: AAFFeeder, subPath?: string): RefinedResponse<a
  * @param maxWaitSeconds How long to wait for the end of the running import
  * @return null when the directory has been removed, otherwise why it could not be
  */
-export function cleanAAFWhenIdle(feeder: AAFFeeder, subPath: string, maxWaitSeconds: number = 120): string | null {
+export function cleanAAFWhenIdle(feeder: AAFFeeder, subPath?: string, maxWaitSeconds: number = 120): string | null {
   const end = Date.now() + maxWaitSeconds * 1000;
   for (;;) {
     const res = cleanAAF(feeder, subPath);
@@ -73,6 +76,25 @@ export function cleanAAFWhenIdle(feeder: AAFFeeder, subPath: string, maxWaitSeco
     if (res.status !== 409 || Date.now() >= end) return `${res.status} ${res.body}`;
     sleep(2);
   }
+}
+
+/**
+ * Removes every directory uploaded by an integration test, whatever its feeder and its test, before importing.
+ * A test which was interrupted (job cancelled, k6 killed) never ran its teardown : its directory stays listed and
+ * every later import reads it, which fails as soon as its format is not the one of the feeder (AAF1D files read by
+ * the AAF import...). Only the directories created by {@link uploadAAF} are removed : the platform refuses to touch
+ * the others.
+ * Must not be called while another test uploads files : the integration tests are played one after the other.
+ * @param maxWaitSeconds How long to wait for the end of a running import
+ * @throws Error when a directory could not be removed : the import of the test would fail anyway
+ */
+export function cleanAllUploadedAAF(maxWaitSeconds: number = 120): void {
+  AAF_FEEDERS.forEach((feeder) => {
+    const failure = cleanAAFWhenIdle(feeder, undefined, maxWaitSeconds);
+    if (failure) {
+      throw new Error(`Cannot remove the AAF directories left by previous tests for the feeder ${feeder} : ${failure}`);
+    }
+  });
 }
 
 /**
@@ -84,6 +106,30 @@ export function triggerImportAndWait(feeder: AAFFeeder, timeoutMs: number = 6000
     headers: getHeaders("application/json"),
     timeout: `${Math.ceil(timeoutMs / 1000) + 30}s`,
   });
+}
+
+/**
+ * Triggers an import, waits for its end (post import included) and fails unless it succeeded.
+ * The feeder answers "ok" even when the import failed (an unreadable file for instance) : the failure is only in the
+ * errors of the report, which are checked here. A failed import usually comes from a directory left by another test
+ * (see {@link cleanAAFWhenIdle}) : its name is in the errors.
+ * @param timeoutMs How long the server waits for the end of the import
+ * @return The summary of the import
+ */
+export function importAndWaitOrFail(feeder: AAFFeeder, timeoutMs?: number): ImportSummary {
+  const res = triggerImportAndWait(feeder, timeoutMs);
+  let summary: ImportSummary | null = null;
+  try {
+    summary = <ImportSummary>JSON.parse(<string>res.body);
+  } catch (e) {
+    // reported below with the raw body
+  }
+  const errors = summary?.result?.errors || {};
+  if (res.status !== 200 || !summary || summary.status !== "ok" || Object.keys(errors).length > 0) {
+    const details = summary && Object.keys(errors).length > 0 ? JSON.stringify(errors) : `${res.status} ${res.body}`;
+    throw new Error(`The ${feeder} import failed : ${details}`);
+  }
+  return summary;
 }
 
 /**

@@ -14,7 +14,7 @@ import {
 import http from "k6/http";
 import { check, group } from "k6";
 import { AAFFiles, AAFGeneratorBuilder } from "./_aaf-generator.ts";
-import { cleanAAF, cleanAAFWhenIdle, importedExternalId, triggerImportAndWait, uploadAAF } from "./_aaf-utils.ts";
+import { cleanAAFWhenIdle, cleanAllUploadedAAF, importAndWaitOrFail, importedExternalId, uploadAAF } from "./_aaf-utils.ts";
 
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
@@ -73,8 +73,9 @@ export function setup() {
 
   group("[Directory] Initialize data", () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    // teardown() does not run when a previous run was killed or failed in setup : start from a clean directory
-    cleanAAF("AAF", AAF_IMPORT_DIRECTORY);
+    // teardown() does not run when a previous run (of this test or of another one) was killed or failed in setup :
+    // start from clean import directories
+    cleanAllUploadedAAF();
     structureCSV = createEmptyStructure(schoolNameCSV, true);
     let usersCSV = getUsersOfSchool(structureCSV);
     if(usersCSV.length < nbDuplicateUsers) {
@@ -169,8 +170,7 @@ function generateAAFStructure(parameters: AAFStructureGenerationParameters[]): S
   const { files, model } = generateAAFStructureRequest(parameters);
   importAAFStructureOrFail(files);
   // waits for the post import too : the duplicates checked by this test are marked there
-  const res = triggerImportAndWait("AAF");
-  assertOk(res, "AAF import should succeed");
+  importAndWaitOrFail("AAF");
   // the structure is looked up by externalId : "Directory" is a common name, older runs left structures named so
   const externalId = importedExternalId(AAF_IMPORT_DIRECTORY, model.structures[0].externalId);
   const structure = getAllStructures().find((s) => s.externalId === externalId);
