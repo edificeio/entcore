@@ -36,6 +36,17 @@ export function uploadAAF(feeder: AAFFeeder, subPath: string, files: Record<stri
 }
 
 /**
+ * The externalId under which the feeder stores an entity (structure, class, group, user...) of the files uploaded by
+ * {@link uploadAAF} : the feeder prefixes the externalIds of a sub-directory of the import directory with its name
+ * (the "academy" prefix of the import), e.g. "STRUCT-9999" uploaded in "test" becomes "test-STRUCT-9999".
+ * @param subPath The directory the files were uploaded in
+ * @param externalId The externalId written in the files (the one of the generated model)
+ */
+export function importedExternalId(subPath: string, externalId: string): string {
+  return `${subPath}-${externalId}`;
+}
+
+/**
  * Removes the directories created by {@link uploadAAF}.
  * @param subPath The directory to remove. All the uploaded directories of the feeder are removed when missing.
  */

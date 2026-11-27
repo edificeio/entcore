@@ -303,7 +303,11 @@ class AAFGeneratorConfig {
   indexStart = 9999;
 
   nbStructures = 1;
-  uaiFormat = "{idxPad7}A";
+  /**
+   * Derived from the external id of the structure : two datasets built with different indexStart never share a UAI.
+   * The feeder attaches an unknown structure to the existing one which has its UAI (joinKey), for good.
+   */
+  uaiFormat = "{idPad7}A";
   uaiForStructure = new IndexedConfig<string | undefined>(undefined);
   structureNameFormat = "Structure {idx}";
   structureNameForStructure = new IndexedConfig<string | undefined>(undefined);
@@ -384,8 +388,14 @@ export class AAFGenerator {
 
     // --- Structures -------------------------------------------------------------------------
     for (let s = 0; s < cfg.nbStructures; s++) {
+      const id = idCounter;
       const externalId = `STRUCT-${nextId()}`;
-      const uai = cfg.uaiForStructure.get(s) ?? formatTemplate(cfg.uaiFormat, { idx: s, idxPad7: pad(s, 7) });
+      const uai = cfg.uaiForStructure.get(s) ?? formatTemplate(cfg.uaiFormat, {
+        idx: s,
+        idxPad7: pad(s, 7),
+        id,
+        idPad7: pad(id % 10000000, 7),
+      });
       const name = cfg.structureNameForStructure.get(s) ?? formatTemplate(cfg.structureNameFormat, { idx: s });
       const type = cfg.structureTypeForStructure.get(s) ?? cfg.structureTypeFormat;
       const academy = cfg.academyForStructure.get(s) ?? cfg.academy;
@@ -873,7 +883,11 @@ export class AAFGeneratorBuilder {
     return this;
   }
 
-  /** Default UAI format applied to every structure. Supports `{idx}` and `{idxPad7}` (idx padded to 7 digits). */
+  /**
+   * Default UAI format applied to every structure. Supports `{idx}`, `{idxPad7}` (idx padded to 7 digits), `{id}` (the
+   * numeric part of the structure external id) and `{idPad7}` (id modulo 10^7, padded to 7 digits). Defaults to
+   * `{idPad7}A`. A format based on `{idx}` alone gives the same UAIs to every dataset : keep it unique on the platform.
+   */
   withUAIFormat(fmt: string): this {
     this.config.uaiFormat = fmt;
     return this;

@@ -1,4 +1,3 @@
-import { RefinedResponse } from "k6/http";
 import {
   authenticateWeb,
   Structure,
@@ -13,16 +12,17 @@ import {
   assertOk,
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import http from "k6/http";
-import { check, group, sleep } from "k6";
+import { check, group } from "k6";
 import { AAFGeneratorBuilder, AAFGeneratedModel, AAFFiles } from "./_aaf-generator.ts";
-import { cleanAAF, cleanAAFWhenIdle, getUserDetail, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
+import { cleanAAF, cleanAAFWhenIdle, getUserDetail, importedExternalId, triggerImportAndWait, uploadAAF, withExternalIds } from "./_aaf-utils.ts";
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
 const rootUrl = __ENV.ROOT_URL;
 const schoolNameBig = __ENV.DATA_SCHOOL_NAME_BIG || "IT Directory Big";
 const indexStart = parseInt(__ENV.INDEX_START || "500000");
-const MAX_WAIT_BIG_AAF_IMPORTED = parseInt(__ENV.MAX_WAIT_BIG_AAF_IMPORTED || "300");
+/** Longest time in seconds the import (post import included) is awaited. */
+const MAX_WAIT_BIG_AAF_IMPORTED = parseInt(__ENV.MAX_WAIT_BIG_AAF_IMPORTED || "900");
 /** Import directory of the files uploaded by this test. Removed at the end : see teardown(). */
 const AAF_IMPORT_DIRECTORY = "test-big";
 
@@ -69,7 +69,7 @@ export function setup(): InitData {
     cleanAAF("AAF", AAF_IMPORT_DIRECTORY);
     try {
       model = generateAndImportBigAAF();
-      result = waitForBigAAFImport(model);
+      result = loadBigAAFImport(model);
     } catch (e) {
       // teardown() is not called when setup fails : remove the files now, otherwise every later import of the
       // platform reads them (the AAF1D ones of the feeder scenarios fail with "error.global")
@@ -295,18 +295,10 @@ function buildBigAAFRequest(): AAFFiles {
 function generateAndImportBigAAF(): AAFGeneratedModel {
   const { files, model } = buildBigAAFRequest();
   importAAFStructureOrFail(files);
-  const res = triggerAAFImport();
-  assertOk(res, "Big AAF import should be triggered", 202);
+  // waits for the post import too (duplicates, communication rules) : the data is complete once it answers
+  const res = triggerImportAndWait("AAF", MAX_WAIT_BIG_AAF_IMPORTED * 1000);
+  assertOk(res, "Big AAF import should succeed");
   return model;
-}
-
-function triggerAAFImport(): RefinedResponse<any> {
-  const headers = getHeaders("application/json");
-  return http.post(
-    `${rootUrl}/directory/api/internal/trigger-import`,
-    JSON.stringify({ feeder: "AAF" }),
-    { headers },
-  );
 }
 
 function importAAFStructureOrFail(files: Record<string, string>) {
@@ -323,29 +315,19 @@ function relativeIndicesOfStructure(model: AAFGeneratedModel, structureIndex: nu
   return indices;
 }
 
-function waitForBigAAFImport(model: AAFGeneratedModel): { structures: Structure[]; usersByStructure: UserInfo[][] } {
-  const expectedNames = model.structures.map((s) => `${schoolNameBig} ${s.index}`);
-  const endWait = Date.now() + MAX_WAIT_BIG_AAF_IMPORTED * 1000;
-  const secondsLeft = () => Math.max(0, Math.floor((endWait - Date.now()) / 1000));
-
-  let structures: Structure[] = [];
-  while (Date.now() < endWait) {
-    const all = getAllStructures();
-    structures = expectedNames
-      .map((name) => all.find((s) => s.name === name))
-      .filter((s): s is Structure => !!s);
-    if (structures.length === model.structures.length) {
-      console.log(`All ${structures.length} structures found (${secondsLeft()}s left)`);
-      break;
+/** Reads the imported structures and their users. Called once the import is over. */
+function loadBigAAFImport(model: AAFGeneratedModel): { structures: Structure[]; usersByStructure: UserInfo[][] } {
+  // looked up by externalId : the names can be shared with the structures of older runs
+  const all = getAllStructures();
+  const structuresByIndex = model.structures.map((s) => {
+    const externalId = importedExternalId(AAF_IMPORT_DIRECTORY, s.externalId);
+    const structure = all.find((st) => st.externalId === externalId);
+    if (!structure) {
+      throw new Error(`Structure ${s.index} (${externalId}) not found after the import : ` +
+        `was it attached to an existing structure with the same UAI (${s.uai}) ?`);
     }
-    console.log(`Waiting for structures to be imported (${structures.length}/${model.structures.length})...`);
-    sleep(2);
-  }
-  if (structures.length !== model.structures.length) {
-    throw new Error(`Only ${structures.length}/${model.structures.length} structures found after ${MAX_WAIT_BIG_AAF_IMPORTED}s`);
-  }
-  // re-index by structure.index (order of expectedNames is already aligned with model.structures, but stay explicit)
-  const structuresByIndex = model.structures.map((s) => structures.find((st) => st.name === `${schoolNameBig} ${s.index}`)!);
+    return structure;
+  });
 
   const expectedUsersByStructure = model.structures.map(
     (s) =>
@@ -354,27 +336,14 @@ function waitForBigAAFImport(model: AAFGeneratedModel): { structures: Structure[
       relativeIndicesOfStructure(model, s.index).size
   );
 
-  let usersByStructure: UserInfo[][] = structuresByIndex.map(() => []);
-  while (Date.now() < endWait) {
-    usersByStructure = structuresByIndex.map((s) => getUsersOfSchool(s));
-    const ready = usersByStructure.every((users, idx) => users.length >= expectedUsersByStructure[idx]);
-    if (ready) {
-      console.log(`All users found for every structure (${secondsLeft()}s left)`);
-      break;
-    }
-    console.log(`Waiting for all users to be imported (${usersByStructure.map((u, i) => `${u.length}/${expectedUsersByStructure[i]}`).join(", ")})...`);
-    sleep(2);
-  }
-  usersByStructure.forEach((users, idx) => {
+  const usersByStructure = structuresByIndex.map((s, idx) => {
+    const users = getUsersOfSchool(s);
     if (users.length < expectedUsersByStructure[idx]) {
-      throw new Error(
-        `Structure ${idx} (${structuresByIndex[idx].name}) only has ${users.length}/${expectedUsersByStructure[idx]} users after ${MAX_WAIT_BIG_AAF_IMPORTED}s`
-      );
+      throw new Error(`Structure ${idx} (${s.name}) only has ${users.length}/${expectedUsersByStructure[idx]} users after the import`);
     }
+    // the users list of a structure does not carry the externalId used by the checks
+    return withExternalIds(s.id, users);
   });
-
-  // the users list of a structure does not carry the externalId used by the checks below
-  usersByStructure = usersByStructure.map((users, idx) => withExternalIds(structuresByIndex[idx].id, users));
 
   return { structures: structuresByIndex, usersByStructure };
 }

@@ -6,15 +6,15 @@ import {
   getHeaders,
   UserProfileType,
   UserInfo,
-  getSchoolByName,
+  getAllStructures,
   createEmptyStructure,
   assertOk,
   createUser
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import http from "k6/http";
-import {check, group, sleep} from "k6";
-import { AAFGeneratorBuilder } from "./_aaf-generator.ts";
-import { cleanAAF, cleanAAFWhenIdle, uploadAAF } from "./_aaf-utils.ts";
+import { check, group } from "k6";
+import { AAFFiles, AAFGeneratorBuilder } from "./_aaf-generator.ts";
+import { cleanAAF, cleanAAFWhenIdle, importedExternalId, triggerImportAndWait, uploadAAF } from "./_aaf-utils.ts";
 
 
 const maxDuration = __ENV.MAX_DURATION || "20m";
@@ -24,7 +24,6 @@ const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
 const rootUrl = __ENV.ROOT_URL;
 const skipInit = __ENV.SKIP_INIT === "true";
 const indexStart = parseInt(__ENV.INDEX_START || "9999");
-const MAX_WAIT_STRUCTURE_IMPORTED = parseInt(__ENV.MAX_WAIT_STRUCTURE_IMPORTED || "30");
 const nbDuplicateUsers = parseInt(__ENV.NB_DUPLICATE_USERS || "3");
 /** Import directory of the files uploaded by this test. Removed at the end : see teardown(). */
 const AAF_IMPORT_DIRECTORY = "test";
@@ -167,51 +166,24 @@ export function teardown() {
 }
 
 function generateAAFStructure(parameters: AAFStructureGenerationParameters[]): Structure {
-  const request = generateAAFStructureRequest(parameters);
-  importAAFStructureOrFail(request);
-  const res = triggerAAFImport();
-  assertOk(res, "AAF import should be triggered", 202);
-  let structure: Structure | null = null;
-  let endWait = Date.now() + MAX_WAIT_STRUCTURE_IMPORTED * 1000;
-  while(Date.now() < endWait) {
-    structure = getSchoolByName(schoolName);
-    if(structure) {
-      console.log(`Structure ${schoolName} found after ${MAX_WAIT_STRUCTURE_IMPORTED - Math.floor((endWait - Date.now()) / 1000)} seconds`);
-      break;
-    }
-    console.log(`Waiting for structure ${schoolName} to be imported...`);
-    sleep(1);
+  const { files, model } = generateAAFStructureRequest(parameters);
+  importAAFStructureOrFail(files);
+  // waits for the post import too : the duplicates checked by this test are marked there
+  const res = triggerImportAndWait("AAF");
+  assertOk(res, "AAF import should succeed");
+  // the structure is looked up by externalId : "Directory" is a common name, older runs left structures named so
+  const externalId = importedExternalId(AAF_IMPORT_DIRECTORY, model.structures[0].externalId);
+  const structure = getAllStructures().find((s) => s.externalId === externalId);
+  if (!structure) {
+    throw new Error(`Structure ${externalId} not found after the import : was it attached to an existing structure with the same UAI (${model.structures[0].uai}) ?`);
   }
-  if(!structure) {
-    throw new Error(`Structure ${schoolName} not found after ${MAX_WAIT_STRUCTURE_IMPORTED} seconds`);
-  }
-  while(Date.now() < endWait) {
-    const expectedNbUsers = parameters[0].nbStudents + parameters[0].nbTeachers + parameters[0].nbStudents * parameters[0].nbRelatives;
-    const users = getUsersOfSchool(structure);
-    if(users.length >= expectedNbUsers) {
-      console.log(`All users found after ${MAX_WAIT_STRUCTURE_IMPORTED - Math.floor((endWait - Date.now()) / 1000)} seconds`);
-      break;
-    }
-    console.log(`Waiting for all users to be imported (${users.length} out of ${expectedNbUsers})...`);
-    sleep(1);
-  }
+  const expectedNbUsers = parameters[0].nbStudents + parameters[0].nbTeachers + parameters[0].nbStudents * parameters[0].nbRelatives;
+  const users = getUsersOfSchool(structure);
+  console.log(`Structure ${structure.name} (${externalId}) imported with ${users.length} users (${expectedNbUsers} expected)`);
   return structure;
 }
 
-function triggerAAFImport(): RefinedResponse<any> {
-  const headers = getHeaders("application/json");
-  const triggerRequest = {
-    feeder: "AAF"
-  };
-  const res = http.post(
-    `${rootUrl}/directory/api/internal/trigger-import`,
-    JSON.stringify(triggerRequest),
-    { headers },
-  );
-  return res;
-}
-
-function generateAAFStructureRequest(parameters: AAFStructureGenerationParameters[]): Record<string, string> {
+function generateAAFStructureRequest(parameters: AAFStructureGenerationParameters[]): AAFFiles {
   const builder = new AAFGeneratorBuilder()
     .withIndexStart(indexStart)
     .withNbStructures(parameters.length);
@@ -241,7 +213,7 @@ function generateAAFStructureRequest(parameters: AAFStructureGenerationParameter
     teacherOffset += param.nbTeachers;
   });
 
-  return builder.build().generate().files;
+  return builder.build().generate();
 }
 
 export function importAAFStructure(files: Record<string, string>): RefinedResponse<any> {
